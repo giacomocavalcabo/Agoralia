@@ -1,0 +1,204 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "backend": "الخادم",
+      "active_calls": "المكالمات النشطة",
+      "free_slots": "الفتحات المتاحة",
+      "avg_duration": "المدة المتوسطة",
+      "turn_taking_p95": "Turn-taking p95",
+      "success_rate": "نسبة النجاح",
+      "errors_24h": "أخطاء (24س)",
+      "cost_today": "تكلفة اليوم",
+      "period": "الفترة:",
+      "days": "{n} أيام",
+      "calls_per_day": "المكالمات يوميًا",
+      "create": "إنشاء",
+      "finish": "إنهاء",
+      "outcomes_recent": "النتائج (أيام حديثة)",
+      "count": "عدد",
+      "live_calls": "مكالمات مباشرة",
+      "no_active_calls": "لا توجد مكالمات نشطة.",
+      "webhooks_monitor": "مراقب webhooks",
+      "backfill_recent": "Backfill حديث"
+    },
+    "leads": {
+      "title": "العملاء المحتملون",
+      "select_at_least_one": "اختر عميلًا واحدًا على الأقل",
+      "schedule_selected": "جدولة المحدد…",
+      "add_lead": "إضافة عميل محتمل",
+    "filters": {
+        "search": "بحث (اسم/شركة/هاتف)",
+        "campaign": "حملة",
+        "country": "دولة",
+        "language": "لغة",
+        "role": "دور",
+        "consent": "موافقة",
+        "created_after": "أُنشئ بعد",
+        "created_before": "أُنشئ قبل"
+    },
+      "consent": { "unknown": "غير معروف", "granted": "ممنوح", "denied": "مرفوض" },
+    "country_placeholder": "IT/FR/MA…",
+      "add_filter": "إضافة فلتر",
+      "total": "الإجمالي",
+      "call": "اتصال",
+      "call_created": "تم إنشاء المكالمة",
+      "schedule": "جدولة…",
+      "no_leads": "لا عملاء محتملين بعد",
+      "rows_per_page": "صفوف لكل صفحة",
+      "roles": { "supplier": "مورد", "supplied": "عميل" },
+      "schedule_calls": "جدولة مكالمات ({n})",
+      "in": "خلال",
+      "minutes": "دقائق",
+      "at": "في"
+    },
+    "campaigns": {
+      "title": "الحملات",
+      "name_placeholder": "اسم الحملة",
+    "status": { "active": "active", "paused": "paused", "done": "done" },
+      "leads": "العملاء المحتملون",
+      "calls": "المكالمات",
+      "qualified": "مؤهلون",
+      "qualified_rate": "% مؤهل",
+      "created": "تم إنشاء الحملة (#{id})"
+    },
+    "analytics": {
+      "title": "التحليلات",
+      "limited": "محدود",
+      "pro_badge_tooltip": "متاح على Pro+",
+      "metrics_description": "إحصاءات: المدة المتوسطة، النتائج، التكلفة/دقيقة، WER، barge-in.",
+      "upgrade_cta": "قم بالترقية إلى Pro لفتح التحليلات المتقدمة والتصدير."
+    },
+    "calendar": {
+      "title": "التقويم",
+      "full": "كامل",
+      "limited": "محدود",
+      "week": "أسبوع",
+      "month": "شهر",
+      "pro_tooltip": "متاح على Pro/Enterprise"
+    },
+    "billing": {
+      "title": "الفوترة",
+      "free_trial": "نسخة تجريبية",
+      "days_left": "متبقي {n} يومًا",
+      "expires": "تنتهي في {date}",
+      "plan": "الخطة",
+      "status": "الحالة",
+    "minutes_mtd": "Minutes MTD",
+      "upgrade_core": "الترقية إلى Core",
+      "upgrade_pro": "الترقية إلى Pro",
+      "open_portal": "فتح البوابة",
+      "inbound_slots": "فتحات التزامن الواردة",
+      "slots_note": "فتحات واردة محجوزة؛ 15$ لكل فتحة/شهر.",
+      "upgrade_required": "يلزم الترقية",
+      "go_to_billing": "اذهب إلى الفوترة",
+      "upgrade_reason": "خطة اشتراكك لا تسمح بهذا الإجراء أو يلزم الدفع.",
+      "manage_from_billing": "يمكنك إدارة الاشتراك والدفع من صفحة الفوترة.",
+      "upgrade_languages_reason": "رقِّ إلى Pro للغات غير محدودة"
+    },
+    "history": {
+      "title": "السجل",
+      "search_phone": "بحث هاتف",
+      "group_by_company": "تجميع حسب الشركة",
+      "total_calls": "مجموع المكالمات",
+      "last_at": "الأخير",
+      "open_last": "فتح الأخير",
+      "view_all": "عرض الكل"
+    },
+    "settings": {
+      "tabs2": {
+        "general": "عام",
+        "languages": "اللغات",
+        "agents": "الوكلاء والمعرفة",
+        "telephony": "الهاتف",
+        "compliance": "الامتثال",
+        "integrations": "التكاملات",
+        "billing": "الفوترة والاستخدام",
+        "team": "الفريق والأدوار",
+        "developer": "للمطورين"
+      },
+      "help": "مساعدة قصيرة لهذا القسم. المزيد →",
+      "unsaved": "لديك تغييرات غير محفوظة",
+      "general": {
+        "title": "تفضيلات مساحة العمل",
+        "workspace_name": "اسم المساحة",
+        "timezone": "المنطقة الزمنية الافتراضية",
+        "brand_color": "لون العلامة",
+        "ui_locale": "لغة الواجهة"
+      },
+      "languages2": {
+        "title": "اختر لغات المحادثات",
+        "default_conv": "اللغة الافتراضية للمحادثة",
+        "supported": "اللغات المدعومة",
+        "detect": "اكتشاف اللغة"
+      },
+      "telephony2": {
+        "caller_id": "Caller ID الافتراضي",
+        "spacing_sec": "الفاصل الأدنى (ثواني)"
+      },
+      "compliance2": {
+        "require_review": "تتطلب مراجعة قانونية",
+        "advanced_json": "JSON متقدم"
+      },
+      "system_status": "حالة النظام",
+      "webhook_tester": "مختبر Webhook",
+    "call_id_optional": "call_id (optional)",
+      "webhook_sent": "تم إرسال Webhook للاختبار",
+      "default_language": "اللغة الافتراضية",
+      "supported_languages": "اللغات المدعومة",
+      "prefer_detect_language": "تفضيل اكتشاف اللغة",
+      "supported_must_include_default": "يجب أن تتضمن اللغات المدعومة الافتراضية",
+      "save_language": "حفظ اللغة",
+      "publish_kb": "نشر قاعدة المعرفة",
+    "tenant_id": "Tenant ID",
+    "tenant_placeholder": "e.g. 1",
+    "retell_agent": "Retell agent_id",
+    "agent_placeholder": "e.g. agent_xxx",
+      "default_caller": "Caller ID الافتراضي (from_number)",
+      "e164_placeholder": "E.164 مثال +20...",
+      "default_spacing": "التباعد الافتراضي (ملّي ثانية)",
+      "require_legal_review": "تتطلب مراجعة قانونية",
+      "legal_defaults": "افتراضيات قانونية (حسب ISO الدولة)",
+      "save_local": "حفظ محليًا",
+      "save_backend": "حفظ إعدادات الخلفية",
+      "start_web_call": "بدء مكالمة ويب",
+      "connect_google": "ربط Google Calendar",
+      "connect": "ربط",
+      "setup": "إعداد",
+    "tabs": {
+        "agents": "الوكلاء",
+        "kbs": "قواعد المعرفة",
+        "numbers": "أرقام الهاتف",
+        "compliance": "الامتثال",
+        "crm": "ربط CRM",
+        "tenant_agents": "وكلاء المستأجر"
+    }
+    },
+    "import": {
+      "title": "استيراد",
+    "agent": "Agent",
+    "knowledge": "Knowledge",
+      "import_csv": "استيراد CSV",
+      "or_paste_numbers": "أو لصق الأرقام",
+      "one_per_line": "+20... رقم في كل سطر",
+      "caller_id_optional": "Caller ID (اختياري)",
+      "csv_mapping": "ربط CSV",
+      "delay_ms": "التأخير (ملّي ثانية)",
+      "metadata_columns": "أعمدة البيانات الوصفية",
+      "valid": "صالح",
+      "invalid": "غير صالح",
+      "preview_n": "معاينة {n} عنصر (أول 5)",
+      "legal_disabled_note": "المراجعة القانونية معطلة: ستُستخدم الافتراضيات من الإعدادات.",
+    "legal": {
+        "title": "مراجعة قانونية حسب الدولة",
+      "legal_ok": "Legal OK",
+        "announce_ai": "الإعلان عن الذكاء الاصطناعي",
+        "do_not_call": "لا تتصل",
+        "disclosure": "الإفصاح",
+      "dnc": "DNC",
+        "confirm_launch": "تأكيد وإطلاق"
+    }
+    }
+  }
+}
+

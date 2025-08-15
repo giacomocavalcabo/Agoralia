@@ -1,0 +1,204 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "डैशबोर्ड",
+      "backend": "बैकएंड",
+      "active_calls": "सक्रिय कॉल",
+      "free_slots": "उपलब्ध स्लॉट",
+      "avg_duration": "औसत अवधि",
+    "turn_taking_p95": "Turn-taking p95",
+      "success_rate": "सफलता दर",
+      "errors_24h": "त्रुटियाँ (24घं)",
+      "cost_today": "आज की लागत",
+      "period": "अवधि:",
+      "days": "{n} दिन",
+      "calls_per_day": "प्रति दिन कॉल",
+      "create": "निर्मित",
+      "finish": "समाप्त",
+      "outcomes_recent": "नतीजे (हाल के दिन)",
+      "count": "गिनती",
+      "live_calls": "लाइव कॉल",
+      "no_active_calls": "कोई सक्रिय कॉल नहीं।",
+      "webhooks_monitor": "Webhook मॉनिटर",
+      "backfill_recent": "हालिया बैकफिल"
+    },
+    "leads": {
+      "title": "लीड्स",
+      "select_at_least_one": "कम से कम एक लीड चुनें",
+      "schedule_selected": "चयनित शेड्यूल करें…",
+      "add_lead": "लीड जोड़ें",
+    "filters": {
+        "search": "खोज (नाम/कंपनी/फोन)",
+        "campaign": "अभियान",
+        "country": "देश",
+        "language": "भाषा",
+        "role": "भूमिका",
+        "consent": "सहमति",
+        "created_after": "के बाद बना",
+        "created_before": "के पहले बना"
+    },
+      "consent": { "unknown": "अज्ञात", "granted": "स्वीकृत", "denied": "अस्वीकृत" },
+    "country_placeholder": "IT/FR/MA…",
+      "add_filter": "फ़िल्टर जोड़ें",
+      "total": "कुल",
+      "call": "कॉल",
+      "call_created": "कॉल बनाई गई",
+      "schedule": "शेड्यूल…",
+      "no_leads": "कोई लीड नहीं",
+      "rows_per_page": "पंक्तियाँ प्रति पेज",
+      "roles": { "supplier": "आपूर्तिकर्ता", "supplied": "ग्राहक" },
+      "schedule_calls": "कॉल शेड्यूल करें ({n})",
+      "in": "में",
+      "minutes": "मिनट",
+      "at": "पर"
+    },
+    "campaigns": {
+      "title": "अभियान",
+      "name_placeholder": "अभियान का नाम",
+    "status": { "active": "active", "paused": "paused", "done": "done" },
+      "leads": "लीड्स",
+      "calls": "कॉल",
+      "qualified": "योग्य",
+      "qualified_rate": "% योग्य",
+      "created": "अभियान बनाया गया (#{id})"
+    },
+    "analytics": {
+      "title": "एनालिटिक्स",
+      "limited": "सीमित",
+      "pro_badge_tooltip": "Pro+ पर उपलब्ध",
+      "metrics_description": "मेट्रिक्स: औसत अवधि, परिणाम, लागत/मिनट, WER, बार्ज-इन.",
+      "upgrade_cta": "उन्नत एनालिटिक्स और एक्सपोर्ट के लिए Pro पर अपग्रेड करें."
+    },
+    "calendar": {
+      "title": "कैलेंडर",
+      "full": "पूर्ण",
+      "limited": "सीमित",
+      "week": "सप्ताह",
+      "month": "महीना",
+      "pro_tooltip": "Pro/Enterprise पर उपलब्ध"
+    },
+    "billing": {
+      "title": "बिलिंग",
+      "free_trial": "नि:शुल्क परीक्षण",
+      "days_left": "{n} दिन शेष",
+      "expires": "{date} को समाप्त",
+      "plan": "प्लान",
+      "status": "स्थिति",
+    "minutes_mtd": "Minutes MTD",
+      "upgrade_core": "कोर पर अपग्रेड",
+      "upgrade_pro": "प्रो पर अपग्रेड",
+      "open_portal": "पोर्टल खोलें",
+      "inbound_slots": "इनबाउंड समकालिक स्लॉट",
+      "slots_note": "आरक्षित इनबाउंड स्लॉट; $15/स्लॉट/माह.",
+      "upgrade_required": "अपग्रेड आवश्यक",
+      "go_to_billing": "बिलिंग पर जाएँ",
+      "upgrade_reason": "आपकी योजना इस क्रिया की अनुमति नहीं देती या भुगतान आवश्यक है.",
+      "manage_from_billing": "बिलिंग पेज से सदस्यता और भुगतान प्रबंधित करें.",
+      "upgrade_languages_reason": "असीमित भाषाओं के लिए Pro पर अपग्रेड करें"
+    },
+    "history": {
+      "title": "इतिहास",
+      "search_phone": "फ़ोन खोजें",
+      "group_by_company": "कंपनी के अनुसार समूह",
+      "total_calls": "कुल कॉल",
+      "last_at": "अंतिम",
+      "open_last": "अंतिम खोलें",
+      "view_all": "सब देखें"
+    },
+    "settings": {
+      "tabs2": {
+        "general": "जनरल",
+        "languages": "भाषाएँ",
+        "agents": "एजेंट्स और नॉलेज",
+        "telephony": "टेलीफ़ोनी",
+        "compliance": "अनुपालन",
+        "integrations": "इंटेग्रेशंस",
+        "billing": "बिलिंग और उपयोग",
+        "team": "टीम और भूमिकाएँ",
+        "developer": "डेवेलपर"
+      },
+      "help": "इस सेक्शन के लिए संक्षिप्त सहायता। और जानें →",
+      "unsaved": "आपके पास बिना सहेजे बदलाव हैं",
+      "general": {
+        "title": "वर्कस्पेस की मूल पसंद",
+        "workspace_name": "वर्कस्पेस नाम",
+        "timezone": "डिफ़ॉल्ट टाइमज़ोन",
+        "brand_color": "ब्रांड रंग",
+        "ui_locale": "UI भाषा"
+      },
+      "languages2": {
+        "title": "बातचीत में उपयोग की जाने वाली भाषाएँ चुनें",
+        "default_conv": "डिफ़ॉल्ट बातचीत भाषा",
+        "supported": "समर्थित भाषाएँ",
+        "detect": "भाषा पहचान"
+      },
+      "telephony2": {
+        "caller_id": "डिफ़ॉल्ट कॉलर ID",
+        "spacing_sec": "न्यूनतम अंतराल (सेकंड)"
+      },
+      "compliance2": {
+        "require_review": "कानूनी समीक्षा आवश्यक",
+        "advanced_json": "एडवांस्ड JSON"
+      },
+      "system_status": "सिस्टम स्थिति",
+      "webhook_tester": "Webhook परीक्षक",
+    "call_id_optional": "call_id (optional)",
+      "webhook_sent": "Webhook परीक्षण भेजा गया",
+      "default_language": "डिफ़ॉल्ट भाषा",
+      "supported_languages": "समर्थित भाषाएँ",
+      "prefer_detect_language": "भाषा का पता लगाना पसंद करें",
+      "supported_must_include_default": "समर्थित भाषाओं में डिफ़ॉल्ट शामिल होना चाहिए",
+      "save_language": "भाषा सहेजें",
+      "publish_kb": "KB प्रकाशित करें",
+    "tenant_id": "Tenant ID",
+      "tenant_placeholder": "उदा. 1",
+    "retell_agent": "Retell agent_id",
+      "agent_placeholder": "उदा. agent_xxx",
+      "default_caller": "डिफ़ॉल्ट कॉलर ID (from_number)",
+      "e164_placeholder": "E.164 उदा. +91...",
+      "default_spacing": "डिफ़ॉल्ट अंतर (ms)",
+      "require_legal_review": "कानूनी समीक्षा आवश्यक",
+      "legal_defaults": "कानूनी डिफ़ॉल्ट (देश ISO)",
+      "save_local": "स्थानीय रूप से सहेजें",
+      "save_backend": "बैकएंड सेटिंग्स सहेजें",
+      "start_web_call": "वेब कॉल शुरू करें",
+      "connect_google": "Google Calendar कनेक्ट करें",
+      "connect": "कनेक्ट करें",
+      "setup": "कॉन्फ़िगरेशन",
+    "tabs": {
+        "agents": "एजेंट",
+        "kbs": "ज्ञान आधार",
+        "numbers": "फ़ोन नंबर",
+        "compliance": "अनुपालन",
+        "crm": "CRM मैपिंग",
+        "tenant_agents": "टेनेंट एजेंट"
+    }
+    },
+    "import": {
+      "title": "आयात",
+    "agent": "Agent",
+    "knowledge": "Knowledge",
+      "import_csv": "CSV आयात करें",
+      "or_paste_numbers": "या नंबर पेस्ट करें",
+      "one_per_line": "+91... प्रति पंक्ति एक",
+      "caller_id_optional": "Caller ID (वैकल्पिक)",
+      "csv_mapping": "CSV मैपिंग",
+      "delay_ms": "विलंब (ms)",
+      "metadata_columns": "मेटाडेटा कॉलम",
+      "valid": "वैध",
+      "invalid": "अवैध",
+      "preview_n": "{n} आइटम का पूर्वावलोकन (पहले 5)",
+      "legal_disabled_note": "कानूनी समीक्षा अक्षम: सेटिंग्स से डिफ़ॉल्ट उपयोग होंगे.",
+    "legal": {
+        "title": "देश के अनुसार कानूनी समीक्षा",
+        "legal_ok": "Legal OK",
+        "announce_ai": "AI की घोषणा",
+        "do_not_call": "कॉल न करें",
+        "disclosure": "घोषणा",
+      "dnc": "DNC",
+        "confirm_launch": "पुष्टि करें और प्रारंभ करें"
+    }
+    }
+  }
+}
+

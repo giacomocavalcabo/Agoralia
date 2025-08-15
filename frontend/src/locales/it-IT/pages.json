@@ -1,0 +1,204 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "backend": "Backend",
+      "active_calls": "Chiamate attive",
+      "free_slots": "Slot liberi",
+      "avg_duration": "Durata media",
+      "turn_taking_p95": "Turn-taking p95",
+      "success_rate": "Tasso di successo",
+      "errors_24h": "Errori (24h)",
+      "cost_today": "Costo oggi",
+      "period": "Periodo:",
+      "days": "{n} giorni",
+      "calls_per_day": "Chiamate per giorno",
+      "create": "Creazioni",
+      "finish": "Conclusioni",
+      "outcomes_recent": "Esiti (giorni recenti)",
+      "count": "Conteggio",
+      "live_calls": "Chiamate live",
+      "no_active_calls": "Nessuna chiamata attiva.",
+      "webhooks_monitor": "Monitor webhooks",
+      "backfill_recent": "Backfill recenti"
+    },
+    "leads": {
+      "title": "Leads",
+      "select_at_least_one": "Seleziona almeno un lead",
+      "schedule_selected": "Pianifica selezionati…",
+      "add_lead": "Aggiungi lead",
+      "filters": {
+        "search": "Cerca (nome/azienda/telefono)",
+        "campaign": "Campagna",
+        "country": "Paese",
+        "language": "Lingua",
+        "role": "Ruolo",
+        "consent": "Consenso",
+        "created_after": "Creato dopo",
+        "created_before": "Creato prima"
+      },
+      "consent": { "unknown": "sconosciuto", "granted": "concesso", "denied": "negato" },
+      "country_placeholder": "IT/FR/MA…",
+      "add_filter": "Aggiungi filtro",
+      "total": "Totale",
+      "call": "Chiama",
+      "call_created": "Chiamata creata",
+      "schedule": "Pianifica…",
+      "no_leads": "Nessun lead",
+      "rows_per_page": "Righe per pagina",
+      "roles": { "supplier": "fornitore", "supplied": "cliente" },
+      "schedule_calls": "Pianifica chiamate ({n})",
+      "in": "Tra",
+      "minutes": "minuti",
+      "at": "Alle"
+    },
+    "campaigns": {
+      "title": "Campagne",
+      "name_placeholder": "Nome campagna",
+      "status": { "active": "attiva", "paused": "in pausa", "done": "conclusa" },
+      "leads": "Leads",
+      "calls": "Chiamate",
+      "qualified": "Qualificati",
+      "qualified_rate": "% qualificati",
+      "created": "Campagna creata (#{id})"
+    },
+    "analytics": {
+      "title": "Analitiche",
+      "limited": "Limitate",
+      "pro_badge_tooltip": "Disponibile su Pro+",
+      "metrics_description": "Metriche: durata media, esiti, costo/min, WER, barge-in.",
+      "upgrade_cta": "Fai upgrade a Pro per analitiche avanzate ed export."
+    },
+    "calendar": {
+      "title": "Calendario",
+      "full": "Completo",
+      "limited": "Limitato",
+      "week": "Settimana",
+      "month": "Mese",
+      "pro_tooltip": "Disponibile su Pro/Enterprise"
+    },
+    "billing": {
+      "title": "Fatturazione",
+      "free_trial": "Prova gratuita",
+      "days_left": "{n} giorni rimanenti",
+      "expires": "scade il {date}",
+      "plan": "Piano",
+      "status": "Stato",
+      "minutes_mtd": "Minuti MTD",
+      "upgrade_core": "Upgrade a Core",
+      "upgrade_pro": "Upgrade a Pro",
+      "open_portal": "Apri Portale",
+      "inbound_slots": "Slot concorrenza inbound",
+      "slots_note": "Slot riservati per inbound; prezzo: $15/slot/mese.",
+      "upgrade_required": "Upgrade richiesto",
+      "go_to_billing": "Vai a Fatturazione",
+      "upgrade_reason": "Il tuo piano non consente questa azione o è richiesto un pagamento.",
+      "manage_from_billing": "Gestisci abbonamento e pagamenti dalla pagina Fatturazione.",
+      "upgrade_languages_reason": "Fai upgrade a Pro per lingue illimitate"
+    },
+    "history": {
+      "title": "Storico",
+      "search_phone": "Cerca telefono",
+      "group_by_company": "Raggruppa per azienda",
+      "total_calls": "Chiamate totali",
+      "last_at": "Ultima",
+      "open_last": "Apri ultima",
+      "view_all": "Vedi tutte"
+    },
+    "settings": {
+      "tabs2": {
+        "general": "Generale",
+        "languages": "Lingue",
+        "agents": "Agenti & Knowledge",
+        "telephony": "Telefonia",
+        "compliance": "Compliance",
+        "integrations": "Integrazioni",
+        "billing": "Fatturazione & Utilizzo",
+        "team": "Team & Ruoli",
+        "developer": "Developer"
+      },
+      "help": "Breve guida per questa sezione. Scopri di più →",
+      "unsaved": "Hai modifiche non salvate",
+      "general": {
+        "title": "Preferenze base del workspace",
+        "workspace_name": "Nome workspace",
+        "timezone": "Fuso orario predefinito",
+        "brand_color": "Colore brand",
+        "ui_locale": "Lingua interfaccia"
+      },
+      "languages2": {
+        "title": "Scegli le lingue usate nelle conversazioni",
+        "default_conv": "Lingua conversazione predefinita",
+        "supported": "Lingue supportate",
+        "detect": "Rileva lingua"
+      },
+      "telephony2": {
+        "caller_id": "Caller ID predefinito",
+        "spacing_sec": "Ritardo minimo (secondi)"
+      },
+      "compliance2": {
+        "require_review": "Richiedi Legal Review",
+        "advanced_json": "JSON avanzato"
+      },
+      "system_status": "Stato sistema",
+      "webhook_tester": "Webhook tester",
+      "call_id_optional": "call_id (opzionale)",
+      "webhook_sent": "Webhook inviato",
+      "default_language": "Lingua predefinita",
+      "supported_languages": "Lingue supportate",
+      "prefer_detect_language": "Preferisci rilevamento lingua",
+      "supported_must_include_default": "Le lingue supportate devono includere la predefinita",
+      "save_language": "Salva Lingua",
+      "publish_kb": "Pubblica KB",
+      "tenant_id": "Tenant ID",
+      "tenant_placeholder": "es. 1",
+      "retell_agent": "Retell agent_id",
+      "agent_placeholder": "es. agent_xxx",
+      "default_caller": "Caller ID predefinito (from_number)",
+      "e164_placeholder": "E.164 es. +39...",
+      "default_spacing": "Intervallo predefinito (ms)",
+      "require_legal_review": "Richiedi Legal Review",
+      "legal_defaults": "Default legali (per ISO paese)",
+      "save_local": "Salva locale",
+      "save_backend": "Salva impostazioni backend",
+      "start_web_call": "Avvia Web Call",
+      "connect_google": "Connetti Google Calendar",
+      "connect": "Connetti",
+      "setup": "Configurazione",
+      "tabs": {
+        "agents": "Agenti",
+        "kbs": "Knowledge Base",
+        "numbers": "Numeri di telefono",
+        "compliance": "Compliance",
+        "crm": "Mappatura CRM",
+        "tenant_agents": "Tenant Agents"
+      }
+    },
+    "import": {
+      "title": "Import",
+      "agent": "Agente",
+      "knowledge": "Conoscenza",
+      "import_csv": "Importa CSV",
+      "or_paste_numbers": "oppure incolla numeri",
+      "one_per_line": "+39... uno per riga",
+      "caller_id_optional": "Caller ID (opzionale)",
+      "csv_mapping": "Mappatura CSV",
+      "delay_ms": "Ritardo (ms)",
+      "metadata_columns": "Colonne metadata",
+      "valid": "Validi",
+      "invalid": "Invalidi",
+      "preview_n": "Anteprima {n} elementi (primi 5):",
+      "legal_disabled_note": "Legal review disattivata: verranno usate le regole predefinite da Settings.",
+      "legal": {
+        "title": "Revisione legale per paese",
+        "legal_ok": "Legal OK",
+        "announce_ai": "Annuncia AI",
+        "do_not_call": "Non chiamare",
+        "disclosure": "Informativa",
+        "dnc": "DNC",
+        "confirm_launch": "Conferma e avvia"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,204 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "Tableau de bord",
+    "backend": "Backend",
+      "active_calls": "Appels actifs",
+      "free_slots": "Créneaux libres",
+      "avg_duration": "Durée moyenne",
+      "turn_taking_p95": "Turn-taking p95",
+      "success_rate": "Taux de réussite",
+      "errors_24h": "Erreurs (24h)",
+      "cost_today": "Coût aujourd'hui",
+      "period": "Période :",
+      "days": "{n} jours",
+      "calls_per_day": "Appels par jour",
+      "create": "Créés",
+      "finish": "Terminés",
+      "outcomes_recent": "Résultats (jours récents)",
+      "count": "Nombre",
+      "live_calls": "Appels en direct",
+      "no_active_calls": "Aucun appel actif.",
+      "webhooks_monitor": "Suivi webhooks",
+      "backfill_recent": "Backfill récent"
+    },
+    "leads": {
+      "title": "Prospects",
+      "select_at_least_one": "Sélectionnez au moins un prospect",
+      "schedule_selected": "Planifier la sélection…",
+      "add_lead": "Ajouter un prospect",
+    "filters": {
+        "search": "Rechercher (nom/société/téléphone)",
+        "campaign": "Campagne",
+        "country": "Pays",
+        "language": "Langue",
+        "role": "Rôle",
+        "consent": "Consentement",
+        "created_after": "Créé après",
+        "created_before": "Créé avant"
+    },
+      "consent": { "unknown": "inconnu", "granted": "accordé", "denied": "refusé" },
+    "country_placeholder": "IT/FR/MA…",
+      "add_filter": "Ajouter un filtre",
+      "total": "Total",
+      "call": "Appeler",
+      "call_created": "Appel créé",
+      "schedule": "Planifier…",
+      "no_leads": "Aucun prospect",
+      "rows_per_page": "Lignes par page",
+      "roles": { "supplier": "fournisseur", "supplied": "client" },
+      "schedule_calls": "Planifier des appels ({n})",
+      "in": "Dans",
+      "minutes": "minutes",
+      "at": "À"
+    },
+    "campaigns": {
+      "title": "Campagnes",
+      "name_placeholder": "Nom de la campagne",
+    "status": { "active": "active", "paused": "paused", "done": "done" },
+      "leads": "Prospects",
+      "calls": "Appels",
+      "qualified": "Qualifiés",
+      "qualified_rate": "% qualifiés",
+      "created": "Campagne créée (#{id})"
+    },
+    "analytics": {
+      "title": "Analyses",
+      "limited": "Limité",
+      "pro_badge_tooltip": "Disponible sur Pro+",
+      "metrics_description": "Métriques : durée moy., résultats, coût/min, WER, barge-in.",
+      "upgrade_cta": "Passez à Pro pour débloquer les analyses avancées et exports."
+    },
+    "calendar": {
+      "title": "Calendrier",
+      "full": "Complet",
+      "limited": "Limité",
+      "week": "Semaine",
+      "month": "Mois",
+      "pro_tooltip": "Disponible sur Pro/Enterprise"
+    },
+    "billing": {
+      "title": "Facturation",
+      "free_trial": "Essai gratuit",
+      "days_left": "{n} jours restants",
+      "expires": "expire le {date}",
+      "plan": "Offre",
+      "status": "Statut",
+      "minutes_mtd": "Minutes MTD",
+      "upgrade_core": "Passer à Core",
+      "upgrade_pro": "Passer à Pro",
+      "open_portal": "Ouvrir le portail",
+      "inbound_slots": "Créneaux de simultanéité inbound",
+      "slots_note": "Créneaux réservés inbound ; $15/slot/mois.",
+      "upgrade_required": "Mise à niveau requise",
+      "go_to_billing": "Aller à Facturation",
+      "upgrade_reason": "Votre offre ne permet pas cette action ou un paiement est requis.",
+      "manage_from_billing": "Gérez l'abonnement et le paiement depuis Facturation.",
+      "upgrade_languages_reason": "Passez à Pro pour des langues illimitées"
+    },
+    "history": {
+      "title": "Historique",
+      "search_phone": "Rechercher téléphone",
+      "group_by_company": "Grouper par société",
+      "total_calls": "Total appels",
+      "last_at": "Dernier",
+      "open_last": "Ouvrir le dernier",
+      "view_all": "Voir tout"
+    },
+    "settings": {
+      "tabs2": {
+        "general": "Général",
+        "languages": "Langues",
+        "agents": "Agents & Connaissances",
+        "telephony": "Téléphonie",
+        "compliance": "Conformité",
+        "integrations": "Intégrations",
+        "billing": "Facturation & Usage",
+        "team": "Équipe & Rôles",
+        "developer": "Développeur"
+      },
+      "help": "Courte aide pour cette section. En savoir plus →",
+      "unsaved": "Vous avez des modifications non enregistrées",
+      "general": {
+        "title": "Préférences de l'espace de travail",
+        "workspace_name": "Nom de l'espace",
+        "timezone": "Fuseau horaire par défaut",
+        "brand_color": "Couleur de marque",
+        "ui_locale": "Langue de l'UI"
+      },
+      "languages2": {
+        "title": "Choisissez les langues utilisées en conversation",
+        "default_conv": "Langue de conversation par défaut",
+        "supported": "Langues prises en charge",
+        "detect": "Détecter la langue"
+      },
+      "telephony2": {
+        "caller_id": "Caller ID par défaut",
+        "spacing_sec": "Intervalle minimum (secondes)"
+      },
+      "compliance2": {
+        "require_review": "Exiger une revue légale",
+        "advanced_json": "JSON avancé"
+      },
+      "system_status": "Statut système",
+      "webhook_tester": "Testeur webhook",
+    "call_id_optional": "call_id (optional)",
+      "webhook_sent": "Webhook de test envoyé",
+      "default_language": "Langue par défaut",
+      "supported_languages": "Langues prises en charge",
+      "prefer_detect_language": "Préférer la détection de langue",
+      "supported_must_include_default": "Les langues supportées doivent inclure la par défaut",
+      "save_language": "Enregistrer la langue",
+      "publish_kb": "Publier la KB",
+    "tenant_id": "Tenant ID",
+      "tenant_placeholder": "ex. 1",
+    "retell_agent": "Retell agent_id",
+      "agent_placeholder": "ex. agent_xxx",
+      "default_caller": "Caller ID par défaut (from_number)",
+      "e164_placeholder": "E.164 ex. +33...",
+      "default_spacing": "Espacement par défaut (ms)",
+      "require_legal_review": "Exiger la revue légale",
+      "legal_defaults": "Valeurs légales par ISO pays",
+      "save_local": "Enregistrer localement",
+      "save_backend": "Enregistrer les réglages backend",
+      "start_web_call": "Démarrer Web Call",
+      "connect_google": "Connecter Google Calendar",
+      "connect": "Connecter",
+      "setup": "Configuration",
+    "tabs": {
+        "agents": "Agents",
+        "kbs": "Bases de connaissances",
+        "numbers": "Numéros de téléphone",
+        "compliance": "Conformité",
+        "crm": "Mappage CRM",
+        "tenant_agents": "Agents du tenant"
+    }
+    },
+    "import": {
+      "title": "Importation",
+    "agent": "Agent",
+    "knowledge": "Knowledge",
+      "import_csv": "Importer CSV",
+      "or_paste_numbers": "ou coller des numéros",
+      "one_per_line": "+33... un par ligne",
+      "caller_id_optional": "Caller ID (optionnel)",
+      "csv_mapping": "Mappage CSV",
+      "delay_ms": "Délai (ms)",
+      "metadata_columns": "Colonnes métadonnées",
+      "valid": "Valides",
+      "invalid": "Invalides",
+      "preview_n": "Aperçu de {n} éléments (5 premiers)",
+      "legal_disabled_note": "Revue légale désactivée: valeurs par défaut de Paramètres.",
+    "legal": {
+        "title": "Revue légale par pays",
+        "legal_ok": "Legal OK",
+        "announce_ai": "Annoncer l'IA",
+        "do_not_call": "Ne pas appeler",
+        "disclosure": "Information",
+      "dnc": "DNC",
+        "confirm_launch": "Confirmer et lancer"
+    }
+    }
+  }
+}
+

@@ -1,0 +1,120 @@
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 100vh;
+  width: 100%;
+  background: #f4f5f7;
+  color: #111827;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+[dir="rtl"] .layout { grid-template-columns: minmax(0, 1fr) 250px; }
+
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+[dir="rtl"] .sidebar { border-right: none; border-left: 1px solid #e5e7eb; }
+
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 16px;
+  padding-left: 8px;
+}
+
+.nav { display: flex; flex-direction: column; gap: 8px; }
+.nav-top { flex: 1; }
+.nav-footer { margin-top: auto; padding-top: 8px; border-top: 1px solid #eef2f7; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+[dir="rtl"] .nav-item { justify-content: flex-end; }
+
+.nav-item:hover { background: #f1f3f5; }
+
+.nav-item.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  min-width: 0; /* prevent children from shrinking container */
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+[dir="rtl"] .topbar { direction: rtl; }
+
+.page {
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Remove restrictions on inner wrappers */
+.page > * { width: 100%; max-width: none; margin: 0; }
+
+.page h1 { text-align: left; }
+
+.panel { width: 100%; box-sizing: border-box; }
+
+.search {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1280px) {
+  .layout { grid-template-columns: 220px 1fr; }
+  .page { padding: 20px; }
+}
+
+@media (max-width: 1024px) {
+  .layout { grid-template-columns: 200px 1fr; }
+  .brand { font-size: 16px; }
+  .nav-item { font-size: 13px; padding: 8px 10px; }
+  .page { padding: 16px; }
+}
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .topbar { padding: 10px 16px; }
+  .page { padding: 12px; }
+}
+
