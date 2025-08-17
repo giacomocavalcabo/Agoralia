@@ -45,6 +45,30 @@ def get_me_usage() -> dict:
         "minutes_cap": 1000,
     }
 
+@app.get("/dashboard/summary")
+def dashboard_summary() -> dict:
+        return {
+        "minutes_mtd": 0,
+        "minutes_cap": 1000,
+        "calls_today": 0,
+        "success_rate": 0.0,
+        "avg_duration_sec": 0,
+        "p95_turn_taking_ms": 0,
+        "errors_24h": 0,
+    }
+
+@app.get("/calls/live")
+def calls_live() -> dict:
+        return {
+        "items": []
+    }
+
+@app.get("/events/recent")
+def events_recent(limit: int = 20) -> dict:
+    return {
+        "items": []
+    }
+
 
 @app.post("/webhooks/retell")
 async def webhook_retell(request: Request, x_retell_signature: str | None = Header(default=None)) -> Response:
