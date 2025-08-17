@@ -70,6 +70,27 @@ def events_recent(limit: int = 20) -> dict:
     }
 
 
+def _require_admin(email_header: str | None):
+    allowed = (os.getenv("ADMIN_EMAILS") or "").split(",")
+    allowed = [e.strip() for e in allowed if e.strip()]
+    if not email_header or (allowed and email_header not in allowed):
+        raise HTTPException(status_code=403, detail="Admin required")
+
+
+@app.get("/admin/health")
+def admin_health(x_admin_email: str | None = Header(default=None)) -> dict:
+    _require_admin(x_admin_email)
+    # Minimal stub; replace with real checks (DB, Redis, R2, Retell)
+    return {
+        "services": [
+            {"name": "DB", "status": "ok"},
+            {"name": "Redis", "status": "ok"},
+            {"name": "R2", "status": "ok"},
+            {"name": "Retell", "status": "ok"},
+        ]
+    }
+
+
 @app.post("/webhooks/retell")
 async def webhook_retell(request: Request, x_retell_signature: str | None = Header(default=None)) -> Response:
     api_key = os.environ.get("RETELL_API_KEY", "")
