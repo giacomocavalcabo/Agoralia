@@ -1,6 +1,16 @@
 {
   "pages": {
-    "dashboard": { "title": "Dashboard" },
+    "dashboard": {
+      "title": "Dashboard",
+      "health": { "title": "System health" },
+      "live": { "title": "Live calls" },
+      "activity": "Recent activity",
+      "kpi": {
+        "minutes": "Minutes (MTD)",
+        "calls_today": "Calls today",
+        "success": "Success rate"
+      }
+    },
     "leads": { "title": "Leads" },
     "settings": { "title": "Settings" }
   }

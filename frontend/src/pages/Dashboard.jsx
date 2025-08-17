@@ -3,8 +3,10 @@ import { apiFetch } from '../lib/api'
 import KPI from '../components/ui/KPI.jsx'
 import Card from '../components/ui/Card.jsx'
 import { Skeleton, SkeletonRow } from '../components/ui/Skeleton.jsx'
+import { useI18n } from '../lib/i18n.jsx'
 
 export default function Dashboard() {
+	const { t } = useI18n()
 	const [summary, setSummary] = useState(null)
 	const [live, setLive] = useState([])
 	const [events, setEvents] = useState([])
@@ -32,7 +34,7 @@ export default function Dashboard() {
 
 	return (
 		<div style={{ display:'grid', gap:16 }}>
-			<h1>Dashboard</h1>
+			<h1>{t('pages.dashboard.title')}</h1>
 			{/* KPI strip */}
 			{loading && !summary ? (
 				<div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0,1fr))', gap:12 }}>
@@ -42,14 +44,14 @@ export default function Dashboard() {
 				</div>
 			) : (
 				<div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0,1fr))', gap:12 }}>
-					<KPI label="Minutes MTD" value={summary.minutes_mtd} progressPct={(summary.minutes_mtd/summary.minutes_cap)*100} />
-					<KPI label="Calls today" value={summary.calls_today} />
-					<KPI label="Success rate" value={`${Math.round(summary.success_rate*100)}%`} />
+					<KPI label={t('pages.dashboard.kpi.minutes')} value={summary.minutes_mtd} progressPct={(summary.minutes_mtd/summary.minutes_cap)*100} />
+					<KPI label={t('pages.dashboard.kpi.calls_today')} value={summary.calls_today} />
+					<KPI label={t('pages.dashboard.kpi.success')} value={`${Math.round(summary.success_rate*100)}%`} />
 				</div>
 			)}
 
 			<div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:16 }}>
-				<Card title="Live calls">
+				<Card title={t('pages.dashboard.live.title')}>
 					{loading ? <SkeletonRow lines={4} /> : (
 						<table className="table">
 							<thead><tr><th>Lead</th><th>Agent</th><th>Status</th><th>Started</th></tr></thead>
@@ -60,7 +62,7 @@ export default function Dashboard() {
 						</table>
 					)}
 				</Card>
-				<Card title="Recent activity">
+				<Card title={t('pages.dashboard.activity')}>
 					{loading ? <SkeletonRow lines={6} /> : (
 						<div style={{ display:'grid', gap:8 }}>
 							{events.map((e,i)=>(<div key={i} className="panel" style={{ padding:12 }}>{e.text ?? '—'}</div>))}

@@ -1,0 +1,15 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "health": { "title": "Stato sistema" },
+      "live": { "title": "Chiamate live" },
+      "activity": "Attività recente",
+      "kpi": {
+        "minutes": "Minuti (MTD)",
+        "calls_today": "Chiamate oggi",
+        "success": "Tasso di successo"
+      }
+    }
+  }
+}
