@@ -7,16 +7,15 @@ import { ToastProvider } from './components/ToastProvider.jsx'
 import Root from './layouts/Root.jsx'
 
 const modules = import.meta.glob('./pages/*.jsx', { eager: true })
-const pages = Object.entries(modules)
-	.map(([path, mod]) => {
-		const file = path.split('/').pop() || ''
-		const name = file.replace(/\.jsx$/,'')
-		return { name, Component: mod.default }
-	})
-	.filter(p => typeof p.Component === 'function')
+const pages = Object.entries(modules).map(([path, mod]) => {
+	const file = path.split('/').pop() || ''
+	const name = file.replace(/\.jsx$/,'')
+	return { name, Component: mod.default }
+})
 
-function slugify(name){
-	return name.toLowerCase()
+function slugify(name){ return name.toLowerCase() }
+function Placeholder({ name }){
+	return <div className="panel"><h1 style={{ marginTop:0 }}>{name}</h1><p className="kpi-title">This page will appear here once its component is exported.</p></div>
 }
 
 const rootEl = document.getElementById('root')
@@ -29,8 +28,8 @@ if (rootEl) {
 						<Route element={<Root />}> {/* layout */}
 							{pages.map(({ name, Component }) => (
 								name === 'Dashboard'
-									? <Route key={name} index element={<Component />} />
-									: <Route key={name} path={slugify(name)} element={<Component />} />
+									? <Route key={name} index element={Component ? <Component /> : <Placeholder name={name} />} />
+									: <Route key={name} path={slugify(name)} element={Component ? <Component /> : <Placeholder name={name} />} />
 							))}
 							<Route path="*" element={<Navigate to="/" replace />} />
 						</Route>
