@@ -1,4 +1,12 @@
 {
+  "admin": {
+    "nav": {"dashboard":"Dashboard","users":"Users","workspaces":"Workspaces","calls":"Calls","campaigns":"Campaigns","compliance":"Compliance","notifications":"Notifications","billing":"Billing","logs":"Logs","settings":"Settings"},
+    "kpi": {"users_total":"{n} users","active_7d":"{n} active (7d)","mrr":"MRR {amount}","minutes_mtd":"{n} minutes MTD"},
+    "users": {"search_placeholder":"Search name or email…","impersonate":"Impersonate","suspend":"Suspend","unsuspend":"Unsuspend"},
+    "calls": {"live_title":"Live calls","filters":{"iso":"Country","lang":"Language"}},
+    "compliance": {"attestations":"Attestations","generate":"Generate PDF","preflight":"Pre‑flight logs"},
+    "notices": {"impersonating":"Impersonating {user}. Return to admin."}
+  },
   "pages": {
     "dashboard": {
       "title": "Dashboard",
@@ -43,7 +51,7 @@
     "calendar": {
       "title": "Calendar",
       "range": "{from} → {to}",
-      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn" },
+      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn", "warn_budget":"Warn • Budget", "warn_concurrency":"Warn • Concurrency" },
       "quick": {
         "title": "Schedule call",
         "lead": "Lead",

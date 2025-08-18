@@ -7,6 +7,7 @@ export async function apiFetch(path, options = {}) {
 		headers: {
 			'Content-Type': 'application/json',
 			...(options.headers || {}),
+			...(localStorage.getItem('impersonate_token') ? { 'X-Impersonate-Token': localStorage.getItem('impersonate_token') } : {}),
 		},
 		body: options.body ? JSON.stringify(options.body) : undefined,
 		credentials: 'omit',

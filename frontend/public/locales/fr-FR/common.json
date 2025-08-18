@@ -13,7 +13,15 @@
     "month": "Mois",
     "range": "{from}–{to}",
     "of_total": "sur {total}",
-    "actions": { "more": "Plus" }
+    "actions": { "more": "Plus" },
+    "toasts": {
+      "updated": "Mis à jour",
+      "removed": "Supprimé",
+      "attestation_ok": "Attestation générée",
+      "concurrency_full": "Aucun créneau ({used}/{limit})",
+      "quiet_hours": "Hors plages autorisées",
+      "invite_accepted": "Invitation acceptée"
+    }
   }
 }
 

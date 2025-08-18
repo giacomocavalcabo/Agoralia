@@ -12,14 +12,14 @@ export default function Invite(){
   const token = new URLSearchParams(loc.search).get('token') || ''
   useEffect(()=>{ (async()=>{
     if (!token) return
-    try{ await apiFetch('/workspaces/members/accept', { method:'POST', body:{ token } }); toast(t('toasts.updated')||'Updated'); setDone(true) } catch(e){ toast(String(e?.message||e)) }
+    try{ await apiFetch('/workspaces/members/accept', { method:'POST', body:{ token } }); toast(t('common.toasts.invite_accepted')||'Invite accepted'); setDone(true) } catch(e){ toast(String(e?.message||e)) }
   })() }, [token])
-  if (!token) return <div className="panel"><div className="kpi-title">Missing token</div></div>
+  if (!token) return <div className="panel"><div className="kpi-title">{t('errors.missing_token')||'Missing token'}</div></div>
   if (done) return <Navigate to="/settings" replace />
   return (
     <div className="panel">
       <div className="kpi-title">{t('settings.workspace.invite')||'Invite'}</div>
-      <div className="kpi-title">Accepting invite…</div>
+      <div className="kpi-title">{t('settings.workspace.accepting')||'Accepting invite…'}</div>
     </div>
   )
 }

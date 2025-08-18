@@ -79,6 +79,20 @@ export default function Calendar(){
         </div>
       </div>
       <div className="kpi-title">{t('pages.calendar.range', { from: fromStr, to: toStr })}</div>
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:10, height:10, background:'rgba(16,185,129,.25)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.scheduled')||'Scheduled'}
+        </span>
+        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:10, height:10, background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.blocked')||'Blocked'}
+        </span>
+        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:10, height:10, background:'rgba(245,158,11,.18)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.warn_budget')||'Warn • Budget'}
+        </span>
+        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:10, height:10, background:'rgba(239,68,68,.16)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.warn_concurrency')||'Warn • Concurrency'}
+        </span>
+      </div>
       <div className="panel" style={{ minHeight:300 }}>
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('pages.calendar.title')}</div>
         {view==='week' ? (
@@ -112,6 +126,9 @@ export default function Calendar(){
                   {Array.from({ length:7 }).map((_,d)=>{
                     const slot = new Date(range.start); slot.setDate(range.start.getDate()+d); slot.setHours(hour,0,0,0)
                     const scheduledHere = events.find(e=> e.kind==='scheduled' && e.at && new Date(e.at).getTime()===slot.getTime())
+                    const warnHere = events.find(e=> e.kind==='warn' && e.at && new Date(e.at).getTime()===slot.getTime())
+                    const warnBudgetHere = warnHere && warnHere.reason === 'BUDGET'
+                    const warnConcHere = warnHere && warnHere.reason === 'CONCURRENCY'
                     const blockedHere = events.some(e=> e.kind==='blocked' && e.at && e.end && new Date(e.at) <= slot && new Date(e.end) > slot)
                     return (
                       <button
@@ -162,6 +179,8 @@ export default function Calendar(){
                         }}
                         style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: (()=>{
                           if (blockedHere) return 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)'
+                          if (warnConcHere) return 'rgba(239,68,68,.10)'
+                          if (warnBudgetHere) return 'rgba(245,158,11,.12)'
                           if (dragStart && hoverSlot){
                             const a = dragStart.getTime(), b = hoverSlot.getTime(), t = slot.getTime()
                             const min = Math.min(a,b), max = Math.max(a,b)
