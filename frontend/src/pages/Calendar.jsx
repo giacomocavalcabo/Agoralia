@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
-import { apiFetch } from '../lib/api.js'
+import { apiFetch, API_BASE_URL } from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
 import Drawer from '../components/Drawer.jsx'
@@ -94,6 +94,7 @@ export default function Calendar(){
                   {Array.from({ length:7 }).map((_,d)=>{
                     const slot = new Date(range.start); slot.setDate(range.start.getDate()+d); slot.setHours(hour,0,0,0)
                     const scheduledHere = events.find(e=> e.kind==='scheduled' && e.at && new Date(e.at).getTime()===slot.getTime())
+                    const blockedHere = events.some(e=> e.kind==='blocked' && e.at && e.end && new Date(e.at) <= slot && new Date(e.end) > slot)
                     return (
                       <button
                         key={`c-${d}-${hour}`}
@@ -101,15 +102,31 @@ export default function Calendar(){
                         onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : openQuick(slot)}
                         onMouseDown={()=> setDragStart(slot)}
                         onMouseUp={async ()=>{
-                          if (dragStart && dragStart.getTime()!==slot.getTime() && selected){
-                            try{
-                              const res = await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ at: slot.toISOString() } })
-                              if (res?.updated){ toast('Moved'); load() }
-                            } catch(err){ toast(String(err?.message || err)); /* roll back implicitly */ }
+                          if (dragStart && dragStart.getTime()!==slot.getTime()){
+                            if (selected){
+                              try{
+                                const resp = await fetch(`${API_BASE_URL}/schedule/${selected.id}`, {
+                                  method:'PATCH',
+                                  headers:{ 'Content-Type':'application/json' },
+                                  body: JSON.stringify({ at: slot.toISOString() })
+                                })
+                                if (resp.ok){ toast('Moved'); load() }
+                                else if (resp.status===409){
+                                  let detail
+                                  try { detail = await resp.json() } catch { detail = {} }
+                                  const code = String(detail?.code || 'quiet_hours').toLowerCase()
+                                  toast(t(`pages.calendar.errors.${code}`, { iso: detail?.iso || '' }))
+                                } else {
+                                  const text = await resp.text(); toast(`API ${resp.status}: ${text}`)
+                                }
+                              } catch(err){ toast(String(err?.message || err)) }
+                            } else {
+                              openQuick(slot)
+                            }
                           }
                           setDragStart(null)
                         }}
-                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: scheduledHere ? 'rgba(16,185,129,.15)':'transparent', cursor:'pointer' }}
+                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: blockedHere ? 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)' : (scheduledHere ? 'rgba(16,185,129,.15)':'transparent'), cursor:'pointer' }}
                         aria-label={`${slot.toISOString()}`}
                       />
                     )

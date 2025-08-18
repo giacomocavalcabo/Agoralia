@@ -174,12 +174,12 @@ async def create_campaign(payload: dict) -> dict:
 
 @app.get("/campaigns/{campaign_id}")
 def get_campaign(campaign_id: str) -> dict:
-    return {"id": campaign_id, "name": "Sample", "status": "active"}
+    return {"id": campaign_id, "name": "Sample", "status": "active", "pacing_npm": 10, "budget_cap_cents": 15000, "window": {"quiet_hours": True}}
 
 
 @app.patch("/campaigns/{campaign_id}")
 async def update_campaign(campaign_id: str, payload: dict) -> dict:
-    return {"id": campaign_id, "updated": True}
+    return {"id": campaign_id, "updated": True, "payload": payload}
 
 
 @app.post("/campaigns/{campaign_id}/pause")
