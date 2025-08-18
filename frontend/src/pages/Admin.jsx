@@ -20,11 +20,16 @@ export default function Admin() {
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
+	function withAdmin(url){
+		const u = new URL(url)
+		if (adminEmail) u.searchParams.set('admin_email', adminEmail)
+		return u.toString()
+	}
 
 	async function loadHealth(){
 		setError('')
 		try {
-			const res = await fetch(`${api}/admin/health`, { headers })
+			const res = await fetch(withAdmin(`${api}/admin/health`), { headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setServices(j.services || [])
@@ -33,9 +38,9 @@ export default function Admin() {
 
 	async function loadUsers(){
 		try {
-			const u = new URL(`${api}/admin/users`)
+			const u = new URL(withAdmin(`${api}/admin/users`))
 			if (qUsers) u.searchParams.set('query', qUsers)
-			const res = await fetch(u, { headers })
+			const res = await fetch(u.toString(), { headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setUsers(j.items || [])
@@ -44,7 +49,7 @@ export default function Admin() {
 
 	async function loadWorkspaces(){
 		try {
-			const res = await fetch(`${api}/admin/workspaces`, { headers })
+			const res = await fetch(withAdmin(`${api}/admin/workspaces`), { headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setWorkspaces(j.items || [])
@@ -53,7 +58,7 @@ export default function Admin() {
 
 	async function loadCompliance(){
 		try {
-			const res = await fetch(`${api}/admin/compliance/attestations`, { headers })
+			const res = await fetch(withAdmin(`${api}/admin/compliance/attestations`), { headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setAttestations(j.items || [])
@@ -62,7 +67,7 @@ export default function Admin() {
 
 	async function loadCalls(){
 		try {
-			const res = await fetch(`${api}/admin/calls/live`, { headers })
+			const res = await fetch(withAdmin(`${api}/admin/calls/live`), { headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setCalls(j.items || [])
@@ -73,8 +78,8 @@ export default function Admin() {
 	async function loadKpi(){
 		try {
 			const [b,u] = await Promise.all([
-				fetch(`${api}/admin/billing/overview?period=${ym()}`, { headers }),
-				fetch(`${api}/admin/usage/overview?period=${ym()}`, { headers })
+				fetch(withAdmin(`${api}/admin/billing/overview?period=${ym()}`), { headers }),
+				fetch(withAdmin(`${api}/admin/usage/overview?period=${ym()}`), { headers })
 			])
 			if (b.ok) setBilling(await b.json()); else setBilling(null)
 			if (u.ok) setUsage(await u.json()); else setUsage(null)
@@ -89,7 +94,7 @@ export default function Admin() {
 
 	async function impersonate(u){
 		try {
-			const res = await fetch(`${api}/admin/users/${u.id}/impersonate`, { method:'POST', headers })
+			const res = await fetch(withAdmin(`${api}/admin/users/${u.id}/impersonate`), { method:'POST', headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			localStorage.setItem('impersonate_token', j.token)

@@ -199,12 +199,18 @@ def admin_health(x_admin_email: str | None = Header(default=None)) -> dict:
 
 
 # ===================== Admin guard & helpers =====================
-def require_global_admin(x_admin_email: str | None = Header(default=None)) -> None:
+def require_global_admin(x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
     """Global admin requirement for /admin/* routes.
 
     Uses env var ADMIN_EMAILS=comma,separated,list to validate.
     """
-    _require_admin(x_admin_email)
+    # Prefer header; fallback to query param in case proxies strip custom headers
+    chosen = x_admin_email or admin_email
+    # Allow wildcard
+    wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
+    if wildcard == "*":
+        return
+    _require_admin(chosen)
 
 
 # ===================== Admin read-only endpoints (MVP scaffolding) =====================
