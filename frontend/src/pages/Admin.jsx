@@ -14,6 +14,7 @@ export default function Admin() {
 	const [qUsers, setQUsers] = useState('')
 	const [attestations, setAttestations] = useState([])
 	const [calls, setCalls] = useState([])
+	const [notif, setNotif] = useState({ kind:'email', locale:'en-US', subject:'', body_md:'' })
 	const [error, setError] = useState('')
 	const email = (typeof window!=='undefined' && localStorage.getItem('admin_email')) || ''
 
@@ -107,7 +108,7 @@ export default function Admin() {
 			</div>
 
 			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
-				{['dashboard','users','workspaces','calls','compliance'].map((k)=> (
+				{['dashboard','users','workspaces','calls','compliance','notifications'].map((k)=> (
 					<button key={k} className="btn" onClick={()=> setTab(k)} style={{ background: tab===k ? 'var(--surface)' : 'transparent', borderColor: tab===k ? 'var(--border)' : 'var(--border)' }}>
 						{k.charAt(0).toUpperCase()+k.slice(1)}
 					</button>
@@ -158,6 +159,7 @@ export default function Admin() {
 										<td>{u.is_admin_global ? 'yes' : 'no'}</td>
 										<td>
 											<button className="btn" onClick={()=> impersonate(u)}>{t('admin.users.impersonate')}</button>
+											<button className="btn" onClick={async ()=>{ try{ await fetch(`${api}/admin/users/${u.id}`, { method:'PATCH', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify({ status: u.status==='active'?'suspended':'active' }) }); toast(u.status==='active'?'Suspended':'Unsuspended'); loadUsers() } catch{} }}>Toggle</button>
 										</td>
 									</tr>
 								))}
@@ -222,6 +224,20 @@ export default function Admin() {
 							{!attestations.length && <tr><td colSpan={6} className="muted">No attestations</td></tr>}
 						</tbody>
 					</table>
+				</div>
+			)}
+
+			{tab==='notifications' && (
+				<div className="panel" style={{ display:'grid', gap:12 }}>
+					<div className="kpi-title">Notifications</div>
+					<div style={{ display:'grid', gap:8 }}>
+						<input className="input" placeholder="Subject" value={notif.subject} onChange={e=> setNotif({ ...notif, subject:e.target.value })} />
+						<textarea className="input" placeholder="Body (Markdown)" rows={6} value={notif.body_md} onChange={e=> setNotif({ ...notif, body_md:e.target.value })} />
+						<div style={{ display:'flex', gap:8 }}>
+							<button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/admin/notifications/preview`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(notif) }); const j = await r.json(); toast('Preview ready'); window.open('data:text/html;charset=utf-8,'+encodeURIComponent(j.html),'_blank') } catch{} }}>Preview</button>
+							<button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/admin/notifications/send`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(notif) }); const j = await r.json(); toast('Queued '+j.id) } catch{} }}>Send</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>

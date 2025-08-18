@@ -236,6 +236,7 @@ def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin)
         "memberships": [{"workspace_id": "ws_1", "role": "admin"}],
         "usage_30d": {"minutes": 0, "calls": 0},
         "last_login_at": "2025-08-18T09:00:00Z",
+        "status": "active",
     }
 
 
@@ -251,6 +252,15 @@ async def admin_user_impersonate(user_id: str, request: Request, _guard: None = 
         "diff_json": {"token": token, "expires_at": expires_at, "actor": "admin"},
     })
     return {"token": token, "expires_at": expires_at}
+
+
+@app.patch("/admin/users/{user_id}")
+async def admin_user_patch(user_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    # Accept simple fields: locale, tz, status
+    locale = payload.get("locale")
+    tz = payload.get("tz")
+    status = payload.get("status")
+    return {"id": user_id, "updated": True, "locale": locale, "tz": tz, "status": status}
 
 
 @app.get("/admin/workspaces")
@@ -278,6 +288,7 @@ def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_adm
         "campaigns": [{"id": "c_1", "name": "RFQ IT", "status": "running"}],
         "usage_30d": [{"ts": "2025-08-01", "minutes": 0, "cost_cents": 0}],
         "credits_cents": 0,
+        "suspended": False,
     }
 
 
@@ -420,6 +431,39 @@ def admin_ws_billing(ws_id: str, _guard: None = Depends(require_global_admin)) -
 async def admin_ws_add_credit(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
     cents = int(payload.get("cents") or 0)
     return {"workspace_id": ws_id, "added_cents": cents, "created_at": datetime.now(timezone.utc).isoformat()}
+
+
+@app.patch("/admin/workspaces/{ws_id}")
+async def admin_ws_patch(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    # Accept: plan_id, concurrency_limit, suspend
+    plan_id = payload.get("plan_id")
+    concurrency_limit = payload.get("concurrency_limit")
+    suspend = payload.get("suspend")
+    if isinstance(concurrency_limit, int):
+        _CONCURRENCY["limit"] = max(0, concurrency_limit)
+        _CONCURRENCY["free"] = max(0, _CONCURRENCY["limit"] - _CONCURRENCY["used"])
+    return {"id": ws_id, "updated": True, "plan_id": plan_id, "concurrency_limit": _CONCURRENCY["limit"], "suspended": bool(suspend)}
+
+
+# ===================== Admin: Notifications =====================
+@app.post("/admin/notifications/preview")
+async def admin_notifications_preview(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    subject = payload.get("subject") or ""
+    body_md = payload.get("body_md") or ""
+    html = f"<h1>{subject}</h1><div><pre>{body_md}</pre></div>"
+    return {"html": html}
+
+
+@app.post("/admin/notifications/send")
+async def admin_notifications_send(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    notif_id = f"ntf_{len(_ACTIVITY)+1}"
+    _ACTIVITY.append({"kind": "notify", "entity": "notification", "entity_id": notif_id, "created_at": datetime.now(timezone.utc).isoformat(), "diff_json": payload})
+    return {"id": notif_id, "scheduled_at": payload.get("schedule_at"), "kind": payload.get("kind","email"), "stats": {"queued": 1}}
+
+
+@app.get("/admin/notifications/{notif_id}")
+def admin_notifications_get(notif_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {"id": notif_id, "stats": {"queued": 1, "sent": 1, "errors": 0}}
 
 # ===================== Sprint 2 stubs =====================
 
