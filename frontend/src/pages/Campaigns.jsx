@@ -107,6 +107,10 @@ export default function Campaigns(){
         <div className="panel" style={{ display:'grid', gap:10 }}>
           <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.audience')}</div>
           <label>
+            <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience (lead ids comma-separated)'}</div>
+            <input value={form.audience.lead_ids?.join(',')||''} onChange={e=> setForm({ ...form, audience:{ lead_ids: e.target.value.split(',').map(s=> s.trim()).filter(Boolean) } })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
+          <label>
             <div className="kpi-title">{t('pages.campaigns.fields.pacing')}</div>
             <input type="number" min="1" value={form.pacing_npm} onChange={e=> setForm({ ...form, pacing_npm:e.target.value })} style={{ width:200, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
           </label>
@@ -124,9 +128,17 @@ export default function Campaigns(){
       {step===3 && (
         <div className="panel" style={{ display:'grid', gap:10 }}>
           <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.windows')}</div>
+          <label>
+            <div className="kpi-title">{t('pages.campaigns.fields.dow')||'Days of week (1=Mon...7=Sun)'}</div>
+            <input value={(form.window.dow||[]).join(',')} onChange={e=> setForm({ ...form, window:{ ...form.window, dow: e.target.value.split(',').map(s=> parseInt(s)).filter(n=> !isNaN(n)) } })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
           <label style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
             <input type="checkbox" checked={form.window.quiet_hours} onChange={e=> setForm({ ...form, window:{ ...form.window, quiet_hours:e.target.checked } })} />
             <span className="kpi-title">{t('pages.campaigns.fields.quiet_hours')}</span>
+          </label>
+          <label>
+            <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start date/time'}</div>
+            <input type="datetime-local" value={form.window.start_at || ''} onChange={e=> setForm({ ...form, window:{ ...form.window, start_at: e.target.value } })} style={{ width:260, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
           </label>
           <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
             <button onClick={()=> setStep(2)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
@@ -139,6 +151,9 @@ export default function Campaigns(){
         <div className="panel" style={{ display:'grid', gap:10 }}>
           <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.review')}</div>
           <div className="kpi-title">{form.name} • {form.goal} • {form.role} • {form.lang_default}</div>
+          <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience'}: {(form.audience.lead_ids||[]).length} {t('pages.leads.title')||'leads'}</div>
+          <div className="kpi-title">{t('pages.campaigns.fields.pacing')}: {form.pacing_npm}/min • {t('pages.campaigns.fields.budget')}: {form.budget_cap_cents||'-'}</div>
+          <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start'}: {form.window.start_at||'-'}; DoW: {(form.window.dow||[]).join(',')}</div>
           <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
             <button onClick={()=> setStep(3)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
             <button onClick={submit} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.campaigns.actions.create_schedule')}</button>

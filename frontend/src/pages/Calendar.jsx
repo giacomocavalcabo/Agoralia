@@ -21,6 +21,7 @@ export default function Calendar(){
   const [dragStart, setDragStart] = useState(null)
   const [selected, setSelected] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [focusedSlot, setFocusedSlot] = useState(null)
 
   const range = useMemo(()=>{
     const start = new Date(cursor)
@@ -80,7 +81,23 @@ export default function Calendar(){
       <div className="panel" style={{ minHeight:300 }}>
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('pages.calendar.title')}</div>
         {view==='week' ? (
-          <div role="grid" aria-label="week" style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--border)', borderLeft:'1px solid var(--border)' }}>
+          <div
+            role="grid"
+            aria-label="week"
+            tabIndex={0}
+            onKeyDown={(e)=>{
+              if (!focusedSlot){ const base = new Date(range.start); base.setHours(8,0,0,0); setFocusedSlot(base) }
+              const cur = focusedSlot ? new Date(focusedSlot) : (()=>{ const b=new Date(range.start); b.setHours(8,0,0,0); return b })()
+              if (e.key === 'ArrowRight'){ const d=new Date(cur); d.setDate(d.getDate()+1); setFocusedSlot(d); e.preventDefault() }
+              if (e.key === 'ArrowLeft'){ const d=new Date(cur); d.setDate(d.getDate()-1); setFocusedSlot(d); e.preventDefault() }
+              if (e.key === 'ArrowDown'){ const d=new Date(cur); d.setHours(d.getHours()+1,0,0,0); setFocusedSlot(d); e.preventDefault() }
+              if (e.key === 'ArrowUp'){ const d=new Date(cur); d.setHours(d.getHours()-1,0,0,0); setFocusedSlot(d); e.preventDefault() }
+              if (e.key === 'Enter' && focusedSlot){ openQuick(new Date(focusedSlot)); e.preventDefault() }
+              if (e.key === 'Escape'){ setFocusedSlot(null); e.preventDefault() }
+              if (e.key.toLowerCase() === 't'){ today(); const d=new Date(); d.setHours(8,0,0,0); setFocusedSlot(d); e.preventDefault() }
+            }}
+            style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--border)', borderLeft:'1px solid var(--border)' }}
+          >
             <div></div>
             {Array.from({ length:7 }).map((_,d)=>{
               const day = new Date(range.start); day.setDate(range.start.getDate()+d)
@@ -126,8 +143,9 @@ export default function Calendar(){
                           }
                           setDragStart(null)
                         }}
-                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: blockedHere ? 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)' : (scheduledHere ? 'rgba(16,185,129,.15)':'transparent'), cursor:'pointer' }}
+                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: blockedHere ? 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)' : (scheduledHere ? 'rgba(16,185,129,.15)':'transparent'), outline: (focusedSlot && new Date(focusedSlot).getTime()===slot.getTime()) ? '2px solid var(--primary)' : 'none', cursor:'pointer' }}
                         aria-label={`${slot.toISOString()}`}
+                        onFocus={()=> setFocusedSlot(slot)}
                       />
                     )
                   })}

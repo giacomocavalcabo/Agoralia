@@ -61,6 +61,17 @@
         "concurrency": "No free slots right now."
       }
     },
-    "settings": { "title": "Settings" }
+    "settings": { "title": "Settings" },
+    "analytics": {
+      "title": "Analytics",
+      "kpi": { "calls": "Calls", "connected_rate": "Connected", "qualified_rate": "Qualified" },
+      "actions": { "export_csv": "Export CSV", "export_json": "Export JSON" },
+      "charts": { "calls_over_time": "Calls over time" }
+    },
+    "history": {
+      "title": "History",
+      "columns": { "time":"Time","direction":"Direction","to":"To","from":"From","company":"Company","outcome":"Outcome","duration":"Duration","cost":"Cost" },
+      "drawer": { "open_full": "Open full call" }
+    }
   }
 }

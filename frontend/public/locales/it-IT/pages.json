@@ -60,6 +60,17 @@
         "budget": "Budget cap raggiunto.",
         "concurrency": "Nessuno slot libero ora."
       }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "kpi": { "calls": "Chiamate", "connected_rate": "Connesse", "qualified_rate": "Qualificate" },
+      "actions": { "export_csv": "Esporta CSV", "export_json": "Esporta JSON" },
+      "charts": { "calls_over_time": "Chiamate nel tempo" }
+    },
+    "history": {
+      "title": "Storico",
+      "columns": { "time":"Ora","direction":"Direzione","to":"A","from":"Da","company":"Azienda","outcome":"Esito","duration":"Durata","cost":"Costo" },
+      "drawer": { "open_full": "Apri chiamata completa" }
     }
   }
 }
