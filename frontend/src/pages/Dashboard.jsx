@@ -18,6 +18,12 @@ import {
 	Tooltip,
 	Legend
 } from 'chart.js'
+import SpendCard from '../components/dashboard/SpendCard.jsx'
+import TodayUpcoming from '../components/dashboard/TodayUpcoming.jsx'
+import CampaignHealth from '../components/dashboard/CampaignHealth.jsx'
+import People from '../components/dashboard/People.jsx'
+import Tasks from '../components/dashboard/Tasks.jsx'
+import Guides from '../components/dashboard/Guides.jsx'
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend)
 
 export default function Dashboard() {
@@ -29,18 +35,30 @@ export default function Dashboard() {
 	const [trends, setTrends] = useState({ calls: [], labels: [] })
 	const [loading, setLoading] = useState(true)
 	const [statusFilters, setStatusFilters] = useState(['running','queued'])
+	const [upcoming, setUpcoming] = useState([])
+	const [campaigns, setCampaigns] = useState([])
+	const [members, setMembers] = useState([])
+	const [tasks, setTasks] = useState([])
 
 	async function load() {
 		setLoading(true)
 		try {
-			const [s, l, e] = await Promise.all([
+			const [s, l, e, up, ch, mem, tk] = await Promise.all([
 				apiFetch(`/dashboard/summary?days=${trendDays}`).catch(()=> null),
 				apiFetch('/calls/live').catch(()=> ({ items: [] })),
-				apiFetch('/events/recent?limit=10').catch(()=> ({ items: [] }))
+				apiFetch('/events/recent?limit=10').catch(()=> ({ items: [] })),
+				apiFetch('/dashboard/upcoming?limit=20').catch(()=> ({ items: [] })),
+				apiFetch('/dashboard/campaigns?limit=10').catch(()=> ({ items: [] })),
+				apiFetch('/workspace/members').catch(()=> ({ items: [] })),
+				apiFetch('/tasks?status=open&limit=20').catch(()=> ({ items: [] })),
 			])
 			setSummary(s || { minutes_mtd:0, minutes_cap:1000, calls_today:0, success_rate:0, avg_duration_sec:0, p95_turn_taking_ms:0, errors_24h:0 })
 			setLive(Array.isArray(l?.items) ? l.items : [])
 			setEvents(Array.isArray(e?.items) ? e.items : [])
+			setUpcoming(Array.isArray(up?.items) ? up.items : [])
+			setCampaigns(Array.isArray(ch?.items) ? ch.items : [])
+			setMembers(Array.isArray(mem?.items) ? mem.items : [])
+			setTasks(Array.isArray(tk?.items) ? tk.items : [])
 			const labels = Array.from({ length: trendDays }).map((_,i)=> `${i+1}`)
 			setTrends({ labels, calls: labels.map(()=> Math.floor(Math.random()*10)) })
 		} finally { setLoading(false) }
@@ -69,7 +87,7 @@ export default function Dashboard() {
 				</div>
 			)}
 
-			{/* Charts + Live */}
+			{/* Charts + Spend + Live */}
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-8">
 					<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
@@ -85,7 +103,10 @@ export default function Dashboard() {
 						</div>
 					</Card>
 				</div>
-				<div className="col-span-12 xl:col-span-4">
+				<div className="col-span-12 md:col-span-6 xl:col-span-4">
+					<SpendCard spendCents={summary?.spend_mtd_cents||0} budgetCents={summary?.minutes_cap? (summary.minutes_cap*10):0} costPerMin={`${(summary?.spend_mtd_cents||0) && (summary?.minutes_mtd||0) ? `€${((summary.spend_mtd_cents/100)/Math.max(1,summary.minutes_mtd)).toFixed(2)}`:'—'}`} />
+				</div>
+				<div className="col-span-12 md:col-span-6 xl:col-span-4">
 					<Card title={t('pages.dashboard.live.title')}>
 						{loading ? <SkeletonRow lines={4} /> : (
 							<DataTable
@@ -112,6 +133,15 @@ export default function Dashboard() {
 				</div>
 			</div>
 
+			<div className="grid grid-cols-12 gap-4">
+				<div className="col-span-12 xl:col-span-6">
+					<TodayUpcoming items={[]} />
+				</div>
+				<div className="col-span-12 xl:col-span-6">
+					<CampaignHealth rows={[]} />
+				</div>
+			</div>
+
 			{/* Recent activity */}
 			<Card title={t('pages.dashboard.activity')}>
 				{loading ? <SkeletonRow lines={6} /> : (
@@ -121,6 +151,16 @@ export default function Dashboard() {
 					</div>
 				)}
 			</Card>
+
+			<div className="grid grid-cols-12 gap-4">
+				<div className="col-span-12 xl:col-span-7">
+					<Tasks items={[]} onAction={()=>{}} />
+				</div>
+				<div className="col-span-12 xl:col-span-5">
+					<People members={[]} />
+					<div className="mt-4"><Guides /></div>
+				</div>
+			</div>
 		</div>
 	)
 }

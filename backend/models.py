@@ -22,6 +22,8 @@ class Workspace(Base):
     name = Column(String, nullable=False)
     plan = Column(String, default="core")
     created_at = Column(DateTime, default=datetime.utcnow)
+    # Numbers: default caller ID for outbound
+    default_from_number_e164 = Column(String)
 
 
 class WorkspaceMember(Base):
@@ -41,6 +43,8 @@ class Campaign(Base):
     pacing_npm = Column(Integer, default=10)
     budget_cap_cents = Column(Integer, default=0)
     owner_user_id = Column(String, ForeignKey("users.id"))
+    # Numbers: per-campaign caller ID override
+    from_number_e164 = Column(String)
 
 
 class Call(Base):
@@ -198,4 +202,83 @@ class ActivityLog(Base):
     diff_json = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+# ===================== Numbers (BYO/Buy) =====================
+class Number(Base):
+    __tablename__ = "numbers"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    e164 = Column(String, nullable=False)
+    country_iso = Column(String)
+    source = Column(String, default="byo")  # byo|agoralia
+    capabilities = Column(JSON)  # ["outbound","inbound","sms"]
+    verified = Column(Boolean, default=False)
+    verification_method = Column(String, default="none")  # voice|sms|none
+    verified_at = Column(DateTime)
+    provider = Column(String)  # retell|sip|other
+    provider_ref = Column(String)
+    can_inbound = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class NumberVerification(Base):
+    __tablename__ = "number_verifications"
+    id = Column(String, primary_key=True)
+    number_id = Column(String, ForeignKey("numbers.id"))
+    method = Column(String)  # voice|sms
+    code = Column(String)
+    status = Column(String, default="sent")  # sent|ok|failed|expired
+    attempts = Column(Integer, default=0)
+    last_sent_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class InboundRoute(Base):
+    __tablename__ = "inbound_routes"
+    id = Column(String, primary_key=True)
+    number_id = Column(String, ForeignKey("numbers.id"))
+    agent_id = Column(String)
+    hours_json = Column(JSON)
+    voicemail = Column(Boolean, default=False)
+    transcript = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ===================== Outcomes & Templates =====================
+class CallOutcome(Base):
+    __tablename__ = "call_outcomes"
+    id = Column(String, primary_key=True)
+    call_id = Column(String, ForeignKey("calls.id"))
+    campaign_id = Column(String, ForeignKey("campaigns.id"))
+    workspace_id = Column(String, ForeignKey("workspaces.id"))
+    template_name = Column(String)
+    fields_json = Column(JSON)
+    ai_summary_short = Column(Text)
+    ai_summary_long = Column(Text)
+    action_items_json = Column(JSON)
+    sentiment = Column(Integer)
+    score_lead = Column(Integer)
+    next_step = Column(String)
+    synced_crm_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Template(Base):
+    __tablename__ = "templates"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"))
+    name = Column(String)
+    fields_json = Column(JSON)
+    crm_mapping_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CrmConnection(Base):
+    __tablename__ = "crm_connections"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"))
+    provider = Column(String)  # hubspot|zoho|odoo
+    oauth_tokens_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
 

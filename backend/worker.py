@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 
 from .db import SessionLocal
-from .models import Notification, NotificationTarget
+from .models import Notification, NotificationTarget, CallOutcome
 import httpx
 
 try:
@@ -121,5 +121,18 @@ if dramatiq is not None:
             db.add(n)
             db.commit()
             _update_notification_stats(notif_id, queued=len(targets), sent=sent, errors=errors, finished_at=n.sent_at.isoformat())
+
+    @dramatiq.actor(max_retries=0, time_limit=300000)
+    def outcome_extract_job(call_id: str, template_name: str = "B2B Qualification") -> None:  # type: ignore
+        # Minimal stub: create a fake outcome
+        with SessionLocal() as db:
+            o = CallOutcome(
+                id=f"out_{call_id}", call_id=call_id, workspace_id="ws_1", template_name=template_name,
+                fields_json={"need":"demo","timeline":"1–3m","next_step":"Send quote","consent":True},
+                ai_summary_short="Qualified lead (demo)", ai_summary_long="Demo summary for outcome extraction",
+                action_items_json=["Send quote"], sentiment=1, score_lead=75, next_step="Send quote",
+            )
+            db.add(o)
+            db.commit()
 
 

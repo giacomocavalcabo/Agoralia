@@ -8,7 +8,11 @@ from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from .db import Base, engine, get_db
-from .models import User, Workspace, WorkspaceMember, Campaign, Call, UserAuth, Notification, NotificationTarget
+from .models import (
+    User, Workspace, WorkspaceMember, Campaign, Call, UserAuth,
+    Notification, NotificationTarget, Number, NumberVerification, InboundRoute,
+    CallOutcome, Template, CrmConnection,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 
@@ -307,6 +311,122 @@ def me_inbox(limit: int = 20) -> dict:
             return {"items": out}
     except Exception:
         return {"items": []}
+
+
+# ===================== Numbers Endpoints =====================
+@app.get("/numbers")
+def numbers_list(workspace_id: str | None = Query(default="ws_1"), db: Session = Depends(get_db)) -> dict:
+    rows = db.query(Number).filter(Number.workspace_id == (workspace_id or "ws_1")).limit(100).all()
+    items = [{
+        "id": n.id, "e164": n.e164, "country_iso": n.country_iso, "source": n.source,
+        "capabilities": n.capabilities or [], "verified": bool(n.verified), "provider": n.provider,
+        "can_inbound": bool(n.can_inbound),
+    } for n in rows]
+    return {"items": items}
+
+
+@app.post("/numbers/byo")
+async def numbers_byo(payload: dict, db: Session = Depends(get_db)) -> dict:
+    e164 = str(payload.get("e164") or "").strip()
+    method = (payload.get("method") or "voice").lower()
+    if not e164.startswith("+") or len(e164) < 8:
+        raise HTTPException(status_code=400, detail="Invalid E.164")
+    number_id = f"num_{int(datetime.now(timezone.utc).timestamp())}"
+    v_id = f"nv_{number_id}"
+    n = Number(id=number_id, workspace_id="ws_1", e164=e164, country_iso=e164[1:3], source="byo", capabilities=["outbound"], verified=False, verification_method=method)
+    db.add(n)
+    db.add(NumberVerification(id=v_id, number_id=number_id, method=method, code="123456", status="sent", attempts=0, last_sent_at=datetime.now(timezone.utc)))
+    db.commit()
+    return {"verification_id": v_id}
+
+
+@app.post("/numbers/byo/confirm")
+async def numbers_byo_confirm(payload: dict, db: Session = Depends(get_db)) -> dict:
+    vid = payload.get("verification_id")
+    code = str(payload.get("code") or "")
+    ver = db.query(NumberVerification).filter(NumberVerification.id == vid).first()
+    if not ver:
+        raise HTTPException(status_code=404, detail="Not found")
+    if ver.code != code:
+        ver.attempts = (ver.attempts or 0) + 1
+        db.add(ver); db.commit()
+        raise HTTPException(status_code=400, detail="Invalid code")
+    ver.status = "ok"
+    num = db.query(Number).filter(Number.id == ver.number_id).first()
+    if num:
+        num.verified = True
+        num.verified_at = datetime.now(timezone.utc)
+        db.add(num)
+    db.add(ver); db.commit()
+    return {"ok": True}
+
+
+@app.post("/numbers/buy")
+async def numbers_buy(payload: dict, db: Session = Depends(get_db)) -> dict:
+    # Stub purchase
+    iso = (payload.get("country_iso") or "US").upper()
+    e164 = "+1" + str(int(datetime.now(timezone.utc).timestamp()))[-9:]
+    num_id = f"num_{int(datetime.now(timezone.utc).timestamp())}"
+    n = Number(id=num_id, workspace_id="ws_1", e164=e164, country_iso=iso, source="agoralia", capabilities=["outbound","inbound"], verified=True, verification_method="none", provider="retell", provider_ref="prov_demo", can_inbound=True)
+    db.add(n); db.commit()
+    return {"id": num_id, "e164": e164}
+
+
+@app.post("/numbers/{number_id}/route")
+async def numbers_route(number_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
+    r = InboundRoute(id=f"rt_{number_id}", number_id=number_id, agent_id=payload.get("agent_id"), hours_json=payload.get("hours_json"), voicemail=bool(payload.get("voicemail")), transcript=bool(payload.get("transcript")))
+    db.add(r); db.commit()
+    return {"ok": True}
+
+
+@app.patch("/workspaces/{ws_id}/default_from")
+async def ws_set_default_from(ws_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
+    w = db.query(Workspace).filter(Workspace.id == ws_id).first()
+    if not w:
+        raise HTTPException(status_code=404, detail="Not found")
+    w.default_from_number_e164 = payload.get("e164")
+    db.add(w); db.commit()
+    return {"ok": True}
+
+
+@app.patch("/campaigns/{cid}/from_number")
+async def campaign_set_from(cid: str, payload: dict, db: Session = Depends(get_db)) -> dict:
+    c = db.query(Campaign).filter(Campaign.id == cid).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Not found")
+    c.from_number_e164 = payload.get("e164")
+    db.add(c); db.commit()
+    return {"ok": True}
+
+
+# ===================== Outcomes Endpoints =====================
+@app.get("/calls/{call_id}/outcome")
+def get_outcome(call_id: str, db: Session = Depends(get_db)) -> dict:
+    o = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
+    if not o:
+        return {"outcome": None}
+    return {"outcome": {
+        "template_name": o.template_name,
+        "fields": o.fields_json,
+        "summary_short": o.ai_summary_short,
+        "summary_long": o.ai_summary_long,
+        "action_items": o.action_items_json,
+        "sentiment": o.sentiment,
+        "score_lead": o.score_lead,
+        "next_step": o.next_step,
+    }}
+
+
+@app.patch("/calls/{call_id}/outcome")
+async def patch_outcome(call_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
+    o = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
+    if not o:
+        o = CallOutcome(id=f"out_{call_id}", call_id=call_id, workspace_id="ws_1", template_name=payload.get("template_name") or "B2B Qualification")
+    o.fields_json = payload.get("fields_json") or o.fields_json
+    o.next_step = payload.get("next_step") or o.next_step
+    o.updated_at = datetime.now(timezone.utc)
+    db.add(o); db.commit()
+    return {"ok": True}
 
 @app.get("/dashboard/summary")
 def dashboard_summary() -> dict:
