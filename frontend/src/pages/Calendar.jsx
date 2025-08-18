@@ -22,6 +22,7 @@ export default function Calendar(){
   const [selected, setSelected] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [focusedSlot, setFocusedSlot] = useState(null)
+  const [hoverSlot, setHoverSlot] = useState(null)
 
   const range = useMemo(()=>{
     const start = new Date(cursor)
@@ -117,7 +118,8 @@ export default function Calendar(){
                         key={`c-${d}-${hour}`}
                         role="gridcell"
                         onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : openQuick(slot)}
-                        onMouseDown={()=> setDragStart(slot)}
+                        onMouseDown={()=> { setDragStart(slot); setHoverSlot(slot) }}
+                        onMouseEnter={()=> { if (dragStart) setHoverSlot(slot) }}
                         onMouseUp={async ()=>{
                           if (dragStart && dragStart.getTime()!==slot.getTime()){
                             if (selected){
@@ -138,12 +140,25 @@ export default function Calendar(){
                                 }
                               } catch(err){ toast(String(err?.message || err)) }
                             } else {
-                              openQuick(slot)
+                              // Drag-to-create selection
+                              const start = dragStart < slot ? dragStart : slot
+                              const end = dragStart < slot ? slot : dragStart
+                              setQuick({ lead_id:'', agent_id:'', kb_id:'', from:'', at: start.toISOString(), end: end.toISOString() })
+                              setQuickOpen(true)
                             }
                           }
-                          setDragStart(null)
+                          setDragStart(null); setHoverSlot(null)
                         }}
-                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: blockedHere ? 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)' : (scheduledHere ? 'rgba(16,185,129,.15)':'transparent'), outline: (focusedSlot && new Date(focusedSlot).getTime()===slot.getTime()) ? '2px solid var(--primary)' : 'none', cursor:'pointer' }}
+                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: (()=>{
+                          if (blockedHere) return 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)'
+                          if (dragStart && hoverSlot){
+                            const a = dragStart.getTime(), b = hoverSlot.getTime(), t = slot.getTime()
+                            const min = Math.min(a,b), max = Math.max(a,b)
+                            if (t>=min && t<=max) return 'rgba(59,130,246,.12)'
+                          }
+                          if (scheduledHere) return 'rgba(16,185,129,.15)'
+                          return 'transparent'
+                        })(), outline: (focusedSlot && new Date(focusedSlot).getTime()===slot.getTime()) ? '2px solid var(--primary)' : 'none', cursor:'pointer' }}
                         aria-label={`${slot.toISOString()}`}
                         onFocus={()=> setFocusedSlot(slot)}
                       />

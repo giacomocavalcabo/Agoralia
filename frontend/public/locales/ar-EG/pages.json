@@ -60,6 +60,17 @@
         "budget": "تم الوصول إلى حد الميزانية.",
         "concurrency": "لا توجد فتحات متاحة الآن."
       }
+    },
+    "analytics": {
+      "title": "التحليلات",
+      "kpi": { "calls": "المكالمات", "connected_rate": "متصلة", "qualified_rate": "مؤهلة" },
+      "actions": { "export_csv": "تصدير CSV", "export_json": "تصدير JSON" },
+      "charts": { "calls_over_time": "المكالمات عبر الزمن" }
+    },
+    "history": {
+      "title": "السجل",
+      "columns": { "time":"الوقت","direction":"الاتجاه","to":"إلى","from":"من","company":"الشركة","outcome":"النتيجة","duration":"المدة","cost":"التكلفة" },
+      "drawer": { "open_full": "فتح المكالمة كاملة" }
     }
   }
 }

@@ -60,6 +60,17 @@
         "budget": "बजट कैप पहुँच गया।",
         "concurrency": "अभी कोई स्लॉट खाली नहीं।"
       }
+    },
+    "analytics": {
+      "title": "एनालिटिक्स",
+      "kpi": { "calls": "कॉल", "connected_rate": "कनेक्टेड", "qualified_rate": "क्वालिफाइड" },
+      "actions": { "export_csv": "CSV निर्यात करें", "export_json": "JSON निर्यात करें" },
+      "charts": { "calls_over_time": "समय के साथ कॉल" }
+    },
+    "history": {
+      "title": "इतिहास",
+      "columns": { "time":"समय","direction":"दिशा","to":"को","from":"से","company":"कंपनी","outcome":"परिणाम","duration":"अवधि","cost":"लागत" },
+      "drawer": { "open_full": "पूरी कॉल खोलें" }
     }
   }
 }

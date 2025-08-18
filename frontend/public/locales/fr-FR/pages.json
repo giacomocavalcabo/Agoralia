@@ -60,6 +60,17 @@
         "budget": "Plafond budget atteint.",
         "concurrency": "Aucun créneau disponible pour l'instant."
       }
+    },
+    "analytics": {
+      "title": "Analyses",
+      "kpi": { "calls": "Appels", "connected_rate": "Connectées", "qualified_rate": "Qualifiées" },
+      "actions": { "export_csv": "Exporter CSV", "export_json": "Exporter JSON" },
+      "charts": { "calls_over_time": "Appels dans le temps" }
+    },
+    "history": {
+      "title": "Historique",
+      "columns": { "time":"Heure","direction":"Direction","to":"À","from":"De","company":"Société","outcome":"Résultat","duration":"Durée","cost":"Coût" },
+      "drawer": { "open_full": "Ouvrir l’appel complet" }
     }
   }
 }
