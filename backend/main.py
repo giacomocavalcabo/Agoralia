@@ -121,12 +121,25 @@ async def create_lead(payload: dict) -> dict:
 
 @app.post("/schedule")
 async def schedule_call(payload: dict) -> dict:
-    return {"scheduled": True, "payload": payload}
+    # Enrich with Retell metadata scripts (stub)
+    e164 = payload.get("to") or payload.get("phone_e164") or "+390212345678"
+    lang = payload.get("lang") or "en-US"
+    iso = "IT" if str(e164).startswith("+39") else ("FR" if str(e164).startswith("+33") else "US")
+    rules = {
+        "disclosure": "Buongiorno, sono un assistente virtuale di {Company}.",
+        "record_consent": "La chiamata può essere registrata. Desidera procedere?",
+        "fallback": "Posso inviarle le informazioni via email.",
+        "version": "it-2025-08-01",
+    }
+    retell_metadata = {"kb": {"rules": rules, "iso": iso, "lang": lang, "direction": "outbound"}}
+    return {"scheduled": True, "payload": payload, "retell_metadata": retell_metadata}
 
 
 @app.post("/schedule/bulk")
 async def schedule_bulk(payload: dict) -> dict:
-    return {"scheduled": len(payload.get("lead_ids", []))}
+    # Attach one script example for the batch (stub)
+    retell_metadata = {"kb": {"rules": {"disclosure": "Hello, virtual assistant.", "record_consent": "This call may be recorded.", "fallback": "We can email details.", "version": "en-2025-08-01"}}}
+    return {"scheduled": len(payload.get("lead_ids", [])), "retell_metadata": retell_metadata}
 
 
 @app.get("/i18n/locales")
@@ -172,7 +185,16 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
 
 @app.post("/campaigns")
 async def create_campaign(payload: dict) -> dict:
-    return {"id": "c_new"}
+    # Include default scripts into campaign metadata (stub)
+    lang = payload.get("lang_default") or "en-US"
+    rules = {
+        "disclosure": "Buongiorno, sono un assistente virtuale di {Company}.",
+        "record_consent": "La chiamata può essere registrata. Desidera procedere?",
+        "fallback": "Posso inviarle le informazioni via email.",
+        "version": "it-2025-08-01",
+    }
+    retell_metadata = {"kb": {"rules": rules, "lang": lang}}
+    return {"id": "c_new", "retell_metadata": retell_metadata}
 
 
 @app.get("/campaigns/{campaign_id}")
