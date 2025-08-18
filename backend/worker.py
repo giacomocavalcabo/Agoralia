@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from .db import SessionLocal
 from .models import Notification, NotificationTarget
+import httpx
 
 try:
     import dramatiq  # type: ignore
@@ -42,9 +43,53 @@ def _update_notification_stats(notif_id: str, **kwargs) -> None:
 
 
 def _deliver_email(to_email: str, subject: str, html: str) -> bool:
-    # Minimal mock sender; integrate Postmark/Sendgrid here
-    # Pretend success in dev
-    return True if to_email else False
+    # Provider selection via env
+    if not to_email:
+        return False
+    try:
+        from_email = os.getenv("FROM_EMAIL", "noreply@example.com")
+        postmark_token = os.getenv("POSTMARK_SERVER_TOKEN")
+        sendgrid_key = os.getenv("SENDGRID_API_KEY")
+        if postmark_token:
+            # Postmark API
+            resp = httpx.post(
+                "https://api.postmarkapp.com/email",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-Postmark-Server-Token": postmark_token,
+                },
+                json={
+                    "From": from_email,
+                    "To": to_email,
+                    "Subject": subject,
+                    "HtmlBody": html,
+                },
+                timeout=10.0,
+            )
+            return resp.status_code < 300
+        if sendgrid_key:
+            # Sendgrid API
+            payload = {
+                "personalizations": [{"to": [{"email": to_email}]}],
+                "from": {"email": from_email},
+                "subject": subject,
+                "content": [{"type": "text/html", "value": html}],
+            }
+            resp = httpx.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers={
+                    "Authorization": f"Bearer {sendgrid_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=10.0,
+            )
+            return 200 <= resp.status_code < 300
+        # Fallback: dev no-op success
+        return True
+    except Exception:
+        return False
 
 
 if dramatiq is not None:
@@ -58,16 +103,23 @@ if dramatiq is not None:
             sent = 0
             errors = 0
             for t in targets:
-                # For demo, route by kind
+                # Route by kind
+                kind = (n.kind or "email").lower()
                 ok = True
-                if (n.kind or "email") == "email":
+                if kind == "email":
                     html = f"<h1>{n.subject or ''}</h1><div><pre>{(n.body_md or '')}</pre></div>"
                     ok = _deliver_email(to_email=t.user_id, subject=n.subject or "", html=html)
-                # in_app would insert into a hypothetical feed table; skipped here
+                elif kind == "in_app":
+                    # Consider delivery successful; fetch via /me/inbox
+                    ok = True
                 if ok:
                     sent += 1
                 else:
                     errors += 1
-            _update_notification_stats(notif_id, queued=len(targets), sent=sent, errors=errors, finished_at=datetime.now(timezone.utc).isoformat())
+            # Update sent_at on notification
+            n.sent_at = datetime.now(timezone.utc)
+            db.add(n)
+            db.commit()
+            _update_notification_stats(notif_id, queued=len(targets), sent=sent, errors=errors, finished_at=n.sent_at.isoformat())
 
 

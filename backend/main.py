@@ -291,6 +291,23 @@ def get_me_usage() -> dict:
         "minutes_cap": 1000,
     }
 
+@app.get("/me/inbox")
+def me_inbox(limit: int = 20) -> dict:
+    # Minimal in-app inbox backed by Notification + NotificationTarget; return latest notifications regardless of user for demo
+    try:
+        with next(get_db()) as db:
+            items = db.query(Notification).order_by(Notification.created_at.desc()).limit(limit).all()  # type: ignore[attr-defined]
+            out = [{
+                "id": n.id,
+                "kind": n.kind,
+                "subject": n.subject,
+                "body_md": n.body_md,
+                "sent_at": n.sent_at.isoformat() if n.sent_at else None,
+            } for n in items]
+            return {"items": out}
+    except Exception:
+        return {"items": []}
+
 @app.get("/dashboard/summary")
 def dashboard_summary() -> dict:
         return {

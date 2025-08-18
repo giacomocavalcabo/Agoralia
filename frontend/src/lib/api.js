@@ -8,9 +8,10 @@ export async function apiFetch(path, options = {}) {
 			'Content-Type': 'application/json',
 			...(options.headers || {}),
 			...(localStorage.getItem('impersonate_token') ? { 'X-Impersonate-Token': localStorage.getItem('impersonate_token') } : {}),
+			...(localStorage.getItem('csrf_token') ? { 'X-CSRF-Token': localStorage.getItem('csrf_token') } : {}),
 		},
 		body: options.body ? JSON.stringify(options.body) : undefined,
-		credentials: 'omit',
+		credentials: 'include',
 	});
 	if (!resp.ok) {
 		const text = await resp.text().catch(() => '');

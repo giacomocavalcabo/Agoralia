@@ -146,6 +146,14 @@ export default function Admin() {
 		try{ const r = await fetch(withAdmin(`${api}/admin/search?q=${encodeURIComponent(q)}`), { headers }); const j = await r.json(); setSearch(j) } catch{ setSearch({ users:[], workspaces:[], calls:[], campaigns:[] }) }
 	}
 
+	// Auto-run search if q param present (from global header input)
+	useEffect(()=>{
+		try{
+			const urlQ = new URL(window.location.href).searchParams.get('q')
+			if (urlQ){ setTab('admin'); setQ(urlQ); runSearch() }
+		}catch{}
+	},[])
+
 	async function generatePdf(){
 		try {
 			let inputs
@@ -202,28 +210,21 @@ export default function Admin() {
 	}
 
 	return (
-		<div>
-			<h1>Admin</h1>
-			<div className="panel" style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
+		<div className="grid gap-3">
+			<div className="panel flex items-center gap-2">
 				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
 				<button className="btn" onClick={()=>{ loadHealth(); loadUsers(); loadWorkspaces(); loadCalls(); loadCompliance(); loadKpi(); if(tab==='campaigns') loadCampaigns() }}>Load</button>
-				<input className="input" placeholder="Search…" value={q} onChange={(e)=> setQ(e.target.value)} onKeyDown={(e)=> e.key==='Enter' && runSearch()} style={{ marginLeft:8, flex:1 }} />
+				<input className="input flex-1" placeholder="Search…" value={q} onChange={(e)=> setQ(e.target.value)} onKeyDown={(e)=> e.key==='Enter' && runSearch()} />
 				<button className="btn" onClick={runSearch}>Search</button>
-				{error && <span className="kpi-title" style={{ color:'#b91c1c' }}>{error}</span>}
+				{error && <span className="kpi-title text-danger">{error}</span>}
 			</div>
 
-			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
+			<div className="panel flex flex-wrap gap-2">
 				{['dashboard','users','workspaces','calls','campaigns','compliance','notifications','billing','logs'].map((k)=> (
 					<button
 						key={k}
-						className="btn"
 						onClick={()=> setTab(k)}
-						style={{
-							color: '#111827',
-							background: tab===k ? 'var(--surface)' : 'transparent',
-							borderColor: 'var(--border)',
-							fontWeight: tab===k ? 700 : 600,
-						}}
+						className={`rounded-lg border border-line px-2.5 py-1.5 ${tab===k? 'bg-bg-app font-semibold' : ''}`}
 					>
 						{k.charAt(0).toUpperCase()+k.slice(1)}
 					</button>

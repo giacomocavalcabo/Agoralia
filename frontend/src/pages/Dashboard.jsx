@@ -7,6 +7,8 @@ import { useI18n } from '../lib/i18n.jsx'
 import Banner from '../components/Banner.jsx'
 import { Line } from 'react-chartjs-2'
 import DataTable from '../components/DataTable.jsx'
+import KpiTile from '../components/ui/KpiTile.jsx'
+import DashboardHeader from '../components/DashboardHeader.jsx'
 import {
 	Chart as ChartJS,
 	LineElement,
@@ -52,27 +54,24 @@ export default function Dashboard() {
 
 	return (
 		<div className="space-y-6">
-			<Banner tone={summary && (summary.minutes_mtd/Math.max(1, summary.minutes_cap))>0.8 ? 'warn' : 'info'} title={t('pages.dashboard.health.title')}>
-				{t('pages.admin?.notices?.impersonating')}
-			</Banner>
-			<h1 className="text-2xl font-semibold text-ink-900">{t('pages.dashboard.title')}</h1>
+			<DashboardHeader title={t('pages.dashboard.title')||'Dashboard'} range={{}} onRangeChange={()=>{}} onQuick={(act)=>{ if (act==='new_campaign') document.dispatchEvent(new CustomEvent('open-create-drawer')) }} />
 			{/* KPI strip */}
 			{loading && !summary ? (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-					{Array.from({ length: 4 }).map((_,i)=>(<Skeleton key={i} height={84}/>))}
+				<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+					{Array.from({ length: 8 }).map((_,i)=>(<Skeleton key={i} height={84}/>))}
 				</div>
 			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-					<KPI label={t('pages.dashboard.kpi.minutes')} value={summary?.minutes_mtd ?? 0} progressPct={Math.min(100, Math.round(((summary?.minutes_mtd ?? 0) / Math.max(1, summary?.minutes_cap ?? 1)) * 100))} />
-					<KPI label={t('pages.dashboard.kpi.calls_today')} value={summary?.calls_today ?? 0} />
-					<KPI label={t('pages.dashboard.kpi.success')} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} />
-					<KPI label="Avg duration" value={`${summary?.avg_duration_sec ?? 0}s`} />
+				<div className="grid grid-cols-12 gap-4">
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.calls_today')||'Chiamate oggi'} value={summary?.calls_today ?? 0} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.minutes_mtd')||'Minuti mese'} value={summary?.minutes_mtd ?? 0} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.avg_duration')||'Durata media'} value={`${Math.floor((summary?.avg_duration_sec||0)/60).toString().padStart(2,'0')}:${String((summary?.avg_duration_sec||0)%60).padStart(2,'0')}`} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.connected')||'Tasso di contatto'} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} status={(summary?.success_rate??0)<0.15?'danger':(summary?.success_rate??0)<0.25?'warn':'success'} /></div>
 				</div>
 			)}
 
 			{/* Charts + Live */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-				<div className="lg:col-span-2">
+			<div className="grid grid-cols-12 gap-4">
+				<div className="col-span-12 xl:col-span-8">
 					<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
 						{loading ? <SkeletonRow lines={6} /> : (
 							<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
@@ -86,7 +85,7 @@ export default function Dashboard() {
 						</div>
 					</Card>
 				</div>
-				<div>
+				<div className="col-span-12 xl:col-span-4">
 					<Card title={t('pages.dashboard.live.title')}>
 						{loading ? <SkeletonRow lines={4} /> : (
 							<DataTable

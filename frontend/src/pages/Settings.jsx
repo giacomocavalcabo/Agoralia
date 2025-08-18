@@ -1,20 +1,54 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { apiFetch } from '../lib/api.js'
 import { useToast } from '../components/ToastProvider.jsx'
 
 export default function Settings(){
   const { t } = useI18n()
+  const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
   const [members, setMembers] = useState([])
   const [activity, setActivity] = useState([])
   const [invite, setInvite] = useState({ email:'', role:'viewer' })
   const [invites, setInvites] = useState([])
+  const [email, setEmail] = useState('owner@example.com')
+  const [password, setPassword] = useState('demo1234')
+  const [me, setMe] = useState(null)
   const { toast } = useToast()
   useEffect(()=>{ (async()=>{ try{ const m = await apiFetch('/workspaces/members'); setMembers(m.items||[]) } catch{} })() }, [])
   useEffect(()=>{ (async()=>{ try{ const a = await apiFetch('/workspaces/activity'); setActivity(a.items||[]) } catch{} })() }, [])
   useEffect(()=>{ (async()=>{ try{ const i = await apiFetch('/workspaces/invites'); setInvites(i.items||[]) } catch{} })() }, [])
+  async function login(){
+    try{
+      const r = await fetch(`${api}/auth/login`, { method:'POST', headers:{ 'Content-Type':'application/json' }, credentials:'include', body: JSON.stringify({ email, password }) })
+      const csrf = r.headers.get('x-csrf-token')
+      if (csrf) localStorage.setItem('csrf_token', csrf)
+      await meFetch()
+      toast('Logged in')
+    }catch{ toast('Login failed') }
+  }
+  async function logout(){
+    try{
+      await fetch(`${api}/auth/logout`, { method:'POST', credentials:'include' })
+      localStorage.removeItem('csrf_token')
+      setMe(null)
+    }catch{}
+  }
+  async function meFetch(){
+    try{ const r = await fetch(`${api}/auth/me`, { credentials:'include' }); const j = await r.json(); setMe(j) }catch{}
+  }
   return (
     <div className="grid gap-3">
+      <div className="panel">
+        <div className="kpi-title mb-2">{t('settings.auth.title')||'Authentication'}</div>
+        <div className="flex items-end gap-2">
+          <input className="input" placeholder="email" value={email} onChange={e=> setEmail(e.target.value)} />
+          <input className="input" placeholder="password" type="password" value={password} onChange={e=> setPassword(e.target.value)} />
+          <button className="btn" onClick={login}>Login</button>
+          <button className="btn" onClick={logout}>Logout</button>
+          <button className="btn" onClick={meFetch}>Me</button>
+        </div>
+        <div className="kpi-title mt-2">{me?.authenticated ? (`${me?.claims?.email} ${me?.claims?.is_admin_global ? '(admin)':''}`) : 'Not authenticated'}</div>
+      </div>
       <div className="panel">
         <div className="kpi-title mb-2">{t('settings.workspace.members')||'Members'}</div>
         <table role="table" aria-label="Workspace members" className="w-full border-separate" style={{ borderSpacing:0 }}>
