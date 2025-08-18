@@ -16,6 +16,8 @@ export default function Campaigns(){
     pacing_npm: 10, budget_cap_cents: '', window:{ dow:[1,2,3,4,5], quiet_hours:true, tz: 'UTC' },
     audience: { lead_ids: [] }
   })
+  const [scripts, setScripts] = useState(null)
+  const [attestOk, setAttestOk] = useState(false)
 
   useEffect(()=>{ (async()=>{
     try { const res = await apiFetch('/i18n/locales'); setLocales(res) } catch(e){}
@@ -25,7 +27,10 @@ export default function Campaigns(){
 
   async function submit(){
     if (callUnsupported){ toast(t('app.notices.call_lang_not_supported', { lang: form.lang_default })); return }
+    if (!attestOk){ toast('Please confirm compliance attestation'); return }
     try{
+      // create attestation (demo)
+      await apiFetch('/attestations', { method:'POST', body: { campaign_preview: { name: form.name, lang_default: form.lang_default } } })
       const payload = {
         name: form.name, goal: form.goal, role: form.role, lang_default: form.lang_default,
         agent_id: form.agent_id, kb_id: form.kb_id, from_number: form.from_number,
@@ -128,6 +133,12 @@ export default function Campaigns(){
       {step===3 && (
         <div className="panel" style={{ display:'grid', gap:10 }}>
           <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.windows')}</div>
+          {/* Compliance scripts preview */}
+          <div className="panel" style={{ border:'1px solid var(--border)' }}>
+            <div className="kpi-title" style={{ marginBottom:6 }}>Compliance</div>
+            <div className="kpi-title">{scripts?.disclosure || 'Disclosure text…'}</div>
+            <div className="kpi-title">{scripts?.record_consent || 'Recording consent…'}</div>
+          </div>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.dow')||'Days of week (1=Mon...7=Sun)'}</div>
             <input value={(form.window.dow||[]).join(',')} onChange={e=> setForm({ ...form, window:{ ...form.window, dow: e.target.value.split(',').map(s=> parseInt(s)).filter(n=> !isNaN(n)) } })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
@@ -139,6 +150,10 @@ export default function Campaigns(){
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start date/time'}</div>
             <input type="datetime-local" value={form.window.start_at || ''} onChange={e=> setForm({ ...form, window:{ ...form.window, start_at: e.target.value } })} style={{ width:260, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
+          <label style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
+            <input type="checkbox" checked={attestOk} onChange={e=> setAttestOk(e.target.checked)} />
+            <span className="kpi-title">{t('compliance.attest') || 'I confirm compliance responsibilities and local rules were verified.'}</span>
           </label>
           <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
             <button onClick={()=> setStep(2)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>

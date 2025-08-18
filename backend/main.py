@@ -11,6 +11,9 @@ except Exception:  # pragma: no cover
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
+# ===================== In-memory store (dev) =====================
+_ATTESTATIONS: dict[str, dict] = {}
+
 
 
 # CORS configuration
@@ -372,6 +375,71 @@ def history_export_csv(locale: str | None = None) -> Response:
     headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
     row = ["call_9001","2025-08-17T09:22:00Z","outbound","+390212345678","+390298765432","Rossi Srl","qualified","210","0.42"]
     return Response(content=headers+",".join(row)+"\n", media_type="text/csv")
+
+
+# ===================== Compliance & Call Settings (stubs) =====================
+
+@app.post("/compliance/preflight")
+async def compliance_preflight(payload: dict) -> dict:
+    items = payload.get("items", [])
+    out = []
+    allow, delay, block = 0, 0, 0
+    for it in items:
+        e164 = it.get("e164", "")
+        iso = it.get("country_iso") or ("IT" if e164.startswith("+39") else "FR" if e164.startswith("+33") else "US")
+        # Toy rules: minutes digit decides bucket
+        sched = it.get("schedule_at") or "2025-08-17T10:00:00Z"
+        minute = 0
+        try:
+            from datetime import datetime
+            minute = datetime.fromisoformat(sched.replace("Z","+00:00")).minute
+        except Exception:
+            pass
+        if minute % 3 == 0:
+            decision = "allow"; allow += 1; reasons = []
+        elif minute % 3 == 1:
+            decision = "delay"; delay += 1; reasons = ["QUIET_HOURS"]; 
+        else:
+            decision = "block"; block += 1; reasons = ["DNC_HIT"]
+        out.append({
+            "e164": e164,
+            "country_iso": iso,
+            "decision": decision,
+            "reasons": reasons,
+            "required_scripts": ["AI_DISCLOSURE_REQ","REC_CONSENT_REQ"] if iso in ("IT","FR") else [],
+            "next_window_at": "2025-08-18T10:00:00Z" if decision=="delay" else None,
+            "warnings": ["LANG_NOT_SUPPORTED"] if it.get("call_lang") == "ar-EG" else [],
+        })
+    return {"items": out, "summary": {"allow": allow, "delay": delay, "block": block}}
+
+
+@app.get("/compliance/scripts")
+def compliance_scripts(iso: str, lang: str, direction: str, contact_class: str) -> dict:
+    return {
+        "iso": iso,
+        "lang": lang,
+        "direction": direction,
+        "class": contact_class,
+        "disclosure": "Buongiorno, sono un assistente virtuale di {Company}.",
+        "record_consent": "La chiamata può essere registrata. Desidera procedere?",
+        "fallback": "Posso inviarle le informazioni via email.",
+        "version": "it-2025-08-01",
+    }
+
+
+@app.post("/attestations")
+async def attestations_create(payload: dict) -> dict:
+    att_id = f"att_{len(_ATTESTATIONS)+1}"
+    _ATTESTATIONS[att_id] = {"id": att_id, **payload}
+    return {"id": att_id, "url": f"/attestations/{att_id}", "hash": "sha256:demo"}
+
+
+@app.get("/attestations/{att_id}")
+def attestations_get(att_id: str) -> Response:
+    if att_id not in _ATTESTATIONS:
+        raise HTTPException(status_code=404, detail="Not found")
+    pdf = b"%PDF-1.4\n% demo stub\n"
+    return Response(content=pdf, media_type="application/pdf")
 
 
 @app.get("/campaigns/{campaign_id}/leads")

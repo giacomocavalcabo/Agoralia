@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import EmptyState from '../components/EmptyState.jsx'
+import { apiFetch } from '../lib/api.js'
 
 function parseNumbers(text){
 	const lines = (text || '').split(/\r?\n/)
@@ -18,6 +19,7 @@ export default function Import(){
 	const [raw, setRaw] = useState('')
 	const [fileName, setFileName] = useState('')
 	const numbers = useMemo(()=> parseNumbers(raw), [raw])
+	const [preflight, setPreflight] = useState(null)
 
 	function onFile(e){
 		const f = e.target.files?.[0]
@@ -69,8 +71,33 @@ export default function Import(){
 				</div>
 			)}
 
-			{step!==1 && (
-				<EmptyState title={t('pages.import.wip')} description={t('pages.import.wip_desc')} />
+			{step===2 && (
+				<div className="panel" style={{ display:'grid', gap:12 }}>
+					<div style={{ fontWeight:700 }}>Compliance Preview</div>
+					<div className="kpi-title">B2B vs B2C differences, quiet hours and registry requirements will be shown per country.</div>
+					<div style={{ display:'flex', justifyContent:'flex-end' }}>
+						<button onClick={()=> setStep(3)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+					</div>
+				</div>
+			)}
+
+			{step===3 && (
+				<div className="panel" style={{ display:'grid', gap:12 }}>
+					<div style={{ fontWeight:700 }}>Pre‑flight</div>
+					<button onClick={async ()=>{
+						const items = numbers.map(e164=> ({ e164, contact_class:'b2b_prospect' }))
+						const res = await apiFetch('/compliance/preflight', { method:'POST', body:{ items } })
+						setPreflight(res)
+					}} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Run pre‑flight</button>
+					{preflight && (
+						<div>
+							<div className="kpi-title">{`Summary: allow ${preflight.summary.allow}, delay ${preflight.summary.delay}, block ${preflight.summary.block}`}</div>
+							<ul style={{ margin:0, paddingLeft:16 }}>
+								{preflight.items.slice(0,50).map((it,i)=> (<li key={i} className="kpi-title">{`${it.e164}: ${it.decision} ${(it.reasons||[]).join(',')}`}</li>))}
+							</ul>
+						</div>
+					)}
+				</div>
 			)}
 		</div>
 	)
