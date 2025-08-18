@@ -94,6 +94,10 @@
         "accept": "قبول الدعوة",
         "confirm_change_role": "تغيير الدور؟",
         "confirm_remove": "إزالة العضو؟"
+      },
+      "tabs2": {
+        "general": "عام",
+        "languages": "اللغات"
       }
     }
   }
