@@ -20,13 +20,12 @@ export default function DashboardHeader({ title='Dashboard', range, onRangeChang
 			<h1 className="text-2xl font-semibold text-ink-900">{title}</h1>
 			<div className="ml-auto flex items-center gap-2">
 				<div className="rounded-xl border border-line bg-bg-app p-1">
-					<button className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(0)} aria-label="Today">Oggi</button>
-					<button className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(7)} aria-label="7d">7g</button>
-					<button className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(30)} aria-label="30d">30g</button>
+					<button type="button" className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(0)} aria-label="Today">Oggi</button>
+					<button type="button" className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(7)} aria-label="7d">7g</button>
+					<button type="button" className="rounded-lg px-2 py-1 text-sm" onClick={()=> setDays(30)} aria-label="30d">30g</button>
 				</div>
-				<button className="btn" onClick={()=> onQuick?.('new_campaign')}>+ {`Campagna`}</button>
-				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm" onClick={()=> onQuick?.('import')}>{`Importa`}</button>
-				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm" onClick={()=> onQuick?.('schedule')}>{`Schedula`}</button>
+				<button type="button" className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm" onClick={()=> onQuick?.('import')}>{`Importa`}</button>
+				<button type="button" className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm" onClick={()=> onQuick?.('schedule')}>{`Schedula`}</button>
 			</div>
 		</div>
 	)

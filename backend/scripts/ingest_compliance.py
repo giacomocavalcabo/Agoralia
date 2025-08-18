@@ -370,6 +370,7 @@ def transform(raw: dict) -> dict:
     last_verified = parse_date_iso(
         raw.get("Last_Verified")
         or raw.get("Last_Verified(ISO date)")
+        or raw.get("Last_Verified (ISO date)")
         or raw.get("lastVerifiedIsoDate")
         or raw.get("lastVerified")
         or raw.get("last_verified")

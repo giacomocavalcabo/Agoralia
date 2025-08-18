@@ -70,6 +70,8 @@ export default function Dashboard() {
 		return () => clearInterval(id)
 	}, [trendDays])
 
+	function fmtMMSS(sec){ const m = Math.floor((sec||0)/60); const s = (sec||0)%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` }
+
 	return (
 		<div className="space-y-6">
 			<DashboardHeader title={t('pages.dashboard.title')||'Dashboard'} range={{}} onRangeChange={()=>{}} onQuick={(act)=>{ if (act==='new_campaign') document.dispatchEvent(new CustomEvent('open-create-drawer')) }} />
@@ -82,7 +84,7 @@ export default function Dashboard() {
 				<div className="grid grid-cols-12 gap-4">
 					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.calls_today')||'Chiamate oggi'} value={summary?.calls_today ?? 0} /></div>
 					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.minutes_mtd')||'Minuti mese'} value={summary?.minutes_mtd ?? 0} /></div>
-					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.avg_duration')||'Durata media'} value={`${Math.floor((summary?.avg_duration_sec||0)/60).toString().padStart(2,'0')}:${String((summary?.avg_duration_sec||0)%60).padStart(2,'0')}`} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.avg_duration')||'Durata media'} value={fmtMMSS(summary?.avg_duration_sec || 0)} /></div>
 					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.connected')||'Tasso di contatto'} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} status={(summary?.success_rate??0)<0.15?'danger':(summary?.success_rate??0)<0.25?'warn':'success'} /></div>
 				</div>
 			)}

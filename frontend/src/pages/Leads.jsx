@@ -120,7 +120,7 @@ export default function Leads(){
 				<EmptyState title={t('pages.leads.empty.title')} description={t('pages.leads.empty.desc')} action={<button onClick={()=> setAddOpen(true)} className="btn">{t('pages.leads.actions.add')}</button>} />
 			) : (
 				<div className="panel overflow-auto">
-					<table className="w-full border-separate" style={{ borderSpacing:0 }}>
+					<table className="w-full border-separate text-sm" style={{ borderSpacing:0 }}>
 						<thead>
 							<tr>
 								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.name')}</th>
