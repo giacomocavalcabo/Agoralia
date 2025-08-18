@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, Request, Header, HTTPException, Response
 from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Callable, Any
 
 try:
     # retell-sdk is optional during local dev, but required in prod for webhook verification
@@ -13,6 +14,29 @@ except Exception:  # pragma: no cover
 app = FastAPI(title="Agoralia API", version="0.1.0")
 # ===================== In-memory store (dev) =====================
 _ATTESTATIONS: dict[str, dict] = {}
+_WORKSPACE_MEMBERS = [
+    {"user_id": "u_1", "email": "owner@example.com", "role": "admin", "invited_at": None, "joined_at": "2025-08-01T10:00:00Z"}
+]
+_WORKSPACE_INVITES = []
+_ACTIVITY = []
+_CONCURRENCY = {"used": 1, "free": 9, "limit": 10, "by_queue": {"enterprise": 0, "pro": 1, "core": 0, "trial": 0}}
+# ===================== RBAC (very simple dev stub) =====================
+def require_role(role: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args, **kwargs):
+            # In dev, accept all; in prod check user session/headers
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def audit(kind: str, entity: str):
+    def decorator(fn):
+        async def wrapper(*args, **kwargs):
+            res = await fn(*args, **kwargs)
+            _ACTIVITY.append({"kind": kind, "entity": entity, "created_at": "2025-08-18T10:00:00Z", "diff_json": res})
+            return res
+        return wrapper
+    return decorator
 
 
 
@@ -462,6 +486,36 @@ def attestations_get(att_id: str) -> Response:
         raise HTTPException(status_code=404, detail="Not found")
     pdf = b"%PDF-1.4\n% demo stub\n"
     return Response(content=pdf, media_type="application/pdf")
+
+
+# ===================== Workspaces & Concurrency (stubs) =====================
+
+@app.get("/metrics/account/concurrency")
+def metrics_concurrency() -> dict:
+    return _CONCURRENCY
+
+
+@app.get("/workspaces/current")
+def ws_current() -> dict:
+    return {"id": "ws_1", "name": "Demo", "members": len(_WORKSPACE_MEMBERS)}
+
+
+@app.get("/workspaces/members")
+def ws_members() -> dict:
+    return {"items": _WORKSPACE_MEMBERS}
+
+
+@app.post("/workspaces/members/invite")
+@audit("invite", "member")
+async def ws_invite(payload: dict) -> dict:
+    invite = {"id": f"inv_{len(_WORKSPACE_INVITES)+1}", "email": payload.get("email"), "role": payload.get("role","viewer"), "token": "demo-token", "invited_at": "2025-08-18T10:00:00Z"}
+    _WORKSPACE_INVITES.append(invite)
+    return invite
+
+
+@app.get("/workspaces/activity")
+def ws_activity(limit: int = 100) -> dict:
+    return {"items": list(reversed(_ACTIVITY))[:limit]}
 
 
 @app.get("/campaigns/{campaign_id}/leads")
