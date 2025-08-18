@@ -39,3 +39,12 @@ if (rootEl) {
 		</ToastProvider>
 	)
 }
+
+// Cmd/Ctrl+K focus global search
+window.addEventListener('keydown', (e)=>{
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='k'){
+        e.preventDefault()
+        const el = document.getElementById('global-search')
+        if (el) el.focus()
+    }
+})

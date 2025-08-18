@@ -12,9 +12,9 @@ export function ToastProvider({ children }) {
 	return (
 		<ToastCtx.Provider value={{ toast }}>
 			{children}
-			<div style={{ position: 'fixed', right: 12, bottom: 12, display: 'grid', gap: 8, zIndex: 50 }}>
+			<div className="fixed right-3 bottom-3 grid gap-2 z-50">
 				{items.map((t) => (
-					<div key={t.id} style={{ background: '#111827', color: 'white', padding: '10px 12px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,.2)' }}>{t.msg}</div>
+					<div key={t.id} className="rounded-xl border border-line bg-ink-900 text-white px-3 py-2 shadow-soft">{t.msg}</div>
 				))}
 			</div>
 		</ToastCtx.Provider>

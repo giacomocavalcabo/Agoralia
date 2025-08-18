@@ -1,0 +1,25 @@
+:root{
+	/* Brand */
+	--brand-600:#0FA958; /* verde Agoralia */
+	--brand-500:#13C26B;
+	--brand-400:#4DDB94;
+
+	/* Stripe‑like neutrals */
+	--bg-app:#F6F9FC;         /* background generale */
+	--bg-card:#FFFFFF;        /* superfici/cards */
+	--line:#E6E9EF;           /* bordi sottili */
+	--ink-900:#0F172A;        /* quasi‑nero */
+	--ink-600:#475569;        /* testo secondario */
+
+	/* States */
+	--success:#17B26A; /* ✅ */
+	--info:#3B82F6;    /* 🔵 */
+	--warn:#F59E0B;    /* 🟡 */
+	--danger:#EF4444;  /* 🔴 */
+
+	/* Radius & shadow */
+	--radius:12px;
+	--shadow:0 1px 1px rgba(16,24,40,.04),0 1px 2px rgba(16,24,40,.06);
+}
+
+

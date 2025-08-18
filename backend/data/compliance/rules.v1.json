@@ -1407,9 +1407,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Telemarketing specifically regulated (Cabinet Resolution No. 56/2024)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Enforce 09:00–18:00; block DNCR; ask continuation before pitch; show CallerID with company name; treat B2B numbers conservatively if they may belong to individuals.",
       "dnc": [
         {
           "name": "DNCR (Do Not Call Registry)",
@@ -1458,9 +1458,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Unsolicited calls/messages regulated by CST Anti-Spam framework",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Do not use auto-dialed/recorded voice without prior consent; maintain clear opt-out; display valid CallerID.",
       "dnc": [
         {
           "name": "None (framework-based)",
@@ -1504,9 +1504,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Unsolicited electronic communications regulated (CRA)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Treat all outbound as consent-based unless documented opt-in; provide opt-out; avoid automated voice without opt-in.",
       "dnc": [
         {
           "name": "None (no central DNC)",
@@ -1550,9 +1550,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Consumer rights restrict unsolicited electronic messages (SMS/email); calls not specifically regulated",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Avoid robocalls; treat live telemarketing as opt-out with clear stop mechanism; keep recordings off unless consent captured.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1591,9 +1591,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "TRA spam rules focus on unsolicited electronic messages; limited specifics on live calls",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Prefer consent; provide opt-out; avoid automated voice without prior consent; display caller identity.",
       "dnc": [
         {
           "name": "None (no public DNC)",
@@ -1637,9 +1637,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Consumer protection & TRA complaint regime; no explicit telemarketing code",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Use consent where feasible; provide opt-out; avoid robocalls.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1683,9 +1683,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "TRC guidance on nuisance calls/SMS; no telemarketing-specific law",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Treat as opt-out with immediate stop; avoid automated voice; keep records.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1729,9 +1729,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "General consumer/data-protection principles; no specific telemarketing statute",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Apply conservative approach: consent where possible; clear opt-out; avoid robocalls.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1775,9 +1775,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "NTRA regulates promotional/commercial calls (registration & caller identification)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Only use registered lines; ensure name display or NTRA Alert; avoid spoofing; capture consent if recording.",
       "dnc": [
         {
           "name": "None (registry of calling numbers, not DNC)",
@@ -1821,9 +1821,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "General consumer (Law 31-08) & telecom law; no specific telemarketing/DNC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Apply conservative approach: consent where feasible; honor opt-out; avoid automated voice without consent.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1867,9 +1867,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "General consumer & e-commerce framework; no telemarketing/DNC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Use consent where possible; respect call-center licensing; avoid robocalls.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1913,9 +1913,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Data-protection law bans processing for advertising without express consent",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Treat consumer calls as opt-in; hold proof of consent; offer easy opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -1959,9 +1959,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "No specific telemarketing/DNC regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Apply conservative defaults (no robocalls; provide opt-out; respect CLI).",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2005,9 +2005,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "CRA enforcement against promotional voice/SMS from personal numbers; no public DNC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Use registered business lines only; avoid automated/promotional voice without explicit consent; provide opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2051,9 +2051,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Automated calls covered by Spam Law (Amendment 40); live telemarketing constrained by national DNC",
+      "regime_b2b_text": "Mixed; no specific B2B telemarketing statute; Spam Law still applies to automated systems.",
+      "notes_for_product": "Block DNC hits; disallow robocalls without prior express consent; open with clear identification; capture consent if recording.",
       "dnc": [
         {
           "name": "“Do Not Call Me” Registry (מאגר אל תתקשרו אליי)",
@@ -2097,9 +2097,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "General consumer/telecom complaint channels; no telemarketing/DNC code",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Apply conservative defaults; avoid automated voice; provide opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2143,9 +2143,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "No specific telemarketing/DNC regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative defaults; no robocalls; provide opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2189,9 +2189,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "No specific telemarketing/DNC regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative defaults; no robocalls; provide opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2230,9 +2230,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "No specific telemarketing/DNC regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative defaults; no robocalls; provide opt-out.",
       "dnc": [
         {
           "name": "None (no DNC)",
@@ -2276,9 +2276,9 @@
       "last_verified": "2025-08-18",
       "confidence": "low",
       "confidence_score": null,
-      "regime_b2c_text": null,
-      "regime_b2b_text": null,
-      "notes_for_product": null,
+      "regime_b2c_text": "Commercial electronic messages (incl. calls) require prior consent and IYS registration",
+      "regime_b2b_text": "B2B to traders/merchants allowed without prior consent but must provide opt-out",
+      "notes_for_product": "Enforce IYS consent for consumers; allow B2B to traders with immediate opt-out; store proof; avoid robocalls without consent.",
       "dnc": [
         {
           "name": "İYS (İleti Yönetim Sistemi – consent database)",

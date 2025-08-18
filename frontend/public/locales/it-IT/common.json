@@ -23,6 +23,12 @@
       "quiet_hours": "Fuori dalle fasce consentite",
       "invite_accepted": "Invito accettato"
     }
+  },
+  "ui": {
+    "nav": { "breadcrumbs": "Dashboard / Overview" },
+    "search": { "placeholder": "Cerca…", "aria": "Cerca" },
+    "indicators": { "test_mode": "Modalità test" },
+    "actions": { "create": "+ Crea" }
   }
 }
 

@@ -24,6 +24,12 @@
       "quiet_hours": "Outside allowed hours",
       "invite_accepted": "Invite accepted"
     }
+  },
+  "ui": {
+    "nav": { "breadcrumbs": "Dashboard / Overview" },
+    "search": { "placeholder": "Search…", "aria": "Search" },
+    "indicators": { "test_mode": "Test mode" },
+    "actions": { "create": "+ Create" }
   }
 }
 

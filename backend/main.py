@@ -4,6 +4,9 @@ from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, Request, Header, HTTPException, Response
 from fastapi import Query
 from fastapi import Depends
+from sqlalchemy.orm import Session
+from .db import Base, engine, get_db
+from .models import User, Workspace, WorkspaceMember, Campaign, Call
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 
@@ -81,6 +84,11 @@ def _time_in_any_window(quiet_hours: dict | None, when: datetime) -> bool:
     return False
 
 _load_compliance_from_disk()
+# Create tables if not exist (dev)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception:
+    pass
 # ===================== RBAC (very simple dev stub) =====================
 def _role_from_request(req: Request | None) -> str:
     try:
@@ -223,27 +231,27 @@ def admin_users(
     limit: int = Query(default=25, ge=1, le=100),
     cursor: str | None = Query(default=None),
     _guard: None = Depends(require_global_admin),
+    db: Session = Depends(get_db),
 ) -> dict:
-    items = [
-        {"id": "u_1", "email": "owner@example.com", "name": "Owner One", "locale": "en-US", "tz": "Europe/Rome", "is_admin_global": True, "last_login_at": "2025-08-18T09:00:00Z", "workspaces": ["ws_1"], "status": "active"},
-        {"id": "u_2", "email": "viewer@example.com", "name": "Viewer V", "locale": "it-IT", "tz": "Europe/Rome", "is_admin_global": False, "last_login_at": "2025-08-17T17:22:00Z", "workspaces": ["ws_1"], "status": "active"},
-    ]
-    return {"items": items[:limit], "next_cursor": None}
+    q = db.query(User)
+    if query:
+        like = f"%{query}%"
+        q = q.filter((User.email.ilike(like)) | (User.name.ilike(like)))
+    rows = q.limit(limit).all()
+    items = [{
+        "id": u.id, "email": u.email, "name": u.name, "locale": u.locale, "tz": u.tz,
+        "is_admin_global": u.is_admin_global, "last_login_at": (u.last_login_at.isoformat() if u.last_login_at else None),
+        "workspaces": [], "status": "active"
+    } for u in rows]
+    return {"items": items, "next_cursor": None}
 
 
 @app.get("/admin/users/{user_id}")
-def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin)) -> dict:
-    return {
-        "id": user_id,
-        "email": "user@example.com",
-        "name": "User Example",
-        "locale": "en-US",
-        "tz": "UTC",
-        "memberships": [{"workspace_id": "ws_1", "role": "admin"}],
-        "usage_30d": {"minutes": 0, "calls": 0},
-        "last_login_at": "2025-08-18T09:00:00Z",
-        "status": "active",
-    }
+def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"id": u.id, "email": u.email, "name": u.name, "locale": u.locale, "tz": u.tz, "memberships": [], "usage_30d": {"minutes": 0, "calls": 0}, "last_login_at": (u.last_login_at.isoformat() if u.last_login_at else None), "status": "active"}
 
 
 @app.post("/admin/users/{user_id}/impersonate")
@@ -261,12 +269,18 @@ async def admin_user_impersonate(user_id: str, request: Request, _guard: None = 
 
 
 @app.patch("/admin/users/{user_id}")
-async def admin_user_patch(user_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_user_patch(user_id: str, payload: dict, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
     # Accept simple fields: locale, tz, status
     locale = payload.get("locale")
     tz = payload.get("tz")
     status = payload.get("status")
-    return {"id": user_id, "updated": True, "locale": locale, "tz": tz, "status": status}
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="Not found")
+    if locale: u.locale = locale
+    if tz: u.tz = tz
+    db.add(u); db.commit()
+    return {"id": user_id, "updated": True, "locale": u.locale, "tz": u.tz, "status": status}
 
 
 @app.get("/admin/workspaces")
@@ -277,25 +291,22 @@ def admin_workspaces(
     limit: int = Query(default=25, ge=1, le=100),
     cursor: str | None = Query(default=None),
     _guard: None = Depends(require_global_admin),
+    db: Session = Depends(get_db),
 ) -> dict:
-    items = [
-        {"id": "ws_1", "name": "Demo", "plan": "core", "concurrency_limit": _CONCURRENCY.get("limit", 10), "members": len(_WORKSPACE_MEMBERS), "minutes_mtd": 0, "spend_mtd_cents": 0},
-    ]
-    return {"items": items[:limit], "next_cursor": None}
+    q = db.query(Workspace)
+    if query:
+        q = q.filter(Workspace.name.ilike(f"%{query}%"))
+    rows = q.limit(limit).all()
+    items = [{"id": w.id, "name": w.name, "plan": w.plan, "concurrency_limit": _CONCURRENCY.get("limit", 10), "members": 0, "minutes_mtd": 0, "spend_mtd_cents": 0} for w in rows]
+    return {"items": items, "next_cursor": None}
 
 
 @app.get("/admin/workspaces/{ws_id}")
-def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_admin)) -> dict:
-    return {
-        "id": ws_id,
-        "name": "Demo",
-        "plan": "core",
-        "members": _WORKSPACE_MEMBERS,
-        "campaigns": [{"id": "c_1", "name": "RFQ IT", "status": "running"}],
-        "usage_30d": [{"ts": "2025-08-01", "minutes": 0, "cost_cents": 0}],
-        "credits_cents": 0,
-        "suspended": False,
-    }
+def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
+    w = db.query(Workspace).filter(Workspace.id == ws_id).first()
+    if not w:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"id": w.id, "name": w.name, "plan": w.plan, "members": _WORKSPACE_MEMBERS, "campaigns": [], "usage_30d": [], "credits_cents": 0, "suspended": False}
 
 
 @app.get("/admin/billing/overview")
@@ -447,6 +458,16 @@ def admin_ws_billing(ws_id: str, _guard: None = Depends(require_global_admin)) -
 async def admin_ws_add_credit(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
     cents = int(payload.get("cents") or 0)
     return {"workspace_id": ws_id, "added_cents": cents, "created_at": datetime.now(timezone.utc).isoformat()}
+
+
+# ===================== Admin: Compliance templates (read-only) =====================
+@app.get("/admin/compliance/templates")
+def admin_compliance_templates(_guard: None = Depends(require_global_admin)) -> dict:
+    templates = [
+        {"iso": "IT", "lang": "it-IT", "disclosure": "Buongiorno...", "recording": "La chiamata può essere registrata...", "version": "it-2025-08-01"},
+        {"iso": "EN", "lang": "en-US", "disclosure": "Hello, this is an AI assistant...", "recording": "This call may be recorded...", "version": "en-2025-08-01"},
+    ]
+    return {"items": templates}
 
 
 @app.patch("/admin/workspaces/{ws_id}")

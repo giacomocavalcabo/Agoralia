@@ -4,7 +4,9 @@ import KPI from '../components/ui/KPI.jsx'
 import Card from '../components/ui/Card.jsx'
 import { Skeleton, SkeletonRow } from '../components/ui/Skeleton.jsx'
 import { useI18n } from '../lib/i18n.jsx'
+import Banner from '../components/Banner.jsx'
 import { Line } from 'react-chartjs-2'
+import DataTable from '../components/DataTable.jsx'
 import {
 	Chart as ChartJS,
 	LineElement,
@@ -24,6 +26,7 @@ export default function Dashboard() {
 	const [trendDays, setTrendDays] = useState(7)
 	const [trends, setTrends] = useState({ calls: [], labels: [] })
 	const [loading, setLoading] = useState(true)
+	const [statusFilters, setStatusFilters] = useState(['running','queued'])
 
 	async function load() {
 		setLoading(true)
@@ -48,60 +51,77 @@ export default function Dashboard() {
 	}, [trendDays])
 
 	return (
-		<div style={{ display:'grid', gap:16 }}>
-			<h1>{t('pages.dashboard.title')}</h1>
+		<div className="space-y-6">
+			<Banner tone={summary && (summary.minutes_mtd/Math.max(1, summary.minutes_cap))>0.8 ? 'warn' : 'info'} title={t('pages.dashboard.health.title')}>
+				{t('pages.admin?.notices?.impersonating')}
+			</Banner>
+			<h1 className="text-2xl font-semibold text-ink-900">{t('pages.dashboard.title')}</h1>
 			{/* KPI strip */}
 			{loading && !summary ? (
-				<div style={{ display:'grid', gridTemplateColumns:'repeat(6, minmax(0,1fr))', gap:12 }}>
-					{Array.from({ length: 6 }).map((_,i)=>(<Skeleton key={i} height={84}/>))}
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+					{Array.from({ length: 4 }).map((_,i)=>(<Skeleton key={i} height={84}/>))}
 				</div>
 			) : (
-				<div style={{ display:'grid', gridTemplateColumns:'repeat(6, minmax(0,1fr))', gap:12 }}>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					<KPI label={t('pages.dashboard.kpi.minutes')} value={summary?.minutes_mtd ?? 0} progressPct={Math.min(100, Math.round(((summary?.minutes_mtd ?? 0) / Math.max(1, summary?.minutes_cap ?? 1)) * 100))} />
 					<KPI label={t('pages.dashboard.kpi.calls_today')} value={summary?.calls_today ?? 0} />
 					<KPI label={t('pages.dashboard.kpi.success')} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} />
 					<KPI label="Avg duration" value={`${summary?.avg_duration_sec ?? 0}s`} />
-					<KPI label="p95 turn-taking" value={`${summary?.p95_turn_taking_ms ?? 0}ms`} />
-					<KPI label="Errors (24h)" value={summary?.errors_24h ?? 0} />
 				</div>
 			)}
 
-			{/* Trends */}
-			<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
-				{loading ? <SkeletonRow lines={6} /> : (
-					<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
-						labels: trends.labels,
-						datasets:[{ data: trends.calls, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,.15)', fill:true, tension:.3 }]
-					}}/>
-				)}
-				<div style={{ display:'flex', gap:8, marginTop:8 }}>
-					<button className="btn" onClick={()=> setTrendDays(7)} disabled={trendDays===7}>7d</button>
-					<button className="btn" onClick={()=> setTrendDays(30)} disabled={trendDays===30}>30d</button>
-				</div>
-			</Card>
-
-			{/* Live + Activity */}
-			<div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:16 }}>
-				<Card title={t('pages.dashboard.live.title')}>
-					{loading ? <SkeletonRow lines={4} /> : (
-						<table className="table">
-							<thead><tr><th>Lead</th><th>Agent</th><th>Status</th><th>Started</th></tr></thead>
-							<tbody>
-								{live.map((r,i)=>(<tr key={i}><td>{r.lead ?? '—'}</td><td>{r.agent ?? '—'}</td><td>{r.status ?? '—'}</td><td>{r.started_at ?? '—'}</td></tr>))}
-								{!live.length && <tr><td colSpan={4}>No live calls</td></tr>}
-							</tbody>
-						</table>
-					)}
-				</Card>
-				<Card title={t('pages.dashboard.activity')}>
-					{loading ? <SkeletonRow lines={6} /> : (
-						<div style={{ display:'grid', gap:8 }}>
-							{events.map((e,i)=>(<div key={i} className="panel" style={{ padding:12 }}>{e.text ?? '—'}</div>))}
-							{!events.length && <div className="kpi-title">No activity yet</div>}
+			{/* Charts + Live */}
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+				<div className="lg:col-span-2">
+					<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
+						{loading ? <SkeletonRow lines={6} /> : (
+							<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
+								labels: trends.labels,
+								datasets:[{ data: trends.calls, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,.15)', fill:true, tension:.3 }]
+							}}/>
+						)}
+						<div className="flex gap-2 mt-2">
+							<button className="btn" onClick={()=> setTrendDays(7)} disabled={trendDays===7}>7d</button>
+							<button className="btn" onClick={()=> setTrendDays(30)} disabled={trendDays===30}>30d</button>
 						</div>
-					)}
-				</Card>
+					</Card>
+				</div>
+				<div>
+					<Card title={t('pages.dashboard.live.title')}>
+						{loading ? <SkeletonRow lines={4} /> : (
+							<DataTable
+								columns={[
+									{ key:'lead', label:'Lead' },
+									{ key:'agent', label:'Agent' },
+									{ key:'status', label:'Status' },
+									{ key:'started_at', label:'Started' }
+								]}
+								chips={statusFilters.map(s=> ({ key:s, label:s }))}
+								onRemoveChip={(key)=> setStatusFilters((arr)=> arr.filter(s=> s!==key))}
+								onClearChips={()=> setStatusFilters([])}
+								rows={live
+									.filter(r=> statusFilters.length ? statusFilters.includes(String(r.status||'').toLowerCase()) : true)
+									.map(r=> ({
+										lead: r.lead ?? '—',
+										agent: r.agent ?? '—',
+										status: r.status ?? '—',
+										started_at: r.started_at ?? '—'
+									}))}
+							/>
+						)}
+					</Card>
+				</div>
 			</div>
+
+			{/* Recent activity */}
+			<Card title={t('pages.dashboard.activity')}>
+				{loading ? <SkeletonRow lines={6} /> : (
+					<div className="grid gap-2">
+						{events.map((e,i)=>(<div key={i} className="panel p-3">{e.text ?? '—'}</div>))}
+						{!events.length && <div className="kpi-title">No activity yet</div>}
+					</div>
+				)}
+			</Card>
 		</div>
 	)
 }

@@ -34,6 +34,11 @@ export default function Admin() {
 	const [userForm, setUserForm] = useState(null)
 	const [wsOpen, setWsOpen] = useState(false)
 	const [wsForm, setWsForm] = useState(null)
+	const [preflight, setPreflight] = useState([])
+	const [templates, setTemplates] = useState([])
+	const [callOpen, setCallOpen] = useState(false)
+	const [callDetail, setCallDetail] = useState(null)
+	const [segments, setSegments] = useState({ plan:'', country:'', inactiveDays:'', lang:'' })
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
@@ -79,7 +84,11 @@ export default function Admin() {
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
 			setAttestations(j.items || [])
-		} catch(e){ setAttestations([]) }
+			const p = await fetch(withAdmin(`${api}/admin/compliance/preflight/logs`), { headers }).then(r=> r.ok ? r.json() : { items:[] })
+			setPreflight(p.items||[])
+			const t = await fetch(withAdmin(`${api}/admin/compliance/templates`), { headers }).then(r=> r.ok ? r.json() : { items:[] })
+			setTemplates(t.items||[])
+		} catch(e){ setAttestations([]); setPreflight([]); setTemplates([]) }
 	}
 
 	async function loadCalls(){
@@ -102,6 +111,10 @@ export default function Admin() {
 			const j = await res.json()
 			setCallsHistory(j.items || [])
 		} catch(e){ setCallsHistory([]) }
+	}
+
+	async function openCall(c){
+		try{ const r = await fetch(withAdmin(`${api}/admin/calls/${c.id}`), { headers }); const j = await r.json(); setCallDetail(j); setCallOpen(true) } catch{}
 	}
 
 	function ym(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` }
@@ -224,17 +237,17 @@ export default function Admin() {
 						<div className="card"><div className="kpi-title">ARR</div><div className="kpi-value">{billing?.arr_cents ? `€${(billing.arr_cents/100).toFixed(2)}` : '—'}</div></div>
 						<div className="card"><div className="kpi-title">Minutes MTD</div><div className="kpi-value">{usage?.by_lang?.reduce((a,x)=> a+x.minutes, 0) ?? 0}</div></div>
 						<div className="card"><div className="kpi-title">Countries</div><div className="kpi-value">{usage?.by_country?.length ?? 0}</div></div>
-					</div>
-					<div className="panel" style={{ display:'grid', gap:8 }}>
+			</div>
+			<div className="panel" style={{ display:'grid', gap:8 }}>
 						<div className="kpi-title" style={{ textTransform:'uppercase' }}>{t('pages.dashboard.health.title')}</div>
-						{services.map((s,i)=> (
-							<div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
-								<span style={{ width:8, height:8, borderRadius:999, background: s.status==='ok' ? '#10b981' : s.status==='warn' ? '#f59e0b' : '#ef4444' }} />
-								<span>{s.name}</span>
-							</div>
-						))}
-						{!services.length && <div className="kpi-title">No data</div>}
+				{services.map((s,i)=> (
+					<div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+						<span style={{ width:8, height:8, borderRadius:999, background: s.status==='ok' ? '#10b981' : s.status==='warn' ? '#f59e0b' : '#ef4444' }} />
+						<span>{s.name}</span>
 					</div>
+				))}
+				{!services.length && <div className="kpi-title">No data</div>}
+			</div>
 				</div>
 			)}
 
@@ -321,7 +334,7 @@ export default function Admin() {
 						<thead><tr><th>ID</th><th>Workspace</th><th>Lang</th><th>ISO</th><th>Status</th><th>Duration</th></tr></thead>
 						<tbody>
 							{(callsMode==='live'? calls : callsHistory).map((c)=> (
-								<tr key={c.id}><td>{c.id}</td><td>{c.workspace_id}</td><td>{c.lang}</td><td>{c.iso}</td><td>{c.status}</td><td>{c.duration_s || 0}s</td></tr>
+								<tr key={c.id}><td><button className="btn" onClick={()=> openCall(c)}>{c.id}</button></td><td>{c.workspace_id}</td><td>{c.lang}</td><td>{c.iso}</td><td>{c.status}</td><td>{c.duration_s || 0}s</td></tr>
 							))}
 							{(callsMode==='live'? !calls.length : !callsHistory.length) && <tr><td colSpan={6} className="muted">No calls</td></tr>}
 						</tbody>
@@ -352,6 +365,22 @@ export default function Admin() {
 				</div>
 			)}
 
+			{/* Call detail drawer */}
+			<Drawer open={callOpen} onClose={()=> setCallOpen(false)} title={callDetail ? (`Call ${callDetail.id}`) : 'Call'}>
+				{callDetail && (
+					<div style={{ display:'grid', gap:8 }}>
+						<div className="kpi-title">Lang/ISO: {callDetail.lang} / {callDetail.iso}</div>
+						<div className="kpi-title">Provider: {callDetail.provider}</div>
+						<div className="kpi-title">Duration: {callDetail.duration_s||0}s • Cost: €{(callDetail.cost_cents||0)/100}</div>
+						<div style={{ display:'flex', gap:8 }}>
+							<button className="btn" onClick={()=> setCallOpen(false)}>Close</button>
+							<button className="btn" onClick={()=> toast('Export queued')}>Export audio</button>
+							<button className="btn" onClick={()=> toast('Flagged for QA')}>Flag QA</button>
+						</div>
+					</div>
+				)}
+			</Drawer>
+
 			{tab==='compliance' && (
 				<div className="panel" style={{ overflowX:'auto' }}>
 					<div style={{ display:'flex', gap:8, marginBottom:8 }}>
@@ -366,6 +395,25 @@ export default function Admin() {
 							{!attestations.length && <tr><td colSpan={6} className="muted">No attestations</td></tr>}
 						</tbody>
 					</table>
+
+					<div className="panel" style={{ marginTop:12 }}>
+						<div className="kpi-title" style={{ marginBottom:8 }}>Pre-flight logs</div>
+						<ul style={{ margin:0, paddingLeft:16 }}>
+							{preflight.map((p)=> (<li key={p.id} className="kpi-title">[{p.created_at}] {p.iso} {p.decision} {p.reasons?.join(',')||''}</li>))}
+							{!preflight.length && <li className="kpi-title">No logs</li>}
+						</ul>
+					</div>
+
+					<div className="panel" style={{ marginTop:12 }}>
+						<div className="kpi-title" style={{ marginBottom:8 }}>Legal templates</div>
+						<table className="table">
+							<thead><tr><th>ISO</th><th>Lang</th><th>Disclosure</th><th>Recording</th><th>Version</th></tr></thead>
+							<tbody>
+								{templates.map((t,i)=> (<tr key={i}><td>{t.iso}</td><td>{t.lang}</td><td className="muted">{t.disclosure}</td><td className="muted">{t.recording}</td><td>{t.version}</td></tr>))}
+								{!templates.length && <tr><td colSpan={5} className="muted">No templates</td></tr>}
+							</tbody>
+						</table>
+					</div>
 
 					<Modal title="Generate compliance PDF" open={genOpen} onClose={()=> setGenOpen(false)} footer={[
 						<button key="cancel" className="btn" onClick={()=> setGenOpen(false)}>Cancel</button>,
@@ -389,11 +437,18 @@ export default function Admin() {
 				<div className="panel" style={{ display:'grid', gap:12 }}>
 					<div className="kpi-title">Notifications</div>
 					<div style={{ display:'grid', gap:8 }}>
+						<div className="kpi-title">Segment (minimo)</div>
+						<div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+							<input className="input" placeholder="Plan (e.g. core)" value={segments.plan} onChange={(e)=> setSegments({ ...segments, plan:e.target.value })} />
+							<input className="input" placeholder="Country ISO" value={segments.country} onChange={(e)=> setSegments({ ...segments, country:e.target.value })} style={{ maxWidth:120 }} />
+							<input className="input" placeholder="Inactive days > N" value={segments.inactiveDays} onChange={(e)=> setSegments({ ...segments, inactiveDays:e.target.value })} style={{ maxWidth:160 }} />
+							<input className="input" placeholder="Lang" value={segments.lang} onChange={(e)=> setSegments({ ...segments, lang:e.target.value })} style={{ maxWidth:120 }} />
+						</div>
 						<input className="input" placeholder="Subject" value={notif.subject} onChange={e=> setNotif({ ...notif, subject:e.target.value })} />
 						<textarea className="input" placeholder="Body (Markdown)" rows={6} value={notif.body_md} onChange={e=> setNotif({ ...notif, body_md:e.target.value })} />
 						<div style={{ display:'flex', gap:8 }}>
 							<button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/admin/notifications/preview`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(notif) }); const j = await r.json(); toast('Preview ready'); window.open('data:text/html;charset=utf-8,'+encodeURIComponent(j.html),'_blank') } catch{} }}>Preview</button>
-							<button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/admin/notifications/send`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(notif) }); const j = await r.json(); toast('Queued '+j.id) } catch{} }}>Send</button>
+							<button className="btn" onClick={async ()=>{ try{ const payload = { ...notif, segment: segments }; const r = await fetch(`${api}/admin/notifications/send`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); const j = await r.json(); toast('Queued '+j.id) } catch{} }}>Send</button>
 						</div>
 					</div>
 				</div>

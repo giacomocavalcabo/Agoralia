@@ -1,9 +1,9 @@
 export default function Card({ title, children, footer }){
 	return (
-		<div className="panel" style={{ boxShadow:'var(--sh-card)', borderRadius:'var(--r-md)' }}>
-			{title && <div style={{ fontWeight:700, marginBottom:8 }}>{title}</div>}
+		<div className="panel transition-transform duration-100 ease-out hover:-translate-y-px hover:shadow-md">
+			{title && <div className="font-semibold mb-2 text-ink-900">{title}</div>}
 			{children}
-			{footer && <div style={{ marginTop:12 }}>{footer}</div>}
+			{footer && <div className="mt-3">{footer}</div>}
 		</div>
 	)
 }
