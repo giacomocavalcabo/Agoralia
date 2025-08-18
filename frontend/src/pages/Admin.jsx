@@ -20,6 +20,9 @@ export default function Admin() {
 	const [activity, setActivity] = useState([])
 	const [wsBilling, setWsBilling] = useState(null)
 	const [wsId, setWsId] = useState('ws_1')
+	const [campaigns, setCampaigns] = useState([])
+	const [q, setQ] = useState('')
+	const [search, setSearch] = useState(null)
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
@@ -97,6 +100,15 @@ export default function Admin() {
 		try{ const r = await fetch(withAdmin(`${api}/admin/workspaces/${wsId}/billing`), { headers }); const j = await r.json(); setWsBilling(j) } catch{ setWsBilling(null) }
 	}
 
+	async function loadCampaigns(){
+		try{ const r = await fetch(withAdmin(`${api}/admin/campaigns`), { headers }); const j = await r.json(); setCampaigns(j.items||[]) } catch{ setCampaigns([]) }
+	}
+
+	async function runSearch(){
+		if (!q) { setSearch(null); return }
+		try{ const r = await fetch(withAdmin(`${api}/admin/search?q=${encodeURIComponent(q)}`), { headers }); const j = await r.json(); setSearch(j) } catch{ setSearch({ users:[], workspaces:[], calls:[], campaigns:[] }) }
+	}
+
 	useEffect(()=>{ if(adminEmail){ loadHealth(); loadKpi() } },[adminEmail])
 	useEffect(()=>{ if(adminEmail && tab==='users') loadUsers() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='workspaces') loadWorkspaces() },[adminEmail, tab])
@@ -104,6 +116,7 @@ export default function Admin() {
 	useEffect(()=>{ if(adminEmail && tab==='calls') loadCalls() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='logs') loadActivity() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='billing') loadWsBilling() },[adminEmail, tab, wsId])
+	useEffect(()=>{ if(adminEmail && tab==='campaigns') loadCampaigns() },[adminEmail, tab])
 
 	async function impersonate(u){
 		try {
@@ -121,12 +134,14 @@ export default function Admin() {
 			<h1>Admin</h1>
 			<div className="panel" style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
 				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
-				<button className="btn" onClick={()=>{ loadHealth(); loadUsers(); loadWorkspaces(); loadCalls(); loadCompliance(); loadKpi() }}>Load</button>
+				<button className="btn" onClick={()=>{ loadHealth(); loadUsers(); loadWorkspaces(); loadCalls(); loadCompliance(); loadKpi(); if(tab==='campaigns') loadCampaigns() }}>Load</button>
+				<input className="input" placeholder="Search…" value={q} onChange={(e)=> setQ(e.target.value)} onKeyDown={(e)=> e.key==='Enter' && runSearch()} style={{ marginLeft:8, flex:1 }} />
+				<button className="btn" onClick={runSearch}>Search</button>
 				{error && <span className="kpi-title" style={{ color:'#b91c1c' }}>{error}</span>}
 			</div>
 
 			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
-				{['dashboard','users','workspaces','calls','compliance','notifications','billing','logs'].map((k)=> (
+				{['dashboard','users','workspaces','calls','campaigns','compliance','notifications','billing','logs'].map((k)=> (
 					<button
 						key={k}
 						className="btn"
@@ -241,6 +256,20 @@ export default function Admin() {
 				</div>
 			)}
 
+			{tab==='campaigns' && (
+				<div className="panel" style={{ overflowX:'auto' }}>
+					<table className="table">
+						<thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Pacing</th><th>Budget cap</th></tr></thead>
+						<tbody>
+							{campaigns.map((c)=> (
+								<tr key={c.id}><td>{c.id}</td><td>{c.name}</td><td>{c.status}</td><td>{c.pacing_npm}</td><td>{c.budget_cap_cents}</td></tr>
+							))}
+							{!campaigns.length && <tr><td colSpan={5} className="muted">No campaigns</td></tr>}
+						</tbody>
+					</table>
+				</div>
+			)}
+
 			{tab==='compliance' && (
 				<div className="panel" style={{ overflowX:'auto' }}>
 					<table className="table">
@@ -296,6 +325,30 @@ export default function Admin() {
 						{activity.map((a,i)=> (<li key={i} className="kpi-title">[{a.created_at}] {a.kind} {a.entity} {a.entity_id||''}</li>))}
 						{!activity.length && <li className="kpi-title">No activity</li>}
 					</ul>
+				</div>
+			)}
+
+			{search && (
+				<div className="panel" style={{ marginTop:12 }}>
+					<div className="kpi-title" style={{ marginBottom:8 }}>Search results</div>
+					<div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:12 }}>
+						<div>
+							<div className="kpi-title">Users</div>
+							<ul style={{ margin:0, paddingLeft:16 }}>{(search.users||[]).map((u)=> (<li key={u.id} className="kpi-title">{u.email||u.id}</li>))}</ul>
+						</div>
+						<div>
+							<div className="kpi-title">Workspaces</div>
+							<ul style={{ margin:0, paddingLeft:16 }}>{(search.workspaces||[]).map((w)=> (<li key={w.id} className="kpi-title">{w.name}</li>))}</ul>
+						</div>
+						<div>
+							<div className="kpi-title">Calls</div>
+							<ul style={{ margin:0, paddingLeft:16 }}>{(search.calls||[]).map((c)=> (<li key={c.id} className="kpi-title">{c.id}</li>))}</ul>
+						</div>
+						<div>
+							<div className="kpi-title">Campaigns</div>
+							<ul style={{ margin:0, paddingLeft:16 }}>{(search.campaigns||[]).map((c)=> (<li key={c.id} className="kpi-title">{c.name}</li>))}</ul>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>
