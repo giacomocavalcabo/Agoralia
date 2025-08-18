@@ -16,10 +16,10 @@ export default function Admin() {
 	const [calls, setCalls] = useState([])
 	const [notif, setNotif] = useState({ kind:'email', locale:'en-US', subject:'', body_md:'' })
 	const [error, setError] = useState('')
-	const email = (typeof window!=='undefined' && localStorage.getItem('admin_email')) || ''
+	const [adminEmail, setAdminEmail] = useState(typeof window!=='undefined' ? (localStorage.getItem('admin_email') || '') : '')
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
-	const headers = useMemo(()=> ({ 'X-Admin-Email': email }), [email])
+	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
 
 	async function loadHealth(){
 		setError('')
@@ -81,11 +81,11 @@ export default function Admin() {
 		} catch { setBilling(null); setUsage(null) }
 	}
 
-	useEffect(()=>{ if(email){ loadHealth(); loadKpi() } },[email])
-	useEffect(()=>{ if(email && tab==='users') loadUsers() },[email, tab])
-	useEffect(()=>{ if(email && tab==='workspaces') loadWorkspaces() },[email, tab])
-	useEffect(()=>{ if(email && tab==='compliance') loadCompliance() },[email, tab])
-	useEffect(()=>{ if(email && tab==='calls') loadCalls() },[email, tab])
+	useEffect(()=>{ if(adminEmail){ loadHealth(); loadKpi() } },[adminEmail])
+	useEffect(()=>{ if(adminEmail && tab==='users') loadUsers() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='workspaces') loadWorkspaces() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='compliance') loadCompliance() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='calls') loadCalls() },[adminEmail, tab])
 
 	async function impersonate(u){
 		try {
@@ -102,8 +102,8 @@ export default function Admin() {
 		<div>
 			<h1>Admin</h1>
 			<div className="panel" style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
-				<input className="input" placeholder="Admin email" defaultValue={email} onBlur={(e)=> localStorage.setItem('admin_email', e.target.value)} />
-				<button className="btn" onClick={()=>{ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); loadKpi() }}>Load</button>
+				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
+				<button className="btn" onClick={()=>{ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() }}>Load</button>
 				{error && <span className="kpi-title" style={{ color:'#b91c1c' }}>{error}</span>}
 			</div>
 
