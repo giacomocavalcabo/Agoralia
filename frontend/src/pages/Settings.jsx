@@ -17,14 +17,16 @@ export default function Settings(){
     <div style={{ display:'grid', gap:12 }}>
       <div className="panel">
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('settings.workspace.members')||'Members'}</div>
-        <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
-          <thead><tr><th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.email')||'Email'}</th><th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.role')||'Role'}</th><th style={{ width:1 }}></th></tr></thead>
+        <table role="table" aria-label="Workspace members" style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
+          <thead role="rowgroup"><tr role="row"><th role="columnheader" aria-sort="none" className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.email')||'Email'}</th><th role="columnheader" className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.role')||'Role'}</th><th role="columnheader" style={{ width:1 }}></th></tr></thead>
           <tbody>
             {members.map(m=> (
-              <tr key={m.user_id || m.email}>
+              <tr role="row" key={m.user_id || m.email}>
                 <td style={{ padding:10 }}>{m.email}</td>
                 <td style={{ padding:10 }}>
                   <select value={m.role} onChange={async (e)=>{
+                    const confirmed = window.confirm(t('settings.workspace.confirm_change_role')||'Change role?')
+                    if (!confirmed) return
                     try{ await apiFetch(`/workspaces/members/${m.user_id}`, { method:'PATCH', body:{ role: e.target.value } }); setMembers(ms=> ms.map(x=> x.user_id===m.user_id? { ...x, role:e.target.value }: x)); toast(t('toasts.updated')||'Updated') } catch(err){ toast(String(err?.message||err)) }
                   }} style={{ padding:'6px 10px', border:'1px solid var(--border)', borderRadius:8 }}>
                     <option value="viewer">Viewer</option>
@@ -33,7 +35,7 @@ export default function Settings(){
                   </select>
                 </td>
                 <td style={{ padding:10, textAlign:'right' }}>
-                  <button onClick={async ()=>{ try{ await apiFetch(`/workspaces/members/${m.user_id}`, { method:'DELETE' }); setMembers(ms=> ms.filter(x=> x.user_id!==m.user_id)); toast(t('toasts.removed')||'Removed') } catch(err){ toast(String(err?.message||err)) } }} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('settings.workspace.remove')||'Remove'}</button>
+                  <button onClick={async ()=>{ const ok = window.confirm(t('settings.workspace.confirm_remove')||'Remove member?'); if (!ok) return; try{ await apiFetch(`/workspaces/members/${m.user_id}`, { method:'DELETE' }); setMembers(ms=> ms.filter(x=> x.user_id!==m.user_id)); toast(t('toasts.removed')||'Removed') } catch(err){ toast(String(err?.message||err)) } }} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('settings.workspace.remove')||'Remove'}</button>
                 </td>
               </tr>
             ))}

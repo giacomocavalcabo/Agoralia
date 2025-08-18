@@ -1384,6 +1384,935 @@
       "_errors": [
         "missing_last_verified"
       ]
+    },
+    "AE": {
+      "country": "United Arab Emirates",
+      "iso": "AE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "09:00",
+            "18:00"
+          ]
+        ],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display company identity; no personal numbers; no spoofing.",
+      "recent_changes": "New telemarketing regime in force 2024-08-27 (call window, frequency limits, DNCR).",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "DNCR (Do Not Call Registry)",
+          "url": "https://uaelegislation.gov.ae/en/legislations/2519; https://www.wam.ae/en/article/13yhgc9-ministry-economy-tdra-announce-new-resolutions; https://www.moet.gov.ae/en/-/ministry-of-economy-and-telecommunications-and-digital-government-regulatory-authority-review-regulatory-legislations-in-organizing-operational-mechanisms-for-telemarketing-companies-in-the-uae-and-enhancing-consumer-protection-in-line-with-best-practices",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://uaelegislation.gov.ae/en/legislations/2519",
+          "url": null,
+          "updated": "2024-06-28"
+        },
+        {
+          "title": "https://www.wam.ae/en/article/13yhgc9-ministry-economy-tdra-announce-new-resolutions",
+          "url": null,
+          "updated": "2024-06-28"
+        },
+        {
+          "title": "https://www.moet.gov.ae/en/-/ministry-of-economy-and-telecommunications-and-digital-government-regulatory-authority-review-regulatory-legislations-in-organizing-operational-mechanisms-for-telemarketing-companies-in-the-uae-and-enhancing-consumer-protection-in-line-with-best-practices",
+          "url": null,
+          "updated": "2024-06-28"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      }
+    },
+    "SA": {
+      "country": "Saudi Arabia",
+      "iso": "SA",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "CLI must be truthful; anti-spoofing enforced.",
+      "recent_changes": "CST Anti-Spam Regulations updated and consolidated (calls & messages) – ongoing enforcement.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (framework-based)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.cst.gov.sa/en/rulesandregulations/ictrulesandlicenses/pages/default.aspx",
+          "url": null,
+          "updated": "2022-01-14"
+        },
+        {
+          "title": "https://www.cst.gov.sa/en/mediacenter/pressreleases/pages/2022011401.aspx",
+          "url": null,
+          "updated": "2022-01-14"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "QA": {
+      "country": "Qatar",
+      "iso": "QA",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "True CLI; no spoofing.",
+      "recent_changes": "CRA Anti-Spam/Unsolicited Communications regulation remains in force.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no central DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.cra.gov.qa/-/media/System/3/4/7/0/347002bd6e1d61644d8a2a9b5832d8c7/Anti-Spam-Regulation-English.pdf",
+          "url": null,
+          "updated": "2016-12-01"
+        },
+        {
+          "title": "https://www.cra.gov.qa/en/about-us/regulatory-framework",
+          "url": null,
+          "updated": "2016-12-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "KW": {
+      "country": "Kuwait",
+      "iso": "KW",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display truthful CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.citra.gov.kw/sites/en/Pages/Consumers/YourRights.aspx",
+          "url": null,
+          "updated": "2023-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "BH": {
+      "country": "Bahrain",
+      "iso": "BH",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "True CLI; anti-spoofing enforced via licensees.",
+      "recent_changes": "No formal DNC; TRA consumer guidance ongoing.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no public DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.tra.org.bh/en/consumer-affairs",
+          "url": null,
+          "updated": "2022-01-01"
+        },
+        {
+          "title": "https://www.tra.org.bh/en/regulations",
+          "url": null,
+          "updated": "2022-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "OM": {
+      "country": "Oman",
+      "iso": "OM",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "True CLI; no spoofing.",
+      "recent_changes": "No specific 2024+ telemarketing updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.tra.gov.om/ConsumerComplaiSteps.jsp",
+          "url": null,
+          "updated": "2024-01-01"
+        },
+        {
+          "title": "https://www.tra.gov.om",
+          "url": null,
+          "updated": "2024-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "JO": {
+      "country": "Jordan",
+      "iso": "JO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates found.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://trc.gov.jo/Pages/viewpage?pageID=157",
+          "url": null,
+          "updated": "2023-12-31"
+        },
+        {
+          "title": "https://www.trc.gov.jo",
+          "url": null,
+          "updated": "2023-12-31"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "LB": {
+      "country": "Lebanon",
+      "iso": "LB",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No official 2024+ telemarketing updates found.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.economy.gov.lb/en/consumer-protection",
+          "url": null,
+          "updated": "2020-01-01"
+        },
+        {
+          "title": "https://www.justice.gov.lb",
+          "url": null,
+          "updated": "2020-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "EG": {
+      "country": "Egypt",
+      "iso": "EG",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Must display entity name or NTRA Alert; enforcement ongoing.",
+      "recent_changes": "NTRA regulations announced 2024-07-21; enforcement actions 2024-10 and 2025.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (registry of calling numbers, not DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.tra.gov.eg/en/ntra-acknowledges-regulations-for-promotional-and-commercial-calls/",
+          "url": null,
+          "updated": "2024-07-21"
+        },
+        {
+          "title": "https://www.tra.gov.eg/en/ntra-starts-taking-legal-measures-against-mountain-view-for-conducting-telemarketing-calls-in-violation-to-law-and-relevant-regulations-issued/",
+          "url": null,
+          "updated": "2024-07-21"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MA": {
+      "country": "Morocco",
+      "iso": "MA",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No 2024+ telemarketing updates noted.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.mcinet.gov.ma/fr/content/protection-du-consommateur",
+          "url": null,
+          "updated": "2019-01-25"
+        },
+        {
+          "title": "https://www.anrt.ma/en/reglementation/lois/telecommunications",
+          "url": null,
+          "updated": "2019-01-25"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "DZ": {
+      "country": "Algeria",
+      "iso": "DZ",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "True CLI; anti-spoofing by operators.",
+      "recent_changes": "No 2024+ telemarketing updates noted.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.arpce.dz/en",
+          "url": null,
+          "updated": "2009-03-08"
+        },
+        {
+          "title": "https://www.joradp.dz/FTP/jo-francais/2009/F2009015.pdf",
+          "url": null,
+          "updated": "2009-03-08"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TN": {
+      "country": "Tunisia",
+      "iso": "TN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.ins.tn/sites/default/files/2020-04/Loi%2063-2004%20Fr.pdf",
+          "url": null,
+          "updated": "2004-07-27"
+        },
+        {
+          "title": "https://legislation-securite.tn/latest-laws/loi-organique-n-2004-63-du-27-juillet-2004-portant-sur-la-protection-des-donnees-a-caractere-personnel/",
+          "url": null,
+          "updated": "2004-07-27"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "IQ": {
+      "country": "Iraq",
+      "iso": "IQ",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No official 2024+ telemarketing rules identified.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://cmc.iq",
+          "url": null,
+          "updated": "2024-01-01"
+        },
+        {
+          "title": "https://www.iraq.gov.iq",
+          "url": null,
+          "updated": "2024-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "IR": {
+      "country": "Iran",
+      "iso": "IR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Use registered business lines; no spoofing.",
+      "recent_changes": "Ongoing 2024–2025 actions to curb advertising calls.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://195.cra.ir",
+          "url": null,
+          "updated": "2024-11-09"
+        },
+        {
+          "title": "https://donya-e-eqtesad.com/بخش-بازار-دیجیتال-19/4120892",
+          "url": null,
+          "updated": "2024-11-09"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "IL": {
+      "country": "Israel",
+      "iso": "IL",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "National DNC launched/expanded (ongoing).",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "“Do Not Call Me” Registry (מאגר אל תתקשרו אליי)",
+          "url": "https://www.gov.il/he/departments/general/spam_law; https://www.gov.il/he/departments/general/do_not_call_me",
+          "access": "none",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.gov.il/he/departments/general/spam_law",
+          "url": null,
+          "updated": "2022-12-12"
+        },
+        {
+          "title": "https://www.gov.il/he/departments/general/do_not_call_me",
+          "url": null,
+          "updated": "2022-12-12"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "PS": {
+      "country": "Palestine (PA/PS)",
+      "iso": "PS",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.mtit.gov.ps/index.php/c_home/showNew/1897",
+          "url": null,
+          "updated": "2023-12-31"
+        },
+        {
+          "title": "https://mtde.gov.ps/home/Complaints?culture=ar-SA",
+          "url": null,
+          "updated": "2023-12-31"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "YE": {
+      "country": "Yemen",
+      "iso": "YE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "http://www.moit.gov.ye",
+          "url": null,
+          "updated": "2020-01-01"
+        },
+        {
+          "title": "http://www.ptic.gov.ye",
+          "url": null,
+          "updated": "2020-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "SD": {
+      "country": "Sudan",
+      "iso": "SD",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "http://www.ntc.gov.sd",
+          "url": null,
+          "updated": "2020-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "LY": {
+      "country": "Libya",
+      "iso": "LY",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "No telemarketing-specific updates located.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None (no DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://lptic.ly",
+          "url": null,
+          "updated": "2020-01-01"
+        },
+        {
+          "title": "https://www.gptc.ly",
+          "url": null,
+          "updated": "2020-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TR": {
+      "country": "Türkiye",
+      "iso": "TR",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Display valid CLI.",
+      "recent_changes": "IYS regime maintained; 2020 amendments in force.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": null,
+      "regime_b2b_text": null,
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "İYS (İleti Yönetim Sistemi – consent database)",
+          "url": "https://ticaret.gov.tr/ic-ticaret/bilgi-sistemleri/ticari-elektronik-ileti-yonetim-sistemi-iys; https://iys.org.tr/iys/yonetmelik",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://ticaret.gov.tr/ic-ticaret/bilgi-sistemleri/ticari-elektronik-ileti-yonetim-sistemi-iys",
+          "url": null,
+          "updated": "2023-04-18"
+        },
+        {
+          "title": "https://iys.org.tr/iys/yonetmelik",
+          "url": null,
+          "updated": "2023-04-18"
+        },
+        {
+          "title": "https://www.turkiye.gov.tr/ticari-elektronik-ileti-yonetim-sistemi",
+          "url": null,
+          "updated": "2023-04-18"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
     }
   },
   "countries": [
@@ -1539,6 +2468,206 @@
     },
     {
       "iso": "BG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "AE",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "SA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "QA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "KW",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BH",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "OM",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "JO",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "LB",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "EG",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "MA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "DZ",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "TN",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IQ",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IR",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "IL",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "PS",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "YE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "SD",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "LY",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "TR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "AE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "SA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "QA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "KW",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BH",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "OM",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "JO",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "LB",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "EG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "MA",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "DZ",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "TN",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IQ",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IL",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "PS",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "YE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "SD",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "LY",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "TR",
       "confidence": "low",
       "last_verified": "2025-08-18"
     }

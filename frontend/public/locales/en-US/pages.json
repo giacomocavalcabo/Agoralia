@@ -82,7 +82,10 @@
         "email": "Email",
         "role": "Role",
         "remove": "Remove",
-        "send_invite": "Send invite"
+        "send_invite": "Send invite",
+        "pending": "Pending invites",
+        "confirm_change_role": "Change role?",
+        "confirm_remove": "Remove member?"
       }
     }
   }

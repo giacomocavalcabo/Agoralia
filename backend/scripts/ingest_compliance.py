@@ -319,36 +319,72 @@ def _parse_regime(val: Optional[str]) -> Optional[str]:
 
 def transform(raw: dict) -> dict:
     # Column mapping guess; accept flexible inputs
-    iso = (raw.get("ISO2") or raw.get("ISO") or raw.get("iso") or raw.get("country_iso") or "").strip().upper()
-    country = (raw.get("Country") or raw.get("country") or raw.get("name") or "").strip()
+    iso = (raw.get("ISO2") or raw.get("iso2") or raw.get("ISO") or raw.get("iso") or raw.get("country_iso") or "").strip().upper()
+    country = (raw.get("Country") or raw.get("country") or raw.get("name") or raw.get("countryName") or "").strip()
 
-    b2c = _parse_regime(raw.get("regime_b2c") or raw.get("B2C_Regime") or raw.get("opt_in_or_out_B2C") or raw.get("regime_b2c_raw")) or "opt-out"
-    b2b = _parse_regime(raw.get("regime_b2b") or raw.get("B2B_Regime") or raw.get("opt_in_or_out_B2B") or raw.get("regime_b2b_raw")) or "opt-out"
+    b2c = _parse_regime(
+        raw.get("regime_b2c") or raw.get("B2C_Regime") or raw.get("opt_in_or_out_B2C") or raw.get("optInOrOutB2C") or raw.get("regime_b2c_raw")
+    ) or "opt-out"
+    b2b = _parse_regime(
+        raw.get("regime_b2b") or raw.get("B2B_Regime") or raw.get("opt_in_or_out_B2B") or raw.get("optInOrOutB2B") or raw.get("regime_b2b_raw")
+    ) or "opt-out"
 
     ai_map = {"required": "required", "depends": "depends", "no": "no", "unknown": "depends"}
-    ai_disclosure = norm_bool_enum(raw.get("AIDisclosure_Required") or raw.get("AIDisclosure_Required(Y/N/Depends)") or raw.get("ai_disclosure"), ai_map) or "depends"
+    ai_disclosure = norm_bool_enum(
+        raw.get("AIDisclosure_Required") or raw.get("AIDisclosure_Required(Y/N/Depends)") or raw.get("aiDisclosureRequiredYND") or raw.get("ai_disclosure"), ai_map
+    ) or "depends"
 
     rec_map = {"consent": "consent", "legitimate_interest": "legitimate_interest", "contract": "contract", "unknown": "legitimate_interest"}
-    recording_basis = norm_bool_enum(raw.get("Recording_Basis") or raw.get("Recording_Basis(consent/legitimate_interest/contract)") or raw.get("recording_basis"), rec_map) or "legitimate_interest"
+    recording_basis = norm_bool_enum(
+        raw.get("Recording_Basis") or raw.get("Recording_Basis(consent/legitimate_interest/contract)") or raw.get("recordingBasis") or raw.get("recording_basis"), rec_map
+    ) or "legitimate_interest"
 
-    callerid_rules = remove_content_refs(raw.get("CallerID_Rules") or raw.get("CallerID/Prefix_Rules") or raw.get("callerid_rules"))
-    recent_changes = remove_content_refs(raw.get("Recent_Changes") or raw.get("recent_changes"))
-    quiet_hours = parse_quiet_hours(raw.get("Quiet_Hours") or raw.get("Quiet_Hours(allowed_window_local)") or raw.get("quiet_hours"))
+    callerid_rules = remove_content_refs(
+        raw.get("CallerID_Rules") or raw.get("CallerID/Prefix_Rules") or raw.get("callerIDPrefixRules") or raw.get("callerid_rules")
+    )
+    recent_changes = remove_content_refs(
+        raw.get("Recent_Changes") or raw.get("recentChanges2024Plus") or raw.get("recent_changes")
+    )
+    quiet_hours = parse_quiet_hours(
+        raw.get("Quiet_Hours") or raw.get("Quiet_Hours(allowed_window_local)") or raw.get("quietHoursAllowedWindowLocal") or raw.get("quiet_hours")
+    )
 
-    last_verified = parse_date_iso(raw.get("Last_Verified") or raw.get("Last_Verified(ISO date)") or raw.get("last_verified"))
+    last_verified = parse_date_iso(
+        raw.get("Last_Verified") or raw.get("Last_Verified(ISO date)") or raw.get("lastVerified") or raw.get("last_verified")
+    )
+    # DNC registries
+    raw_dnc = raw.get("DNC") or raw.get("dnc") or []
+    if not raw_dnc and (raw.get("DNC_Registry_Name") or raw.get("DNC_Registry_URL") or raw.get("dncRegistryName") or raw.get("dncRegistryURL")):
+        raw_dnc = [{
+            "name": raw.get("DNC_Registry_Name") or raw.get("dncRegistryName"),
+            "url": raw.get("DNC_Registry_URL") or raw.get("dncRegistryURL"),
+            "DNC_API_or_Bulk": raw.get("DNC_API_or_Bulk(Y/N/Unknown)") or raw.get("dncAPIOrBulkYNU"),
+            "check_required_for_er": raw.get("DNC_Check_Required_for_ER(Y/N/Depends)") or raw.get("dncCheckRequiredForERYND")
+        }]
+    # Sources (CSV primary)
+    raw_sources = raw.get("sources") or raw.get("Sources") or []
+    if not raw_sources and (raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official")):
+        srcs = raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official")
+        parts = [p.strip() for p in str(srcs).split(";") if p.strip()]
+        updated = raw.get("Source_Last_Updated") or raw.get("sourceLastUpdated")
+        raw_sources = [{"title": p, "url": None, "updated": updated} for p in parts[:3]]
+    # Exceptions free text
+    txt_exc = " ".join([
+        str(raw.get("Known_Exceptions(notes)") or raw.get("knownExceptionsNotes") or ""),
+        str(raw.get("Existing_Relationship_Exemption(plain_text)") or raw.get("existingRelationshipExemptionPlainText") or ""),
+        str(callerid_rules or ""),
+    ]).lower()
+    # Long text fields
+    fused = {
+        "regime_b2c_text": remove_content_refs(raw.get("Regime_B2C") or raw.get("regimeB2C") or raw.get("regime_b2c_text")),
+        "regime_b2b_text": remove_content_refs(raw.get("Regime_B2B") or raw.get("regimeB2B") or raw.get("regime_b2b_text")),
+        "notes_for_product": remove_content_refs(raw.get("Notes_for_Product") or raw.get("notesForProduct") or raw.get("notes_for_product")),
+    }
+
     confidence_label, confidence_score = parse_confidence(raw.get("Confidence") or raw.get("confidence"))
 
     # DNC registries
     dnc_list: list[dict] = []
-    raw_dnc = raw.get("DNC") or raw.get("dnc") or []
-    # If separate columns provided, assemble a single-entry list
-    if not raw_dnc and (raw.get("DNC_Registry_Name") or raw.get("DNC_Registry_URL")):
-        raw_dnc = [{
-            "name": raw.get("DNC_Registry_Name"),
-            "url": raw.get("DNC_Registry_URL"),
-            "DNC_API_or_Bulk": raw.get("DNC_API_or_Bulk(Y/N/Unknown)"),
-            "check_required_for_er": raw.get("DNC_Check_Required_for_ER(Y/N/Depends)")
-        }]
     if isinstance(raw_dnc, str) and raw_dnc.strip():
         try:
             raw_dnc = json.loads(raw_dnc)
@@ -387,11 +423,7 @@ def transform(raw: dict) -> dict:
 
     # Sources
     sources: list[dict] = []
-    raw_sources = raw.get("sources") or raw.get("Sources") or []
     # parse CSV primary sources
-    if not raw_sources and raw.get("Primary_Sources(max3;official)"):
-        parts = [p.strip() for p in str(raw.get("Primary_Sources(max3;official)")).split(";") if p.strip()]
-        raw_sources = [{"title": p, "url": None, "updated": raw.get("Source_Last_Updated")} for p in parts[:3]]
     if isinstance(raw_sources, str) and raw_sources.strip():
         try:
             raw_sources = json.loads(raw_sources)
@@ -408,11 +440,6 @@ def transform(raw: dict) -> dict:
     exceptions: list[dict] = []
     raw_exc = raw.get("exceptions") or raw.get("Exceptions") or []
     # derive simple machine-readable exceptions from free text
-    txt_exc = " ".join([
-        str(raw.get("Known_Exceptions(notes)") or ""),
-        str(raw.get("Existing_Relationship_Exemption(plain_text)") or ""),
-        str(callerid_rules or ""),
-    ]).lower()
     derived: list[dict] = []
     if "survey" in txt_exc or "market research" in txt_exc:
         derived.append({"code": "SURVEY_EXEMPT", "value": True})

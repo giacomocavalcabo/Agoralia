@@ -134,7 +134,18 @@ export default function Calendar(){
                                   let detail
                                   try { detail = await resp.json() } catch { detail = {} }
                                   const code = String(detail?.code || 'quiet_hours').toLowerCase()
-                                  toast(t(`pages.calendar.errors.${code}`, { iso: detail?.iso || '' }))
+                                  if (code==='concurrency') {
+                                    const msg = `${t('pages.calendar.errors.concurrency')} (${detail.used||0}/${detail.limit||0})`
+                                    toast(msg)
+                                  } else if (code==='quiet_hours') {
+                                    toast(t('pages.calendar.errors.quiet_hours', { iso: detail?.iso || '' }))
+                                  } else if (code==='budget') {
+                                    toast(t('pages.calendar.errors.budget'))
+                                  } else if (code==='rpo') {
+                                    toast(t('pages.calendar.errors.rpo', { iso: detail?.iso || '' }))
+                                  } else {
+                                    toast(`409: ${code}`)
+                                  }
                                 } else {
                                   const text = await resp.text(); toast(`API ${resp.status}: ${text}`)
                                 }

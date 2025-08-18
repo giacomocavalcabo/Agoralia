@@ -380,7 +380,17 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
         if m == 2:
             raise HTTPException(status_code=409, detail={"code": "BUDGET", "message": "Budget reached"})
         if m == 3:
-            raise HTTPException(status_code=409, detail={"code": "CONCURRENCY", "message": "No free slots"})
+            # Demo concurrency detail with suggestion and metrics
+            from datetime import timedelta
+            next_slot = (at_dt + timedelta(minutes=15)).isoformat()
+            raise HTTPException(status_code=409, detail={
+                "code": "CONCURRENCY",
+                "message": "No free slots",
+                "suggest": ["next_window_at", next_slot],
+                "used": _CONCURRENCY.get("used", 0),
+                "free": _CONCURRENCY.get("free", 0),
+                "limit": _CONCURRENCY.get("limit", 0),
+            })
         return {"id": schedule_id, "at": at_dt.isoformat(), "updated": True}
     except HTTPException:
         raise
