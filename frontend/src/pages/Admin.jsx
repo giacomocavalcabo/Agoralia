@@ -3,6 +3,7 @@ import { useI18n } from '../lib/i18n.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
 import Modal from '../components/Modal.jsx'
 import Drawer from '../components/Drawer.jsx'
+import KpiTile from '../components/ui/KpiTile.jsx'
 
 export default function Admin() {
 	const { t } = useI18n()
@@ -197,6 +198,7 @@ export default function Admin() {
 	useEffect(()=>{ if(adminEmail && tab==='logs') loadActivity() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='billing') loadWsBilling() },[adminEmail, tab, wsId])
 	useEffect(()=>{ if(adminEmail && tab==='campaigns') loadCampaigns() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='dashboard'){ loadUsers(); loadWorkspaces(); loadCalls() } },[adminEmail, tab])
 
 	async function impersonate(u){
 		try {
@@ -232,23 +234,56 @@ export default function Admin() {
 			</div>
 
 			{tab==='dashboard' && (
-				<div style={{ display:'grid', gap:12 }}>
-					<div className="panel" style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:12 }}>
-						<div className="card"><div className="kpi-title">MRR</div><div className="kpi-value">{billing?.mrr_cents ? `€${(billing.mrr_cents/100).toFixed(2)}` : '—'}</div></div>
-						<div className="card"><div className="kpi-title">ARR</div><div className="kpi-value">{billing?.arr_cents ? `€${(billing.arr_cents/100).toFixed(2)}` : '—'}</div></div>
-						<div className="card"><div className="kpi-title">Minutes MTD</div><div className="kpi-value">{usage?.by_lang?.reduce((a,x)=> a+x.minutes, 0) ?? 0}</div></div>
-						<div className="card"><div className="kpi-title">Countries</div><div className="kpi-value">{usage?.by_country?.length ?? 0}</div></div>
-			</div>
-			<div className="panel" style={{ display:'grid', gap:8 }}>
-						<div className="kpi-title" style={{ textTransform:'uppercase' }}>{t('pages.dashboard.health.title')}</div>
-				{services.map((s,i)=> (
-					<div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
-						<span style={{ width:8, height:8, borderRadius:999, background: s.status==='ok' ? '#10b981' : s.status==='warn' ? '#f59e0b' : '#ef4444' }} />
-						<span>{s.name}</span>
+				<div className="grid gap-4">
+					<div className="grid grid-cols-12 gap-4">
+						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Users total" value={users.length || '—'} /></div>
+						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Active 7d" value={'—'} /></div>
+						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="MRR" value={billing?.mrr_cents ? `€${(billing.mrr_cents/100).toFixed(2)}` : '—'} /></div>
+						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Minutes MTD" value={usage?.by_lang?.reduce((a,x)=> a+x.minutes, 0) ?? 0} /></div>
 					</div>
-				))}
-				{!services.length && <div className="kpi-title">No data</div>}
-			</div>
+
+					<div className="grid grid-cols-12 gap-4">
+						<div className="col-span-12 xl:col-span-7 panel">
+							<div className="kpi-title mb-2">{t('pages.dashboard.health.title')}</div>
+							<div className="grid gap-2">
+								{services.map((s,i)=> (
+									<div key={i} className="flex items-center gap-2">
+										<span className={`h-2 w-2 rounded-full ${s.status==='ok' ? 'bg-success' : s.status==='warn' ? 'bg-warn' : 'bg-danger'}`} />
+										<span className="text-sm">{s.name}</span>
+									</div>
+								))}
+								{!services.length && <div className="kpi-title">No data</div>}
+							</div>
+						</div>
+						<div className="col-span-12 xl:col-span-5 panel overflow-auto">
+							<div className="kpi-title mb-2">Live calls</div>
+							<table className="w-full border-separate text-sm" style={{ borderSpacing:0 }}>
+								<thead><tr><th className="kpi-title text-left px-3 py-2">ID</th><th className="kpi-title text-left px-3 py-2">Lang</th><th className="kpi-title text-left px-3 py-2">ISO</th><th className="kpi-title text-left px-3 py-2">Status</th></tr></thead>
+								<tbody>
+									{calls.map((c)=> (<tr key={c.id}><td className="px-3 py-2">{c.id}</td><td className="px-3 py-2">{c.lang}</td><td className="px-3 py-2">{c.iso}</td><td className="px-3 py-2">{c.status}</td></tr>))}
+									{!calls.length && <tr><td colSpan={4} className="kpi-title px-3 py-2">No live calls</td></tr>}
+								</tbody>
+							</table>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-12 gap-4">
+						<div className="col-span-12 xl:col-span-7 panel">
+							<div className="kpi-title mb-2">Top workspaces</div>
+							<ul className="m-0 pl-4">
+								{[...workspaces].sort((a,b)=> (b.minutes_mtd||0)-(a.minutes_mtd||0)).slice(0,5).map((w)=> (<li key={w.id} className="kpi-title">{w.name} — {w.minutes_mtd||0} min • {w.spend_mtd_cents? `€${(w.spend_mtd_cents/100).toFixed(2)}`:'—'}</li>))}
+								{!workspaces.length && <li className="kpi-title">No workspaces</li>}
+							</ul>
+						</div>
+						<div className="col-span-12 xl:col-span-5 panel">
+							<div className="kpi-title mb-2">Quick admin actions</div>
+							<div className="flex flex-wrap gap-2">
+								<button className="btn" onClick={()=> setTab('notifications')}>Send notice</button>
+								<button className="rounded-xl border border-line bg-bg-app px-3 py-2" onClick={()=> setTab('billing')}>Add credits</button>
+								<button className="rounded-xl border border-line bg-bg-app px-3 py-2" onClick={()=> setTab('compliance')}>Open compliance logs</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 
