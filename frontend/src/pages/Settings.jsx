@@ -20,6 +20,18 @@ export default function Settings(){
         <table role="table" aria-label="Workspace members" style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
           <thead role="rowgroup"><tr role="row"><th role="columnheader" aria-sort="none" className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.email')||'Email'}</th><th role="columnheader" className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('settings.workspace.role')||'Role'}</th><th role="columnheader" style={{ width:1 }}></th></tr></thead>
           <tbody>
+            {invites.map(inv=> (
+              <tr role="row" key={inv.id}>
+                <td style={{ padding:10 }}>
+                  {inv.email} <span className="kpi-title" style={{ marginLeft:6, border:'1px solid var(--border)', borderRadius:999, padding:'2px 8px' }}>{t('settings.workspace.pending')||'Pending invites'}</span>
+                </td>
+                <td style={{ padding:10 }}>{inv.role}</td>
+                <td style={{ padding:10, textAlign:'right', display:'flex', gap:6, justifyContent:'flex-end' }}>
+                  <a href={`/invite?token=${encodeURIComponent(inv.token||'')}`} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8, textDecoration:'none' }}>{t('settings.workspace.accept')||'Accept invite'}</a>
+                  <button onClick={()=> navigator.clipboard?.writeText(inv.token)} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Copy token</button>
+                </td>
+              </tr>
+            ))}
             {members.map(m=> (
               <tr role="row" key={m.user_id || m.email}>
                 <td style={{ padding:10 }}>{m.email}</td>

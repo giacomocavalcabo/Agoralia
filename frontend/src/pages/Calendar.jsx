@@ -227,7 +227,7 @@ export default function Calendar(){
               {selected.lang && <span className="kpi-title" style={{ border:'1px solid var(--border)', borderRadius:999, padding:'2px 8px' }}>{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
             </div>
             {(selected.kind==='blocked' || selected.kind==='warn') && (
-              <div className="kpi-title">{selected.title || ''}</div>
+              <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
             )}
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={()=> setDrawerOpen(false)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>

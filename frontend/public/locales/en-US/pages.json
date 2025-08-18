@@ -85,7 +85,8 @@
         "send_invite": "Send invite",
         "pending": "Pending invites",
         "confirm_change_role": "Change role?",
-        "confirm_remove": "Remove member?"
+        "confirm_remove": "Remove member?",
+        "accept": "Accept invite"
       }
     }
   }

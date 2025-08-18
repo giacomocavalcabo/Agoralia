@@ -19,7 +19,10 @@
     "toasts": {
       "updated": "Updated",
       "removed": "Removed",
-      "attestation_ok": "Attestation generated"
+      "attestation_ok": "Attestation generated",
+      "concurrency_full": "No free slots ({used}/{limit})",
+      "quiet_hours": "Outside allowed hours",
+      "invite_accepted": "Invite accepted"
     }
   }
 }

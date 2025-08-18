@@ -84,7 +84,8 @@
         "send_invite": "Invia invito",
         "pending": "Inviti in attesa",
         "confirm_change_role": "Cambiare ruolo?",
-        "confirm_remove": "Rimuovere membro?"
+        "confirm_remove": "Rimuovere membro?",
+        "accept": "Accetta invito"
       }
     }
   }

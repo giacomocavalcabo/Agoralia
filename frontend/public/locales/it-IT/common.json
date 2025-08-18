@@ -18,7 +18,10 @@
     "toasts": {
       "updated": "Aggiornato",
       "removed": "Rimosso",
-      "attestation_ok": "Attestazione generata"
+      "attestation_ok": "Attestazione generata",
+      "concurrency_full": "Nessuno slot libero ({used}/{limit})",
+      "quiet_hours": "Fuori dalle fasce consentite",
+      "invite_accepted": "Invito accettato"
     }
   }
 }

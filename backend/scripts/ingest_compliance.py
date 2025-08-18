@@ -146,7 +146,8 @@ def compute_flags(row: dict, dnc_list: list[dict], exceptions: list[dict]) -> di
     ex_codes = {e.get("code"): e.get("value") for e in exceptions}
     requires_consent_b2c = regime_b2c == "opt-in"
     requires_consent_b2b = regime_b2b == "opt-in"
-    requires_dnc_scrub = len(dnc_list) > 0
+    # Require DNC scrub only if explicitly mandated by the source (non-restrictive default)
+    requires_dnc_scrub = any(bool(d.get("check_required_for_er")) for d in (dnc_list or []))
     automated_banned = bool(ex_codes.get("AUTOMATED_BANNED") is True)
     allows_automated = (ai_disclosure != "required") and (not automated_banned)
     recording_requires_consent = recording_basis == "consent"

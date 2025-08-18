@@ -344,10 +344,11 @@ def calendar_events(start: str, end: str, scope: str = "tenant", campaign_id: st
         e2 = day.replace(hour=14)
         return {
             "events": [
-                {"id": "sch_100", "kind": "scheduled", "title": "Call A", "at": e1.isoformat()},
-                {"id": "sch_200", "kind": "scheduled", "title": "Call B", "at": e2.isoformat()},
+                {"id": "sch_100", "kind": "scheduled", "title": "Call A", "at": e1.isoformat(), "lang": "it-IT"},
+                {"id": "sch_200", "kind": "scheduled", "title": "Call B", "at": e2.isoformat(), "lang": "fr-FR"},
                 {"id": "blk_1", "kind": "blocked", "title": "Quiet hours", "at": day.replace(hour=7).isoformat(), "end": day.replace(hour=8).isoformat()},
-                {"id": "wrn_1", "kind": "warn", "title": "Budget nearing 80%", "at": day.replace(hour=12).isoformat()},
+                {"id": "wrn_budget", "kind": "warn", "title": "Budget nearing 80%", "at": day.replace(hour=12).isoformat(), "reason": "BUDGET", "budget_used_pct": 82},
+                {"id": "wrn_conc", "kind": "warn", "title": "Concurrency full", "at": day.replace(hour=11).isoformat(), "reason": "CONCURRENCY", "used": _CONCURRENCY.get("used",0), "limit": _CONCURRENCY.get("limit",0)},
             ]
         }
     except Exception:
