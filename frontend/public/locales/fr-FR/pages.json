@@ -1,4 +1,12 @@
 {
+  "admin": {
+    "nav": {"dashboard":"Tableau","users":"Utilisateurs","workspaces":"Espaces","calls":"Appels","campaigns":"Campagnes","compliance":"Conformité","notifications":"Notifications","billing":"Facturation","logs":"Journaux","settings":"Paramètres"},
+    "kpi": {"users_total":"{n} utilisateurs","active_7d":"{n} actifs (7j)","mrr":"MRR {amount}","minutes_mtd":"{n} minutes MTD"},
+    "users": {"search_placeholder":"Rechercher nom ou email…","impersonate":"Se faire passer","suspend":"Suspendre","unsuspend":"Réactiver"},
+    "calls": {"live_title":"Appels en direct","filters":{"iso":"Pays","lang":"Langue"}},
+    "compliance": {"attestations":"Attestations","generate":"Générer PDF","preflight":"Journaux pré‑contrôle"},
+    "notices": {"impersonating":"Vous vous faites passer pour {user}. Retour à l’admin."}
+  },
   "pages": {
     "dashboard": {
       "title": "Tableau de bord",
@@ -82,7 +90,10 @@
         "role": "Rôle",
         "remove": "Supprimer",
         "send_invite": "Envoyer l’invitation",
-        "pending": "Invitations en attente"
+        "pending": "Invitations en attente",
+        "accept": "Accepter l’invitation",
+        "confirm_change_role": "Changer le rôle ?",
+        "confirm_remove": "Supprimer le membre ?"
       }
     }
   }

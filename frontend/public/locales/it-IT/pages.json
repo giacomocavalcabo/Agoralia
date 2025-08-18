@@ -1,4 +1,12 @@
 {
+  "admin": {
+    "nav": {"dashboard":"Dashboard","users":"Utenti","workspaces":"Workspace","calls":"Chiamate","campaigns":"Campagne","compliance":"Compliance","notifications":"Notifiche","billing":"Fatturazione","logs":"Log","settings":"Impostazioni"},
+    "kpi": {"users_total":"{n} utenti","active_7d":"{n} attivi (7g)","mrr":"MRR {amount}","minutes_mtd":"{n} minuti MTD"},
+    "users": {"search_placeholder":"Cerca nome o email…","impersonate":"Impersona","suspend":"Sospendi","unsuspend":"Riattiva"},
+    "calls": {"live_title":"Chiamate live","filters":{"iso":"Paese","lang":"Lingua"}},
+    "compliance": {"attestations":"Attestazioni","generate":"Genera PDF","preflight":"Pre‑flight log"},
+    "notices": {"impersonating":"Stai impersonando {user}. Torna all'admin."}
+  },
   "pages": {
     "dashboard": {
       "title": "Dashboard",
@@ -43,7 +51,7 @@
     "calendar": {
       "title": "Calendario",
       "range": "{from} → {to}",
-      "legend": { "scheduled":"Pianificato", "call":"Chiamata", "blocked":"Bloccato", "warn":"Avviso" },
+      "legend": { "scheduled":"Pianificato", "call":"Chiamata", "blocked":"Bloccato", "warn":"Avviso", "warn_budget":"Avviso • Budget", "warn_concurrency":"Avviso • Concurrency" },
       "quick": {
         "title": "Pianifica chiamata",
         "lead": "Lead",

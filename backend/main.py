@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, Request, Header, HTTPException, Response
 from fastapi import Query
+from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 
@@ -127,9 +128,11 @@ origins = [
 if front_origin:
     origins.append(front_origin)
 
+# Allow Vercel preview subdomains by regex as well
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*vercel\\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -194,6 +197,144 @@ def admin_health(x_admin_email: str | None = Header(default=None)) -> dict:
         ]
     }
 
+
+# ===================== Admin guard & helpers =====================
+def require_global_admin(x_admin_email: str | None = Header(default=None)) -> None:
+    """Global admin requirement for /admin/* routes.
+
+    Uses env var ADMIN_EMAILS=comma,separated,list to validate.
+    """
+    _require_admin(x_admin_email)
+
+
+# ===================== Admin read-only endpoints (MVP scaffolding) =====================
+@app.get("/admin/users")
+def admin_users(
+    query: str | None = Query(default=None),
+    country_iso: str | None = Query(default=None),
+    plan: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=100),
+    cursor: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    items = [
+        {"id": "u_1", "email": "owner@example.com", "name": "Owner One", "locale": "en-US", "tz": "Europe/Rome", "is_admin_global": True, "last_login_at": "2025-08-18T09:00:00Z", "workspaces": ["ws_1"], "status": "active"},
+        {"id": "u_2", "email": "viewer@example.com", "name": "Viewer V", "locale": "it-IT", "tz": "Europe/Rome", "is_admin_global": False, "last_login_at": "2025-08-17T17:22:00Z", "workspaces": ["ws_1"], "status": "active"},
+    ]
+    return {"items": items[:limit], "next_cursor": None}
+
+
+@app.get("/admin/users/{user_id}")
+def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {
+        "id": user_id,
+        "email": "user@example.com",
+        "name": "User Example",
+        "locale": "en-US",
+        "tz": "UTC",
+        "memberships": [{"workspace_id": "ws_1", "role": "admin"}],
+        "usage_30d": {"minutes": 0, "calls": 0},
+        "last_login_at": "2025-08-18T09:00:00Z",
+    }
+
+
+@app.post("/admin/users/{user_id}/impersonate")
+async def admin_user_impersonate(user_id: str, request: Request, _guard: None = Depends(require_global_admin)) -> dict:
+    token = f"imp_{user_id}_token"
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
+    _ACTIVITY.append({
+        "kind": "impersonate",
+        "entity": "user",
+        "entity_id": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "diff_json": {"token": token, "expires_at": expires_at, "actor": "admin"},
+    })
+    return {"token": token, "expires_at": expires_at}
+
+
+@app.get("/admin/workspaces")
+def admin_workspaces(
+    query: str | None = Query(default=None),
+    plan: str | None = Query(default=None),
+    active: bool | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=100),
+    cursor: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    items = [
+        {"id": "ws_1", "name": "Demo", "plan": "core", "concurrency_limit": _CONCURRENCY.get("limit", 10), "members": len(_WORKSPACE_MEMBERS), "minutes_mtd": 0, "spend_mtd_cents": 0},
+    ]
+    return {"items": items[:limit], "next_cursor": None}
+
+
+@app.get("/admin/workspaces/{ws_id}")
+def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {
+        "id": ws_id,
+        "name": "Demo",
+        "plan": "core",
+        "members": _WORKSPACE_MEMBERS,
+        "campaigns": [{"id": "c_1", "name": "RFQ IT", "status": "running"}],
+        "usage_30d": [{"ts": "2025-08-01", "minutes": 0, "cost_cents": 0}],
+        "credits_cents": 0,
+    }
+
+
+@app.get("/admin/billing/overview")
+def admin_billing_overview(period: str | None = Query(default=None), _guard: None = Depends(require_global_admin)) -> dict:
+    return {"period": period or "2025-08", "mrr_cents": 0, "arr_cents": 0, "arpu_cents": 0, "churn_rate": 0.0}
+
+
+@app.get("/admin/usage/overview")
+def admin_usage_overview(period: str | None = Query(default=None), _guard: None = Depends(require_global_admin)) -> dict:
+    return {
+        "period": period or "2025-08",
+        "by_lang": [{"lang": "it-IT", "minutes": 0, "cost_cents": 0}],
+        "by_country": [{"iso": "IT", "minutes": 0, "cost_cents": 0}],
+        "provider": [{"name": "retell", "minutes": 0, "avg_ttfb_ms": 0}],
+    }
+
+
+@app.get("/admin/calls/search")
+def admin_calls_search(
+    query: str | None = Query(default=None),
+    iso: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    agent: str | None = Query(default=None),
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=100),
+    cursor: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    items = [
+        {"id": "call_1", "workspace_id": "ws_1", "to": "+390212345678", "from": "+390298765432", "lang": "it-IT", "iso": "IT", "status": "finished", "duration_s": 210, "cost_cents": 42},
+    ]
+    return {"items": items[:limit], "next_cursor": None}
+
+
+@app.get("/admin/campaigns")
+def admin_campaigns(
+    query: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    owner: str | None = Query(default=None),
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    return {"items": [{"id": "c_1", "name": "RFQ IT", "status": "running", "pacing_npm": 10, "budget_cap_cents": 15000}]}
+
+
+@app.get("/admin/search")
+def admin_search(q: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {
+        "users": [{"id": "u_1", "email": "owner@example.com"}][:5],
+        "workspaces": [{"id": "ws_1", "name": "Demo"}][:5],
+        "calls": [{"id": "call_1", "to": "+390212345678"}][:5],
+        "campaigns": [{"id": "c_1", "name": "RFQ IT"}][:5],
+    }
 
 # ===================== Sprint 2 stubs =====================
 

@@ -332,35 +332,56 @@ def transform(raw: dict) -> dict:
 
     ai_map = {"required": "required", "depends": "depends", "no": "no", "unknown": "depends"}
     ai_disclosure = norm_bool_enum(
-        raw.get("AIDisclosure_Required") or raw.get("AIDisclosure_Required(Y/N/Depends)") or raw.get("aiDisclosureRequiredYND") or raw.get("ai_disclosure"), ai_map
+        raw.get("AIDisclosure_Required")
+        or raw.get("AIDisclosure_Required(Y/N/Depends)")
+        or raw.get("aiDisclosureRequiredYND")
+        or raw.get("aidisclosureRequiredYnDepends")
+        or raw.get("ai_disclosure"),
+        ai_map,
     ) or "depends"
 
     rec_map = {"consent": "consent", "legitimate_interest": "legitimate_interest", "contract": "contract", "unknown": "legitimate_interest"}
     recording_basis = norm_bool_enum(
-        raw.get("Recording_Basis") or raw.get("Recording_Basis(consent/legitimate_interest/contract)") or raw.get("recordingBasis") or raw.get("recording_basis"), rec_map
+        raw.get("Recording_Basis")
+        or raw.get("Recording_Basis(consent/legitimate_interest/contract)")
+        or raw.get("recordingBasis")
+        or raw.get("recordingBasisConsentLegitimateInterestContract")
+        or raw.get("recording_basis"),
+        rec_map,
     ) or "legitimate_interest"
 
     callerid_rules = remove_content_refs(
-        raw.get("CallerID_Rules") or raw.get("CallerID/Prefix_Rules") or raw.get("callerIDPrefixRules") or raw.get("callerid_rules")
+        raw.get("CallerID_Rules")
+        or raw.get("CallerID/Prefix_Rules")
+        or raw.get("callerIDPrefixRules")
+        or raw.get("calleridPrefixRules")
+        or raw.get("callerid_rules")
     )
     recent_changes = remove_content_refs(
-        raw.get("Recent_Changes") or raw.get("recentChanges2024Plus") or raw.get("recent_changes")
+        raw.get("Recent_Changes")
+        or raw.get("recentChanges2024Plus")
+        or raw.get("recentChanges2024")
+        or raw.get("recent_changes")
     )
     quiet_hours = parse_quiet_hours(
         raw.get("Quiet_Hours") or raw.get("Quiet_Hours(allowed_window_local)") or raw.get("quietHoursAllowedWindowLocal") or raw.get("quiet_hours")
     )
 
     last_verified = parse_date_iso(
-        raw.get("Last_Verified") or raw.get("Last_Verified(ISO date)") or raw.get("lastVerified") or raw.get("last_verified")
+        raw.get("Last_Verified")
+        or raw.get("Last_Verified(ISO date)")
+        or raw.get("lastVerifiedIsoDate")
+        or raw.get("lastVerified")
+        or raw.get("last_verified")
     )
     # DNC registries
     raw_dnc = raw.get("DNC") or raw.get("dnc") or []
-    if not raw_dnc and (raw.get("DNC_Registry_Name") or raw.get("DNC_Registry_URL") or raw.get("dncRegistryName") or raw.get("dncRegistryURL")):
+    if not raw_dnc and (raw.get("DNC_Registry_Name") or raw.get("DNC_Registry_URL") or raw.get("dncRegistryName") or raw.get("dncRegistryURL") or raw.get("dncRegistryUrl")):
         raw_dnc = [{
             "name": raw.get("DNC_Registry_Name") or raw.get("dncRegistryName"),
-            "url": raw.get("DNC_Registry_URL") or raw.get("dncRegistryURL"),
-            "DNC_API_or_Bulk": raw.get("DNC_API_or_Bulk(Y/N/Unknown)") or raw.get("dncAPIOrBulkYNU"),
-            "check_required_for_er": raw.get("DNC_Check_Required_for_ER(Y/N/Depends)") or raw.get("dncCheckRequiredForERYND")
+            "url": raw.get("DNC_Registry_URL") or raw.get("dncRegistryURL") or raw.get("dncRegistryUrl"),
+            "DNC_API_or_Bulk": raw.get("DNC_API_or_Bulk(Y/N/Unknown)") or raw.get("dncAPIOrBulkYNU") or raw.get("dncApiOrBulkYnUnknown"),
+            "check_required_for_er": raw.get("DNC_Check_Required_for_ER(Y/N/Depends)") or raw.get("dncCheckRequiredForERYND") or raw.get("dncCheckRequiredForErYnDepends")
         }]
     # Sources (CSV primary)
     raw_sources = raw.get("sources") or raw.get("Sources") or []
@@ -393,7 +414,7 @@ def transform(raw: dict) -> dict:
             raw_dnc = []
     for d in (raw_dnc or []):
         access_map = {"api": "api", "bulk": "bulk", "none": "none", "unknown": "unknown"}
-        access_raw = d.get("DNC_API_or_Bulk") or d.get("access") or d.get("DNC_API_or_Bulk(Y/N/Unknown)")
+        access_raw = d.get("DNC_API_or_Bulk") or d.get("access") or d.get("DNC_API_or_Bulk(Y/N/Unknown)") or d.get("dncAPIOrBulkYNU") or d.get("dncApiOrBulkYnUnknown")
         access_val = None
         if isinstance(access_raw, str):
             low = access_raw.lower()
@@ -407,7 +428,7 @@ def transform(raw: dict) -> dict:
                 access_val = "none"
         access_val = access_val or norm_bool_enum(access_raw, access_map) or "unknown"
 
-        check_er_raw = d.get("check_required_for_er") or d.get("DNC_Check_Required_for_ER(Y/N/Depends)")
+        check_er_raw = d.get("check_required_for_er") or d.get("DNC_Check_Required_for_ER(Y/N/Depends)") or d.get("dncCheckRequiredForERYND") or d.get("dncCheckRequiredForErYnDepends")
         check_er = False
         if isinstance(check_er_raw, str):
             low = check_er_raw.strip().lower()
@@ -417,7 +438,7 @@ def transform(raw: dict) -> dict:
 
         dnc_list.append({
             "name": remove_content_refs(d.get("name") or raw.get("DNC_Registry_Name")),
-            "url": remove_content_refs(d.get("url") or raw.get("DNC_Registry_URL")),
+            "url": remove_content_refs(d.get("url") or raw.get("DNC_Registry_URL") or raw.get("dncRegistryUrl")),
             "access": access_val,
             "check_required_for_er": check_er,
         })
@@ -470,9 +491,9 @@ def transform(raw: dict) -> dict:
         "last_verified": last_verified,
         "confidence": confidence_label,
         "confidence_score": confidence_score,
-        "regime_b2c_text": remove_content_refs(raw.get("Regime_B2C") or raw.get("regime_b2c_text")),
-        "regime_b2b_text": remove_content_refs(raw.get("Regime_B2B") or raw.get("regime_b2b_text")),
-        "notes_for_product": remove_content_refs(raw.get("Notes_for_Product") or raw.get("notes_for_product")),
+        "regime_b2c_text": remove_content_refs(raw.get("Regime_B2C") or raw.get("regimeB2C") or raw.get("regime_b2c_text")),
+        "regime_b2b_text": remove_content_refs(raw.get("Regime_B2B") or raw.get("regimeB2B") or raw.get("regime_b2b_text")),
+        "notes_for_product": remove_content_refs(raw.get("Notes_for_Product") or raw.get("notesForProduct") or raw.get("notes_for_product")),
         "dnc": dnc_list,
         "sources": sources,
         "exceptions": exceptions,

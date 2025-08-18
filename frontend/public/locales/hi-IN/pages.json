@@ -1,4 +1,12 @@
 {
+  "admin": {
+    "nav": {"dashboard":"डैशबोर्ड","users":"उपयोगकर्ता","workspaces":"वर्कस्पेस","calls":"कॉल","campaigns":"अभियान","compliance":"अनुपालन","notifications":"सूचनाएँ","billing":"बिलिंग","logs":"लॉग","settings":"सेटिंग्स"},
+    "kpi": {"users_total":"{n} उपयोगकर्ता","active_7d":"{n} सक्रिय (7दिन)","mrr":"MRR {amount}","minutes_mtd":"{n} मिनट MTD"},
+    "users": {"search_placeholder":"नाम या ईमेल खोजें…","impersonate":"इम्पर्सोनेट","suspend":"निलंबित करें","unsuspend":"पुनः सक्रिय करें"},
+    "calls": {"live_title":"लाइव कॉल्स","filters":{"iso":"देश","lang":"भाषा"}},
+    "compliance": {"attestations":"एटेस्टेशन्स","generate":"PDF जनरेट करें","preflight":"प्री‑फ्लाइट लॉग"},
+    "notices": {"impersonating":"आप {user} के रूप में देख रहे हैं। एडमिन पर लौटें।"}
+  },
   "pages": {
     "dashboard": {
       "title": "डैशबोर्ड",
@@ -81,7 +89,10 @@
         "role": "भूमिका",
         "remove": "हटाएँ",
         "send_invite": "निमंत्रण भेजें",
-        "pending": "लंबित निमंत्रण"
+        "pending": "लंबित निमंत्रण",
+        "accept": "निमंत्रण स्वीकार करें",
+        "confirm_change_role": "भूमिका बदलें?",
+        "confirm_remove": "सदस्य हटाएँ?"
       }
     }
   }

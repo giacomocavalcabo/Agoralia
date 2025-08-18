@@ -20,6 +20,7 @@ function currentTitle(pathname){
 
 export default function Root() {
 	const { pathname } = useLocation()
+	const imp = (()=>{ try { return JSON.parse(localStorage.getItem('impersonate_user')||'null') } catch { return null } })()
 	return (
 		<div style={{ display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'100vh' }}>
 			<aside style={{ borderRight:'1px solid var(--border)', padding:20 }}>
@@ -53,6 +54,12 @@ export default function Root() {
 						<UsageBar />
 					</div>
 				</header>
+				{imp && (
+					<div style={{ padding:'8px 20px', background:'#FEF3C7', borderBottom:'1px solid #FDE68A', display:'flex', alignItems:'center', gap:12 }}>
+						<span style={{ fontWeight:700 }}>Impersonating {imp.email || imp.name || imp.id}</span>
+						<button className="btn" onClick={()=>{ localStorage.removeItem('impersonate_token'); localStorage.removeItem('impersonate_user'); location.reload() }}>Return</button>
+					</div>
+				)}
 				<div style={{ padding:24, maxWidth:1200, margin:'0 auto' }}>
 					<Outlet />
 				</div>

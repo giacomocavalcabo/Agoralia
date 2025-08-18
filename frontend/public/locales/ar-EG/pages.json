@@ -1,4 +1,12 @@
 {
+  "admin": {
+    "nav": {"dashboard":"لوحة","users":"المستخدمون","workspaces":"مساحات العمل","calls":"المكالمات","campaigns":"الحملات","compliance":"الامتثال","notifications":"الإشعارات","billing":"الفوترة","logs":"السجلات","settings":"الإعدادات"},
+    "kpi": {"users_total":"{n} مستخدم","active_7d":"{n} نشط (7أيام)","mrr":"MRR {amount}","minutes_mtd":"{n} دقيقة MTD"},
+    "users": {"search_placeholder":"ابحث بالاسم أو البريد…","impersonate":"انتحال","suspend":"تعليق","unsuspend":"إلغاء التعليق"},
+    "calls": {"live_title":"مكالمات مباشرة","filters":{"iso":"الدولة","lang":"اللغة"}},
+    "compliance": {"attestations":"شهادات","generate":"إنشاء PDF","preflight":"سجلات ما قبل الفحص"},
+    "notices": {"impersonating":"أنت تنتحل {user}. العودة إلى الإدارة."}
+  },
   "pages": {
     "dashboard": {
       "title": "لوحة التحكم",
@@ -82,21 +90,11 @@
         "role": "الدور",
         "remove": "إزالة",
         "send_invite": "إرسال دعوة",
-        "pending": "الدعوات المعلقة"
-      }
-    }
-  }
-}
-
-{
-  "pages": {
-    "dashboard": {
-      "title": "لوحة التحكم"
-    },
-    "leads": {
-      "title": "العملاء المحتملون"
-    },
-    "settings": {
+        "pending": "الدعوات المعلقة",
+        "accept": "قبول الدعوة",
+        "confirm_change_role": "تغيير الدور؟",
+        "confirm_remove": "إزالة العضو؟"
+      },
       "tabs2": {
         "general": "عام",
         "languages": "اللغات"
@@ -104,4 +102,3 @@
     }
   }
 }
-

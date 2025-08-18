@@ -13,7 +13,15 @@
     "month": "महीना",
     "range": "{from}–{to}",
     "of_total": "में से {total}",
-    "actions": { "more": "अधिक" }
+    "actions": { "more": "अधिक" },
+    "toasts": {
+      "updated": "अद्यतन हुआ",
+      "removed": "हटा दिया गया",
+      "attestation_ok": "एटेस्टेशन बना",
+      "concurrency_full": "कोई स्लॉट नहीं ({used}/{limit})",
+      "quiet_hours": "अनुमत समय से बाहर",
+      "invite_accepted": "निमंत्रण स्वीकार किया"
+    }
   }
 }
 
