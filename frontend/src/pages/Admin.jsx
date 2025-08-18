@@ -114,7 +114,17 @@ export default function Admin() {
 
 			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
 				{['dashboard','users','workspaces','calls','compliance','notifications'].map((k)=> (
-					<button key={k} className="btn" onClick={()=> setTab(k)} style={{ background: tab===k ? 'var(--surface)' : 'transparent', borderColor: tab===k ? 'var(--border)' : 'var(--border)' }}>
+					<button
+						key={k}
+						className="btn"
+						onClick={()=> setTab(k)}
+						style={{
+							color: '#111827',
+							background: tab===k ? 'var(--surface)' : 'transparent',
+							borderColor: 'var(--border)',
+							fontWeight: tab===k ? 700 : 600,
+						}}
+					>
 						{k.charAt(0).toUpperCase()+k.slice(1)}
 					</button>
 				))}
