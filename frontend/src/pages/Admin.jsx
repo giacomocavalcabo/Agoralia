@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
 import Modal from '../components/Modal.jsx'
+import Drawer from '../components/Drawer.jsx'
 
 export default function Admin() {
 	const { t } = useI18n()
@@ -29,6 +30,10 @@ export default function Admin() {
 	const [search, setSearch] = useState(null)
 	const [genOpen, setGenOpen] = useState(false)
 	const [genForm, setGenForm] = useState({ workspace_id:'ws_1', campaign_id:'', iso:'IT', inputs:'{"notice":"demo"}' })
+	const [userOpen, setUserOpen] = useState(false)
+	const [userForm, setUserForm] = useState(null)
+	const [wsOpen, setWsOpen] = useState(false)
+	const [wsForm, setWsForm] = useState(null)
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
@@ -146,6 +151,22 @@ export default function Admin() {
 		} catch(e){ toast('Failed to generate') }
 	}
 
+	async function openUser(u){
+		try{ const r = await fetch(withAdmin(`${api}/admin/users/${u.id}`), { headers }); const j = await r.json(); setUserForm(j); setUserOpen(true) } catch{}
+	}
+
+	async function saveUser(){
+		try{ await fetch(withAdmin(`${api}/admin/users/${userForm.id}`), { method:'PATCH', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify({ locale:userForm.locale, tz:userForm.tz, status:userForm.status })}); toast('User updated'); setUserOpen(false); loadUsers() } catch{ toast('Save failed') }
+	}
+
+	async function openWorkspace(w){
+		try{ const r = await fetch(withAdmin(`${api}/admin/workspaces/${w.id}`), { headers }); const j = await r.json(); setWsForm({ id:j.id, plan_id:j.plan, concurrency_limit: (typeof j.concurrency_limit==='number'? j.concurrency_limit : 10), suspended: !!j.suspended }); setWsOpen(true) } catch{}
+	}
+
+	async function saveWorkspace(){
+		try{ await fetch(withAdmin(`${api}/admin/workspaces/${wsForm.id}`), { method:'PATCH', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(wsForm) }); toast('Workspace updated'); setWsOpen(false); loadWorkspaces() } catch{ toast('Save failed') }
+	}
+
 	useEffect(()=>{ if(adminEmail){ loadHealth(); loadKpi() } },[adminEmail])
 	useEffect(()=>{ if(adminEmail && tab==='users') loadUsers() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='workspaces') loadWorkspaces() },[adminEmail, tab])
@@ -239,6 +260,7 @@ export default function Admin() {
 										<td>{u.status}</td>
 										<td>{u.is_admin_global ? 'yes' : 'no'}</td>
 										<td>
+											<button className="btn" onClick={()=> openUser(u)}>View</button>
 											<button className="btn" onClick={()=> impersonate(u)}>{t('admin.users.impersonate')}</button>
 											<button className="btn" onClick={async ()=>{ try{ await fetch(`${api}/admin/users/${u.id}`, { method:'PATCH', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify({ status: u.status==='active'?'suspended':'active' }) }); toast(u.status==='active'?'Suspended':'Unsuspended'); loadUsers() } catch{} }}>Toggle</button>
 										</td>
@@ -270,6 +292,7 @@ export default function Admin() {
 									<td>{w.members}</td>
 									<td>{w.minutes_mtd ?? 0}</td>
 									<td>{w.spend_mtd_cents ? `€${(w.spend_mtd_cents/100).toFixed(2)}` : '—'}</td>
+									<td><button className="btn" onClick={()=> openWorkspace(w)}>View</button></td>
 								</tr>
 							))}
 							{!workspaces.length && (
@@ -429,6 +452,48 @@ export default function Admin() {
 					</div>
 				</div>
 			)}
+
+			{/* User Drawer */}
+			<Drawer open={userOpen} onClose={()=> setUserOpen(false)} title={userForm ? (userForm.email||userForm.id) : 'User'}>
+				{userForm && (
+					<div style={{ display:'grid', gap:8 }}>
+						<label className="kpi-title">Locale</label>
+						<input className="input" value={userForm.locale||''} onChange={(e)=> setUserForm({ ...userForm, locale:e.target.value })} />
+						<label className="kpi-title">Timezone</label>
+						<input className="input" value={userForm.tz||''} onChange={(e)=> setUserForm({ ...userForm, tz:e.target.value })} />
+						<label className="kpi-title">Status</label>
+						<select className="input" value={userForm.status||'active'} onChange={(e)=> setUserForm({ ...userForm, status:e.target.value })}>
+							<option value="active">active</option>
+							<option value="suspended">suspended</option>
+						</select>
+						<div style={{ display:'flex', gap:8, marginTop:8 }}>
+							<button className="btn" onClick={()=> setUserOpen(false)}>Close</button>
+							<button className="btn" onClick={saveUser}>Save</button>
+						</div>
+					</div>
+				)}
+			</Drawer>
+
+			{/* Workspace Drawer */}
+			<Drawer open={wsOpen} onClose={()=> setWsOpen(false)} title={wsForm ? (`Workspace ${wsForm.id}`) : 'Workspace'}>
+				{wsForm && (
+					<div style={{ display:'grid', gap:8 }}>
+						<label className="kpi-title">Plan</label>
+						<input className="input" value={wsForm.plan_id||''} onChange={(e)=> setWsForm({ ...wsForm, plan_id:e.target.value })} />
+						<label className="kpi-title">Concurrency limit</label>
+						<input className="input" type="number" value={wsForm.concurrency_limit||0} onChange={(e)=> setWsForm({ ...wsForm, concurrency_limit: parseInt(e.target.value||'0',10) })} />
+						<label className="kpi-title">Suspended</label>
+						<select className="input" value={wsForm.suspended? 'true':'false'} onChange={(e)=> setWsForm({ ...wsForm, suspended: e.target.value==='true' })}>
+							<option value="false">false</option>
+							<option value="true">true</option>
+						</select>
+						<div style={{ display:'flex', gap:8, marginTop:8 }}>
+							<button className="btn" onClick={()=> setWsOpen(false)}>Close</button>
+							<button className="btn" onClick={saveWorkspace}>Save</button>
+						</div>
+					</div>
+				)}
+			</Drawer>
 		</div>
 	)
 }

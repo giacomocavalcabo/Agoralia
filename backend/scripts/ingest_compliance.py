@@ -514,6 +514,9 @@ def run() -> None:
     fused_items: list[dict] = []
     for r in raw_records:
         fused = transform(r)
+        # Exclude Brunei on request (until provided later)
+        if (fused.get("iso") or "").upper() == "BN":
+            continue
         errs = quality_checks(fused)
         if errs:
             # keep but annotate; a real pipeline could fail-fast
