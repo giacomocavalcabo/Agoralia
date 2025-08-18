@@ -336,6 +336,91 @@ def admin_search(q: str, _guard: None = Depends(require_global_admin)) -> dict:
         "campaigns": [{"id": "c_1", "name": "RFQ IT"}][:5],
     }
 
+
+# ===================== Admin: Calls & Campaigns =====================
+@app.get("/admin/calls/live")
+def admin_calls_live(
+    workspace_id: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    # Demo: no live calls
+    return {"items": []}
+
+
+@app.get("/admin/calls/{call_id}")
+def admin_call_detail(call_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {
+        "id": call_id,
+        "workspace_id": "ws_1",
+        "provider": "retell",
+        "lang": "it-IT",
+        "iso": "IT",
+        "status": "finished",
+        "duration_s": 210,
+        "cost_cents": 42,
+        "transcript_url": "/calls/transcript/demo",
+    }
+
+
+# ===================== Admin: Compliance =====================
+@app.get("/admin/compliance/attestations")
+def admin_attestations(
+    workspace_id: str | None = Query(default=None),
+    campaign_id: str | None = Query(default=None),
+    iso: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    items = [
+        {"id": "att_1", "workspace_id": "ws_1", "campaign_id": "c_1", "iso": "IT", "notice_version": "it-2025-08-01", "signed_at": "2025-08-18T10:00:00Z", "pdf_url": "/attestations/att_1"},
+    ]
+    # naive filters
+    if workspace_id:
+        items = [x for x in items if x.get("workspace_id") == workspace_id]
+    if campaign_id:
+        items = [x for x in items if x.get("campaign_id") == campaign_id]
+    if iso:
+        items = [x for x in items if x.get("iso") == iso.upper()]
+    return {"items": items}
+
+
+@app.post("/admin/compliance/attestations/generate")
+async def admin_attestations_generate(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    att_id = f"att_{len(_ATTESTATIONS)+1}"
+    _ATTESTATIONS[att_id] = {"id": att_id, **payload}
+    return {"id": att_id, "pdf_url": f"/attestations/{att_id}", "sha256": "sha256:demo"}
+
+
+@app.get("/admin/compliance/preflight/logs")
+def admin_preflight_logs(
+    workspace_id: str | None = Query(default=None),
+    iso: str | None = Query(default=None),
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = Query(default=None),
+    _guard: None = Depends(require_global_admin),
+) -> dict:
+    items = [
+        {"id": "pfl_1", "workspace_id": "ws_1", "iso": "IT", "decision": "delay", "reasons": ["QUIET_HOURS"], "created_at": "2025-08-18T08:00:00Z"},
+        {"id": "pfl_2", "workspace_id": "ws_1", "iso": "IT", "decision": "block", "reasons": ["DNC_HIT"], "created_at": "2025-08-18T09:00:00Z"},
+    ]
+    if workspace_id:
+        items = [x for x in items if x.get("workspace_id") == workspace_id]
+    if iso:
+        items = [x for x in items if x.get("iso") == iso.upper()]
+    return {"items": items}
+
+
+# ===================== Admin: Billing =====================
+@app.get("/admin/workspaces/{ws_id}/billing")
+def admin_ws_billing(ws_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {"workspace_id": ws_id, "plan": "core", "subscription_status": "active", "current_period_end": "2025-09-01", "credits_cents": 0}
+
+
+@app.post("/admin/workspaces/{ws_id}/credits")
+async def admin_ws_add_credit(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+    cents = int(payload.get("cents") or 0)
+    return {"workspace_id": ws_id, "added_cents": cents, "created_at": datetime.now(timezone.utc).isoformat()}
+
 # ===================== Sprint 2 stubs =====================
 
 @app.get("/leads")

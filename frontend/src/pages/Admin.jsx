@@ -12,6 +12,8 @@ export default function Admin() {
 	const [billing, setBilling] = useState(null)
 	const [usage, setUsage] = useState(null)
 	const [qUsers, setQUsers] = useState('')
+	const [attestations, setAttestations] = useState([])
+	const [calls, setCalls] = useState([])
 	const [error, setError] = useState('')
 	const email = (typeof window!=='undefined' && localStorage.getItem('admin_email')) || ''
 
@@ -48,6 +50,24 @@ export default function Admin() {
 		} catch(e){ setWorkspaces([]); setError('Admin required or network error') }
 	}
 
+	async function loadCompliance(){
+		try {
+			const res = await fetch(`${api}/admin/compliance/attestations`, { headers })
+			if (!res.ok) throw new Error('Forbidden')
+			const j = await res.json()
+			setAttestations(j.items || [])
+		} catch(e){ setAttestations([]) }
+	}
+
+	async function loadCalls(){
+		try {
+			const res = await fetch(`${api}/admin/calls/live`, { headers })
+			if (!res.ok) throw new Error('Forbidden')
+			const j = await res.json()
+			setCalls(j.items || [])
+		} catch(e){ setCalls([]) }
+	}
+
 	function ym(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` }
 	async function loadKpi(){
 		try {
@@ -63,6 +83,8 @@ export default function Admin() {
 	useEffect(()=>{ if(email){ loadHealth(); loadKpi() } },[email])
 	useEffect(()=>{ if(email && tab==='users') loadUsers() },[email, tab])
 	useEffect(()=>{ if(email && tab==='workspaces') loadWorkspaces() },[email, tab])
+	useEffect(()=>{ if(email && tab==='compliance') loadCompliance() },[email, tab])
+	useEffect(()=>{ if(email && tab==='calls') loadCalls() },[email, tab])
 
 	async function impersonate(u){
 		try {
@@ -85,7 +107,7 @@ export default function Admin() {
 			</div>
 
 			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
-				{['dashboard','users','workspaces'].map((k)=> (
+				{['dashboard','users','workspaces','calls','compliance'].map((k)=> (
 					<button key={k} className="btn" onClick={()=> setTab(k)} style={{ background: tab===k ? 'var(--surface)' : 'transparent', borderColor: tab===k ? 'var(--border)' : 'var(--border)' }}>
 						{k.charAt(0).toUpperCase()+k.slice(1)}
 					</button>
@@ -170,6 +192,34 @@ export default function Admin() {
 							{!workspaces.length && (
 								<tr><td colSpan={6} className="muted">No workspaces</td></tr>
 							)}
+						</tbody>
+					</table>
+				</div>
+			)}
+
+			{tab==='calls' && (
+				<div className="panel" style={{ overflowX:'auto' }}>
+					<table className="table">
+						<thead><tr><th>ID</th><th>Workspace</th><th>Lang</th><th>ISO</th><th>Status</th><th>Duration</th></tr></thead>
+						<tbody>
+							{calls.map((c)=> (
+								<tr key={c.id}><td>{c.id}</td><td>{c.workspace_id}</td><td>{c.lang}</td><td>{c.iso}</td><td>{c.status}</td><td>{c.duration_s || 0}s</td></tr>
+							))}
+							{!calls.length && <tr><td colSpan={6} className="muted">No calls</td></tr>}
+						</tbody>
+					</table>
+				</div>
+			)}
+
+			{tab==='compliance' && (
+				<div className="panel" style={{ overflowX:'auto' }}>
+					<table className="table">
+						<thead><tr><th>ID</th><th>Workspace</th><th>Campaign</th><th>ISO</th><th>Version</th><th>Signed</th></tr></thead>
+						<tbody>
+							{attestations.map((a)=> (
+								<tr key={a.id}><td>{a.id}</td><td>{a.workspace_id}</td><td>{a.campaign_id||'—'}</td><td>{a.iso}</td><td>{a.notice_version}</td><td>{a.signed_at}</td></tr>
+							))}
+							{!attestations.length && <tr><td colSpan={6} className="muted">No attestations</td></tr>}
 						</tbody>
 					</table>
 				</div>
