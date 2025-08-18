@@ -15,6 +15,9 @@ export default function Admin() {
 	const [qUsers, setQUsers] = useState('')
 	const [attestations, setAttestations] = useState([])
 	const [calls, setCalls] = useState([])
+	const [callsMode, setCallsMode] = useState('live')
+	const [callsHistory, setCallsHistory] = useState([])
+	const [callsFilters, setCallsFilters] = useState({ q:'', iso:'', lang:'' })
 	const [notif, setNotif] = useState({ kind:'email', locale:'en-US', subject:'', body_md:'' })
 	const [error, setError] = useState('')
 	const [adminEmail, setAdminEmail] = useState(typeof window!=='undefined' ? (localStorage.getItem('admin_email') || '') : '')
@@ -83,6 +86,19 @@ export default function Admin() {
 		} catch(e){ setCalls([]) }
 	}
 
+	async function loadCallsSearch(){
+		try {
+			const u = new URL(withAdmin(`${api}/admin/calls/search`))
+			if (callsFilters.q) u.searchParams.set('query', callsFilters.q)
+			if (callsFilters.iso) u.searchParams.set('iso', callsFilters.iso)
+			if (callsFilters.lang) u.searchParams.set('lang', callsFilters.lang)
+			const res = await fetch(u.toString(), { headers })
+			if (!res.ok) throw new Error('Forbidden')
+			const j = await res.json()
+			setCallsHistory(j.items || [])
+		} catch(e){ setCallsHistory([]) }
+	}
+
 	function ym(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` }
 	async function loadKpi(){
 		try {
@@ -134,7 +150,8 @@ export default function Admin() {
 	useEffect(()=>{ if(adminEmail && tab==='users') loadUsers() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='workspaces') loadWorkspaces() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='compliance') loadCompliance() },[adminEmail, tab])
-	useEffect(()=>{ if(adminEmail && tab==='calls') loadCalls() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='calls' && callsMode==='live') loadCalls() },[adminEmail, tab, callsMode])
+	useEffect(()=>{ if(adminEmail && tab==='calls' && callsMode==='history') loadCallsSearch() },[adminEmail, tab, callsMode])
 	useEffect(()=>{ if(adminEmail && tab==='logs') loadActivity() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='billing') loadWsBilling() },[adminEmail, tab, wsId])
 	useEffect(()=>{ if(adminEmail && tab==='campaigns') loadCampaigns() },[adminEmail, tab])
@@ -265,13 +282,25 @@ export default function Admin() {
 
 			{tab==='calls' && (
 				<div className="panel" style={{ overflowX:'auto' }}>
+					<div style={{ display:'flex', gap:8, marginBottom:8 }}>
+						<button className="btn" onClick={()=> setCallsMode('live')} style={{ fontWeight: callsMode==='live'?700:600 }}>Live</button>
+						<button className="btn" onClick={()=> setCallsMode('history')} style={{ fontWeight: callsMode==='history'?700:600 }}>History</button>
+						{callsMode==='history' && (
+							<>
+								<input className="input" placeholder="Query" value={callsFilters.q} onChange={(e)=> setCallsFilters({ ...callsFilters, q:e.target.value })} />
+								<input className="input" placeholder="ISO" value={callsFilters.iso} onChange={(e)=> setCallsFilters({ ...callsFilters, iso:e.target.value })} style={{ maxWidth:100 }} />
+								<input className="input" placeholder="Lang" value={callsFilters.lang} onChange={(e)=> setCallsFilters({ ...callsFilters, lang:e.target.value })} style={{ maxWidth:120 }} />
+								<button className="btn" onClick={loadCallsSearch}>Search</button>
+							</>
+						)}
+					</div>
 					<table className="table">
 						<thead><tr><th>ID</th><th>Workspace</th><th>Lang</th><th>ISO</th><th>Status</th><th>Duration</th></tr></thead>
 						<tbody>
-							{calls.map((c)=> (
+							{(callsMode==='live'? calls : callsHistory).map((c)=> (
 								<tr key={c.id}><td>{c.id}</td><td>{c.workspace_id}</td><td>{c.lang}</td><td>{c.iso}</td><td>{c.status}</td><td>{c.duration_s || 0}s</td></tr>
 							))}
-							{!calls.length && <tr><td colSpan={6} className="muted">No calls</td></tr>}
+							{(callsMode==='live'? !calls.length : !callsHistory.length) && <tr><td colSpan={6} className="muted">No calls</td></tr>}
 						</tbody>
 					</table>
 				</div>
@@ -280,12 +309,21 @@ export default function Admin() {
 			{tab==='campaigns' && (
 				<div className="panel" style={{ overflowX:'auto' }}>
 					<table className="table">
-						<thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Pacing</th><th>Budget cap</th></tr></thead>
+						<thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Pacing</th><th>Budget cap</th><th>Actions</th></tr></thead>
 						<tbody>
 							{campaigns.map((c)=> (
-								<tr key={c.id}><td>{c.id}</td><td>{c.name}</td><td>{c.status}</td><td>{c.pacing_npm}</td><td>{c.budget_cap_cents}</td></tr>
+								<tr key={c.id}>
+									<td>{c.id}</td><td>{c.name}</td><td>{c.status}</td><td>{c.pacing_npm}</td><td>{c.budget_cap_cents}</td>
+									<td>
+										{c.status==='running' ? (
+											<button className="btn" onClick={async ()=>{ try{ await fetch(withAdmin(`${api}/admin/campaigns/${c.id}/pause`), { method:'POST', headers }); await loadCampaigns() } catch{} }}>Pause</button>
+										) : (
+											<button className="btn" onClick={async ()=>{ try{ await fetch(withAdmin(`${api}/admin/campaigns/${c.id}/resume`), { method:'POST', headers }); await loadCampaigns() } catch{} }}>Resume</button>
+										)}
+									</td>
+								</tr>
 							))}
-							{!campaigns.length && <tr><td colSpan={5} className="muted">No campaigns</td></tr>}
+							{!campaigns.length && <tr><td colSpan={6} className="muted">No campaigns</td></tr>}
 						</tbody>
 					</table>
 				</div>
