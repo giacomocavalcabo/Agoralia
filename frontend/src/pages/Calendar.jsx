@@ -180,7 +180,13 @@ export default function Calendar(){
             <div className="kpi-title">{selected.at}</div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={()=> setDrawerOpen(false)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>
-              <button onClick={()=> setSelected(null)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Close</button>
+              <button onClick={async ()=>{
+                try{
+                  await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
+                  toast('Canceled'); setDrawerOpen(false); load()
+                } catch(err){ toast(String(err?.message || err)) }
+              }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
+              <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
             </div>
           </div>
         )}

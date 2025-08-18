@@ -15,6 +15,7 @@ export default function Campaign(){
   const [events, setEvents] = useState([])
   const { toast } = useToast()
   const [settings, setSettings] = useState({ pacing_npm:'', budget_cap_cents:'', quiet_hours:true })
+  const [leads, setLeads] = useState({ total: 0, items: [] })
 
   useEffect(()=>{ (async()=>{
     try{ setInfo(await apiFetch(`/campaigns/${id}`)) } catch{}
@@ -34,6 +35,8 @@ export default function Campaign(){
   useEffect(()=>{ if (tab==='calendar') (async()=>{
     try{ const now=new Date(); const next=new Date(now); next.setDate(now.getDate()+7); const res=await apiFetch(`/campaigns/${id}/events?start=${now.toISOString()}&end=${next.toISOString()}`); setEvents(res.events||[]) } catch{}
   })() }, [tab, id])
+
+  useEffect(()=>{ if (tab==='leads') (async()=>{ try{ setLeads(await apiFetch(`/campaigns/${id}/leads`)) } catch{} })() }, [tab, id])
 
   if (!id) return <div className="panel">Missing id (?id=...)</div>
 
@@ -70,8 +73,25 @@ export default function Campaign(){
       )}
 
       {tab==='leads' && (
-        <div className="panel">
-          <div className="kpi-title">Leads (TBD)</div>
+        <div className="panel" style={{ overflow:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
+            <thead>
+              <tr>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Name</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Phone</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(leads.items||[]).map(it=> (
+                <tr key={it.id}>
+                  <td style={{ padding:10 }}>{it.name}</td>
+                  <td style={{ padding:10 }}>{it.phone_e164}</td>
+                  <td style={{ padding:10 }}>{it.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

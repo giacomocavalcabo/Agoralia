@@ -233,6 +233,8 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
     # Demo validation: block hours outside 8-18 with QUIET_HOURS
     try:
         from datetime import datetime, timezone, timedelta
+        if payload.get("cancel"):
+            return {"id": schedule_id, "canceled": True}
         at = payload.get("at")
         if not at:
             return {"id": schedule_id, "updated": False}
@@ -250,4 +252,13 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
         raise
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid payload")
+
+
+@app.get("/campaigns/{campaign_id}/leads")
+def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
+    items = [
+        {"id":"l_101","name":"Mario Rossi","phone_e164":"+390212345678","status":"pending"},
+        {"id":"l_102","name":"Claire Dubois","phone_e164":"+33123456789","status":"scheduled"},
+    ]
+    return {"total": len(items), "items": items}
 
