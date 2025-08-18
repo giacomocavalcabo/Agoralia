@@ -7,6 +7,7 @@ import { ToastProvider } from './components/ToastProvider.jsx'
 import Root from './layouts/Root.jsx'
 
 const modules = import.meta.glob('./pages/*.jsx', { eager: true })
+modules['./pages/Numbers.jsx'] ||= { default: (await import('./pages/Numbers.jsx')).default }
 const pages = Object.entries(modules).map(([path, mod]) => {
 	const file = path.split('/').pop() || ''
 	const name = file.replace(/\.jsx$/,'')

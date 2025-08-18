@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 const groups = [
 	{ label: 'Home', items:[{ label:'Dashboard', to:'/' }]},
-	{ label: 'Operate', items:[{ label:'Leads', to:'/leads' },{ label:'Campaigns', to:'/campaigns' },{ label:'Calendar', to:'/calendar' }]},
+	{ label: 'Operate', items:[{ label:'Leads', to:'/leads' },{ label:'Campaigns', to:'/campaigns' },{ label:'Calendar', to:'/calendar' },{ label:'Numbers', to:'/numbers' }]},
 	{ label: 'Analyze', items:[{ label:'Analytics', to:'/analytics' },{ label:'History', to:'/history' }]},
 	{ label: 'Data', items:[{ label:'Import', to:'/import' }]},
 	{ label: 'Configure', items:[{ label:'Settings', to:'/settings' },{ label:'Billing', to:'/billing' }]},

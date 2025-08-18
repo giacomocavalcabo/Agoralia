@@ -104,7 +104,7 @@ export default function Dashboard() {
 					</Card>
 				</div>
 				<div className="col-span-12 md:col-span-6 xl:col-span-4">
-					<SpendCard spendCents={summary?.spend_mtd_cents||0} budgetCents={summary?.minutes_cap? (summary.minutes_cap*10):0} costPerMin={`${(summary?.spend_mtd_cents||0) && (summary?.minutes_mtd||0) ? `€${((summary.spend_mtd_cents/100)/Math.max(1,summary.minutes_mtd)).toFixed(2)}`:'—'}`} />
+					<SpendCard title={t('pages.dashboard.spend_vs_budget')||'Spend vs Budget'} spendCents={summary?.spend_mtd_cents||0} budgetCents={summary?.budget_cap_cents||0} costPerMin={`${(summary?.spend_mtd_cents||0) && (summary?.minutes_mtd||0) ? `€${((summary.spend_mtd_cents/100)/Math.max(1,summary.minutes_mtd)).toFixed(2)}`:'—'}`} />
 				</div>
 				<div className="col-span-12 md:col-span-6 xl:col-span-4">
 					<Card title={t('pages.dashboard.live.title')}>
@@ -135,10 +135,10 @@ export default function Dashboard() {
 
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-6">
-					<TodayUpcoming items={[]} />
+					<TodayUpcoming loading={loading} items={upcoming.map(u=> ({ type:u.kind, lang:u.lang, lead:u.lead, localTime:u.local_time }))} />
 				</div>
 				<div className="col-span-12 xl:col-span-6">
-					<CampaignHealth rows={[]} />
+					<CampaignHealth loading={loading} rows={campaigns.map(c=> ({ name:c.name, status:c.status, progress:c.progress_pct, qualified_pct:c.qualified_rate_pct, spend: typeof c.spend_cents==='number'? `€${(c.spend_cents/100).toFixed(2)}` : '—' }))} />
 				</div>
 			</div>
 
@@ -154,10 +154,10 @@ export default function Dashboard() {
 
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-7">
-					<Tasks items={[]} onAction={()=>{}} />
+					<Tasks loading={loading} items={tasks.map(t=> ({ text: t.text, id:t.id }))} onAction={()=>{}} />
 				</div>
 				<div className="col-span-12 xl:col-span-5">
-					<People members={[]} />
+					<People loading={loading} members={members.map(m=> ({ name:m.name, email:m.email, role:m.role, last_activity:m.last_activity }))} />
 					<div className="mt-4"><Guides /></div>
 				</div>
 			</div>
