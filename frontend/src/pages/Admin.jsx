@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
+import Modal from '../components/Modal.jsx'
 
 export default function Admin() {
 	const { t } = useI18n()
@@ -23,6 +24,8 @@ export default function Admin() {
 	const [campaigns, setCampaigns] = useState([])
 	const [q, setQ] = useState('')
 	const [search, setSearch] = useState(null)
+	const [genOpen, setGenOpen] = useState(false)
+	const [genForm, setGenForm] = useState({ workspace_id:'ws_1', campaign_id:'', iso:'IT', inputs:'{"notice":"demo"}' })
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
@@ -107,6 +110,24 @@ export default function Admin() {
 	async function runSearch(){
 		if (!q) { setSearch(null); return }
 		try{ const r = await fetch(withAdmin(`${api}/admin/search?q=${encodeURIComponent(q)}`), { headers }); const j = await r.json(); setSearch(j) } catch{ setSearch({ users:[], workspaces:[], calls:[], campaigns:[] }) }
+	}
+
+	async function generatePdf(){
+		try {
+			let inputs
+			try { inputs = JSON.parse(genForm.inputs || '{}') } catch { inputs = {} }
+			const res = await fetch(withAdmin(`${api}/admin/compliance/attestations/generate`), {
+				method:'POST',
+				headers: { ...headers, 'Content-Type':'application/json' },
+				body: JSON.stringify({ workspace_id: genForm.workspace_id, campaign_id: genForm.campaign_id || null, iso: genForm.iso, inputs }),
+			})
+			if (!res.ok) throw new Error('Generate failed')
+			const j = await res.json()
+			toast('PDF generated')
+			setGenOpen(false)
+			loadCompliance()
+			if (j.pdf_url) window.open(j.pdf_url, '_blank')
+		} catch(e){ toast('Failed to generate') }
 	}
 
 	useEffect(()=>{ if(adminEmail){ loadHealth(); loadKpi() } },[adminEmail])
@@ -272,6 +293,9 @@ export default function Admin() {
 
 			{tab==='compliance' && (
 				<div className="panel" style={{ overflowX:'auto' }}>
+					<div style={{ display:'flex', gap:8, marginBottom:8 }}>
+						<button className="btn" onClick={()=> setGenOpen(true)}>Generate PDF</button>
+					</div>
 					<table className="table">
 						<thead><tr><th>ID</th><th>Workspace</th><th>Campaign</th><th>ISO</th><th>Version</th><th>Signed</th></tr></thead>
 						<tbody>
@@ -281,6 +305,22 @@ export default function Admin() {
 							{!attestations.length && <tr><td colSpan={6} className="muted">No attestations</td></tr>}
 						</tbody>
 					</table>
+
+					<Modal title="Generate compliance PDF" open={genOpen} onClose={()=> setGenOpen(false)} footer={[
+						<button key="cancel" className="btn" onClick={()=> setGenOpen(false)}>Cancel</button>,
+						<button key="gen" className="btn" onClick={generatePdf}>Generate</button>
+					]}>
+						<div style={{ display:'grid', gap:8 }}>
+							<label className="kpi-title">Workspace ID</label>
+							<input className="input" value={genForm.workspace_id} onChange={(e)=> setGenForm({ ...genForm, workspace_id: e.target.value })} />
+							<label className="kpi-title">Campaign ID (optional)</label>
+							<input className="input" value={genForm.campaign_id} onChange={(e)=> setGenForm({ ...genForm, campaign_id: e.target.value })} />
+							<label className="kpi-title">ISO</label>
+							<input className="input" value={genForm.iso} onChange={(e)=> setGenForm({ ...genForm, iso: e.target.value })} />
+							<label className="kpi-title">Inputs (JSON)</label>
+							<textarea className="input" rows={6} value={genForm.inputs} onChange={(e)=> setGenForm({ ...genForm, inputs: e.target.value })} />
+						</div>
+					</Modal>
 				</div>
 			)}
 
