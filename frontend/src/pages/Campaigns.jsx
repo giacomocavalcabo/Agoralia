@@ -45,9 +45,15 @@ export default function Campaigns(){
 
   return (
     <div className="grid gap-3">
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         {[1,2,3,4].map((s)=> (
-          <button key={s} onClick={()=> setStep(s)} aria-current={step===s? 'page': undefined} className={`rounded-lg border border-line px-2.5 py-1.5 ${step===s? 'bg-bg-app':''}`}>{t('pages.campaigns.step', { s }) || `Step ${s}`}</button>
+          <button
+            key={s}
+            onClick={()=> setStep(s)}
+            aria-current={step===s? 'page': undefined}
+            className={`h-2.5 w-2.5 rounded-full border ${s<step? 'bg-brand-600 border-brand-600' : s===step? 'bg-brand-500 border-brand-500' : 'bg-bg-app border-line'}`}
+            aria-label={t('pages.campaigns.step', { s }) || `Step ${s}`}
+          />
         ))}
         <div className="kpi-title ml-auto">{t('pages.campaigns.title')}</div>
       </div>

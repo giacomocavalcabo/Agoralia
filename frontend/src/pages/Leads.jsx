@@ -102,59 +102,59 @@ export default function Leads(){
 	const to = page*pageSize + items.length
 
 	return (
-		<div style={{ display:'grid', gap:12 }}>
-			<div style={{ display:'flex', alignItems:'center', gap:8 }}>
-				<button onClick={()=> setAddOpen(true)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.leads.actions.add')}</button>
-				<button style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.leads.actions.schedule')}</button>
-				<button style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.leads.actions.import')}</button>
-				<div style={{ marginLeft:'auto', display:'flex', gap:6 }}>
+		<div className="grid gap-3">
+			<div className="flex items-center gap-2">
+				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.schedule')}</button>
+				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.import')}</button>
+				<div className="ml-auto flex gap-1.5">
 					{chips.map((c,i)=>(<Chip key={i} label={c} onRemove={()=> setChips(chips.filter((_,j)=> j!==i))} />))}
 				</div>
+				<button onClick={()=> setAddOpen(true)} className="btn ml-2">{t('pages.leads.actions.add')}</button>
 			</div>
 
 			{loading ? (
-				<div className="panel" style={{ padding:16 }}>
+				<div className="panel p-4">
 					<div className="kpi-title">{t('common.loading')}</div>
 				</div>
 			) : items.length === 0 ? (
-				<EmptyState title={t('pages.leads.empty.title')} description={t('pages.leads.empty.desc')} action={<button onClick={()=> setAddOpen(true)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.leads.actions.add')}</button>} />
+				<EmptyState title={t('pages.leads.empty.title')} description={t('pages.leads.empty.desc')} action={<button onClick={()=> setAddOpen(true)} className="btn">{t('pages.leads.actions.add')}</button>} />
 			) : (
-				<div className="panel" style={{ overflow:'auto' }}>
-					<table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
+				<div className="panel overflow-auto">
+					<table className="w-full border-separate" style={{ borderSpacing:0 }}>
 						<thead>
 							<tr>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.name')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.company')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.phone')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.country')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.lang')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.role')}</th>
-								<th className="kpi-title" style={{ textAlign:'left', padding:10 }}>{t('pages.leads.cols.consent')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.name')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.company')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.phone')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.country')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.lang')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.role')}</th>
+								<th className="kpi-title text-left px-3 py-2">{t('pages.leads.cols.consent')}</th>
 								<th style={{ width:1 }}></th>
 							</tr>
 						</thead>
 						<tbody>
 							{items.map((it)=> (
 								<tr key={it.id}>
-									<td style={{ padding:10 }}>{it.name}</td>
-									<td style={{ padding:10 }}>{it.company}</td>
-									<td style={{ padding:10 }}>{it.phone_e164}</td>
-									<td style={{ padding:10 }}>{it.country_iso}</td>
-									<td style={{ padding:10 }}>{it.lang}</td>
-									<td style={{ padding:10 }}>{it.role}</td>
-									<td style={{ padding:10 }}>{it.consent ? '✓' : ''}</td>
-									<td style={{ padding:10, textAlign:'right' }}>
-										<button className="kpi-title" style={{ border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8, padding:'6px 10px' }}>{t('common.actions.more')}</button>
+									<td className="px-3 py-2">{it.name}</td>
+									<td className="px-3 py-2">{it.company}</td>
+									<td className="px-3 py-2">{it.phone_e164}</td>
+									<td className="px-3 py-2">{it.country_iso}</td>
+									<td className="px-3 py-2">{it.lang}</td>
+									<td className="px-3 py-2">{it.role}</td>
+									<td className="px-3 py-2">{it.consent ? '✓' : ''}</td>
+									<td className="px-3 py-2 text-right">
+										<button className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.actions.more')}</button>
 									</td>
 								</tr>
 							))}
 						</tbody>
 					</table>
-					<div style={{ display:'flex', alignItems:'center', gap:8, padding:10, borderTop:'1px solid var(--border)' }}>
+					<div className="flex items-center gap-2 px-3 py-2 border-t border-line">
 						<div className="kpi-title">{t('common.range', { from, to })} {t('common.of_total', { total })}</div>
-						<div style={{ marginLeft:'auto', display:'flex', gap:6 }}>
-							<button disabled={page===0} onClick={()=> setPage(p=> Math.max(0, p-1))} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
-							<button disabled={to>=total} onClick={()=> setPage(p=> p+1)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.next')}</button>
+						<div className="ml-auto flex gap-1.5">
+							<button disabled={page===0} onClick={()=> setPage(p=> Math.max(0, p-1))} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5 disabled:opacity-50">{t('common.prev')}</button>
+							<button disabled={to>=total} onClick={()=> setPage(p=> p+1)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5 disabled:opacity-50">{t('common.next')}</button>
 						</div>
 					</div>
 				</div>

@@ -86,7 +86,7 @@ export default function Analytics(){
 
       <div className="panel" aria-describedby="desc-calls">
         <div className="kpi-title mb-2" id="desc-calls">{t('pages.analytics.charts.calls_over_time')||'Calls over time'}</div>
-        <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={220} />
+        <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={160} />
       </div>
 
       <div className="panel flex flex-wrap items-center gap-3">
@@ -107,12 +107,12 @@ export default function Analytics(){
 
       <div className="panel" aria-describedby="desc-outcomes">
         <div className="kpi-title mb-2" id="desc-outcomes">{t('pages.analytics.charts.outcomes_over_time')||'Outcomes (recent days)'}</div>
-        <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={260} />
+        <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={200} />
       </div>
 
       <div className="panel" aria-describedby="desc-lang">
         <div className="kpi-title mb-2" id="desc-lang">{t('pages.analytics.charts.lang_distribution')||'By language'}</div>
-        <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={240} />
+        <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={180} />
       </div>
 
       <div className="panel" aria-label="By tables">

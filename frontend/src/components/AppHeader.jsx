@@ -10,10 +10,10 @@ export default function AppHeader(){
 		<header className="sticky top-0 z-40 border-b border-line bg-bg-card/90 backdrop-blur">
 			<div className="mx-auto max-w-screen-2xl px-4 py-3 flex items-center gap-3">
 				<div className="flex-1 min-w-0">
-					<nav className="text-sm text-ink-600">{t('ui.nav.breadcrumbs') || 'Dashboard / Overview'}</nav>
+					<nav className="text-sm text-ink-600 truncate">{t('ui.nav.breadcrumbs') || 'Dashboard / Overview'}</nav>
 				</div>
 				<div className="hidden md:flex flex-1 justify-center">
-					<input id="global-search" placeholder={t('ui.search.placeholder') || 'Search…'} className="w-[520px] rounded-xl border border-line bg-bg-app px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label={t('ui.search.aria') || 'Search'} />
+					<input id="global-search" placeholder={t('ui.search.placeholder') || 'Search…'} className="w-full max-w-[520px] rounded-xl border border-line bg-bg-app px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label={t('ui.search.aria') || 'Search'} />
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="rounded-full bg-bg-app px-3 py-1 text-xs text-ink-600 border border-line">{t('ui.indicators.test_mode') || 'Test mode'}</span>

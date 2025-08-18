@@ -8,7 +8,7 @@ from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from .db import Base, engine, get_db
-from .models import User, Workspace, WorkspaceMember, Campaign, Call, UserAuth
+from .models import User, Workspace, WorkspaceMember, Campaign, Call, UserAuth, Notification, NotificationTarget
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 
@@ -663,14 +663,37 @@ async def admin_notifications_preview(request: Request, payload: dict, _guard: N
 
 @app.post("/admin/notifications/send")
 async def admin_notifications_send(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
-    notif_id = f"ntf_{len(_ACTIVITY)+1}"
-    _ACTIVITY.append({"kind": "notify", "entity": "notification", "entity_id": notif_id, "created_at": datetime.now(timezone.utc).isoformat(), "diff_json": payload})
-    return {"id": notif_id, "scheduled_at": payload.get("schedule_at"), "kind": payload.get("kind","email"), "stats": {"queued": 1}}
+    kind = (payload.get("kind") or "email").lower()
+    locale = payload.get("locale") or "en-US"
+    subject = payload.get("subject") or ""
+    body_md = payload.get("body_md") or ""
+    user_ids = payload.get("user_ids") or []
+    if not user_ids:
+        user_ids = ["owner@example.com", "viewer@example.com"]
+    notif_id = f"ntf_{int(datetime.now(timezone.utc).timestamp())}"
+    with next(get_db()) as db:
+        n = Notification(id=notif_id, kind=kind, locale=locale, subject=subject, body_md=body_md, sent_at=None, stats_json={"queued": len(user_ids)})
+        db.add(n)
+        for uid in user_ids:
+            db.add(NotificationTarget(notification_id=notif_id, user_id=str(uid)))
+        db.commit()
+    _ACTIVITY.append({"kind": "notify", "entity": "notification", "entity_id": notif_id, "created_at": datetime.now(timezone.utc).isoformat(), "diff_json": {"kind": kind, "subject": subject}})
+    try:
+        from .worker import send_notification_job  # type: ignore
+        if send_notification_job:
+            send_notification_job.send(notif_id)  # type: ignore
+    except Exception:
+        pass
+    return {"id": notif_id, "scheduled_at": payload.get("schedule_at"), "kind": kind, "stats": {"queued": len(user_ids)}}
 
 
 @app.get("/admin/notifications/{notif_id}")
 def admin_notifications_get(notif_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
-    return {"id": notif_id, "stats": {"queued": 1, "sent": 1, "errors": 0}}
+    with next(get_db()) as db:
+        n = db.query(Notification).filter(Notification.id == notif_id).first()
+        if not n:
+            return {"id": notif_id, "stats": {}}
+        return {"id": notif_id, "kind": n.kind, "subject": n.subject, "stats": n.stats_json or {}}
 
 
 # ===================== Admin: Activity =====================
