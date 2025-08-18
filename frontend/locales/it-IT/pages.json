@@ -1,0 +1,51 @@
+{
+  "campaigns": {
+    "title": "Campagne",
+    "step": "Passo {s}",
+    "steps": {
+      "details": "Dettagli Campagna",
+      "audience": "Pubblico e Ritmo",
+      "windows": "Finestre e Compliance",
+      "review": "Revisione e Creazione"
+    },
+    "fields": {
+      "name": "Nome Campagna",
+      "goal": "Obiettivo",
+      "role": "Ruolo",
+      "lang": "Lingua Predefinita",
+      "from": "Numero Mittente",
+      "agent": "ID Agente",
+      "kb": "ID Base Conoscenza",
+      "audience": "Pubblico (ID lead separati da virgola)",
+      "pacing": "Ritmo (chiamate al minuto)",
+      "budget": "Limite Budget (centesimi)",
+      "dow": "Giorni settimana (1=Lun...7=Dom)",
+      "quiet_hours": "Rispetta orari silenzio",
+      "start_at": "Data/ora inizio",
+      "template": "Template Risultati",
+      "template_select": "Seleziona template..."
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Testo disclosure…",
+    "compliance_record": "Consenso registrazione…",
+    "actions": {
+      "create_schedule": "Crea e Pianifica"
+    },
+    "toasts": {
+      "created": "Campagna creata con ID: {id}"
+    }
+  },
+  "numbers": {
+    "my_numbers": "I Miei Numeri",
+    "buy_numbers": "Compra Numeri",
+    "use_my_number": "Usa il mio numero",
+    "buy_number": "Compra un numero",
+    "default_from": "ID mittente predefinito",
+    "route": "Instrada",
+    "route_number": "Instrada Numero",
+    "agent_id": "ID Agente",
+    "business_hours": "Orari Lavorativi",
+    "enable_voicemail": "Abilita Segreteria",
+    "voicemail_message": "Messaggio Segreteria"
+  }
+}

@@ -11,8 +11,10 @@ export default function Campaigns(){
   const { toast } = useToast()
   const [step, setStep] = useState(1)
   const [locales, setLocales] = useState({ call_supported: [], call_default: 'en-US' })
+  const [templates, setTemplates] = useState([])
   const [form, setForm] = useState({
     name:'', goal:'rfq', role:'supplier', lang_default:'en-US', agent_id:'', kb_id:'', from_number:'',
+    template_id: '', // Add template selection
     pacing_npm: 10, budget_cap_cents: '', window:{ dow:[1,2,3,4,5], quiet_hours:true, tz: 'UTC' },
     audience: { lead_ids: [] }
   })
@@ -20,7 +22,17 @@ export default function Campaigns(){
   const [attestOk, setAttestOk] = useState(false)
 
   useEffect(()=>{ (async()=>{
-    try { const res = await apiFetch('/i18n/locales'); setLocales(res) } catch(e){}
+    try { 
+      const res = await apiFetch('/i18n/locales'); 
+      setLocales(res) 
+    } catch(e){}
+  })() },[])
+
+  useEffect(()=>{ (async()=>{
+    try { 
+      const res = await apiFetch('/templates'); 
+      setTemplates(res.templates || []) 
+    } catch(e){}
   })() },[])
 
   const callUnsupported = useMemo(()=> locales.call_supported && !locales.call_supported.includes(form.lang_default), [locales, form.lang_default])
@@ -101,6 +113,23 @@ export default function Campaigns(){
               <input value={form.kb_id} onChange={e=> setForm({ ...form, kb_id:e.target.value })} className="input" />
             </label>
           </div>
+
+          <label>
+            <div className="kpi-title">{t('pages.campaigns.fields.template') || 'Outcome Template'}</div>
+            <select value={form.template_id} onChange={e=> setForm({ ...form, template_id:e.target.value })} className="input">
+              <option value="">{t('pages.campaigns.fields.template_select') || 'Select template...'}</option>
+              {templates.map(template => (
+                <option key={template.id} value={template.id}>
+                  {template.name} {template.is_preset && '(Preset)'}
+                </option>
+              ))}
+            </select>
+            {form.template_id && (
+              <div className="text-sm text-ink-600 mt-1">
+                {templates.find(t => t.id === form.template_id)?.description}
+              </div>
+            )}
+          </label>
 
           {callUnsupported && (
             <div role="alert" className="rounded-xl border border-warn bg-warn/10 text-ink-900 px-3 py-2">

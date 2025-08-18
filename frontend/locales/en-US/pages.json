@@ -1,0 +1,51 @@
+{
+  "campaigns": {
+    "title": "Campaigns",
+    "step": "Step {s}",
+    "steps": {
+      "details": "Campaign Details",
+      "audience": "Audience & Pacing",
+      "windows": "Windows & Compliance",
+      "review": "Review & Create"
+    },
+    "fields": {
+      "name": "Campaign Name",
+      "goal": "Goal",
+      "role": "Role",
+      "lang": "Default Language",
+      "from": "From Number",
+      "agent": "Agent ID",
+      "kb": "Knowledge Base ID",
+      "audience": "Audience (lead ids comma-separated)",
+      "pacing": "Pacing (calls per minute)",
+      "budget": "Budget Cap (cents)",
+      "dow": "Days of week (1=Mon...7=Sun)",
+      "quiet_hours": "Respect quiet hours",
+      "start_at": "Start date/time",
+      "template": "Outcome Template",
+      "template_select": "Select template..."
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Disclosure text…",
+    "compliance_record": "Recording consent…",
+    "actions": {
+      "create_schedule": "Create & Schedule"
+    },
+    "toasts": {
+      "created": "Campaign created with ID: {id}"
+    }
+  },
+  "numbers": {
+    "my_numbers": "My Numbers",
+    "buy_numbers": "Buy Numbers",
+    "use_my_number": "Use my number",
+    "buy_number": "Buy a number",
+    "default_from": "Default caller ID",
+    "route": "Route",
+    "route_number": "Route Number",
+    "agent_id": "Agent ID",
+    "business_hours": "Business Hours",
+    "enable_voicemail": "Enable Voicemail",
+    "voicemail_message": "Voicemail Message"
+  }
+}

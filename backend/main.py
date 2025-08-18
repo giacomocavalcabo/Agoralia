@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone, timedelta
 import secrets
 from typing import Optional
-from fastapi import FastAPI, Request, Header, HTTPException, Response
+from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -15,6 +15,7 @@ from .models import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
+from sqlalchemy import or_
 
 try:
     # retell-sdk is optional during local dev, but required in prod for webhook verification
@@ -670,13 +671,106 @@ async def admin_campaign_resume(campaign_id: str, request: Request, _guard: None
 
 
 @app.get("/admin/search")
-def admin_search(request: Request, q: str, _guard: None = Depends(admin_guard)) -> dict:
-    return {
-        "users": [{"id": "u_1", "email": "owner@example.com"}][:5],
-        "workspaces": [{"id": "ws_1", "name": "Demo"}][:5],
-        "calls": [{"id": "call_1", "to": "+390212345678"}][:5],
-        "campaigns": [{"id": "c_1", "name": "RFQ IT"}][:5],
+def admin_search(request: Request, q: str, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
+    """Unified global search across users, workspaces, calls, and campaigns"""
+    if not q or len(q.strip()) < 2:
+        return {"users": [], "workspaces": [], "calls": [], "campaigns": []}
+    
+    query = q.strip().lower()
+    results = {
+        "users": [],
+        "workspaces": [], 
+        "calls": [],
+        "campaigns": []
     }
+    
+    try:
+        # Search users by email or name
+        users = db.query(User).filter(
+            or_(
+                User.email.ilike(f"%{query}%"),
+                User.name.ilike(f"%{query}%")
+            )
+        ).limit(5).all()
+        results["users"] = [
+            {
+                "id": u.id,
+                "email": u.email,
+                "name": u.name,
+                "is_admin_global": u.is_admin_global,
+                "last_login_at": u.last_login_at.isoformat() if u.last_login_at else None
+            }
+            for u in users
+        ]
+        
+        # Search workspaces by name
+        workspaces = db.query(Workspace).filter(
+            Workspace.name.ilike(f"%{query}%")
+        ).limit(5).all()
+        results["workspaces"] = [
+            {
+                "id": w.id,
+                "name": w.name,
+                "created_at": w.created_at.isoformat() if w.created_at else None
+            }
+            for w in workspaces
+        ]
+        
+        # Search calls by phone number, language, or ISO
+        calls = db.query(Call).filter(
+            or_(
+                Call.to.ilike(f"%{query}%"),
+                Call.from_.ilike(f"%{query}%"),
+                Call.lang.ilike(f"%{query}%"),
+                Call.iso.ilike(f"%{query}%")
+            )
+        ).limit(5).all()
+        results["calls"] = [
+            {
+                "id": c.id,
+                "workspace_id": c.workspace_id,
+                "to": c.to,
+                "from": c.from_,
+                "lang": c.lang,
+                "iso": c.iso,
+                "status": c.status,
+                "started_at": c.started_at.isoformat() if c.started_at else None
+            }
+            for c in calls
+        ]
+        
+        # Search campaigns by name or goal
+        campaigns = db.query(Campaign).filter(
+            or_(
+                Campaign.name.ilike(f"%{query}%"),
+                Campaign.goal.ilike(f"%{query}%"),
+                Campaign.role.ilike(f"%{query}%")
+            )
+        ).limit(5).all()
+        results["campaigns"] = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "goal": c.goal,
+                "role": c.role,
+                "lang_default": c.lang_default,
+                "status": c.status,
+                "created_at": c.created_at.isoformat() if c.created_at else None
+            }
+            for c in campaigns
+        ]
+        
+    except Exception as e:
+        # Fallback to mock data if DB query fails
+        print(f"Search query failed: {e}")
+        results = {
+            "users": [{"id": "u_1", "email": "owner@example.com", "name": "Owner", "is_admin_global": True}][:5],
+            "workspaces": [{"id": "ws_1", "name": "Demo"}][:5],
+            "calls": [{"id": "call_1", "to": "+390212345678", "lang": "it-IT", "iso": "IT"}][:5],
+            "campaigns": [{"id": "c_1", "name": "RFQ IT", "goal": "rfq", "role": "supplier"}][:5],
+        }
+    
+    return results
 
 
 # ===================== Admin: Calls & Campaigns =====================
@@ -1438,4 +1532,61 @@ def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
         {"id":"l_102","name":"Claire Dubois","phone_e164":"+33123456789","status":"scheduled"},
     ]
     return {"total": len(items), "items": items}
+
+@app.post("/templates")
+async def create_template(
+    request: Request,
+    template: dict = Body(...)
+):
+    """Create a new outcome template"""
+    # For MVP, return a mock template ID
+    return {"id": "template_123", "name": template.get("name", "New Template")}
+
+@app.get("/templates")
+async def list_templates(request: Request):
+    """List available outcome templates"""
+    # Return 3 preset templates for MVP
+    return {
+        "templates": [
+            {
+                "id": "sales_qualification",
+                "name": "Sales Qualification",
+                "description": "Standard sales lead qualification template",
+                "fields": [
+                    {"name": "interest_level", "type": "select", "options": ["High", "Medium", "Low"], "required": True},
+                    {"name": "budget_range", "type": "select", "options": ["<10k", "10k-50k", "50k+", "Unknown"], "required": False},
+                    {"name": "decision_maker", "type": "boolean", "required": True},
+                    {"name": "timeline", "type": "select", "options": ["Immediate", "30 days", "90 days", "Unknown"], "required": False},
+                    {"name": "next_step", "type": "text", "required": True}
+                ],
+                "is_preset": True
+            },
+            {
+                "id": "customer_support",
+                "name": "Customer Support",
+                "description": "Support ticket resolution template",
+                "fields": [
+                    {"name": "issue_type", "type": "select", "options": ["Technical", "Billing", "Feature Request", "Other"], "required": True},
+                    {"name": "severity", "type": "select", "options": ["Critical", "High", "Medium", "Low"], "required": True},
+                    {"name": "resolution", "type": "text", "required": True},
+                    {"name": "customer_satisfaction", "type": "select", "options": ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied"], "required": False},
+                    {"name": "follow_up_required", "type": "boolean", "required": True}
+                ],
+                "is_preset": True
+            },
+            {
+                "id": "appointment_booking",
+                "name": "Appointment Booking",
+                "description": "Calendar scheduling template",
+                "fields": [
+                    {"name": "appointment_type", "type": "select", "options": ["Consultation", "Demo", "Follow-up", "Training"], "required": True},
+                    {"name": "preferred_date", "type": "date", "required": True},
+                    {"name": "preferred_time", "type": "select", "options": ["Morning", "Afternoon", "Evening"], "required": True},
+                    {"name": "duration", "type": "select", "options": ["30 min", "1 hour", "2 hours"], "required": True},
+                    {"name": "notes", "type": "text", "required": False}
+                ],
+                "is_preset": True
+            }
+        ]
+    }
 

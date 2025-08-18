@@ -235,6 +235,140 @@ export default function Admin() {
 
 			{tab==='dashboard' && (
 				<div className="grid gap-4">
+					{/* Show search results if available */}
+					{search && (
+						<div className="panel">
+							<div className="kpi-title mb-4">Global Search Results for "{q}"</div>
+							<div className="grid gap-4">
+								{/* Users */}
+								{search.users?.length > 0 && (
+									<div>
+										<div className="text-sm font-medium text-gray-600 mb-2">Users ({search.users.length})</div>
+										<div className="grid gap-2">
+											{search.users.map(user => (
+												<div key={user.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+													<div>
+														<div className="font-medium">{user.name || 'No name'}</div>
+														<div className="text-sm text-gray-600">{user.email}</div>
+													</div>
+													<div className="flex items-center gap-2">
+														{user.is_admin_global && (
+															<span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Global Admin</span>
+														)}
+														<button 
+															className="btn-sm" 
+															onClick={() => { setTab('users'); openUser(user); }}
+														>
+															View
+														</button>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+
+								{/* Workspaces */}
+								{search.workspaces?.length > 0 && (
+									<div>
+										<div className="text-sm font-medium text-gray-600 mb-2">Workspaces ({search.workspaces.length})</div>
+										<div className="grid gap-2">
+											{search.workspaces.map(ws => (
+												<div key={ws.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+													<div>
+														<div className="font-medium">{ws.name}</div>
+														<div className="text-sm text-gray-600">Created {ws.created_at ? new Date(ws.created_at).toLocaleDateString() : 'Unknown'}</div>
+													</div>
+													<button 
+														className="btn-sm" 
+														onClick={() => { setTab('workspaces'); openWorkspace(ws); }}
+													>
+														View
+													</button>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+
+								{/* Calls */}
+								{search.calls?.length > 0 && (
+									<div>
+										<div className="text-sm font-medium text-gray-600 mb-2">Calls ({search.calls.length})</div>
+										<div className="grid gap-2">
+											{search.calls.map(call => (
+												<div key={call.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+													<div>
+														<div className="font-medium">Call {call.id}</div>
+														<div className="text-sm text-gray-600">
+															{call.to} → {call.from} • {call.lang} • {call.iso}
+														</div>
+														<div className="text-xs text-gray-500">
+															{call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
+														</div>
+													</div>
+													<div className="flex items-center gap-2">
+														<span className={`px-2 py-1 text-xs rounded-full ${
+															call.status === 'finished' ? 'bg-green-100 text-green-800' :
+															call.status === 'running' ? 'bg-blue-100 text-blue-800' :
+															'bg-gray-100 text-gray-800'
+														}`}>
+															{call.status}
+														</span>
+														<button 
+															className="btn-sm" 
+															onClick={() => { setTab('calls'); openCall(call); }}
+														>
+															View
+														</button>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+
+								{/* Campaigns */}
+								{search.campaigns?.length > 0 && (
+									<div>
+										<div className="text-sm font-medium text-gray-600 mb-2">Campaigns ({search.campaigns.length})</div>
+										<div className="grid gap-2">
+											{search.campaigns.map(campaign => (
+												<div key={campaign.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+													<div>
+														<div className="font-medium">{campaign.name}</div>
+														<div className="text-sm text-gray-600">
+															{campaign.goal} • {campaign.role} • {campaign.lang_default}
+														</div>
+														<div className="text-xs text-gray-500">
+															Created {campaign.created_at ? new Date(campaign.created_at).toLocaleDateString() : 'Unknown'}
+														</div>
+													</div>
+													<div className="flex items-center gap-2">
+														<span className={`px-2 py-1 text-xs rounded-full ${
+															campaign.status === 'running' ? 'bg-green-100 text-green-800' :
+															campaign.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
+															'bg-gray-100 text-gray-800'
+														}`}>
+															{campaign.status}
+														</span>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+
+								{/* No results */}
+								{(!search.users?.length && !search.workspaces?.length && !search.calls?.length && !search.campaigns?.length) && (
+									<div className="text-center py-8 text-gray-500">
+										No results found for "{q}"
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
 					<div className="grid grid-cols-12 gap-4">
 						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Users total" value={users.length || '—'} /></div>
 						<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Active 7d" value={'—'} /></div>
