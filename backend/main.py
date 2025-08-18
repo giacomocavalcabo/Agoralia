@@ -21,11 +21,27 @@ _WORKSPACE_INVITES = []
 _ACTIVITY = []
 _CONCURRENCY = {"used": 1, "free": 9, "limit": 10, "by_queue": {"enterprise": 0, "pro": 1, "core": 0, "trial": 0}}
 # ===================== RBAC (very simple dev stub) =====================
+def _role_from_request(req: Request | None) -> str:
+    try:
+        return (req.headers.get("X-Role") if req else None) or "admin"
+    except Exception:
+        return "admin"
+
 def require_role(role: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
-        def wrapper(*args, **kwargs):
-            # In dev, accept all; in prod check user session/headers
-            return fn(*args, **kwargs)
+        async def wrapper(*args, **kwargs):
+            # Find Request in args/kwargs
+            req: Request | None = kwargs.get("request")
+            if req is None:
+                for a in args:
+                    if isinstance(a, Request):
+                        req = a
+                        break
+            current = _role_from_request(req).lower()
+            order = {"viewer": 1, "editor": 2, "admin": 3}
+            if order.get(current, 0) < order.get(role, 3):
+                raise HTTPException(status_code=403, detail="Forbidden")
+            return await fn(*args, **kwargs)
         return wrapper
     return decorator
 
@@ -507,7 +523,8 @@ def ws_members() -> dict:
 
 @app.post("/workspaces/members/invite")
 @audit("invite", "member")
-async def ws_invite(payload: dict) -> dict:
+@require_role("admin")
+async def ws_invite(payload: dict, request: Request) -> dict:
     invite = {"id": f"inv_{len(_WORKSPACE_INVITES)+1}", "email": payload.get("email"), "role": payload.get("role","viewer"), "token": "demo-token", "invited_at": "2025-08-18T10:00:00Z"}
     _WORKSPACE_INVITES.append(invite)
     return invite
@@ -516,6 +533,55 @@ async def ws_invite(payload: dict) -> dict:
 @app.get("/workspaces/activity")
 def ws_activity(limit: int = 100) -> dict:
     return {"items": list(reversed(_ACTIVITY))[:limit]}
+
+
+@app.post("/workspaces/members/accept")
+async def ws_accept(payload: dict) -> dict:
+    token = payload.get("token")
+    inv = next((i for i in _WORKSPACE_INVITES if i.get("token") == token), None)
+    if not inv:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    new_member = {"user_id": f"u_{len(_WORKSPACE_MEMBERS)+1}", "email": inv["email"], "role": inv.get("role","viewer"), "invited_at": inv.get("invited_at"), "joined_at": "2025-08-18T12:00:00Z"}
+    _WORKSPACE_MEMBERS.append(new_member)
+    inv["accepted_at"] = "2025-08-18T12:00:00Z"
+    return {"joined": True, "member": new_member}
+
+
+@app.patch("/workspaces/members/{user_id}")
+@require_role("admin")
+async def ws_change_role(user_id: str, payload: dict, request: Request) -> dict:
+    role = payload.get("role")
+    found = next((m for m in _WORKSPACE_MEMBERS if m.get("user_id") == user_id), None)
+    if not found:
+        raise HTTPException(status_code=404, detail="Not found")
+    found["role"] = role
+    return {"updated": True}
+
+
+@app.delete("/workspaces/members/{user_id}")
+@require_role("admin")
+async def ws_remove(user_id: str, request: Request) -> dict:
+    idx = next((i for i,m in enumerate(_WORKSPACE_MEMBERS) if m.get("user_id") == user_id), -1)
+    if idx < 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    _WORKSPACE_MEMBERS.pop(idx)
+    return {"deleted": True}
+
+
+@app.post("/worker/call/start")
+def worker_call_start() -> dict:
+    if _CONCURRENCY["free"] <= 0:
+        raise HTTPException(status_code=409, detail={"code": "CONCURRENCY"})
+    _CONCURRENCY["used"] += 1
+    _CONCURRENCY["free"] = max(0, _CONCURRENCY["limit"] - _CONCURRENCY["used"])
+    return _CONCURRENCY
+
+
+@app.post("/worker/call/finish")
+def worker_call_finish() -> dict:
+    _CONCURRENCY["used"] = max(0, _CONCURRENCY["used"] - 1)
+    _CONCURRENCY["free"] = max(0, _CONCURRENCY["limit"] - _CONCURRENCY["used"])
+    return _CONCURRENCY
 
 
 @app.get("/campaigns/{campaign_id}/leads")
