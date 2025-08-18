@@ -128,9 +128,11 @@ origins = [
 if front_origin:
     origins.append(front_origin)
 
+# Allow Vercel preview subdomains by regex as well
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*vercel\\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

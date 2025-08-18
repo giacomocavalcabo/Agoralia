@@ -29,13 +29,13 @@ export default function Dashboard() {
 		setLoading(true)
 		try {
 			const [s, l, e] = await Promise.all([
-				apiFetch(`/dashboard/summary?days=${trendDays}`),
-				apiFetch('/calls/live'),
-				apiFetch('/events/recent?limit=10')
+				apiFetch(`/dashboard/summary?days=${trendDays}`).catch(()=> null),
+				apiFetch('/calls/live').catch(()=> ({ items: [] })),
+				apiFetch('/events/recent?limit=10').catch(()=> ({ items: [] }))
 			])
-			setSummary(s)
-			setLive(Array.isArray(l.items) ? l.items : [])
-			setEvents(Array.isArray(e.items) ? e.items : [])
+			setSummary(s || { minutes_mtd:0, minutes_cap:1000, calls_today:0, success_rate:0, avg_duration_sec:0, p95_turn_taking_ms:0, errors_24h:0 })
+			setLive(Array.isArray(l?.items) ? l.items : [])
+			setEvents(Array.isArray(e?.items) ? e.items : [])
 			const labels = Array.from({ length: trendDays }).map((_,i)=> `${i+1}`)
 			setTrends({ labels, calls: labels.map(()=> Math.floor(Math.random()*10)) })
 		} finally { setLoading(false) }
@@ -57,12 +57,12 @@ export default function Dashboard() {
 				</div>
 			) : (
 				<div style={{ display:'grid', gridTemplateColumns:'repeat(6, minmax(0,1fr))', gap:12 }}>
-					<KPI label={t('pages.dashboard.kpi.minutes')} value={summary.minutes_mtd} progressPct={(summary.minutes_mtd/summary.minutes_cap)*100} />
-					<KPI label={t('pages.dashboard.kpi.calls_today')} value={summary.calls_today} />
-					<KPI label={t('pages.dashboard.kpi.success')} value={`${Math.round(summary.success_rate*100)}%`} />
-					<KPI label="Avg duration" value={`${summary.avg_duration_sec ?? 0}s`} />
-					<KPI label="p95 turn-taking" value={`${summary.p95_turn_taking_ms ?? 0}ms`} />
-					<KPI label="Errors (24h)" value={summary.errors_24h ?? 0} />
+					<KPI label={t('pages.dashboard.kpi.minutes')} value={summary?.minutes_mtd ?? 0} progressPct={Math.min(100, Math.round(((summary?.minutes_mtd ?? 0) / Math.max(1, summary?.minutes_cap ?? 1)) * 100))} />
+					<KPI label={t('pages.dashboard.kpi.calls_today')} value={summary?.calls_today ?? 0} />
+					<KPI label={t('pages.dashboard.kpi.success')} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} />
+					<KPI label="Avg duration" value={`${summary?.avg_duration_sec ?? 0}s`} />
+					<KPI label="p95 turn-taking" value={`${summary?.p95_turn_taking_ms ?? 0}ms`} />
+					<KPI label="Errors (24h)" value={summary?.errors_24h ?? 0} />
 				</div>
 			)}
 

@@ -98,21 +98,3 @@
     }
   }
 }
-
-{
-  "pages": {
-    "dashboard": {
-      "title": "لوحة التحكم"
-    },
-    "leads": {
-      "title": "العملاء المحتملون"
-    },
-    "settings": {
-      "tabs2": {
-        "general": "عام",
-        "languages": "اللغات"
-      }
-    }
-  }
-}
-
