@@ -27,7 +27,7 @@ export default function Campaigns(){
 
   async function submit(){
     if (callUnsupported){ toast(t('app.notices.call_lang_not_supported', { lang: form.lang_default })); return }
-    if (!attestOk){ toast('Please confirm compliance attestation'); return }
+    if (!attestOk){ toast(t('compliance.attest') || 'Please confirm compliance attestation'); return }
     try{
       // create attestation (demo)
       await apiFetch('/attestations', { method:'POST', body: { campaign_preview: { name: form.name, lang_default: form.lang_default } } })
@@ -44,134 +44,134 @@ export default function Campaigns(){
   }
 
   return (
-    <div style={{ display:'grid', gap:12 }}>
-      <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+    <div className="grid gap-3">
+      <div className="flex items-center gap-1.5">
         {[1,2,3,4].map((s)=> (
-          <button key={s} onClick={()=> setStep(s)} aria-current={step===s? 'page': undefined} style={{ padding:'6px 10px', border:'1px solid var(--border)', background: step===s? 'var(--surface)': 'transparent', borderRadius:8 }}>Step {s}</button>
+          <button key={s} onClick={()=> setStep(s)} aria-current={step===s? 'page': undefined} className={`rounded-lg border border-line px-2.5 py-1.5 ${step===s? 'bg-bg-app':''}`}>{t('pages.campaigns.step', { s }) || `Step ${s}`}</button>
         ))}
-        <div className="kpi-title" style={{ marginLeft:'auto' }}>{t('pages.campaigns.title')}</div>
+        <div className="kpi-title ml-auto">{t('pages.campaigns.title')}</div>
       </div>
 
       {step===1 && (
-        <div className="panel" style={{ display:'grid', gap:10 }}>
-          <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.details')}</div>
+        <div className="panel grid gap-2.5">
+          <div className="font-semibold">{t('pages.campaigns.steps.details')}</div>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.name')}</div>
-            <input value={form.name} onChange={e=> setForm({ ...form, name:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input value={form.name} onChange={e=> setForm({ ...form, name:e.target.value })} className="input" />
           </label>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <div className="grid grid-cols-2 gap-2.5">
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.goal')}</div>
-              <select value={form.goal} onChange={e=> setForm({ ...form, goal:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }}>
+              <select value={form.goal} onChange={e=> setForm({ ...form, goal:e.target.value })} className="input">
                 {GOALS.map(g=> (<option key={g} value={g}>{g}</option>))}
               </select>
             </label>
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.role')}</div>
-              <select value={form.role} onChange={e=> setForm({ ...form, role:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }}>
+              <select value={form.role} onChange={e=> setForm({ ...form, role:e.target.value })} className="input">
                 {ROLES.map(r=> (<option key={r} value={r}>{r}</option>))}
               </select>
             </label>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <div className="grid grid-cols-2 gap-2.5">
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.lang')}</div>
-              <select value={form.lang_default} onChange={e=> setForm({ ...form, lang_default:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }}>
+              <select value={form.lang_default} onChange={e=> setForm({ ...form, lang_default:e.target.value })} className="input">
                 {(locales.call_supported || []).map(l=> (<option key={l} value={l}>{l}</option>))}
               </select>
             </label>
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.from')}</div>
-              <input value={form.from_number} onChange={e=> setForm({ ...form, from_number:e.target.value })} placeholder={'+12025550123'} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+              <input value={form.from_number} onChange={e=> setForm({ ...form, from_number:e.target.value })} placeholder={'+12025550123'} className="input" />
             </label>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <div className="grid grid-cols-2 gap-2.5">
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.agent')}</div>
-              <input value={form.agent_id} onChange={e=> setForm({ ...form, agent_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+              <input value={form.agent_id} onChange={e=> setForm({ ...form, agent_id:e.target.value })} className="input" />
             </label>
             <label>
               <div className="kpi-title">{t('pages.campaigns.fields.kb')}</div>
-              <input value={form.kb_id} onChange={e=> setForm({ ...form, kb_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+              <input value={form.kb_id} onChange={e=> setForm({ ...form, kb_id:e.target.value })} className="input" />
             </label>
           </div>
 
           {callUnsupported && (
-            <div role="alert" className="panel" style={{ border:'1px solid #F59E0B', background:'#FFFBEB', color:'#92400E' }}>
-              {t('app.notices.call_lang_not_supported', { lang: form.lang_default })}
+            <div role="alert" className="rounded-xl border border-warn bg-warn/10 text-ink-900 px-3 py-2">
+              <div className="text-sm">{t('app.notices.call_lang_not_supported', { lang: form.lang_default })}</div>
             </div>
           )}
 
-          <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-            <button onClick={()=> setStep(2)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+          <div className="flex justify-end gap-2">
+            <button onClick={()=> setStep(2)} className="btn">{t('common.next')}</button>
           </div>
         </div>
       )}
 
       {step===2 && (
-        <div className="panel" style={{ display:'grid', gap:10 }}>
-          <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.audience')}</div>
+        <div className="panel grid gap-2.5">
+          <div className="font-semibold">{t('pages.campaigns.steps.audience')}</div>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience (lead ids comma-separated)'}</div>
-            <input value={form.audience.lead_ids?.join(',')||''} onChange={e=> setForm({ ...form, audience:{ lead_ids: e.target.value.split(',').map(s=> s.trim()).filter(Boolean) } })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input value={form.audience.lead_ids?.join(',')||''} onChange={e=> setForm({ ...form, audience:{ lead_ids: e.target.value.split(',').map(s=> s.trim()).filter(Boolean) } })} className="input" />
           </label>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.pacing')}</div>
-            <input type="number" min="1" value={form.pacing_npm} onChange={e=> setForm({ ...form, pacing_npm:e.target.value })} style={{ width:200, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input type="number" min="1" value={form.pacing_npm} onChange={e=> setForm({ ...form, pacing_npm:e.target.value })} className="input w-[200px]" />
           </label>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.budget')}</div>
-            <input type="number" min="0" value={form.budget_cap_cents} onChange={e=> setForm({ ...form, budget_cap_cents:e.target.value })} style={{ width:200, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input type="number" min="0" value={form.budget_cap_cents} onChange={e=> setForm({ ...form, budget_cap_cents:e.target.value })} className="input w-[200px]" />
           </label>
-          <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
-            <button onClick={()=> setStep(1)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
-            <button onClick={()=> setStep(3)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+          <div className="flex justify-between gap-2">
+            <button onClick={()=> setStep(1)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
+            <button onClick={()=> setStep(3)} className="btn">{t('common.next')}</button>
           </div>
         </div>
       )}
 
       {step===3 && (
-        <div className="panel" style={{ display:'grid', gap:10 }}>
-          <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.windows')}</div>
+        <div className="panel grid gap-2.5">
+          <div className="font-semibold">{t('pages.campaigns.steps.windows')}</div>
           {/* Compliance scripts preview */}
-          <div className="panel" style={{ border:'1px solid var(--border)' }}>
-            <div className="kpi-title" style={{ marginBottom:6 }}>Compliance</div>
-            <div className="kpi-title">{scripts?.disclosure || 'Disclosure text…'}</div>
-            <div className="kpi-title">{scripts?.record_consent || 'Recording consent…'}</div>
+          <div className="panel border border-line">
+            <div className="kpi-title mb-1.5">{t('pages.campaigns.compliance') || 'Compliance'}</div>
+            <div className="kpi-title">{scripts?.disclosure || t('pages.campaigns.compliance_disclosure') || 'Disclosure text…'}</div>
+            <div className="kpi-title">{scripts?.record_consent || t('pages.campaigns.compliance_record') || 'Recording consent…'}</div>
           </div>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.dow')||'Days of week (1=Mon...7=Sun)'}</div>
-            <input value={(form.window.dow||[]).join(',')} onChange={e=> setForm({ ...form, window:{ ...form.window, dow: e.target.value.split(',').map(s=> parseInt(s)).filter(n=> !isNaN(n)) } })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input value={(form.window.dow||[]).join(',')} onChange={e=> setForm({ ...form, window:{ ...form.window, dow: e.target.value.split(',').map(s=> parseInt(s)).filter(n=> !isNaN(n)) } })} className="input" />
           </label>
-          <label style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
+          <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={form.window.quiet_hours} onChange={e=> setForm({ ...form, window:{ ...form.window, quiet_hours:e.target.checked } })} />
             <span className="kpi-title">{t('pages.campaigns.fields.quiet_hours')}</span>
           </label>
           <label>
             <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start date/time'}</div>
-            <input type="datetime-local" value={form.window.start_at || ''} onChange={e=> setForm({ ...form, window:{ ...form.window, start_at: e.target.value } })} style={{ width:260, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input type="datetime-local" value={form.window.start_at || ''} onChange={e=> setForm({ ...form, window:{ ...form.window, start_at: e.target.value } })} className="input w-[260px]" />
           </label>
-          <label style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
+          <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={attestOk} onChange={e=> setAttestOk(e.target.checked)} />
             <span className="kpi-title">{t('compliance.attest') || 'I confirm compliance responsibilities and local rules were verified.'}</span>
           </label>
-          <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
-            <button onClick={()=> setStep(2)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
-            <button onClick={()=> setStep(4)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+          <div className="flex justify-between gap-2">
+            <button onClick={()=> setStep(2)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
+            <button onClick={()=> setStep(4)} className="btn">{t('common.next')}</button>
           </div>
         </div>
       )}
 
       {step===4 && (
-        <div className="panel" style={{ display:'grid', gap:10 }}>
-          <div style={{ fontWeight:700 }}>{t('pages.campaigns.steps.review')}</div>
+        <div className="panel grid gap-2.5">
+          <div className="font-semibold">{t('pages.campaigns.steps.review')}</div>
           <div className="kpi-title">{form.name} • {form.goal} • {form.role} • {form.lang_default}</div>
           <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience'}: {(form.audience.lead_ids||[]).length} {t('pages.leads.title')||'leads'}</div>
           <div className="kpi-title">{t('pages.campaigns.fields.pacing')}: {form.pacing_npm}/min • {t('pages.campaigns.fields.budget')}: {form.budget_cap_cents||'-'}</div>
           <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start'}: {form.window.start_at||'-'}; DoW: {(form.window.dow||[]).join(',')}</div>
-          <div style={{ display:'flex', justifyContent:'space-between', gap:8 }}>
-            <button onClick={()=> setStep(3)} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
-            <button onClick={submit} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.campaigns.actions.create_schedule')}</button>
+          <div className="flex justify-between gap-2">
+            <button onClick={()=> setStep(3)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
+            <button onClick={submit} className="btn">{t('pages.campaigns.actions.create_schedule')}</button>
           </div>
         </div>
       )}

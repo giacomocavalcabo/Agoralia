@@ -66,32 +66,24 @@ export default function Calendar(){
   }
 
   return (
-    <div style={{ display:'grid', gap:12 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-        <div style={{ display:'flex', gap:6 }}>
-          <button onClick={prev} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.prev')}</button>
-          <button onClick={today} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.today')||'Today'}</button>
-          <button onClick={next} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.next')}</button>
+    <div className="grid gap-3">
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1.5">
+          <button onClick={prev} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
+          <button onClick={today} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.today')||'Today'}</button>
+          <button onClick={next} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.next')}</button>
         </div>
-        <div style={{ marginLeft:'auto', display:'flex', gap:6 }}>
-          <button aria-pressed={view==='week'} onClick={()=> setView('week')} style={{ padding:'6px 10px', border:'1px solid var(--border)', background: view==='week'? 'var(--surface)':'transparent', borderRadius:8 }}>{t('common.week')||'Week'}</button>
-          <button aria-pressed={view==='month'} onClick={()=> setView('month')} style={{ padding:'6px 10px', border:'1px solid var(--border)', background: view==='month'? 'var(--surface)':'transparent', borderRadius:8 }}>{t('common.month')||'Month'}</button>
+        <div className="ml-auto flex gap-1.5">
+          <button aria-pressed={view==='week'} onClick={()=> setView('week')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='week'?'bg-bg-app':''}`}>{t('common.week')||'Week'}</button>
+          <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>{t('common.month')||'Month'}</button>
         </div>
       </div>
       <div className="kpi-title">{t('pages.calendar.range', { from: fromStr, to: toStr })}</div>
-      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-          <span style={{ width:10, height:10, background:'rgba(16,185,129,.25)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.scheduled')||'Scheduled'}
-        </span>
-        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-          <span style={{ width:10, height:10, background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.blocked')||'Blocked'}
-        </span>
-        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-          <span style={{ width:10, height:10, background:'rgba(245,158,11,.18)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.warn_budget')||'Warn • Budget'}
-        </span>
-        <span className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-          <span style={{ width:10, height:10, background:'rgba(239,68,68,.16)', display:'inline-block', borderRadius:2 }} />{t('pages.calendar.legend.warn_concurrency')||'Warn • Concurrency'}
-        </span>
+      <div className="flex items-center gap-2.5">
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(16,185,129,.25)' }}></span>{t('pages.calendar.legend.scheduled')||'Scheduled'}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)' }}></span>{t('pages.calendar.legend.blocked')||'Blocked'}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(245,158,11,.18)' }}></span>{t('pages.calendar.legend.warn_budget')||'Warn • Budget'}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(239,68,68,.16)' }}></span>{t('pages.calendar.legend.warn_concurrency')||'Warn • Concurrency'}</span>
       </div>
       <div className="panel" style={{ minHeight:300 }}>
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('pages.calendar.title')}</div>
@@ -111,18 +103,18 @@ export default function Calendar(){
               if (e.key === 'Escape'){ setFocusedSlot(null); e.preventDefault() }
               if (e.key.toLowerCase() === 't'){ today(); const d=new Date(); d.setHours(8,0,0,0); setFocusedSlot(d); e.preventDefault() }
             }}
-            style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--border)', borderLeft:'1px solid var(--border)' }}
+            style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--line)', borderLeft:'1px solid var(--line)' }}
           >
             <div></div>
             {Array.from({ length:7 }).map((_,d)=>{
               const day = new Date(range.start); day.setDate(range.start.getDate()+d)
-              return <div key={d} className="kpi-title" style={{ padding:8, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)' }}>{day.toLocaleDateString()}</div>
+              return <div key={d} className="kpi-title" style={{ padding:8, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>{day.toLocaleDateString()}</div>
             })}
             {Array.from({ length:11 }).map((_,h)=>{
               const hour = h+8
               return (
                 <div key={`row-${hour}`} style={{ display:'contents' }}>
-                  <div className="kpi-title" style={{ padding:6, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)' }}>{String(hour).padStart(2,'0')}:00</div>
+                  <div className="kpi-title" style={{ padding:6, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>{String(hour).padStart(2,'0')}:00</div>
                   {Array.from({ length:7 }).map((_,d)=>{
                     const slot = new Date(range.start); slot.setDate(range.start.getDate()+d); slot.setHours(hour,0,0,0)
                     const scheduledHere = events.find(e=> e.kind==='scheduled' && e.at && new Date(e.at).getTime()===slot.getTime())
@@ -177,7 +169,7 @@ export default function Calendar(){
                           }
                           setDragStart(null); setHoverSlot(null)
                         }}
-                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: (()=>{
+                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)', background: (function(){
                           if (blockedHere) return 'repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 6px, transparent 6px, transparent 12px)'
                           if (warnConcHere) return 'rgba(239,68,68,.10)'
                           if (warnBudgetHere) return 'rgba(245,158,11,.12)'
@@ -199,7 +191,7 @@ export default function Calendar(){
             })}
           </div>
         ) : (
-          <ul style={{ margin:0, paddingLeft:16 }}>
+          <ul className="m-0 pl-4">
             {events.map(e=> (<li key={e.id} className="kpi-title">[{e.kind}] {e.title || ''} {e.at}</li>))}
           </ul>
         )}
@@ -207,56 +199,56 @@ export default function Calendar(){
 
       <Modal title={t('pages.calendar.quick.title')} open={quickOpen} onClose={()=> setQuickOpen(false)} footer={
         <>
-          <button onClick={()=> setQuickOpen(false)} style={{ padding:'8px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>
-          <button onClick={submitQuick} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.calendar.quick.submit')}</button>
+          <button onClick={()=> setQuickOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
+          <button onClick={submitQuick} className="btn">{t('pages.calendar.quick.submit')}</button>
         </>
       }>
-        <div style={{ display:'grid', gap:10 }}>
+        <div className="grid gap-2.5">
           <label>
             <div className="kpi-title">{t('pages.calendar.quick.lead')}</div>
-            <input value={quick.lead_id} onChange={e=> setQuick({ ...quick, lead_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input value={quick.lead_id} onChange={e=> setQuick({ ...quick, lead_id:e.target.value })} className="input" />
           </label>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <div className="grid grid-cols-2 gap-2.5">
             <label>
               <div className="kpi-title">{t('pages.calendar.quick.agent')}</div>
-              <input value={quick.agent_id} onChange={e=> setQuick({ ...quick, agent_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+              <input value={quick.agent_id} onChange={e=> setQuick({ ...quick, agent_id:e.target.value })} className="input" />
             </label>
             <label>
               <div className="kpi-title">{t('pages.calendar.quick.kb')}</div>
-              <input value={quick.kb_id} onChange={e=> setQuick({ ...quick, kb_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+              <input value={quick.kb_id} onChange={e=> setQuick({ ...quick, kb_id:e.target.value })} className="input" />
             </label>
           </div>
           <label>
             <div className="kpi-title">{t('pages.calendar.quick.from')}</div>
-            <input placeholder={'+12025550123'} value={quick.from} onChange={e=> setQuick({ ...quick, from:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input placeholder={'+12025550123'} value={quick.from} onChange={e=> setQuick({ ...quick, from:e.target.value })} className="input" />
           </label>
           <label>
             <div className="kpi-title">{t('pages.calendar.quick.datetime')}</div>
-            <input type="datetime-local" value={quick.at ? new Date(quick.at).toISOString().slice(0,16) : ''} onChange={e=> setQuick({ ...quick, at: new Date(e.target.value).toISOString() })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            <input type="datetime-local" value={quick.at ? new Date(quick.at).toISOString().slice(0,16) : ''} onChange={e=> setQuick({ ...quick, at: new Date(e.target.value).toISOString() })} className="input" />
           </label>
         </div>
       </Modal>
 
       <Drawer open={drawerOpen} onClose={()=> setDrawerOpen(false)} title={selected ? (selected.title || 'Scheduled') : ''}>
         {selected && (
-          <div style={{ display:'grid', gap:8 }}>
+          <div className="grid gap-2">
             <div className="kpi-title">{selected.at}</div>
-            <div style={{ display:'flex', gap:8 }}>
-              <span className="kpi-title" style={{ border:'1px solid var(--border)', borderRadius:999, padding:'2px 8px' }}>{t('pages.calendar.badge.tz')||'TZ'}: UTC</span>
-              {selected.lang && <span className="kpi-title" style={{ border:'1px solid var(--border)', borderRadius:999, padding:'2px 8px' }}>{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
+            <div className="flex gap-2">
+              <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.tz')||'TZ'}: UTC</span>
+              {selected.lang && <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
             </div>
             {(selected.kind==='blocked' || selected.kind==='warn') && (
               <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
             )}
-            <div style={{ display:'flex', gap:8 }}>
-              <button onClick={()=> setDrawerOpen(false)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>
+            <div className="flex gap-2">
+              <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
               <button onClick={async ()=>{
                 try{
                   await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
                   toast('Canceled'); setDrawerOpen(false); load()
                 } catch(err){ toast(String(err?.message || err)) }
-              }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
-              <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
+              }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
+              <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
             </div>
           </div>
         )}

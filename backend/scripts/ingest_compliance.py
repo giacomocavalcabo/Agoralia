@@ -385,8 +385,8 @@ def transform(raw: dict) -> dict:
         }]
     # Sources (CSV primary)
     raw_sources = raw.get("sources") or raw.get("Sources") or []
-    if not raw_sources and (raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official")):
-        srcs = raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official")
+    if not raw_sources and (raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official") or raw.get("Primary_Sources")):
+        srcs = raw.get("Primary_Sources(max3;official)") or raw.get("primarySourcesMax3Official") or raw.get("Primary_Sources")
         parts = [p.strip() for p in str(srcs).split(";") if p.strip()]
         updated = raw.get("Source_Last_Updated") or raw.get("sourceLastUpdated")
         raw_sources = [{"title": p, "url": None, "updated": updated} for p in parts[:3]]
@@ -514,9 +514,6 @@ def run() -> None:
     fused_items: list[dict] = []
     for r in raw_records:
         fused = transform(r)
-        # Exclude Brunei on request (until provided later)
-        if (fused.get("iso") or "").upper() == "BN":
-            continue
         errs = quality_checks(fused)
         if errs:
             # keep but annotate; a real pipeline could fail-fast

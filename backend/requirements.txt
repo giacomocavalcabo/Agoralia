@@ -12,3 +12,5 @@ psycopg2-binary>=2.9
 websockets>=11.0
 orjson>=3.9
 retell-sdk
+bcrypt>=4.1
+aiofiles>=23.2

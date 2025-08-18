@@ -1,5 +1,969 @@
 {
   "fused_by_iso": {
+    "US": {
+      "country": "United States",
+      "iso": "US",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must be truthful per FCC rules",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "high",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers regulated",
+      "regime_b2b_text": "Telemarketing to businesses less regulated",
+      "notes_for_product": "AI robocalls under scrutiny – treat as disclosure required conservatively",
+      "dnc": [
+        {
+          "name": "National Do Not Call Registry",
+          "url": "https://www.donotcall.gov",
+          "access": "api",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "FCC https://www.fcc.gov",
+          "url": null,
+          "updated": "2024-07-01"
+        },
+        {
+          "title": "FTC https://www.ftc.gov",
+          "url": null,
+          "updated": "2024-07-01"
+        },
+        {
+          "title": "National DNC",
+          "url": null,
+          "updated": "2024-07-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      }
+    },
+    "CA": {
+      "country": "Canada",
+      "iso": "CA",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must be displayed",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "high",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers regulated",
+      "regime_b2b_text": "B2B exempt unless consumer contacts involved",
+      "notes_for_product": "Conservative rule: treat B2B as subject to B2C restrictions",
+      "dnc": [
+        {
+          "name": "National DNCL",
+          "url": "https://lnnte-dncl.gc.ca",
+          "access": "api",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "CRTC https://crtc.gc.ca",
+          "url": null,
+          "updated": "2024-06-15"
+        },
+        {
+          "title": "National DNCL",
+          "url": null,
+          "updated": "2024-06-15"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "MX": {
+      "country": "Mexico",
+      "iso": "MX",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID truthful per IFT rules",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers regulated",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "Apply consumer quiet hours to B2B conservatively",
+      "dnc": [
+        {
+          "name": "REUS (Registro Público de Usuarios)",
+          "url": "https://reus.profeco.gob.mx",
+          "access": "none",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "PROFECO https://www.gob.mx/profeco",
+          "url": null,
+          "updated": "2024-03-30"
+        },
+        {
+          "title": "IFT https://www.ift.org.mx",
+          "url": null,
+          "updated": "2024-03-30"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "GT": {
+      "country": "Guatemala",
+      "iso": "GT",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing loosely regulated",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "ES",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "Unknown",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No official DNCL – apply conservative opt-in",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "SV": {
+      "country": "El Salvador",
+      "iso": "SV",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer data protected under law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "No DNCL – apply opt-in conservatively",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "SIGET https://www.siget.gob.sv",
+          "url": null,
+          "updated": "2023-11-15"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "HN": {
+      "country": "Honduras",
+      "iso": "HN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer protection law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Weak enforcement – treat as opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "CONATEL Honduras",
+          "url": null,
+          "updated": "2023-10-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "NI": {
+      "country": "Nicaragua",
+      "iso": "NI",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer protection applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Conservative product note: opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "TELCOR Nicaragua",
+          "url": null,
+          "updated": "2023-09-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "CR": {
+      "country": "Costa Rica",
+      "iso": "CR",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing regulated under Law 8968 (Data Protection)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "ES",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "Unknown",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply opt-in to all",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "PA": {
+      "country": "Panama",
+      "iso": "PA",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer protection law regulates calls",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "ES",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "Unknown",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No DNCL – opt-in required",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "BZ": {
+      "country": "Belize",
+      "iso": "BZ",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer laws apply loosely",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply opt-in conservatively",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PUC Belize",
+          "url": null,
+          "updated": "2023-08-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "DO": {
+      "country": "Dominican Republic",
+      "iso": "DO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "08:00",
+            "20:00"
+          ]
+        ],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing regulated",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "DNCL exists but enforcement weak",
+      "dnc": [
+        {
+          "name": "DNCL (Registro de No Molestar)",
+          "url": "https://proconsumidor.gob.do",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "ProConsumidor",
+          "url": null,
+          "updated": "2024-04-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "HT": {
+      "country": "Haiti",
+      "iso": "HT",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No explicit DNCL",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "No DNCL – apply opt-in conservatively",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "CONATEL Haiti",
+          "url": null,
+          "updated": "2023-06-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "JM": {
+      "country": "Jamaica",
+      "iso": "JM",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer laws apply",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "EN",
+      "dnc": [
+        {
+          "name": "https://www.jftc.gov.jm",
+          "url": "Unknown",
+          "access": "bulk",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "DNCL exists but weak",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "TT": {
+      "country": "Trinidad and Tobago",
+      "iso": "TT",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer protection law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "No DNCL – apply opt-in conservatively",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "TATT https://tatt.org.tt",
+          "url": null,
+          "updated": "2023-11-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BB": {
+      "country": "Barbados",
+      "iso": "BB",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer protection law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "No DNCL – apply opt-in conservatively",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "FTC Barbados",
+          "url": null,
+          "updated": "2023-10-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BH": {
+      "country": "Bahrain",
+      "iso": "BH",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "True CLI; anti-spoofing enforced via licensees.",
+      "recent_changes": "No formal DNC; TRA consumer guidance ongoing.",
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "TRA spam rules focus on unsolicited electronic messages; limited specifics on live calls",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Prefer consent; provide opt-out; avoid automated voice without prior consent; display caller identity.",
+      "dnc": [
+        {
+          "name": "None (no public DNC)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "https://www.tra.org.bh/en/consumer-affairs",
+          "url": null,
+          "updated": "2022-01-01"
+        },
+        {
+          "title": "https://www.tra.org.bh/en/regulations",
+          "url": null,
+          "updated": "2022-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "AG": {
+      "country": "Antigua and Barbuda",
+      "iso": "AG",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL (covers AG, DM, GD, KN, LC, VC)",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "GD": {
+      "country": "Grenada",
+      "iso": "GD",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "LC": {
+      "country": "St. Lucia",
+      "iso": "LC",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "KN": {
+      "country": "St. Kitts and Nevis",
+      "iso": "KN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "VC": {
+      "country": "St. Vincent and Grenadines",
+      "iso": "VC",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "DM": {
+      "country": "Dominica",
+      "iso": "DM",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ECTEL",
+          "url": null,
+          "updated": "2023-05-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
     "AT": {
       "country": "Austria",
       "iso": "AT",
@@ -1578,52 +2542,6 @@
         "has_quiet_hours": false
       }
     },
-    "BH": {
-      "country": "Bahrain",
-      "iso": "BH",
-      "regime_b2c": "opt-out",
-      "regime_b2b": "opt-out",
-      "quiet_hours": null,
-      "ai_disclosure": "depends",
-      "recording_basis": "legitimate_interest",
-      "callerid_rules": "True CLI; anti-spoofing enforced via licensees.",
-      "recent_changes": "No formal DNC; TRA consumer guidance ongoing.",
-      "last_verified": "2025-08-18",
-      "confidence": "low",
-      "confidence_score": null,
-      "regime_b2c_text": "TRA spam rules focus on unsolicited electronic messages; limited specifics on live calls",
-      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
-      "notes_for_product": "Prefer consent; provide opt-out; avoid automated voice without prior consent; display caller identity.",
-      "dnc": [
-        {
-          "name": "None (no public DNC)",
-          "url": null,
-          "access": "unknown",
-          "check_required_for_er": false
-        }
-      ],
-      "sources": [
-        {
-          "title": "https://www.tra.org.bh/en/consumer-affairs",
-          "url": null,
-          "updated": "2022-01-01"
-        },
-        {
-          "title": "https://www.tra.org.bh/en/regulations",
-          "url": null,
-          "updated": "2022-01-01"
-        }
-      ],
-      "exceptions": [],
-      "flags": {
-        "requires_consent_b2c": false,
-        "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
-        "allows_automated": true,
-        "recording_requires_consent": false,
-        "has_quiet_hours": false
-      }
-    },
     "OM": {
       "country": "Oman",
       "iso": "OM",
@@ -2316,6 +3234,116 @@
     }
   },
   "countries": [
+    {
+      "iso": "US",
+      "confidence": "high",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "CA",
+      "confidence": "high",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "MX",
+      "confidence": "medium",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "GT",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "SV",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "HN",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "NI",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "CR",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "PA",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "BZ",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "DO",
+      "confidence": "medium",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "HT",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "JM",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "TT",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BB",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BH",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "AG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "GD",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "LC",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "KN",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "VC",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "DM",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
     {
       "iso": "AT",
       "confidence": "low",

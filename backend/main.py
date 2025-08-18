@@ -1,12 +1,14 @@
 import os
 import json
 from datetime import datetime, timezone, timedelta
+import secrets
+from typing import Optional
 from fastapi import FastAPI, Request, Header, HTTPException, Response
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from .db import Base, engine, get_db
-from .models import User, Workspace, WorkspaceMember, Campaign, Call
+from .models import User, Workspace, WorkspaceMember, Campaign, Call, UserAuth
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 
@@ -15,6 +17,16 @@ try:
     from retell import Retell  # type: ignore
 except Exception:  # pragma: no cover
     Retell = None  # type: ignore
+
+try:
+    import bcrypt  # type: ignore
+except Exception:  # pragma: no cover
+    bcrypt = None  # type: ignore
+
+try:
+    import redis  # type: ignore
+except Exception:  # pragma: no cover
+    redis = None  # type: ignore
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
@@ -87,7 +99,48 @@ _load_compliance_from_disk()
 # Create tables if not exist (dev)
 try:
     Base.metadata.create_all(bind=engine)
+    # Seed minimal data if empty (dev)
+    with next(get_db()) as db:
+        if not db.query(User).first():
+            db.add_all([
+                User(id="u_1", email="owner@example.com", name="Owner One", is_admin_global=True),
+                User(id="u_2", email="viewer@example.com", name="Viewer V", is_admin_global=False),
+            ])
+        if not db.query(Workspace).first():
+            db.add(Workspace(id="ws_1", name="Demo", plan="core"))
+        if not db.query(Campaign).first():
+            db.add(Campaign(id="c_1", name="RFQ IT", status="running", pacing_npm=10, budget_cap_cents=15000))
+        if not db.query(Call).first():
+            db.add(Call(id="call_1", workspace_id="ws_1", lang="it-IT", iso="IT", status="finished", duration_s=210, cost_cents=42))
+        # Seed simple password auth for demo users if bcrypt available
+        if bcrypt is not None:
+            def _ensure_auth(user_id: str, email: str):
+                exists = db.query(UserAuth).filter(UserAuth.user_id == user_id, UserAuth.provider == "password").first()
+                if not exists:
+                    pwd = "demo1234".encode("utf-8")
+                    hashed = bcrypt.hashpw(pwd, bcrypt.gensalt()).decode("utf-8")
+                    db.add(UserAuth(id=f"ua_{user_id}", user_id=user_id, provider="password", provider_id=email, pass_hash=hashed))
+            u1 = db.query(User).filter(User.id == "u_1").first()
+            u2 = db.query(User).filter(User.id == "u_2").first()
+            if u1:
+                _ensure_auth(u1.id, u1.email)
+            if u2:
+                _ensure_auth(u2.id, u2.email)
+        db.commit()
 except Exception:
+    pass
+
+# Optional: auto-migrate on startup if enabled
+try:
+    if os.getenv("AUTO_MIGRATE", "0") == "1":
+        from alembic import command
+        from alembic.config import Config
+        alembic_cfg = Config(os.path.join(os.path.dirname(__file__), "alembic.ini"))
+        alembic_cfg.set_main_option("script_location", os.path.join(os.path.dirname(__file__), "alembic"))
+        alembic_cfg.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", ""))
+        command.upgrade(alembic_cfg, "head")
+except Exception:
+    # Ignore migration errors on environments without Alembic
     pass
 # ===================== RBAC (very simple dev stub) =====================
 def _role_from_request(req: Request | None) -> str:
@@ -145,6 +198,84 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ===================== Sessions & CSRF =====================
+class SessionStore:
+    def __init__(self) -> None:
+        self._mem: dict[str, dict] = {}
+        self._redis = None
+        url = os.getenv("REDIS_URL") or os.getenv("REDIS_TLS_URL")
+        if url and redis is not None:
+            try:
+                self._redis = redis.from_url(url, decode_responses=True)
+            except Exception:
+                self._redis = None
+
+    def get(self, sid: str) -> Optional[dict]:
+        try:
+            if self._redis is not None:
+                data = self._redis.get(f"sess:{sid}")
+                return json.loads(data) if data else None
+            return self._mem.get(sid)
+        except Exception:
+            return None
+
+    def set(self, sid: str, data: dict, ttl_seconds: int = 60 * 60 * 24 * 14) -> None:
+        data = dict(data)
+        data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        if self._redis is not None:
+            try:
+                self._redis.setex(f"sess:{sid}", ttl_seconds, json.dumps(data))
+                return
+            except Exception:
+                pass
+        self._mem[sid] = data
+
+    def delete(self, sid: str) -> None:
+        if self._redis is not None:
+            try:
+                self._redis.delete(f"sess:{sid}")
+            except Exception:
+                pass
+        self._mem.pop(sid, None)
+
+
+_SESSIONS = SessionStore()
+
+
+def _get_session(req: Request) -> Optional[dict]:
+    sid = req.cookies.get("session_id")
+    if not sid:
+        return None
+    sess = _SESSIONS.get(sid)
+    # Basic expiration check (optional; rely on Redis TTL otherwise)
+    return sess
+
+
+def _create_session(resp: Response, claims: dict) -> dict:
+    sid = secrets.token_urlsafe(24)
+    csrf = secrets.token_urlsafe(24)
+    sess = {"sid": sid, "csrf": csrf, "claims": claims}
+    _SESSIONS.set(sid, sess)
+    # HttpOnly, Lax for SPA
+    resp.set_cookie("session_id", sid, httponly=True, samesite="lax", secure=False, path="/")
+    resp.headers["x-csrf-token"] = csrf
+    return sess
+
+
+@app.middleware("http")
+async def csrf_middleware(request: Request, call_next):
+    try:
+        if request.method in ("POST", "PUT", "PATCH", "DELETE") and request.url.path.startswith("/"):
+            sess = _get_session(request)
+            if sess is not None:
+                sent = request.headers.get("x-csrf-token") or request.headers.get("X-CSRF-Token")
+                if not sent or sent != sess.get("csrf"):
+                    return Response(status_code=403, content="CSRF token missing or invalid")
+        return await call_next(request)
+    except Exception:
+        return Response(status_code=500, content="Server error")
 
 
 @app.get("/health")
@@ -218,19 +349,44 @@ def require_global_admin(x_admin_email: str | None = Header(default=None), admin
     wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
     if wildcard == "*":
         return
-    _require_admin(chosen)
+    # If a valid session exists with is_admin_global, allow
+    # Note: FastAPI dependency cannot access Request directly here; handled by endpoints passing Request if needed
+    if chosen:
+        _require_admin(chosen)
+        return
+    # Without header, disallow by default; endpoints that need session-based admin can pass Request and validate explicitly
+    raise HTTPException(status_code=403, detail="Admin required")
+
+
+def require_admin_or_session(request: Request, x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
+    chosen = x_admin_email or admin_email
+    wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
+    if wildcard == "*":
+        return
+    if chosen:
+        _require_admin(chosen)
+        return
+    sess = _get_session(request)
+    claims = (sess or {}).get("claims") if sess else None
+    if not claims or not claims.get("is_admin_global"):
+        raise HTTPException(status_code=403, detail="Admin required")
+
+
+def admin_guard(request: Request, x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
+    return require_admin_or_session(request, x_admin_email, admin_email)
 
 
 # ===================== Admin read-only endpoints (MVP scaffolding) =====================
 @app.get("/admin/users")
 def admin_users(
+    request: Request,
     query: str | None = Query(default=None),
     country_iso: str | None = Query(default=None),
     plan: str | None = Query(default=None),
     status: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
     cursor: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
     db: Session = Depends(get_db),
 ) -> dict:
     q = db.query(User)
@@ -247,7 +403,7 @@ def admin_users(
 
 
 @app.get("/admin/users/{user_id}")
-def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
+def admin_user_detail(user_id: str, request: Request, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     u = db.query(User).filter(User.id == user_id).first()
     if not u:
         raise HTTPException(status_code=404, detail="Not found")
@@ -255,7 +411,7 @@ def admin_user_detail(user_id: str, _guard: None = Depends(require_global_admin)
 
 
 @app.post("/admin/users/{user_id}/impersonate")
-async def admin_user_impersonate(user_id: str, request: Request, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_user_impersonate(user_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     token = f"imp_{user_id}_token"
     expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
     _ACTIVITY.append({
@@ -269,7 +425,7 @@ async def admin_user_impersonate(user_id: str, request: Request, _guard: None = 
 
 
 @app.patch("/admin/users/{user_id}")
-async def admin_user_patch(user_id: str, payload: dict, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
+async def admin_user_patch(user_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     # Accept simple fields: locale, tz, status
     locale = payload.get("locale")
     tz = payload.get("tz")
@@ -285,12 +441,13 @@ async def admin_user_patch(user_id: str, payload: dict, _guard: None = Depends(r
 
 @app.get("/admin/workspaces")
 def admin_workspaces(
+    request: Request,
     query: str | None = Query(default=None),
     plan: str | None = Query(default=None),
     active: bool | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
     cursor: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
     db: Session = Depends(get_db),
 ) -> dict:
     q = db.query(Workspace)
@@ -302,7 +459,7 @@ def admin_workspaces(
 
 
 @app.get("/admin/workspaces/{ws_id}")
-def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_admin), db: Session = Depends(get_db)) -> dict:
+def admin_workspace_detail(ws_id: str, request: Request, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     w = db.query(Workspace).filter(Workspace.id == ws_id).first()
     if not w:
         raise HTTPException(status_code=404, detail="Not found")
@@ -310,12 +467,12 @@ def admin_workspace_detail(ws_id: str, _guard: None = Depends(require_global_adm
 
 
 @app.get("/admin/billing/overview")
-def admin_billing_overview(period: str | None = Query(default=None), _guard: None = Depends(require_global_admin)) -> dict:
+def admin_billing_overview(request: Request, period: str | None = Query(default=None), _guard: None = Depends(admin_guard)) -> dict:
     return {"period": period or "2025-08", "mrr_cents": 0, "arr_cents": 0, "arpu_cents": 0, "churn_rate": 0.0}
 
 
 @app.get("/admin/usage/overview")
-def admin_usage_overview(period: str | None = Query(default=None), _guard: None = Depends(require_global_admin)) -> dict:
+def admin_usage_overview(request: Request, period: str | None = Query(default=None), _guard: None = Depends(admin_guard)) -> dict:
     return {
         "period": period or "2025-08",
         "by_lang": [{"lang": "it-IT", "minutes": 0, "cost_cents": 0}],
@@ -326,6 +483,7 @@ def admin_usage_overview(period: str | None = Query(default=None), _guard: None 
 
 @app.get("/admin/calls/search")
 def admin_calls_search(
+    request: Request,
     query: str | None = Query(default=None),
     iso: str | None = Query(default=None),
     lang: str | None = Query(default=None),
@@ -335,38 +493,47 @@ def admin_calls_search(
     status: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=100),
     cursor: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
+    db: Session = Depends(get_db),
 ) -> dict:
-    items = [
-        {"id": "call_1", "workspace_id": "ws_1", "to": "+390212345678", "from": "+390298765432", "lang": "it-IT", "iso": "IT", "status": "finished", "duration_s": 210, "cost_cents": 42},
-    ]
-    return {"items": items[:limit], "next_cursor": None}
+    q = db.query(Call)
+    if iso: q = q.filter(Call.iso == iso)
+    if lang: q = q.filter(Call.lang == lang)
+    if status: q = q.filter(Call.status == status)
+    rows = q.order_by(Call.created_at.desc()).limit(limit).all()
+    items = [{"id": c.id, "workspace_id": c.workspace_id, "lang": c.lang, "iso": c.iso, "status": c.status, "duration_s": c.duration_s, "cost_cents": c.cost_cents} for c in rows]
+    return {"items": items, "next_cursor": None}
 
 
 @app.get("/admin/campaigns")
 def admin_campaigns(
+    request: Request,
     query: str | None = Query(default=None),
     status: str | None = Query(default=None),
     owner: str | None = Query(default=None),
     from_: str | None = Query(default=None, alias="from"),
     to: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
+    db: Session = Depends(get_db),
 ) -> dict:
-    return {"items": [{"id": "c_1", "name": "RFQ IT", "status": "running", "pacing_npm": 10, "budget_cap_cents": 15000}]}
+    q = db.query(Campaign)
+    if status: q = q.filter(Campaign.status == status)
+    rows = q.limit(50).all()
+    return {"items": [{"id": c.id, "name": c.name, "status": c.status, "pacing_npm": c.pacing_npm, "budget_cap_cents": c.budget_cap_cents} for c in rows]}
 
 
 @app.post("/admin/campaigns/{campaign_id}/pause")
-async def admin_campaign_pause(campaign_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_campaign_pause(campaign_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"id": campaign_id, "status": "paused"}
 
 
 @app.post("/admin/campaigns/{campaign_id}/resume")
-async def admin_campaign_resume(campaign_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_campaign_resume(campaign_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"id": campaign_id, "status": "running"}
 
 
 @app.get("/admin/search")
-def admin_search(q: str, _guard: None = Depends(require_global_admin)) -> dict:
+def admin_search(request: Request, q: str, _guard: None = Depends(admin_guard)) -> dict:
     return {
         "users": [{"id": "u_1", "email": "owner@example.com"}][:5],
         "workspaces": [{"id": "ws_1", "name": "Demo"}][:5],
@@ -378,16 +545,17 @@ def admin_search(q: str, _guard: None = Depends(require_global_admin)) -> dict:
 # ===================== Admin: Calls & Campaigns =====================
 @app.get("/admin/calls/live")
 def admin_calls_live(
+    request: Request,
     workspace_id: str | None = Query(default=None),
     lang: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
 ) -> dict:
     # Demo: no live calls
     return {"items": []}
 
 
 @app.get("/admin/calls/{call_id}")
-def admin_call_detail(call_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+def admin_call_detail(call_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {
         "id": call_id,
         "workspace_id": "ws_1",
@@ -404,10 +572,11 @@ def admin_call_detail(call_id: str, _guard: None = Depends(require_global_admin)
 # ===================== Admin: Compliance =====================
 @app.get("/admin/compliance/attestations")
 def admin_attestations(
+    request: Request,
     workspace_id: str | None = Query(default=None),
     campaign_id: str | None = Query(default=None),
     iso: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
 ) -> dict:
     items = [
         {"id": "att_1", "workspace_id": "ws_1", "campaign_id": "c_1", "iso": "IT", "notice_version": "it-2025-08-01", "signed_at": "2025-08-18T10:00:00Z", "pdf_url": "/attestations/att_1"},
@@ -423,7 +592,7 @@ def admin_attestations(
 
 
 @app.post("/admin/compliance/attestations/generate")
-async def admin_attestations_generate(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_attestations_generate(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     att_id = f"att_{len(_ATTESTATIONS)+1}"
     _ATTESTATIONS[att_id] = {"id": att_id, **payload}
     return {"id": att_id, "pdf_url": f"/attestations/{att_id}", "sha256": "sha256:demo"}
@@ -431,11 +600,12 @@ async def admin_attestations_generate(payload: dict, _guard: None = Depends(requ
 
 @app.get("/admin/compliance/preflight/logs")
 def admin_preflight_logs(
+    request: Request,
     workspace_id: str | None = Query(default=None),
     iso: str | None = Query(default=None),
     from_: str | None = Query(default=None, alias="from"),
     to: str | None = Query(default=None),
-    _guard: None = Depends(require_global_admin),
+    _guard: None = Depends(admin_guard),
 ) -> dict:
     items = [
         {"id": "pfl_1", "workspace_id": "ws_1", "iso": "IT", "decision": "delay", "reasons": ["QUIET_HOURS"], "created_at": "2025-08-18T08:00:00Z"},
@@ -450,19 +620,19 @@ def admin_preflight_logs(
 
 # ===================== Admin: Billing =====================
 @app.get("/admin/workspaces/{ws_id}/billing")
-def admin_ws_billing(ws_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+def admin_ws_billing(ws_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"workspace_id": ws_id, "plan": "core", "subscription_status": "active", "current_period_end": "2025-09-01", "credits_cents": 0}
 
 
 @app.post("/admin/workspaces/{ws_id}/credits")
-async def admin_ws_add_credit(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_ws_add_credit(ws_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     cents = int(payload.get("cents") or 0)
     return {"workspace_id": ws_id, "added_cents": cents, "created_at": datetime.now(timezone.utc).isoformat()}
 
 
 # ===================== Admin: Compliance templates (read-only) =====================
 @app.get("/admin/compliance/templates")
-def admin_compliance_templates(_guard: None = Depends(require_global_admin)) -> dict:
+def admin_compliance_templates(request: Request, _guard: None = Depends(admin_guard)) -> dict:
     templates = [
         {"iso": "IT", "lang": "it-IT", "disclosure": "Buongiorno...", "recording": "La chiamata può essere registrata...", "version": "it-2025-08-01"},
         {"iso": "EN", "lang": "en-US", "disclosure": "Hello, this is an AI assistant...", "recording": "This call may be recorded...", "version": "en-2025-08-01"},
@@ -471,7 +641,7 @@ def admin_compliance_templates(_guard: None = Depends(require_global_admin)) -> 
 
 
 @app.patch("/admin/workspaces/{ws_id}")
-async def admin_ws_patch(ws_id: str, payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_ws_patch(ws_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     # Accept: plan_id, concurrency_limit, suspend
     plan_id = payload.get("plan_id")
     concurrency_limit = payload.get("concurrency_limit")
@@ -484,7 +654,7 @@ async def admin_ws_patch(ws_id: str, payload: dict, _guard: None = Depends(requi
 
 # ===================== Admin: Notifications =====================
 @app.post("/admin/notifications/preview")
-async def admin_notifications_preview(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_notifications_preview(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     subject = payload.get("subject") or ""
     body_md = payload.get("body_md") or ""
     html = f"<h1>{subject}</h1><div><pre>{body_md}</pre></div>"
@@ -492,20 +662,74 @@ async def admin_notifications_preview(payload: dict, _guard: None = Depends(requ
 
 
 @app.post("/admin/notifications/send")
-async def admin_notifications_send(payload: dict, _guard: None = Depends(require_global_admin)) -> dict:
+async def admin_notifications_send(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     notif_id = f"ntf_{len(_ACTIVITY)+1}"
     _ACTIVITY.append({"kind": "notify", "entity": "notification", "entity_id": notif_id, "created_at": datetime.now(timezone.utc).isoformat(), "diff_json": payload})
     return {"id": notif_id, "scheduled_at": payload.get("schedule_at"), "kind": payload.get("kind","email"), "stats": {"queued": 1}}
 
 
 @app.get("/admin/notifications/{notif_id}")
-def admin_notifications_get(notif_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+def admin_notifications_get(notif_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"id": notif_id, "stats": {"queued": 1, "sent": 1, "errors": 0}}
 
 
 # ===================== Admin: Activity =====================
 @app.get("/admin/activity")
-def admin_activity(limit: int = 100, _guard: None = Depends(require_global_admin)) -> dict:
+def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(admin_guard)) -> dict:
+    try:
+        return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
+    except Exception:
+        return {"items": []}
+
+
+# ===================== Auth endpoints =====================
+@app.post("/auth/login")
+async def auth_login(payload: dict) -> Response:
+    email = (payload.get("email") or "").strip().lower()
+    password = (payload.get("password") or "").encode("utf-8")
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Missing email or password")
+    with next(get_db()) as db:
+        user = db.query(User).filter(User.email.ilike(email)).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
+        if not ua or not ua.pass_hash or bcrypt is None:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        try:
+            ok = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
+        except Exception:
+            ok = False
+        if not ok:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        # Build claims (memberships minimal for now)
+        claims = {
+            "user_id": user.id,
+            "email": user.email,
+            "is_admin_global": bool(user.is_admin_global),
+            "memberships": [],
+        }
+    resp = Response(content=json.dumps({"ok": True}), media_type="application/json")
+    _create_session(resp, claims)
+    return resp
+
+
+@app.get("/auth/me")
+def auth_me(request: Request) -> dict:
+    sess = _get_session(request)
+    if not sess:
+        return {"authenticated": False}
+    return {"authenticated": True, "claims": sess.get("claims"), "csrf": sess.get("csrf")}
+
+
+@app.post("/auth/logout")
+async def auth_logout(request: Request) -> Response:
+    sid = request.cookies.get("session_id")
+    if sid:
+        _SESSIONS.delete(sid)
+    resp = Response(content=json.dumps({"ok": True}), media_type="application/json")
+    resp.delete_cookie("session_id", path="/")
+    return resp
     try:
         return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
     except Exception:

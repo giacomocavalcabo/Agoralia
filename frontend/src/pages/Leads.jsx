@@ -7,7 +7,7 @@ import EmptyState from '../components/EmptyState.jsx'
 
 function Chip({ label, onRemove }){
 	return (
-		<span style={{ display:'inline-flex', alignItems:'center', gap:6, border:'1px solid var(--border)', background:'var(--surface)', borderRadius:999, padding:'4px 8px', fontSize:12 }}>
+		<span className="inline-flex items-center gap-1 rounded-full border border-line bg-bg-app px-2 py-0.5 text-xs text-ink-600">
 			{label}
 			<button onClick={onRemove} aria-label="Remove" style={{ border:'none', background:'transparent', cursor:'pointer' }}>✕</button>
 		</span>

@@ -31,83 +31,83 @@ export default function Import(){
 	}
 
 	return (
-		<div style={{ display:'grid', gap:12 }}>
-			<div style={{ display:'flex', alignItems:'center', gap:8 }}>
+		<div className="grid gap-3">
+			<div className="flex items-center gap-2">
 				{[1,2,3,4].map((s)=> (
-					<button key={s} onClick={()=> setStep(s)} aria-current={step===s ? 'page' : undefined} style={{ padding:'6px 10px', border:'1px solid var(--border)', background: step===s ? 'var(--surface)' : 'transparent', borderRadius:8 }}>Step {s}</button>
+					<button key={s} onClick={()=> setStep(s)} aria-current={step===s ? 'page' : undefined} className={`rounded-lg border border-line px-2.5 py-1.5 ${step===s ? 'bg-bg-app' : ''}`}>{t('pages.import.step', { s }) || `Step ${s}`}</button>
 				))}
-				<div className="kpi-title" style={{ marginLeft:'auto' }}>{t('pages.import.title')}</div>
+				<div className="kpi-title ml-auto">{t('pages.import.title')}</div>
 			</div>
 
 			{step===1 && (
-				<div className="panel" style={{ display:'grid', gap:12 }}>
-					<div style={{ fontWeight:700 }}>{t('pages.import.steps.source')}</div>
-					<div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+				<div className="panel grid gap-3">
+					<div className="font-semibold">{t('pages.import.steps.source')}</div>
+					<div className="grid grid-cols-2 gap-3">
 						<label>
 							<div className="kpi-title">{t('pages.import.paste_numbers')}</div>
-							<textarea value={raw} onChange={e=> setRaw(e.target.value)} placeholder={'+393331234567\n+442012345678'} style={{ width:'100%', minHeight:160, padding:10, border:'1px solid var(--border)', borderRadius:8 }} />
+							<textarea value={raw} onChange={e=> setRaw(e.target.value)} placeholder={'+393331234567\n+442012345678'} className="w-full min-h-[160px] rounded-xl border border-line bg-white p-2.5" />
 						</label>
 						<div>
 							<div className="kpi-title">{t('pages.import.upload_csv')}</div>
 							<input type="file" accept=".csv,.txt" onChange={onFile} />
-							{fileName && <div className="kpi-title" style={{ marginTop:6 }}>{fileName}</div>}
-							<div style={{ marginTop:12 }}>
+							{fileName && <div className="kpi-title mt-1.5">{fileName}</div>}
+							<div className="mt-3">
 								<div className="kpi-title">{t('pages.import.preview')}</div>
-								<div className="panel" style={{ maxHeight:200, overflow:'auto' }}>
+								<div className="panel max-h-[200px] overflow-auto">
 									{numbers.length===0 ? (
 										<EmptyState title={t('pages.import.no_numbers')} description={t('pages.import.no_numbers_desc')} />
 									) : (
-										<ul style={{ margin:0, padding:12, listStyle:'none', display:'grid', gap:6 }}>
+										<ul className="m-0 p-3 list-none grid gap-1.5">
 											{numbers.slice(0,50).map((n,i)=> (<li key={i} className="kpi-title">{n}</li>))}
 										</ul>
 									)}
 								</div>
 							</div>
 						</div>
-						<div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-							<button disabled={numbers.length===0} onClick={()=> setStep(2)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+						<div className="flex justify-end gap-2">
+							<button disabled={numbers.length===0} onClick={()=> setStep(2)} className="btn disabled:opacity-50">{t('common.next')}</button>
 						</div>
 					</div>
 				</div>
 			)}
 
 			{step===2 && (
-				<div className="panel" style={{ display:'grid', gap:12 }}>
-					<div style={{ fontWeight:700 }}>Compliance Preview</div>
-					<div className="kpi-title">B2B vs B2C differences, quiet hours and registry requirements will be shown per country.</div>
-					<div style={{ display:'flex', justifyContent:'flex-end' }}>
-						<button onClick={()=> setStep(3)} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.next')}</button>
+				<div className="panel grid gap-3">
+					<div className="font-semibold">{t('pages.import.compliance_preview') || 'Compliance Preview'}</div>
+					<div className="kpi-title">{t('pages.import.compliance_preview_desc') || 'B2B vs B2C differences, quiet hours and registry requirements will be shown per country.'}</div>
+					<div className="flex justify-end">
+						<button onClick={()=> setStep(3)} className="btn">{t('common.next')}</button>
 					</div>
 				</div>
 			)}
 
 			{step===3 && (
-				<div className="panel" style={{ display:'grid', gap:12 }}>
-					<div style={{ fontWeight:700 }}>Pre‑flight</div>
+				<div className="panel grid gap-3">
+					<div className="font-semibold">{t('pages.import.preflight') || 'Pre‑flight'}</div>
 					<button onClick={async ()=>{
 						const items = numbers.map(e164=> ({ e164, contact_class:'b2b_prospect' }))
 						const res = await apiFetch('/compliance/preflight', { method:'POST', body:{ items } })
 						setPreflight(res)
-					}} style={{ padding:'8px 12px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Run pre‑flight</button>
+					}} className="rounded-lg border border-line bg-bg-app px-3 py-2">{t('pages.import.preflight_run') || 'Run pre‑flight'}</button>
 					{preflight && (
 						<div>
-							<div className="kpi-title">{`Summary: allow ${preflight.summary.allow}, delay ${preflight.summary.delay}, block ${preflight.summary.block}`}</div>
-							<div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+							<div className="kpi-title">{t('pages.import.preflight_summary', { allow: preflight.summary.allow, delay: preflight.summary.delay, block: preflight.summary.block }) || `Summary: allow ${preflight.summary.allow}, delay ${preflight.summary.delay}, block ${preflight.summary.block}`}</div>
+							<div className="grid grid-cols-3 gap-3">
 								<div>
-									<div className="kpi-title">Allow</div>
-									<ul style={{ margin:0, paddingLeft:16 }}>
+									<div className="kpi-title">{t('pages.import.allow') || 'Allow'}</div>
+									<ul className="m-0 pl-4">
 										{preflight.items.filter(x=> x.decision==='allow').slice(0,30).map((it,i)=> (<li key={`a${i}`} className="kpi-title">{it.e164}</li>))}
 									</ul>
 								</div>
 								<div>
-									<div className="kpi-title">Delay</div>
-									<ul style={{ margin:0, paddingLeft:16 }}>
+									<div className="kpi-title">{t('pages.import.delay') || 'Delay'}</div>
+									<ul className="m-0 pl-4">
 										{preflight.items.filter(x=> x.decision==='delay').slice(0,30).map((it,i)=> (<li key={`d${i}`} className="kpi-title">{it.e164} — {it.next_window_at}</li>))}
 									</ul>
 								</div>
 								<div>
-									<div className="kpi-title">Block</div>
-									<ul style={{ margin:0, paddingLeft:16 }}>
+									<div className="kpi-title">{t('pages.import.block') || 'Block'}</div>
+									<ul className="m-0 pl-4">
 										{preflight.items.filter(x=> x.decision==='block').slice(0,30).map((it,i)=> (<li key={`b${i}`} className="kpi-title">{it.e164} — {(it.reasons||[]).join(',')}</li>))}
 									</ul>
 								</div>

@@ -53,28 +53,28 @@ export default function Analytics(){
 
   return (
     <div style={{ display:'grid', gap:12 }}>
-      <div className="panel" style={{ display:'flex', gap:8, alignItems:'center', justifyContent:'space-between' }}>
+      <div className="panel flex items-center justify-between gap-2">
         <div className="kpi-title">{t('pages.analytics.title')||'Analytics'}</div>
-        <div style={{ display:'flex', gap:8 }}>
-          <label className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-            Range
-            <select value={filters.range} onChange={e=> setFilters({ ...filters, range:e.target.value })} style={{ border:'1px solid var(--border)', borderRadius:8, padding:'4px 8px' }}>
+        <div className="flex gap-2">
+          <label className="kpi-title inline-flex items-center gap-1.5">
+            {t('pages.analytics.filters.range') || 'Range'}
+            <select value={filters.range} onChange={e=> setFilters({ ...filters, range:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
               <option value="7d">7d</option>
               <option value="30d">30d</option>
               <option value="90d">90d</option>
             </select>
           </label>
-          <label className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-            Scope
-            <select value={filters.scope} onChange={e=> setFilters({ ...filters, scope:e.target.value })} style={{ border:'1px solid var(--border)', borderRadius:8, padding:'4px 8px' }}>
+          <label className="kpi-title inline-flex items-center gap-1.5">
+            {t('pages.analytics.filters.scope') || 'Scope'}
+            <select value={filters.scope} onChange={e=> setFilters({ ...filters, scope:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
               <option value="all">All</option>
               <option value="campaign">Campaign</option>
               <option value="agent">Agent</option>
               <option value="language">Language</option>
             </select>
           </label>
-          <a href={`/api/analytics/export.csv?locale=${encodeURIComponent(locale)}`} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8, textDecoration:'none' }}>{t('pages.analytics.actions.export_csv')||'Export CSV'}</a>
-          <a href={`/api/analytics/export.json?locale=${encodeURIComponent(locale)}`} className="kpi-title" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8, textDecoration:'none' }}>{t('pages.analytics.actions.export_json')||'Export JSON'}</a>
+          <a href={`/api/analytics/export.csv?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">{t('pages.analytics.actions.export_csv')||'Export CSV'}</a>
+          <a href={`/api/analytics/export.json?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">{t('pages.analytics.actions.export_json')||'Export JSON'}</a>
         </div>
       </div>
 
@@ -85,53 +85,53 @@ export default function Analytics(){
       </div>
 
       <div className="panel" aria-describedby="desc-calls">
-        <div className="kpi-title" id="desc-calls" style={{ marginBottom:8 }}>{t('pages.analytics.charts.calls_over_time')||'Calls over time'}</div>
+        <div className="kpi-title mb-2" id="desc-calls">{t('pages.analytics.charts.calls_over_time')||'Calls over time'}</div>
         <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={220} />
       </div>
 
-      <div className="panel" style={{ display:'flex', flexWrap:'wrap', gap:12, alignItems:'center' }}>
+      <div className="panel flex flex-wrap items-center gap-3">
         <div className="kpi-title">{t('pages.analytics.filters.language')||'Language'}</div>
         {['en-US','it-IT','fr-FR','hi-IN'].map(code=> (
-          <label key={code} className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <label key={code} className="kpi-title inline-flex items-center gap-1.5">
             <input type="checkbox" checked={filters.lang.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, lang: e.target.checked ? [...f.lang, code] : f.lang.filter(x=> x!==code) }))} />{code}
           </label>
         ))}
-        <div style={{ width:1, height:20, background:'var(--border)' }} />
+        <div className="w-px h-5 bg-line" />
         <div className="kpi-title">{t('pages.analytics.filters.direction')||'Direction'}</div>
         {['inbound','outbound'].map(code=> (
-          <label key={code} className="kpi-title" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <label key={code} className="kpi-title inline-flex items-center gap-1.5">
             <input type="checkbox" checked={filters.direction.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, direction: e.target.checked ? [...f.direction, code] : f.direction.filter(x=> x!==code) }))} />{code}
           </label>
         ))}
       </div>
 
       <div className="panel" aria-describedby="desc-outcomes">
-        <div className="kpi-title" id="desc-outcomes" style={{ marginBottom:8 }}>{t('pages.analytics.charts.outcomes_over_time')||'Outcomes (recent days)'}</div>
+        <div className="kpi-title mb-2" id="desc-outcomes">{t('pages.analytics.charts.outcomes_over_time')||'Outcomes (recent days)'}</div>
         <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={260} />
       </div>
 
       <div className="panel" aria-describedby="desc-lang">
-        <div className="kpi-title" id="desc-lang" style={{ marginBottom:8 }}>{t('pages.analytics.charts.lang_distribution')||'By language'}</div>
+        <div className="kpi-title mb-2" id="desc-lang">{t('pages.analytics.charts.lang_distribution')||'By language'}</div>
         <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={240} />
       </div>
 
       <div className="panel" aria-label="By tables">
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0, 1fr))', gap:12 }}>
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <div className="kpi-title" style={{ marginBottom:6 }}>{t('pages.analytics.tables.by_campaign')||'By campaign'}</div>
-            <ul style={{ margin:0, paddingLeft:16 }}>
+            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_campaign')||'By campaign'}</div>
+            <ul className="m-0 pl-4">
               {(data?.tables?.by_campaign||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
             </ul>
           </div>
           <div>
-            <div className="kpi-title" style={{ marginBottom:6 }}>{t('pages.analytics.tables.by_agent')||'By agent'}</div>
-            <ul style={{ margin:0, paddingLeft:16 }}>
+            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_agent')||'By agent'}</div>
+            <ul className="m-0 pl-4">
               {(data?.tables?.by_agent||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
             </ul>
           </div>
           <div>
-            <div className="kpi-title" style={{ marginBottom:6 }}>{t('pages.analytics.tables.by_country')||'By country'}</div>
-            <ul style={{ margin:0, paddingLeft:16 }}>
+            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_country')||'By country'}</div>
+            <ul className="m-0 pl-4">
               {(data?.tables?.by_country||[]).map(r=> (<li key={r.iso} className="kpi-title">{r.iso}: {r.calls}</li>))}
             </ul>
           </div>
