@@ -8,11 +8,20 @@ export default function History(){
   const [data, setData] = useState({ total: 0, items: [] })
   const [open, setOpen] = useState(false)
   const [brief, setBrief] = useState(null)
-  useEffect(()=>{ (async()=>{ try{ setData(await apiFetch('/history')) } catch{} })() }, [])
+  const [filters, setFilters] = useState({ q:'', range:'30d' })
+  useEffect(()=>{ (async()=>{ try{ setData(await apiFetch('/history')) } catch{} })() }, [filters])
   return (
     <div style={{ display:'grid', gap:12 }}>
-      <div className="panel">
+      <div className="panel" style={{ display:'flex', alignItems:'center', gap:8 }}>
         <div className="kpi-title">{t('pages.history.title')||'History'}</div>
+        <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
+          <input placeholder={t('pages.history.filters.search')||'Search'} value={filters.q} onChange={e=> setFilters({ ...filters, q:e.target.value })} style={{ padding:'6px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          <select value={filters.range} onChange={e=> setFilters({ ...filters, range:e.target.value })} style={{ padding:'6px 10px', border:'1px solid var(--border)', borderRadius:8 }}>
+            <option value="7d">7d</option>
+            <option value="30d">30d</option>
+            <option value="90d">90d</option>
+          </select>
+        </div>
       </div>
       <div className="panel" style={{ overflow:'auto' }}>
         <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
