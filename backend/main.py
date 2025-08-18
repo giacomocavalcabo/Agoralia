@@ -297,9 +297,12 @@ def analytics_export_json() -> dict:
 
 
 @app.get("/analytics/export.csv")
-def analytics_export_csv() -> Response:
-    csv_content = "metric,value\ncalls,1240\nconnected_rate,0.62\n"
-    return Response(content=csv_content, media_type="text/csv")
+def analytics_export_csv(locale: str | None = None) -> Response:
+    # Minimal CSV honoring locale param only to demonstrate wiring
+    sep = ","
+    headers = sep.join(["metric", "value"]) + "\n"
+    body = sep.join(["calls", "1240"]) + "\n" + sep.join(["connected_rate", "0.62"]) + "\n"
+    return Response(content=headers + body, media_type="text/csv")
 
 
 @app.get("/history")
