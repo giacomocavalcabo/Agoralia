@@ -471,6 +471,15 @@ async def admin_notifications_send(payload: dict, _guard: None = Depends(require
 def admin_notifications_get(notif_id: str, _guard: None = Depends(require_global_admin)) -> dict:
     return {"id": notif_id, "stats": {"queued": 1, "sent": 1, "errors": 0}}
 
+
+# ===================== Admin: Activity =====================
+@app.get("/admin/activity")
+def admin_activity(limit: int = 100, _guard: None = Depends(require_global_admin)) -> dict:
+    try:
+        return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
+    except Exception:
+        return {"items": []}
+
 # ===================== Sprint 2 stubs =====================
 
 @app.get("/leads")

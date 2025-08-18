@@ -17,6 +17,9 @@ export default function Admin() {
 	const [notif, setNotif] = useState({ kind:'email', locale:'en-US', subject:'', body_md:'' })
 	const [error, setError] = useState('')
 	const [adminEmail, setAdminEmail] = useState(typeof window!=='undefined' ? (localStorage.getItem('admin_email') || '') : '')
+	const [activity, setActivity] = useState([])
+	const [wsBilling, setWsBilling] = useState(null)
+	const [wsId, setWsId] = useState('ws_1')
 
 	const api = useMemo(()=> import.meta.env.VITE_API_BASE_URL, [])
 	const headers = useMemo(()=> ({ 'X-Admin-Email': adminEmail }), [adminEmail])
@@ -86,11 +89,21 @@ export default function Admin() {
 		} catch { setBilling(null); setUsage(null) }
 	}
 
+	async function loadActivity(){
+		try{ const r = await fetch(withAdmin(`${api}/admin/activity?limit=100`), { headers }); const j = await r.json(); setActivity(j.items||[]) } catch{ setActivity([]) }
+	}
+
+	async function loadWsBilling(){
+		try{ const r = await fetch(withAdmin(`${api}/admin/workspaces/${wsId}/billing`), { headers }); const j = await r.json(); setWsBilling(j) } catch{ setWsBilling(null) }
+	}
+
 	useEffect(()=>{ if(adminEmail){ loadHealth(); loadKpi() } },[adminEmail])
 	useEffect(()=>{ if(adminEmail && tab==='users') loadUsers() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='workspaces') loadWorkspaces() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='compliance') loadCompliance() },[adminEmail, tab])
 	useEffect(()=>{ if(adminEmail && tab==='calls') loadCalls() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='logs') loadActivity() },[adminEmail, tab])
+	useEffect(()=>{ if(adminEmail && tab==='billing') loadWsBilling() },[adminEmail, tab, wsId])
 
 	async function impersonate(u){
 		try {
@@ -113,7 +126,7 @@ export default function Admin() {
 			</div>
 
 			<div className="panel" style={{ display:'flex', gap:8, marginBottom:12 }}>
-				{['dashboard','users','workspaces','calls','compliance','notifications'].map((k)=> (
+				{['dashboard','users','workspaces','calls','compliance','notifications','billing','logs'].map((k)=> (
 					<button
 						key={k}
 						className="btn"
@@ -253,6 +266,36 @@ export default function Admin() {
 							<button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/admin/notifications/send`, { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify(notif) }); const j = await r.json(); toast('Queued '+j.id) } catch{} }}>Send</button>
 						</div>
 					</div>
+				</div>
+			)}
+
+			{tab==='billing' && (
+				<div className="panel" style={{ display:'grid', gap:12 }}>
+					<div style={{ display:'flex', alignItems:'center', gap:8 }}>
+						<label className="kpi-title">Workspace</label>
+						<input className="input" value={wsId} onChange={(e)=> setWsId(e.target.value)} style={{ maxWidth:200 }} />
+						<button className="btn" onClick={loadWsBilling}>Load</button>
+					</div>
+					{wsBilling ? (
+						<div style={{ display:'grid', gap:8 }}>
+							<div className="kpi-title">Plan: {wsBilling.plan} • Status: {wsBilling.subscription_status}</div>
+							<div className="kpi-title">Credits: €{(wsBilling.credits_cents||0)/100}</div>
+							<div style={{ display:'flex', gap:8 }}>
+								<input className="input" placeholder="Add credits (cents)" id="add_credits" style={{ maxWidth:200 }} />
+								<button className="btn" onClick={async ()=>{ const cents = parseInt(document.getElementById('add_credits')?.value||'0',10)||0; try{ await fetch(withAdmin(`${api}/admin/workspaces/${wsId}/credits`), { method:'POST', headers:{ ...headers, 'Content-Type':'application/json' }, body: JSON.stringify({ cents }) }); toast('Credit added'); loadWsBilling() } catch{} }}>Add</button>
+							</div>
+						</div>
+					) : (<div className="kpi-title">No billing data</div>)}
+				</div>
+			)}
+
+			{tab==='logs' && (
+				<div className="panel" style={{ display:'grid', gap:8 }}>
+					<div className="kpi-title">Activity</div>
+					<ul style={{ margin:0, paddingLeft:16 }}>
+						{activity.map((a,i)=> (<li key={i} className="kpi-title">[{a.created_at}] {a.kind} {a.entity} {a.entity_id||''}</li>))}
+						{!activity.length && <li className="kpi-title">No activity</li>}
+					</ul>
 				</div>
 			)}
 		</div>
