@@ -103,7 +103,7 @@ export default function Admin() {
 			<h1>Admin</h1>
 			<div className="panel" style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
 				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
-				<button className="btn" onClick={()=>{ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() }}>Load</button>
+				<button className="btn" onClick={()=>{ loadHealth(); loadUsers(); loadWorkspaces(); loadCalls(); loadCompliance(); loadKpi() }}>Load</button>
 				{error && <span className="kpi-title" style={{ color:'#b91c1c' }}>{error}</span>}
 			</div>
 
