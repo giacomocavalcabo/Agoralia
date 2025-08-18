@@ -344,6 +344,16 @@ def admin_campaigns(
     return {"items": [{"id": "c_1", "name": "RFQ IT", "status": "running", "pacing_npm": 10, "budget_cap_cents": 15000}]}
 
 
+@app.post("/admin/campaigns/{campaign_id}/pause")
+async def admin_campaign_pause(campaign_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {"id": campaign_id, "status": "paused"}
+
+
+@app.post("/admin/campaigns/{campaign_id}/resume")
+async def admin_campaign_resume(campaign_id: str, _guard: None = Depends(require_global_admin)) -> dict:
+    return {"id": campaign_id, "status": "running"}
+
+
 @app.get("/admin/search")
 def admin_search(q: str, _guard: None = Depends(require_global_admin)) -> dict:
     return {
