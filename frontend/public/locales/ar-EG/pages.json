@@ -1,6 +1,56 @@
 {
   "pages": {
     "dashboard": {
+      "title": "لوحة التحكم",
+      "health": { "title": "صحة النظام" },
+      "live": { "title": "مكالمات مباشرة" },
+      "activity": "النشاط الأخير",
+      "kpi": {
+        "minutes": "الدقائق (MTD)",
+        "calls_today": "مكالمات اليوم",
+        "success": "معدل النجاح"
+      }
+    },
+    "leads": {
+      "title": "العملاء المحتملون",
+      "actions": { "add": "إضافة عميل محتمل", "schedule": "جدولة", "import": "استيراد" },
+      "cols": { "name":"الاسم", "company":"الشركة", "phone":"الهاتف", "country":"الدولة", "lang":"اللغة", "role":"الدور", "consent":"الموافقة" },
+      "empty": { "title":"لا توجد بيانات", "desc":"ابدأ بإضافة عميل محتمل أو استيراد CSV." },
+      "add_title": "إضافة عميل محتمل",
+      "fields": { "name":"الاسم", "company":"الشركة", "phone":"الهاتف (E.164)", "country":"رمز الدولة ISO", "lang":"اللغة", "role":"الدور", "consent":"تمت الموافقة" },
+      "placeholders": { "e164":"+201234567890" },
+      "errors": { "e164":"أدخل رقماً بصيغة E.164" },
+      "toasts": { "added":"تمت الإضافة" }
+    },
+    "import": {
+      "title": "استيراد",
+      "steps": { "source": "المصدر" },
+      "paste_numbers": "ألصق أرقام الهاتف (رقم في كل سطر)",
+      "upload_csv": "رفع CSV",
+      "preview": "معاينة",
+      "no_numbers": "لا توجد أرقام",
+      "no_numbers_desc": "ألصق أسطر مثل +201234567890.",
+      "wip": "العمل جارٍ",
+      "wip_desc": "سيظهر هنا الخطوات 2–4."
+    },
+    "campaigns": {
+      "title": "الحملات",
+      "steps": { "details":"التفاصيل", "audience":"الجمهور والإيقاع", "windows":"النوافذ والامتثال", "review":"مراجعة" },
+      "fields": { "name":"الاسم", "goal":"الهدف", "role":"الدور", "lang":"لغة الاتصال (الافتراضية)", "agent":"الوكيل", "kb":"قاعدة المعرفة", "from":"هوية المتصل (من)", "pacing":"الإيقاع (في الدقيقة)", "budget":"الحد الأقصى للميزانية (سنت)", "quiet_hours":"احترام ساعات الهدوء" },
+      "actions": { "create_schedule":"إنشاء وجدولة" },
+      "toasts": { "created":"تم إنشاء الحملة {id}" }
+    },
+    "calendar": {
+      "title": "التقويم",
+      "range": "{from} → {to}",
+      "legend": { "scheduled":"مجدول", "call":"مكالمة", "blocked":"محظور", "warn":"تحذير" }
+    }
+  }
+}
+
+{
+  "pages": {
+    "dashboard": {
       "title": "لوحة التحكم"
     },
     "leads": {

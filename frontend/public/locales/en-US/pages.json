@@ -11,7 +11,40 @@
         "success": "Success rate"
       }
     },
-    "leads": { "title": "Leads" },
+    "leads": {
+      "title": "Leads",
+      "actions": { "add": "Add lead", "schedule": "Schedule", "import": "Import" },
+      "cols": { "name":"Name", "company":"Company", "phone":"Phone", "country":"Country", "lang":"Lang", "role":"Role", "consent":"Consent" },
+      "empty": { "title":"No leads yet", "desc":"Start by adding a lead or importing a CSV." },
+      "add_title": "Add lead",
+      "fields": { "name":"Name", "company":"Company", "phone":"Phone (E.164)", "country":"Country ISO", "lang":"Language", "role":"Role", "consent":"Consent given" },
+      "placeholders": { "e164":"+12025550123" },
+      "errors": { "e164":"Enter a valid E.164 phone number" },
+      "toasts": { "added":"Lead added" }
+    },
+    "import": {
+      "title": "Import",
+      "steps": { "source": "Source" },
+      "paste_numbers": "Paste phone numbers (one per line)",
+      "upload_csv": "Upload CSV",
+      "preview": "Preview",
+      "no_numbers": "No numbers detected",
+      "no_numbers_desc": "Paste lines like +12025550123.",
+      "wip": "Work in progress",
+      "wip_desc": "Steps 2–4 will appear here."
+    },
+    "campaigns": {
+      "title": "Campaigns",
+      "steps": { "details":"Details", "audience":"Audience & Pacing", "windows":"Windows & Compliance", "review":"Review" },
+      "fields": { "name":"Name", "goal":"Goal", "role":"Role", "lang":"Call language (default)", "agent":"Agent", "kb":"Knowledge base", "from":"Caller ID (from)", "pacing":"Pacing (per minute)", "budget":"Budget cap (cents)", "quiet_hours":"Respect quiet hours" },
+      "actions": { "create_schedule":"Create & schedule" },
+      "toasts": { "created":"Campaign created {id}" }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "range": "{from} → {to}",
+      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn" }
+    },
     "settings": { "title": "Settings" }
   }
 }

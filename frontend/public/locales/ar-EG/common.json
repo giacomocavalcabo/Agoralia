@@ -4,7 +4,16 @@
     "save": "حفظ",
     "clear": "مسح",
     "loading": "جارٍ التحميل…",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "cancel": "إلغاء",
+    "prev": "السابق",
+    "next": "التالي",
+    "today": "اليوم",
+    "week": "أسبوع",
+    "month": "شهر",
+    "range": "{from}–{to}",
+    "of_total": "من {total}",
+    "actions": { "more": "المزيد" }
   }
 }
 

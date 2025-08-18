@@ -1,0 +1,20 @@
+{
+  "common": {
+    "refresh": "Aggiorna",
+    "save": "Salva",
+    "clear": "Pulisci",
+    "loading": "Caricamento…",
+    "remove": "Rimuovi",
+    "cancel": "Annulla",
+    "prev": "Prec",
+    "next": "Succ",
+    "today": "Oggi",
+    "week": "Settimana",
+    "month": "Mese",
+    "range": "{from}–{to}",
+    "of_total": "di {total}",
+    "actions": { "more": "Altro" }
+  }
+}
+
+

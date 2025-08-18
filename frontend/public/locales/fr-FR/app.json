@@ -8,7 +8,10 @@
     "Campaigns": "Campagnes",
     "Analytics": "Analyses",
     "Calendar": "Calendrier",
-    "Import": "Importation"
+    "Import": "Importation",
+    "notices": {
+      "call_lang_not_supported": "La langue d'appel n'est pas prise en charge : {lang}."
+    }
   }
 }
 

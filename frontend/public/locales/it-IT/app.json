@@ -8,6 +8,9 @@
     "Campaigns": "Campagne",
     "Analytics": "Analitiche",
     "Calendar": "Calendario",
-    "Import": "Import"
+    "Import": "Import",
+    "notices": {
+      "call_lang_not_supported": "La lingua chiamata non è supportata: {lang}."
+    }
   }
 }

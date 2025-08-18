@@ -8,7 +8,10 @@
     "Campaigns": "अभियान",
     "Analytics": "एनालिटिक्स",
     "Calendar": "कैलेंडर",
-    "Import": "आयात"
+    "Import": "आयात",
+    "notices": {
+      "call_lang_not_supported": "चयनित कॉल भाषा समर्थित नहीं है: {lang}."
+    }
   }
 }
 

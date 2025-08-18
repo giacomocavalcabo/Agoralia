@@ -4,7 +4,18 @@
     "save": "Save",
     "clear": "Clear",
     "loading": "Loading…",
-    "remove": "Remove"
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "prev": "Prev",
+    "next": "Next",
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "range": "{from}–{to}",
+    "of_total": "of {total}",
+    "actions": {
+      "more": "More"
+    }
   }
 }
 

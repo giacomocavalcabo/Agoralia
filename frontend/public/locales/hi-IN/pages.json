@@ -1,0 +1,51 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "डैशबोर्ड",
+      "health": { "title": "सिस्टम स्थिति" },
+      "live": { "title": "लाइव कॉल्स" },
+      "activity": "हाल की गतिविधि",
+      "kpi": {
+        "minutes": "मिनट (MTD)",
+        "calls_today": "आज की कॉल्स",
+        "success": "सफलता दर"
+      }
+    },
+    "leads": {
+      "title": "लीड्स",
+      "actions": { "add": "लीड जोड़ें", "schedule": "शेड्यूल", "import": "आयात" },
+      "cols": { "name":"नाम", "company":"कंपनी", "phone":"फोन", "country":"देश", "lang":"भाषा", "role":"भूमिका", "consent":"सहमति" },
+      "empty": { "title":"अभी कोई लीड नहीं", "desc":"एक लीड जोड़ें या CSV आयात करें।" },
+      "add_title": "लीड जोड़ें",
+      "fields": { "name":"नाम", "company":"कंपनी", "phone":"फोन (E.164)", "country":"देश ISO", "lang":"भाषा", "role":"भूमिका", "consent":"सहमति दी गई" },
+      "placeholders": { "e164":"+911234567890" },
+      "errors": { "e164":"मान्य E.164 नंबर दर्ज करें" },
+      "toasts": { "added":"लीड जोड़ा गया" }
+    },
+    "import": {
+      "title": "आयात",
+      "steps": { "source": "स्रोत" },
+      "paste_numbers": "फोन नंबर पेस्ट करें (एक प्रति पंक्ति)",
+      "upload_csv": "CSV अपलोड करें",
+      "preview": "पूर्वावलोकन",
+      "no_numbers": "कोई नंबर नहीं मिला",
+      "no_numbers_desc": "+911234567890 जैसी पंक्तियाँ पेस्ट करें।",
+      "wip": "कार्य प्रगति पर",
+      "wip_desc": "चरण 2–4 यहां दिखेंगे।"
+    },
+    "campaigns": {
+      "title": "अभियान",
+      "steps": { "details":"विवरण", "audience":"श्रोता और पेसिंग", "windows":"विंडो और अनुपालन", "review":"समीक्षा" },
+      "fields": { "name":"नाम", "goal":"लक्ष्य", "role":"भूमिका", "lang":"कॉल भाषा (डिफ़ॉल्ट)", "agent":"एजेंट", "kb":"नॉलेज बेस", "from":"कॉलर आईडी (से)", "pacing":"पेसिंग (प्रति मिनट)", "budget":"बजट कैप (सेंट)", "quiet_hours":"शांत घंटे का पालन करें" },
+      "actions": { "create_schedule":"बनाएँ और शेड्यूल करें" },
+      "toasts": { "created":"अभियान बना {id}" }
+    },
+    "calendar": {
+      "title": "कैलेंडर",
+      "range": "{from} → {to}",
+      "legend": { "scheduled":"शेड्यूल", "call":"कॉल", "blocked":"ब्लॉक", "warn":"चेतावनी" }
+    }
+  }
+}
+
+

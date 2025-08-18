@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import UsageBar from '../components/UsageBar.jsx'
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 
 const groups = [
 	{ label: 'Home', items:[{ label:'Dashboard', to:'/' }]},
@@ -47,7 +48,10 @@ export default function Root() {
 			<section>
 				<header style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 20px', borderBottom:'1px solid var(--border)' }}>
 					<h2 style={{ margin:0, fontSize:18, fontWeight:700 }}>{currentTitle(pathname)}</h2>
-					<div style={{ marginLeft:'auto' }}><UsageBar /></div>
+					<div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12 }}>
+						<LanguageSwitcher />
+						<UsageBar />
+					</div>
 				</header>
 				<div style={{ padding:24, maxWidth:1200, margin:'0 auto' }}>
 					<Outlet />

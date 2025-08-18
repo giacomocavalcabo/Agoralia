@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, Request, Header, HTTPException, Response
+from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
@@ -65,7 +66,7 @@ def calls_live() -> dict:
 
 @app.get("/events/recent")
 def events_recent(limit: int = 20) -> dict:
-    return {
+        return {
         "items": []
     }
 
@@ -88,6 +89,53 @@ def admin_health(x_admin_email: str | None = Header(default=None)) -> dict:
             {"name": "R2", "status": "ok"},
             {"name": "Retell", "status": "ok"},
         ]
+    }
+
+
+# ===================== Sprint 2 stubs =====================
+
+@app.get("/leads")
+def list_leads(
+    query: str | None = Query(default=None),
+    limit: int = Query(default=25),
+    offset: int = Query(default=0),
+    sort: str | None = Query(default=None),
+) -> dict:
+    items = [
+        {"id": "l_101", "name": "Mario Rossi", "company": "Rossi Srl", "phone_e164": "+390212345678", "country_iso": "IT", "lang": "it-IT", "role": "supplier", "consent": True, "created_at": "2025-08-17T09:12:00Z"},
+        {"id": "l_102", "name": "Claire Dubois", "company": "Dubois SA", "phone_e164": "+33123456789", "country_iso": "FR", "lang": "fr-FR", "role": "supplied", "consent": False, "created_at": "2025-08-16T15:02:00Z"},
+    ]
+    return {"total": 244, "items": items}
+
+
+@app.post("/leads")
+async def create_lead(payload: dict) -> dict:
+    # Echo back with a fake id
+    payload = dict(payload)
+    payload["id"] = "l_new"
+    return payload
+
+
+@app.post("/schedule")
+async def schedule_call(payload: dict) -> dict:
+    return {"scheduled": True, "payload": payload}
+
+
+@app.post("/schedule/bulk")
+async def schedule_bulk(payload: dict) -> dict:
+    return {"scheduled": len(payload.get("lead_ids", []))}
+
+
+@app.get("/i18n/locales")
+def get_locales() -> dict:
+    return {
+        "ui_supported": ["en-US", "it-IT", "fr-FR", "hi-IN", "ar-EG", "es-419", "pt-BR", "de-DE", "tr-TR", "id-ID", "vi-VN", "sw"],
+        "ui_default": "en-US",
+        "call_supported": [
+            "en-US","en-GB","es-ES","es-419","fr-FR","de-DE","it-IT","pt-BR","pt-PT","tr-TR","vi-VN","id-ID","nl-NL","ru-RU","ja-JP","ko-KR","zh-CN"
+        ],
+        "call_default": "en-US",
+        "prefer_detect": True,
     }
 
 
@@ -116,4 +164,55 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
     # payload = await request.json()
     return Response(status_code=204)
 
+
+# ===================== Sprint 3 stubs =====================
+
+@app.post("/campaigns")
+async def create_campaign(payload: dict) -> dict:
+    return {"id": "c_new"}
+
+
+@app.get("/campaigns/{campaign_id}")
+def get_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "name": "Sample", "status": "active"}
+
+
+@app.patch("/campaigns/{campaign_id}")
+async def update_campaign(campaign_id: str, payload: dict) -> dict:
+    return {"id": campaign_id, "updated": True}
+
+
+@app.post("/campaigns/{campaign_id}/pause")
+async def pause_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "status": "paused"}
+
+
+@app.post("/campaigns/{campaign_id}/resume")
+async def resume_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "status": "active"}
+
+
+@app.get("/campaigns/{campaign_id}/kpi")
+def campaign_kpi(campaign_id: str) -> dict:
+    return {"leads": 0, "calls": 0, "qualified": 0, "success_pct": 0.0, "cost_per_min": 0, "p95": 0}
+
+
+@app.post("/campaigns/{campaign_id}/schedule")
+async def campaign_schedule(campaign_id: str, payload: dict) -> dict:
+    return {"scheduled": True}
+
+
+@app.get("/campaigns/{campaign_id}/events")
+def campaign_events(campaign_id: str, start: str | None = None, end: str | None = None) -> dict:
+    return {"events": []}
+
+
+@app.get("/calendar")
+def calendar_events(start: str, end: str, scope: str = "tenant", campaign_id: str | None = None) -> dict:
+    # Minimal example data
+    return {
+        "events": [
+            {"id": "e1", "kind": "scheduled", "title": "Call", "at": start},
+        ]
+    }
 

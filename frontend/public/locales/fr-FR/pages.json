@@ -1,0 +1,51 @@
+{
+  "pages": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "health": { "title": "État du système" },
+      "live": { "title": "Appels en direct" },
+      "activity": "Activité récente",
+      "kpi": {
+        "minutes": "Minutes (MTD)",
+        "calls_today": "Appels aujourd'hui",
+        "success": "Taux de réussite"
+      }
+    },
+    "leads": {
+      "title": "Prospects",
+      "actions": { "add": "Ajouter prospect", "schedule": "Planifier", "import": "Importer" },
+      "cols": { "name":"Nom", "company":"Société", "phone":"Téléphone", "country":"Pays", "lang":"Langue", "role":"Rôle", "consent":"Consentement" },
+      "empty": { "title":"Aucun prospect", "desc":"Ajoutez un prospect ou importez un CSV." },
+      "add_title": "Ajouter prospect",
+      "fields": { "name":"Nom", "company":"Société", "phone":"Téléphone (E.164)", "country":"Pays ISO", "lang":"Langue", "role":"Rôle", "consent":"Consentement donné" },
+      "placeholders": { "e164":"+33123456789" },
+      "errors": { "e164":"Saisissez un numéro E.164 valide" },
+      "toasts": { "added":"Prospect ajouté" }
+    },
+    "import": {
+      "title": "Importation",
+      "steps": { "source": "Source" },
+      "paste_numbers": "Collez des numéros (un par ligne)",
+      "upload_csv": "Téléverser CSV",
+      "preview": "Aperçu",
+      "no_numbers": "Aucun numéro détecté",
+      "no_numbers_desc": "Collez des lignes comme +33123456789.",
+      "wip": "En cours",
+      "wip_desc": "Les étapes 2–4 apparaîtront ici."
+    },
+    "campaigns": {
+      "title": "Campagnes",
+      "steps": { "details":"Détails", "audience":"Audience & Pacing", "windows":"Plages & Conformité", "review":"Résumé" },
+      "fields": { "name":"Nom", "goal":"Objectif", "role":"Rôle", "lang":"Langue d'appel (par défaut)", "agent":"Agent", "kb":"Base de connaissances", "from":"Caller ID (de)", "pacing":"Cadence (par minute)", "budget":"Plafond budget (centimes)", "quiet_hours":"Respecter les heures calmes" },
+      "actions": { "create_schedule":"Créer et planifier" },
+      "toasts": { "created":"Campagne créée {id}" }
+    },
+    "calendar": {
+      "title": "Calendrier",
+      "range": "{from} → {to}",
+      "legend": { "scheduled":"Planifié", "call":"Appel", "blocked":"Bloqué", "warn":"Alerte" }
+    }
+  }
+}
+
+
