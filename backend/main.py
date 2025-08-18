@@ -222,6 +222,7 @@ def calendar_events(start: str, end: str, scope: str = "tenant", campaign_id: st
                 {"id": "sch_100", "kind": "scheduled", "title": "Call A", "at": e1.isoformat()},
                 {"id": "sch_200", "kind": "scheduled", "title": "Call B", "at": e2.isoformat()},
                 {"id": "blk_1", "kind": "blocked", "title": "Quiet hours", "at": day.replace(hour=7).isoformat(), "end": day.replace(hour=8).isoformat()},
+                {"id": "wrn_1", "kind": "warn", "title": "Budget nearing 80%", "at": day.replace(hour=12).isoformat()},
             ]
         }
     except Exception:
@@ -247,11 +248,87 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
                 "message": "Outside allowed hours",
                 "suggest": ["next_window_at", suggest]
             })
+        # Demo varying conflicts based on minute
+        m = at_dt.minute % 10
+        if m == 1:
+            raise HTTPException(status_code=409, detail={"code": "RPO", "message": "RPO/DNC blocked", "iso": "IT"})
+        if m == 2:
+            raise HTTPException(status_code=409, detail={"code": "BUDGET", "message": "Budget reached"})
+        if m == 3:
+            raise HTTPException(status_code=409, detail={"code": "CONCURRENCY", "message": "No free slots"})
         return {"id": schedule_id, "at": at_dt.isoformat(), "updated": True}
     except HTTPException:
         raise
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid payload")
+
+
+# ===================== Sprint 4 stubs =====================
+
+@app.get("/analytics/overview")
+def analytics_overview() -> dict:
+    return {
+        "kpi": {
+            "calls": 1240,
+            "connected_rate": 0.62,
+            "qualified_rate": 0.28,
+            "avg_duration_sec": 146,
+            "cost_per_min_eur": 0.12,
+            "p95_ms": 540,
+        },
+        "charts": {
+            "calls_over_time": [{"ts": "2025-08-01", "attempted": 120, "connected": 70, "finished": 68}],
+            "outcomes_over_time": [{"ts": "2025-08-01", "qualified": 20, "not_interested": 18, "callback": 5, "voicemail": 10, "no_answer": 12, "failed": 5}],
+            "lang_distribution": [{"lang": "it-IT", "calls": 420}, {"lang": "en-US", "calls": 360}, {"lang": "fr-FR", "calls": 210}],
+            "agent_perf": [{"agent": "it-outbound-a", "qualified_rate": 0.31, "avg_duration_sec": 152}],
+            "cost_minutes_over_time": [{"ts": "2025-08-01", "minutes": 220, "eur": 26.4}],
+        },
+        "tables": {
+            "by_campaign": [{"id": "c_1", "name": "RFQ IT", "calls": 580, "qualified_rate": 0.29, "avg_duration_sec": 150, "cost_per_min_eur": 0.12, "p95_ms": 520}],
+            "by_agent": [{"id": "a_1", "name": "it-outbound-a", "lang": "it-IT", "calls": 320, "qualified_rate": 0.31, "avg_duration_sec": 152, "cost_per_min_eur": 0.12, "p95_ms": 530}],
+            "by_country": [{"iso": "IT", "calls": 600, "connected_rate": 0.66, "quiet_violations": 2, "rpo_blocks": 5}],
+        },
+    }
+
+
+@app.get("/analytics/export.json")
+def analytics_export_json() -> dict:
+    return analytics_overview()
+
+
+@app.get("/analytics/export.csv")
+def analytics_export_csv() -> Response:
+    csv_content = "metric,value\ncalls,1240\nconnected_rate,0.62\n"
+    return Response(content=csv_content, media_type="text/csv")
+
+
+@app.get("/history")
+def history_list(limit: int = 25, offset: int = 0) -> dict:
+    return {
+        "total": 2,
+        "items": [
+            {"id": "call_9001", "ts": "2025-08-17T09:22:00Z", "direction": "outbound", "to": "+390212345678", "from": "+390298765432", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified", "duration_sec": 210, "cost_eur": 0.42},
+            {"id": "call_9002", "ts": "2025-08-17T09:25:00Z", "direction": "outbound", "to": "+33123456789", "from": "+33987654321", "company": "Dubois SA", "lang": "fr-FR", "agent": "fr-outbound-a", "outcome": "no_answer", "duration_sec": 0, "cost_eur": 0.0},
+        ],
+    }
+
+
+@app.get("/history/{call_id}/brief")
+def history_brief(call_id: str) -> dict:
+    return {
+        "id": call_id,
+        "ts": "2025-08-17T09:22:00Z",
+        "header": {"phone": "+390212345678", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified"},
+        "last_turns": [{"role": "agent", "text": "Hello"}, {"role": "user", "text": "Hi"}],
+        "summary": {"bullets": ["Qualified lead", "Requested callback next week"]},
+        "cost": {"total_eur": 0.42, "minutes": 3.5},
+    }
+
+
+@app.get("/history/export.csv")
+def history_export_csv() -> Response:
+    csv_content = "id,ts,direction,to,from,cost_eur\ncall_9001,2025-08-17T09:22:00Z,outbound,+390212345678,+390298765432,0.42\n"
+    return Response(content=csv_content, media_type="text/csv")
 
 
 @app.get("/campaigns/{campaign_id}/leads")
