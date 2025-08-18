@@ -14,6 +14,12 @@
     "range": "{from}–{to}",
     "of_total": "di {total}",
     "actions": { "more": "Altro" }
+    ,
+    "toasts": {
+      "updated": "Aggiornato",
+      "removed": "Rimosso",
+      "attestation_ok": "Attestazione generata"
+    }
   }
 }
 

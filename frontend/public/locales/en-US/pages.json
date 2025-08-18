@@ -72,6 +72,17 @@
       "title": "History",
       "columns": { "time":"Time","direction":"Direction","to":"To","from":"From","company":"Company","outcome":"Outcome","duration":"Duration","cost":"Cost" },
       "drawer": { "open_full": "Open full call" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "Members",
+        "invite": "Invite",
+        "audit": "Audit",
+        "email": "Email",
+        "role": "Role",
+        "remove": "Remove",
+        "send_invite": "Send invite"
+      }
     }
   }
 }

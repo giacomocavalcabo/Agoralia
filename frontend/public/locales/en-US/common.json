@@ -15,6 +15,11 @@
     "of_total": "of {total}",
     "actions": {
       "more": "More"
+    },
+    "toasts": {
+      "updated": "Updated",
+      "removed": "Removed",
+      "attestation_ok": "Attestation generated"
     }
   }
 }

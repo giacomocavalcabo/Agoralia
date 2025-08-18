@@ -1,4 +1,6 @@
 import os
+import json
+from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, Request, Header, HTTPException, Response
 from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +22,64 @@ _WORKSPACE_MEMBERS = [
 _WORKSPACE_INVITES = []
 _ACTIVITY = []
 _CONCURRENCY = {"used": 1, "free": 9, "limit": 10, "by_queue": {"enterprise": 0, "pro": 1, "core": 0, "trial": 0}}
+
+# ===================== Compliance compiled cache =====================
+COMPILED_RULES_PATH = os.environ.get("COMPLIANCE_RULES_PATH") or os.path.join(os.path.dirname(__file__), "data", "compliance", "rules.v1.json")
+_COMPLIANCE: dict[str, Any] = {"fused_by_iso": {}, "countries": []}
+
+def _load_compliance_from_disk() -> None:
+    try:
+        with open(COMPILED_RULES_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # expected keys: fused_by_iso, countries
+        fused = data.get("fused_by_iso") or {}
+        countries = data.get("countries") or []
+        # normalize iso keys to upper
+        _COMPLIANCE["fused_by_iso"] = {str(k).upper(): v for k, v in fused.items()}
+        _COMPLIANCE["countries"] = countries
+    except Exception:
+        _COMPLIANCE["fused_by_iso"] = {}
+        _COMPLIANCE["countries"] = []
+
+def _time_in_any_window(quiet_hours: dict | None, when: datetime) -> bool:
+    if not quiet_hours:
+        return True
+    # quiet_hours describes allowed windows per weekday name (Mon, Tue, ...)
+    # Example: {"Mon-Fri":[["10:00","13:00"],["14:00","20:00"]],"Sat":[],"Sun":[]}
+    # Expand Mon-Fri ranges or per-day keys like "Mon","Tue" etc.
+    weekday_map = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
+    day_key = weekday_map.get(when.weekday())
+    windows: list[list[str]] = []
+    # Direct day
+    if day_key and isinstance(quiet_hours.get(day_key), list):
+        windows.extend(quiet_hours.get(day_key) or [])
+    # Ranges like Mon-Fri
+    for key, slots in (quiet_hours or {}).items():
+        if isinstance(key, str) and "-" in key and isinstance(slots, list):
+            try:
+                start_d, end_d = key.split("-", 1)
+                days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+                si, ei = days.index(start_d), days.index(end_d)
+                if si <= ei and day_key and days.index(day_key) >= si and days.index(day_key) <= ei:
+                    windows.extend(slots)
+            except Exception:
+                continue
+    hh = when.hour
+    mm = when.minute
+    for start, end in windows:
+        try:
+            sh, sm = [int(x) for x in str(start).split(":", 1)]
+            eh, em = [int(x) for x in str(end).split(":", 1)]
+            start_min = sh * 60 + sm
+            end_min = eh * 60 + em
+            cur_min = hh * 60 + mm
+            if start_min <= cur_min < end_min:
+                return True
+        except Exception:
+            continue
+    return False
+
+_load_compliance_from_disk()
 # ===================== RBAC (very simple dev stub) =====================
 def _role_from_request(req: Request | None) -> str:
     try:
@@ -444,34 +504,87 @@ def history_export_csv(locale: str | None = None) -> Response:
 @app.post("/compliance/preflight")
 async def compliance_preflight(payload: dict) -> dict:
     items = payload.get("items", [])
-    out = []
+    out: list[dict] = []
     allow, delay, block = 0, 0, 0
     for it in items:
         e164 = it.get("e164", "")
-        iso = it.get("country_iso") or ("IT" if e164.startswith("+39") else "FR" if e164.startswith("+33") else "US")
-        # Toy rules: minutes digit decides bucket
-        sched = it.get("schedule_at") or "2025-08-17T10:00:00Z"
-        minute = 0
+        iso = (it.get("country_iso") or ("IT" if e164.startswith("+39") else "FR" if e164.startswith("+33") else "US")).upper()
+        fused = _COMPLIANCE.get("fused_by_iso", {}).get(iso) or {}
+        flags = fused.get("flags") or {}
+        quiet_hours = fused.get("quiet_hours")
+        sched_str = it.get("schedule_at") or datetime.now(timezone.utc).isoformat()
         try:
-            from datetime import datetime
-            minute = datetime.fromisoformat(sched.replace("Z","+00:00")).minute
+            sched_dt = datetime.fromisoformat(str(sched_str).replace("Z", "+00:00"))
         except Exception:
-            pass
-        if minute % 3 == 0:
-            decision = "allow"; allow += 1; reasons = []
-        elif minute % 3 == 1:
-            decision = "delay"; delay += 1; reasons = ["QUIET_HOURS"]; 
+            sched_dt = datetime.now(timezone.utc)
+
+        reasons: list[str] = []
+        decision = "allow"
+
+        # Quiet hours check → delay if outside allowed windows
+        if flags.get("has_quiet_hours") and not _time_in_any_window(quiet_hours, sched_dt):
+            decision = "delay"
+            reasons.append("QUIET_HOURS")
+
+        # DNC scrub requirement → block if explicit `dnc_hit` in request, otherwise mark requirement
+        if flags.get("requires_dnc_scrub"):
+            if it.get("dnc_hit") is True:
+                decision = "block"
+                reasons.append("DNC_HIT")
+            else:
+                reasons.append("DNC_REQUIRED")
+
+        # Consent rules
+        if flags.get("requires_consent_b2c") and it.get("contact_class") == "b2c" and not it.get("has_consent"):
+            decision = "block"
+            reasons.append("CONSENT_REQUIRED_B2C")
+        if flags.get("requires_consent_b2b") and it.get("contact_class") == "b2b" and not it.get("has_consent"):
+            decision = "block"
+            reasons.append("CONSENT_REQUIRED_B2B")
+
+        # Recording consent
+        if flags.get("recording_requires_consent") and it.get("recording_enabled") and not it.get("recording_consent"):
+            decision = "block"
+            reasons.append("RECORDING_CONSENT_REQUIRED")
+
+        # Automated calling
+        if flags.get("allows_automated") is False and it.get("automated") is True:
+            decision = "block"
+            reasons.append("AUTOMATED_NOT_ALLOWED")
+
+        next_window_at = None
+        if decision == "delay" and flags.get("has_quiet_hours"):
+            # naive: try next day at first allowed slot if present
+            try:
+                # find first window of following day
+                day_ahead = (sched_dt + timedelta(days=1)).replace(second=0, microsecond=0)
+                # try 08:00 as generic fallback
+                next_window_at = day_ahead.replace(hour=8, minute=0).isoformat()
+            except Exception:
+                next_window_at = None
+
+        if decision == "allow":
+            allow += 1
+        elif decision == "delay":
+            delay += 1
         else:
-            decision = "block"; block += 1; reasons = ["DNC_HIT"]
+            block += 1
+
         out.append({
             "e164": e164,
             "country_iso": iso,
             "decision": decision,
             "reasons": reasons,
-            "required_scripts": ["AI_DISCLOSURE_REQ","REC_CONSENT_REQ"] if iso in ("IT","FR") else [],
-            "next_window_at": "2025-08-18T10:00:00Z" if decision=="delay" else None,
+            "required_scripts": [
+                "AI_DISCLOSURE_REQ" if (fused.get("ai_disclosure") == "required") else None,
+                "REC_CONSENT_REQ" if flags.get("recording_requires_consent") else None,
+            ],
+            "next_window_at": next_window_at,
             "warnings": ["LANG_NOT_SUPPORTED"] if it.get("call_lang") == "ar-EG" else [],
         })
+    # cleanup None entries in required_scripts
+    for it in out:
+        it["required_scripts"] = [x for x in it.get("required_scripts", []) if x]
     return {"items": out, "summary": {"allow": allow, "delay": delay, "block": block}}
 
 
@@ -487,6 +600,29 @@ def compliance_scripts(iso: str, lang: str, direction: str, contact_class: str) 
         "fallback": "Posso inviarle le informazioni via email.",
         "version": "it-2025-08-01",
     }
+
+
+@app.get("/compliance/countries")
+def compliance_countries() -> dict:
+    # Returns list of countries with iso, confidence, last_verified
+    try:
+        countries = _COMPLIANCE.get("countries") or []
+        # Ensure ISO upper
+        for c in countries:
+            if isinstance(c.get("iso"), str):
+                c["iso"] = c["iso"].upper()
+        return {"items": countries}
+    except Exception:
+        return {"items": []}
+
+
+@app.get("/compliance/country/{iso}")
+def compliance_country(iso: str) -> dict:
+    iso_up = (iso or "").upper()
+    fused = _COMPLIANCE.get("fused_by_iso", {}).get(iso_up)
+    if not fused:
+        raise HTTPException(status_code=404, detail="Not found")
+    return fused
 
 
 @app.post("/attestations")

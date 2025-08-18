@@ -71,6 +71,17 @@
       "title": "Storico",
       "columns": { "time":"Ora","direction":"Direzione","to":"A","from":"Da","company":"Azienda","outcome":"Esito","duration":"Durata","cost":"Costo" },
       "drawer": { "open_full": "Apri chiamata completa" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "Membri",
+        "invite": "Invita",
+        "audit": "Audit",
+        "email": "Email",
+        "role": "Ruolo",
+        "remove": "Rimuovi",
+        "send_invite": "Invia invito"
+      }
     }
   }
 }
