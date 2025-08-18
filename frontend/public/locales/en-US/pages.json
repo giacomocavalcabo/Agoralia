@@ -43,7 +43,23 @@
     "calendar": {
       "title": "Calendar",
       "range": "{from} → {to}",
-      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn" }
+      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn" },
+      "quick": {
+        "title": "Schedule call",
+        "lead": "Lead",
+        "agent": "Agent",
+        "kb": "Knowledge base",
+        "from": "Caller ID",
+        "datetime": "Date & time",
+        "submit": "Schedule",
+        "submit_done": "Scheduled"
+      },
+      "errors": {
+        "quiet_hours": "Selected time is outside allowed hours for {iso}.",
+        "rpo": "Number is RPO/DNC blocked for {iso}.",
+        "budget": "Budget cap reached.",
+        "concurrency": "No free slots right now."
+      }
     },
     "settings": { "title": "Settings" }
   }

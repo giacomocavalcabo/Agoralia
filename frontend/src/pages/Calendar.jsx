@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { apiFetch } from '../lib/api.js'
+import Modal from '../components/Modal.jsx'
+import { useToast } from '../components/ToastProvider.jsx'
+import Drawer from '../components/Drawer.jsx'
 
 function fmt(d){
   const pad=(n)=> String(n).padStart(2,'0')
@@ -12,6 +15,12 @@ export default function Calendar(){
   const [view, setView] = useState('week')
   const [cursor, setCursor] = useState(new Date())
   const [events, setEvents] = useState([])
+  const { toast } = useToast()
+  const [quickOpen, setQuickOpen] = useState(false)
+  const [quick, setQuick] = useState({ lead_id:'', agent_id:'', kb_id:'', from:'', at:'' })
+  const [dragStart, setDragStart] = useState(null)
+  const [selected, setSelected] = useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const range = useMemo(()=>{
     const start = new Date(cursor)
@@ -25,18 +34,34 @@ export default function Calendar(){
     return { start: monthStart, end: monthEnd }
   }, [cursor, view])
 
-  useEffect(()=>{ (async()=>{
+  async function load(){
     try{
       const res = await apiFetch(`/calendar?scope=tenant&start=${range.start.toISOString()}&end=${range.end.toISOString()}`)
       setEvents(res.events || [])
     } catch(e){}
-  })() }, [range.start, range.end])
+  }
+
+  useEffect(()=>{ load() }, [range.start, range.end])
 
   function prev(){ setCursor(d=> view==='week'? new Date(d.getFullYear(), d.getMonth(), d.getDate()-7) : new Date(d.getFullYear(), d.getMonth()-1, 1)) }
   function next(){ setCursor(d=> view==='week'? new Date(d.getFullYear(), d.getMonth(), d.getDate()+7) : new Date(d.getFullYear(), d.getMonth()+1, 1)) }
   function today(){ setCursor(new Date()) }
 
   const fromStr = fmt(range.start), toStr = fmt(range.end)
+
+  function openQuick(date){
+    setQuick({ lead_id:'', agent_id:'', kb_id:'', from:'', at: date.toISOString() })
+    setQuickOpen(true)
+  }
+
+  async function submitQuick(){
+    try{
+      await apiFetch('/schedule', { method:'POST', body: quick })
+      setQuickOpen(false)
+      toast(t('pages.calendar.quick.submit_done') || 'Scheduled')
+      load()
+    } catch(err){ toast(String(err?.message || err)) }
+  }
 
   return (
     <div style={{ display:'grid', gap:12 }}>
@@ -54,10 +79,95 @@ export default function Calendar(){
       <div className="kpi-title">{t('pages.calendar.range', { from: fromStr, to: toStr })}</div>
       <div className="panel" style={{ minHeight:300 }}>
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('pages.calendar.title')}</div>
-        <ul style={{ margin:0, paddingLeft:16 }}>
-          {events.map(e=> (<li key={e.id} className="kpi-title">[{e.kind}] {e.title || ''} {e.at}</li>))}
-        </ul>
+        {view==='week' ? (
+          <div role="grid" aria-label="week" style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--border)', borderLeft:'1px solid var(--border)' }}>
+            <div></div>
+            {Array.from({ length:7 }).map((_,d)=>{
+              const day = new Date(range.start); day.setDate(range.start.getDate()+d)
+              return <div key={d} className="kpi-title" style={{ padding:8, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)' }}>{day.toLocaleDateString()}</div>
+            })}
+            {Array.from({ length:11 }).map((_,h)=>{
+              const hour = h+8
+              return (
+                <div key={`row-${hour}`} style={{ display:'contents' }}>
+                  <div className="kpi-title" style={{ padding:6, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)' }}>{String(hour).padStart(2,'0')}:00</div>
+                  {Array.from({ length:7 }).map((_,d)=>{
+                    const slot = new Date(range.start); slot.setDate(range.start.getDate()+d); slot.setHours(hour,0,0,0)
+                    const scheduledHere = events.find(e=> e.kind==='scheduled' && e.at && new Date(e.at).getTime()===slot.getTime())
+                    return (
+                      <button
+                        key={`c-${d}-${hour}`}
+                        role="gridcell"
+                        onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : openQuick(slot)}
+                        onMouseDown={()=> setDragStart(slot)}
+                        onMouseUp={async ()=>{
+                          if (dragStart && dragStart.getTime()!==slot.getTime() && selected){
+                            try{
+                              const res = await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ at: slot.toISOString() } })
+                              if (res?.updated){ toast('Moved'); load() }
+                            } catch(err){ toast(String(err?.message || err)); /* roll back implicitly */ }
+                          }
+                          setDragStart(null)
+                        }}
+                        style={{ padding:0, height:36, border:'none', borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background: scheduledHere ? 'rgba(16,185,129,.15)':'transparent', cursor:'pointer' }}
+                        aria-label={`${slot.toISOString()}`}
+                      />
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <ul style={{ margin:0, paddingLeft:16 }}>
+            {events.map(e=> (<li key={e.id} className="kpi-title">[{e.kind}] {e.title || ''} {e.at}</li>))}
+          </ul>
+        )}
       </div>
+
+      <Modal title={t('pages.calendar.quick.title')} open={quickOpen} onClose={()=> setQuickOpen(false)} footer={
+        <>
+          <button onClick={()=> setQuickOpen(false)} style={{ padding:'8px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>
+          <button onClick={submitQuick} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('pages.calendar.quick.submit')}</button>
+        </>
+      }>
+        <div style={{ display:'grid', gap:10 }}>
+          <label>
+            <div className="kpi-title">{t('pages.calendar.quick.lead')}</div>
+            <input value={quick.lead_id} onChange={e=> setQuick({ ...quick, lead_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            <label>
+              <div className="kpi-title">{t('pages.calendar.quick.agent')}</div>
+              <input value={quick.agent_id} onChange={e=> setQuick({ ...quick, agent_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            </label>
+            <label>
+              <div className="kpi-title">{t('pages.calendar.quick.kb')}</div>
+              <input value={quick.kb_id} onChange={e=> setQuick({ ...quick, kb_id:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+            </label>
+          </div>
+          <label>
+            <div className="kpi-title">{t('pages.calendar.quick.from')}</div>
+            <input placeholder={'+12025550123'} value={quick.from} onChange={e=> setQuick({ ...quick, from:e.target.value })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
+          <label>
+            <div className="kpi-title">{t('pages.calendar.quick.datetime')}</div>
+            <input type="datetime-local" value={quick.at ? new Date(quick.at).toISOString().slice(0,16) : ''} onChange={e=> setQuick({ ...quick, at: new Date(e.target.value).toISOString() })} style={{ width:'100%', padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
+          </label>
+        </div>
+      </Modal>
+
+      <Drawer open={drawerOpen} onClose={()=> setDrawerOpen(false)} title={selected ? (selected.title || 'Scheduled') : ''}>
+        {selected && (
+          <div style={{ display:'grid', gap:8 }}>
+            <div className="kpi-title">{selected.at}</div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={()=> setDrawerOpen(false)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('common.cancel')}</button>
+              <button onClick={()=> setSelected(null)} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Close</button>
+            </div>
+          </div>
+        )}
+      </Drawer>
     </div>
   )
 }

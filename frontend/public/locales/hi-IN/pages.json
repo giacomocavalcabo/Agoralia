@@ -43,7 +43,23 @@
     "calendar": {
       "title": "कैलेंडर",
       "range": "{from} → {to}",
-      "legend": { "scheduled":"शेड्यूल", "call":"कॉल", "blocked":"ब्लॉक", "warn":"चेतावनी" }
+      "legend": { "scheduled":"शेड्यूल", "call":"कॉल", "blocked":"ब्लॉक", "warn":"चेतावनी" },
+      "quick": {
+        "title": "कॉल शेड्यूल करें",
+        "lead": "लीड",
+        "agent": "एजेंट",
+        "kb": "नॉलेज बेस",
+        "from": "कॉलर आईडी",
+        "datetime": "तारीख और समय",
+        "submit": "शेड्यूल",
+        "submit_done": "शेड्यूल किया गया"
+      },
+      "errors": {
+        "quiet_hours": "चयनित समय {iso} के अनुमत घंटों से बाहर है।",
+        "rpo": "नंबर {iso} के लिए RPO/DNC ब्लॉक है।",
+        "budget": "बजट कैप पहुँच गया।",
+        "concurrency": "अभी कोई स्लॉट खाली नहीं।"
+      }
     }
   }
 }

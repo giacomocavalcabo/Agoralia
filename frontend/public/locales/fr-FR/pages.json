@@ -43,7 +43,23 @@
     "calendar": {
       "title": "Calendrier",
       "range": "{from} → {to}",
-      "legend": { "scheduled":"Planifié", "call":"Appel", "blocked":"Bloqué", "warn":"Alerte" }
+      "legend": { "scheduled":"Planifié", "call":"Appel", "blocked":"Bloqué", "warn":"Alerte" },
+      "quick": {
+        "title": "Planifier un appel",
+        "lead": "Prospect",
+        "agent": "Agent",
+        "kb": "Base de connaissances",
+        "from": "Caller ID",
+        "datetime": "Date et heure",
+        "submit": "Planifier",
+        "submit_done": "Planifié"
+      },
+      "errors": {
+        "quiet_hours": "Horaire sélectionné en dehors des heures autorisées pour {iso}.",
+        "rpo": "Numéro bloqué RPO/DNC pour {iso}.",
+        "budget": "Plafond budget atteint.",
+        "concurrency": "Aucun créneau disponible pour l'instant."
+      }
     }
   }
 }

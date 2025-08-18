@@ -209,10 +209,45 @@ def campaign_events(campaign_id: str, start: str | None = None, end: str | None 
 
 @app.get("/calendar")
 def calendar_events(start: str, end: str, scope: str = "tenant", campaign_id: str | None = None) -> dict:
-    # Minimal example data
-    return {
-        "events": [
-            {"id": "e1", "kind": "scheduled", "title": "Call", "at": start},
-        ]
-    }
+    # Minimal example data within provided range
+    try:
+        # Return a couple of scheduled events at 10:00 and 14:00 on the start day
+        from datetime import datetime, timezone
+        start_dt = datetime.fromisoformat(start.replace("Z", "+00:00"))
+        day = datetime(start_dt.year, start_dt.month, start_dt.day, tzinfo=start_dt.tzinfo or timezone.utc)
+        e1 = day.replace(hour=10)
+        e2 = day.replace(hour=14)
+        return {
+            "events": [
+                {"id": "sch_100", "kind": "scheduled", "title": "Call A", "at": e1.isoformat()},
+                {"id": "sch_200", "kind": "scheduled", "title": "Call B", "at": e2.isoformat()},
+                {"id": "blk_1", "kind": "blocked", "title": "Quiet hours", "at": day.replace(hour=7).isoformat(), "end": day.replace(hour=8).isoformat()},
+            ]
+        }
+    except Exception:
+        return {"events": []}
+
+
+@app.patch("/schedule/{schedule_id}")
+async def update_schedule(schedule_id: str, payload: dict) -> dict:
+    # Demo validation: block hours outside 8-18 with QUIET_HOURS
+    try:
+        from datetime import datetime, timezone, timedelta
+        at = payload.get("at")
+        if not at:
+            return {"id": schedule_id, "updated": False}
+        at_dt = datetime.fromisoformat(str(at).replace("Z", "+00:00"))
+        hour = at_dt.hour
+        if hour < 8 or hour >= 18:
+            suggest = (at_dt.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)).isoformat()
+            raise HTTPException(status_code=409, detail={
+                "code": "QUIET_HOURS",
+                "message": "Outside allowed hours",
+                "suggest": ["next_window_at", suggest]
+            })
+        return {"id": schedule_id, "at": at_dt.isoformat(), "updated": True}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid payload")
 
