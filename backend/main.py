@@ -266,7 +266,15 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
 # ===================== Sprint 4 stubs =====================
 
 @app.get("/analytics/overview")
-def analytics_overview() -> dict:
+def analytics_overview(
+    range: str | None = None,
+    scope: str | None = None,
+    lang: str | None = None,
+    agent: str | None = None,
+    country: str | None = None,
+    outcome: str | None = None,
+    direction: str | None = None,
+) -> dict:
     return {
         "kpi": {
             "calls": 1240,
@@ -292,28 +300,52 @@ def analytics_overview() -> dict:
 
 
 @app.get("/analytics/export.json")
-def analytics_export_json() -> dict:
-    return analytics_overview()
+def analytics_export_json(locale: str | None = None, range: str | None = None, scope: str | None = None) -> dict:
+    return analytics_overview(range=range, scope=scope)
 
 
 @app.get("/analytics/export.csv")
 def analytics_export_csv(locale: str | None = None) -> Response:
-    # Minimal CSV honoring locale param only to demonstrate wiring
     sep = ","
-    headers = sep.join(["metric", "value"]) + "\n"
+    head_map = {
+        "en-US": ["metric", "value"],
+        "it-IT": ["metrica", "valore"],
+        "fr-FR": ["métrique", "valeur"],
+        "hi-IN": ["मेट्रिक", "मान"],
+        "ar-EG": ["المعيار", "القيمة"],
+    }
+    headers = sep.join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
     body = sep.join(["calls", "1240"]) + "\n" + sep.join(["connected_rate", "0.62"]) + "\n"
     return Response(content=headers + body, media_type="text/csv")
 
 
 @app.get("/history")
-def history_list(limit: int = 25, offset: int = 0) -> dict:
-    return {
-        "total": 2,
-        "items": [
-            {"id": "call_9001", "ts": "2025-08-17T09:22:00Z", "direction": "outbound", "to": "+390212345678", "from": "+390298765432", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified", "duration_sec": 210, "cost_eur": 0.42},
-            {"id": "call_9002", "ts": "2025-08-17T09:25:00Z", "direction": "outbound", "to": "+33123456789", "from": "+33987654321", "company": "Dubois SA", "lang": "fr-FR", "agent": "fr-outbound-a", "outcome": "no_answer", "duration_sec": 0, "cost_eur": 0.0},
-        ],
-    }
+def history_list(
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = Query(default=None),
+    q: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    country: str | None = Query(default=None),
+    agent: str | None = Query(default=None),
+    outcome: str | None = Query(default=None),
+    direction: str | None = Query(default=None),
+    group_by: str | None = Query(default=None),
+    limit: int = 25,
+    offset: int = 0,
+    sort: str | None = Query(default="-ts"),
+) -> dict:
+    items = [
+        {"id": "call_9001", "ts": "2025-08-17T09:22:00Z", "direction": "outbound", "to": "+390212345678", "from": "+390298765432", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified", "duration_sec": 210, "cost_eur": 0.42},
+        {"id": "call_9002", "ts": "2025-08-17T09:25:00Z", "direction": "outbound", "to": "+33123456789", "from": "+33987654321", "company": "Dubois SA", "lang": "fr-FR", "agent": "fr-outbound-a", "outcome": "no_answer", "duration_sec": 0, "cost_eur": 0.0},
+    ]
+    reverse = sort.startswith("-") if sort else True
+    key = sort.lstrip("-") if sort else "ts"
+    try:
+        items.sort(key=lambda x: x.get(key, ""), reverse=reverse)
+    except Exception:
+        pass
+    total = len(items)
+    return {"total": total, "items": items[offset: offset+limit]}
 
 
 @app.get("/history/{call_id}/brief")
@@ -329,9 +361,17 @@ def history_brief(call_id: str) -> dict:
 
 
 @app.get("/history/export.csv")
-def history_export_csv() -> Response:
-    csv_content = "id,ts,direction,to,from,cost_eur\ncall_9001,2025-08-17T09:22:00Z,outbound,+390212345678,+390298765432,0.42\n"
-    return Response(content=csv_content, media_type="text/csv")
+def history_export_csv(locale: str | None = None) -> Response:
+    head_map = {
+        "en-US": ["id","time","direction","to","from","company","outcome","duration_sec","cost_eur"],
+        "it-IT": ["id","ora","direzione","a","da","azienda","esito","durata_sec","costo_eur"],
+        "fr-FR": ["id","heure","direction","à","de","société","résultat","durée_sec","coût_eur"],
+        "hi-IN": ["id","समय","दिशा","को","से","कंपनी","परिणाम","अवधि_सेक","लागत_यूरो"],
+        "ar-EG": ["id","الوقت","الاتجاه","إلى","من","الشركة","النتيجة","المدة_ث","التكلفة_يورو"],
+    }
+    headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
+    row = ["call_9001","2025-08-17T09:22:00Z","outbound","+390212345678","+390298765432","Rossi Srl","qualified","210","0.42"]
+    return Response(content=headers+",".join(row)+"\n", media_type="text/csv")
 
 
 @app.get("/campaigns/{campaign_id}/leads")
