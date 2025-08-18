@@ -44,8 +44,10 @@ export default function Campaign(){
     <div style={{ display:'grid', gap:12 }}>
       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         <h2 style={{ margin:0 }}>{info?.name || 'Campaign'}</h2>
-        <div className="kpi-title" style={{ marginLeft:'auto' }}>
-          <Link to="/campaigns" className="kpi-title">{t('app.Campaigns')||'Campaigns'}</Link>
+        <div style={{ marginLeft:'auto', display:'flex', gap:6 }}>
+          <button onClick={async ()=>{ try{ await apiFetch(`/campaigns/${id}/pause`, { method:'POST' }); toast('Paused') } catch(e){ toast(String(e?.message||e)) } }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Pause</button>
+          <button onClick={async ()=>{ try{ await apiFetch(`/campaigns/${id}/resume`, { method:'POST' }); toast('Resumed') } catch(e){ toast(String(e?.message||e)) } }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Resume</button>
+          <a href={`/api/analytics/export.csv`} target="_blank" rel="noreferrer" style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8, textDecoration:'none' }}>Export CSV</a>
         </div>
       </div>
 
@@ -57,9 +59,12 @@ export default function Campaign(){
 
       {tab==='overview' && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0, 1fr))', gap:12 }}>
-          <KPI label="Leads" value={kpi?.leads ?? 0} />
-          <KPI label="Calls" value={kpi?.calls ?? 0} />
-          <KPI label="Qualified" value={kpi?.qualified ?? 0} />
+          <KPI label={t('pages.campaigns.detail.kpi.leads')||'Leads'} value={kpi?.leads ?? 0} />
+          <KPI label={t('pages.campaigns.detail.kpi.calls')||'Calls'} value={kpi?.calls ?? 0} />
+          <KPI label={t('pages.campaigns.detail.kpi.qualified_rate')||'Qualified %'} value={(kpi?.qualified_rate ?? 0)+'%'} />
+          <KPI label={t('pages.campaigns.detail.kpi.avg_duration')||'Avg duration'} value={(kpi?.avg_duration_sec ?? 0)+'s'} />
+          <KPI label={t('pages.campaigns.detail.kpi.cost_per_min')||'Cost/min'} value={kpi?.cost_per_min ?? 0} />
+          <KPI label={t('pages.campaigns.detail.kpi.p95')||'p95'} value={(kpi?.p95 ?? 0)+' ms'} />
         </div>
       )}
 
