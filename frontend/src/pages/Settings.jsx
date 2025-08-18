@@ -8,9 +8,11 @@ export default function Settings(){
   const [members, setMembers] = useState([])
   const [activity, setActivity] = useState([])
   const [invite, setInvite] = useState({ email:'', role:'viewer' })
+  const [invites, setInvites] = useState([])
   const { toast } = useToast()
   useEffect(()=>{ (async()=>{ try{ const m = await apiFetch('/workspaces/members'); setMembers(m.items||[]) } catch{} })() }, [])
   useEffect(()=>{ (async()=>{ try{ const a = await apiFetch('/workspaces/activity'); setActivity(a.items||[]) } catch{} })() }, [])
+  useEffect(()=>{ (async()=>{ try{ const i = await apiFetch('/workspaces/invites'); setInvites(i.items||[]) } catch{} })() }, [])
   return (
     <div style={{ display:'grid', gap:12 }}>
       <div className="panel">
@@ -48,7 +50,19 @@ export default function Settings(){
             <option value="admin">Admin</option>
           </select>
         </div>
-        <button onClick={async ()=>{ try{ await apiFetch('/workspaces/members/invite', { method:'POST', body: invite }); const a = await apiFetch('/workspaces/activity'); setActivity(a.items||[]) } catch{} }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('settings.workspace.send_invite')||'Send invite'}</button>
+        <button onClick={async ()=>{ try{ await apiFetch('/workspaces/members/invite', { method:'POST', body: invite }); const a = await apiFetch('/workspaces/activity'); setActivity(a.items||[]); const i = await apiFetch('/workspaces/invites'); setInvites(i.items||[]) } catch{} }} style={{ padding:'6px 10px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>{t('settings.workspace.send_invite')||'Send invite'}</button>
+      </div>
+      <div className="panel">
+        <div className="kpi-title" style={{ marginBottom:8 }}>{t('settings.workspace.pending')||'Pending invites'}</div>
+        <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:6 }}>
+          {invites.map(inv=> (
+            <li key={inv.id} className="kpi-title">
+              {inv.email} • {inv.role}
+              <button onClick={()=> navigator.clipboard?.writeText(inv.token)} style={{ marginLeft:8, padding:'4px 8px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Copy token</button>
+              <button onClick={async ()=>{ try{ await apiFetch('/workspaces/members/accept', { method:'POST', body:{ token: inv.token } }); const m = await apiFetch('/workspaces/members'); setMembers(m.items||[]); const i = await apiFetch('/workspaces/invites'); setInvites(i.items||[]) } catch{} }} style={{ marginLeft:6, padding:'4px 8px', border:'1px solid var(--border)', background:'var(--surface)', borderRadius:8 }}>Accept (simulate)</button>
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="panel">
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('settings.workspace.audit')||'Audit'}</div>

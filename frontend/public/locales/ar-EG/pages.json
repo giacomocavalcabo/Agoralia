@@ -59,7 +59,8 @@
         "rpo": "الرقم محظور RPO/DNC لـ {iso}.",
         "budget": "تم الوصول إلى حد الميزانية.",
         "concurrency": "لا توجد فتحات متاحة الآن."
-      }
+      },
+      "badge": { "tz":"التوقيت", "lang":"اللغة" }
     },
     "analytics": {
       "title": "التحليلات",
@@ -71,6 +72,18 @@
       "title": "السجل",
       "columns": { "time":"الوقت","direction":"الاتجاه","to":"إلى","from":"من","company":"الشركة","outcome":"النتيجة","duration":"المدة","cost":"التكلفة" },
       "drawer": { "open_full": "فتح المكالمة كاملة" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "الأعضاء",
+        "invite": "دعوة",
+        "audit": "التدقيق",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "remove": "إزالة",
+        "send_invite": "إرسال دعوة",
+        "pending": "الدعوات المعلقة"
+      }
     }
   }
 }

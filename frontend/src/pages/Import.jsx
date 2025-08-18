@@ -92,9 +92,26 @@ export default function Import(){
 					{preflight && (
 						<div>
 							<div className="kpi-title">{`Summary: allow ${preflight.summary.allow}, delay ${preflight.summary.delay}, block ${preflight.summary.block}`}</div>
-							<ul style={{ margin:0, paddingLeft:16 }}>
-								{preflight.items.slice(0,50).map((it,i)=> (<li key={i} className="kpi-title">{`${it.e164}: ${it.decision} ${(it.reasons||[]).join(',')}`}</li>))}
-							</ul>
+							<div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+								<div>
+									<div className="kpi-title">Allow</div>
+									<ul style={{ margin:0, paddingLeft:16 }}>
+										{preflight.items.filter(x=> x.decision==='allow').slice(0,30).map((it,i)=> (<li key={`a${i}`} className="kpi-title">{it.e164}</li>))}
+									</ul>
+								</div>
+								<div>
+									<div className="kpi-title">Delay</div>
+									<ul style={{ margin:0, paddingLeft:16 }}>
+										{preflight.items.filter(x=> x.decision==='delay').slice(0,30).map((it,i)=> (<li key={`d${i}`} className="kpi-title">{it.e164} — {it.next_window_at}</li>))}
+									</ul>
+								</div>
+								<div>
+									<div className="kpi-title">Block</div>
+									<ul style={{ margin:0, paddingLeft:16 }}>
+										{preflight.items.filter(x=> x.decision==='block').slice(0,30).map((it,i)=> (<li key={`b${i}`} className="kpi-title">{it.e164} — {(it.reasons||[]).join(',')}</li>))}
+									</ul>
+								</div>
+							</div>
 						</div>
 					)}
 				</div>

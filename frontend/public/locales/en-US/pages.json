@@ -59,7 +59,8 @@
         "rpo": "Number is RPO/DNC blocked for {iso}.",
         "budget": "Budget cap reached.",
         "concurrency": "No free slots right now."
-      }
+      },
+      "badge": { "tz":"TZ", "lang":"Lang" }
     },
     "settings": { "title": "Settings" },
     "analytics": {

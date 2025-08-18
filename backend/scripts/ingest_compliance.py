@@ -5,11 +5,17 @@ import csv
 from datetime import datetime
 from typing import Any, Optional
 
-from sqlalchemy import (
-    create_engine, MetaData, Table, Column, String, JSON, Boolean, Date, Text
-)
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.engine import Engine
+# Optional SQLAlchemy import; skip DB upsert if unavailable
+try:  # pragma: no cover
+    from sqlalchemy import (
+        create_engine, MetaData, Table, Column, String, JSON, Boolean, Date, Text
+    )
+    from sqlalchemy.dialects.postgresql import JSONB
+    from sqlalchemy.engine import Engine
+    HAVE_SQLA = True
+except Exception:  # pragma: no cover
+    Engine = Any  # type: ignore
+    HAVE_SQLA = False
 
 
 CONTENT_REF_RE = re.compile(r"contentReference\[[^\]]+\]\{index=[^}]+\}")
@@ -101,6 +107,8 @@ def parse_quiet_hours(value: Optional[str | dict]) -> Optional[dict]:
             targets = ("Mon", "Tue", "Wed", "Thu", "Fri")
         else:
             d1, d2, rngs = m.group(1), m.group(2), m.group(3)
+            # strip any parenthetical qualifiers before times
+            rngs = re.sub(r"\([^)]*\)", " ", rngs)
             if d2:
                 seq = days[days.index(d1): days.index(d2)+1]
             else:
@@ -177,7 +185,9 @@ def quality_checks(rec: dict) -> list[str]:
     return errs
 
 
-def ensure_db(engine: Engine) -> dict[str, Table]:
+def ensure_db(engine: Engine) -> dict[str, Any]:
+    if not HAVE_SQLA:
+        return {}
     metadata = MetaData()
     compliance_country = Table(
         "compliance_country", metadata,
@@ -225,7 +235,9 @@ def ensure_db(engine: Engine) -> dict[str, Table]:
     }
 
 
-def upsert(engine: Engine, tables: dict[str, Table], rec: dict) -> None:
+def upsert(engine: Engine, tables: dict[str, Any], rec: dict) -> None:
+    if not HAVE_SQLA or not tables:
+        return
     # country
     with engine.begin() as conn:
         ctbl = tables["country"]
@@ -307,23 +319,23 @@ def _parse_regime(val: Optional[str]) -> Optional[str]:
 
 def transform(raw: dict) -> dict:
     # Column mapping guess; accept flexible inputs
-    iso = (raw.get("ISO") or raw.get("iso") or raw.get("country_iso") or "").strip().upper()
+    iso = (raw.get("ISO2") or raw.get("ISO") or raw.get("iso") or raw.get("country_iso") or "").strip().upper()
     country = (raw.get("Country") or raw.get("country") or raw.get("name") or "").strip()
 
     b2c = _parse_regime(raw.get("regime_b2c") or raw.get("B2C_Regime") or raw.get("opt_in_or_out_B2C") or raw.get("regime_b2c_raw")) or "opt-out"
     b2b = _parse_regime(raw.get("regime_b2b") or raw.get("B2B_Regime") or raw.get("opt_in_or_out_B2B") or raw.get("regime_b2b_raw")) or "opt-out"
 
     ai_map = {"required": "required", "depends": "depends", "no": "no", "unknown": "depends"}
-    ai_disclosure = norm_bool_enum(raw.get("AIDisclosure_Required") or raw.get("ai_disclosure"), ai_map) or "depends"
+    ai_disclosure = norm_bool_enum(raw.get("AIDisclosure_Required") or raw.get("AIDisclosure_Required(Y/N/Depends)") or raw.get("ai_disclosure"), ai_map) or "depends"
 
     rec_map = {"consent": "consent", "legitimate_interest": "legitimate_interest", "contract": "contract", "unknown": "legitimate_interest"}
-    recording_basis = norm_bool_enum(raw.get("Recording_Basis") or raw.get("recording_basis"), rec_map) or "legitimate_interest"
+    recording_basis = norm_bool_enum(raw.get("Recording_Basis") or raw.get("Recording_Basis(consent/legitimate_interest/contract)") or raw.get("recording_basis"), rec_map) or "legitimate_interest"
 
     callerid_rules = remove_content_refs(raw.get("CallerID_Rules") or raw.get("CallerID/Prefix_Rules") or raw.get("callerid_rules"))
     recent_changes = remove_content_refs(raw.get("Recent_Changes") or raw.get("recent_changes"))
     quiet_hours = parse_quiet_hours(raw.get("Quiet_Hours") or raw.get("Quiet_Hours(allowed_window_local)") or raw.get("quiet_hours"))
 
-    last_verified = parse_date_iso(raw.get("Last_Verified") or raw.get("last_verified"))
+    last_verified = parse_date_iso(raw.get("Last_Verified") or raw.get("Last_Verified(ISO date)") or raw.get("last_verified"))
     confidence_label, confidence_score = parse_confidence(raw.get("Confidence") or raw.get("confidence"))
 
     # DNC registries
@@ -430,6 +442,9 @@ def transform(raw: dict) -> dict:
         "last_verified": last_verified,
         "confidence": confidence_label,
         "confidence_score": confidence_score,
+        "regime_b2c_text": remove_content_refs(raw.get("Regime_B2C") or raw.get("regime_b2c_text")),
+        "regime_b2b_text": remove_content_refs(raw.get("Regime_B2B") or raw.get("regime_b2b_text")),
+        "notes_for_product": remove_content_refs(raw.get("Notes_for_Product") or raw.get("notes_for_product")),
         "dnc": dnc_list,
         "sources": sources,
         "exceptions": exceptions,
@@ -476,7 +491,7 @@ def run() -> None:
 
     # Optional DB upsert if DATABASE_URL set
     db_url = os.environ.get("DATABASE_URL")
-    if db_url:
+    if db_url and HAVE_SQLA:
         engine = create_engine(db_url)
         tables = ensure_db(engine)
         for it in fused_items:

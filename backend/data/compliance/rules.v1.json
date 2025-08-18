@@ -1,0 +1,1546 @@
+{
+  "fused_by_iso": {
+    "AT": {
+      "country": "Austria",
+      "iso": "AT",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must not be concealed (per telecom rules; no special prefix mandated).",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers requires prior consent (opt-in):.",
+      "regime_b2b_text": "Telemarketing to businesses is also restricted; explicit consent or clear prior indication of interest is required:.",
+      "notes_for_product": "No DNC list for calls (only email list). Platform should obtain express consent before calling any Austrian consumer or business. Treat all cold calls as opt-in only.",
+      "dnc": [
+        {
+          "name": "ECG Liste (email opt-out list)",
+          "url": "https://www.rtr.at/TKP/service/ecg-liste/ECG-Liste.de.html",
+          "access": "api",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "§174 Telekommunikationsgesetz 2021 (TKG 2021):",
+          "url": null,
+          "updated": "2021-10-01"
+        },
+        {
+          "title": "RTR ECG-Liste info:",
+          "url": null,
+          "updated": "2021-10-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "BE": {
+      "country": "Belgium",
+      "iso": "BE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must be visible (anonymous calls are prohibited by Code of Economic Law). No special prefix.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed only if the person has not objected or registered on the national Do Not Call list::.",
+      "regime_b2b_text": "Telemarketing to businesses is similarly permitted unless the number is on the Do Not Call Me list (covers B2B and B2C):.",
+      "notes_for_product": "Platform must integrate DNCM scrubbing for all Belgian numbers (including corporate). Apply consumer quiet hours as best practice.",
+      "dnc": [
+        {
+          "name": "Do Not Call Me List (Liste Ne m’appelez plus)",
+          "url": "https://www.dncm.be",
+          "access": "bulk",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "DNCM Official Site::",
+          "url": null,
+          "updated": "2018-09-01"
+        },
+        {
+          "title": "Code of Economic Law, Art. XII.13",
+          "url": null,
+          "updated": "2018-09-01"
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        },
+        {
+          "code": "NO_ANON_CLI",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      }
+    },
+    "BG": {
+      "country": "Bulgaria",
+      "iso": "BG",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller identity must not be concealed (per Electronic Communications Act).",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is prohibited without prior consent: (opt-in required).",
+      "regime_b2b_text": "Telemarketing to businesses: presumed consent model (allowed unless objected).",
+      "notes_for_product": "Treat all consumer calls as requiring explicit consent. No official DNC to check, but maintain internal opt-out list diligently. Be cautious with any unsolicited calls.",
+      "dnc": [
+        {
+          "name": "Consumer Opt-Out List (Consumer Protection Commission)",
+          "url": "https://www.kzp.bg/",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Art. 261 Electronic Communications Act:",
+          "url": null,
+          "updated": "2021-01-01"
+        },
+        {
+          "title": "CPC guidance (in Bulgarian)",
+          "url": null,
+          "updated": "2021-01-01"
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "HR": {
+      "country": "Croatia",
+      "iso": "HR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must be visible; no special prefix required.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to consumers are allowed only if the person has not opted out (either directly or via the national ‘Do Not Call’ registry):",
+      "regime_b2b_text": "Telemarketing to businesses is generally permitted unless the business number is registered on the opt-out list",
+      "notes_for_product": "Must scrub calling lists against Croatia’s ‘Ne zovi’ registry. If unsure whether a number might be residential",
+      "dnc": [
+        {
+          "name": "“Ne zovi” Do-Not-Call Registry",
+          "url": "https://www.hakom.hr/hr/e-registar-ne-zovi/224",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "HAKOM “Ne zovi” registry info:",
+          "url": null,
+          "updated": "2021-09-15"
+        },
+        {
+          "title": "Electronic Communications Act Art. 107",
+          "url": null,
+          "updated": "2021-09-15"
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "CZ": {
+      "country": "Czech Republic",
+      "iso": "CZ",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "If a subscriber listed their number publicly and did not opt out there",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers requires prior consent unless the consumer has explicitly indicated in a public directory that they welcome marketing calls:",
+      "regime_b2b_text": "Telemarketing to businesses also generally requires consent",
+      "notes_for_product": "Low",
+      "dnc": [
+        {
+          "name": "opt-in (unless public opt-in noted)",
+          "url": "None (consent managed via public phone directory preferences)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2022-01-01",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "DK": {
+      "country": "Denmark",
+      "iso": "DK",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Denmark bans unsolicited consumer calls for most products except a few sectors (e.g. insurance",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is permitted only if the consumer has not opted out via the CPR “Robinson list” (opt-out):. Certain sectors may require prior consent by law",
+      "regime_b2b_text": "Telemarketing to businesses is allowed (no specific B2B restrictions)",
+      "notes_for_product": "Low",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "Robinson List",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2019-04-11",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "EE": {
+      "country": "Estonia",
+      "iso": "EE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller must provide identity; no special number prefix required.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed unless the person has opted out of such calls (opt-out; no national list):",
+      "regime_b2b_text": "Telemarketing to legal persons is allowed; generic business contacts can be used unless the entity opted out",
+      "notes_for_product": "Ensure any Estonian contact who says “do not call” is suppressed going forward (internal opt-out list). No centralized list to check",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Law of Obligations Act §60:",
+          "url": null,
+          "updated": "2020-01-01"
+        },
+        {
+          "title": "Electronic Communications Act §103:",
+          "url": null,
+          "updated": "2020-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "FI": {
+      "country": "Finland",
+      "iso": "FI",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No broad exemption. Even existing customers should not be called for new offers without consent (unless falling under “closely related to job role” in B2B context).",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is effectively opt-in – direct marketing calls are generally not allowed unless the consumer has given consent",
+      "regime_b2b_text": "opt-in",
+      "notes_for_product": "2020-07-01",
+      "dnc": [
+        {
+          "name": "opt-out for B2B",
+          "url": "Direct Marketing Prohibition List (ASML/Robinson list for consumers)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "FR": {
+      "country": "France",
+      "iso": "FR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "10:00",
+            "13:00"
+          ],
+          [
+            "14:00",
+            "20:00"
+          ]
+        ],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID cannot be withheld. Use of mobile (06/07) or regular geographic numbers for mass outbound campaigns is prohibited for autodialers; call centers should use specific ranges (e.g. 01 62…",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is heavily regulated: consumers must not be called if they are on the Bloctel opt-out list, and calls are only allowed within strict hours Mon–Fri:. In practice, prior consent is effectively required for unsolicited consumer calls (opt-out by law, but with severe constraints).",
+      "regime_b2b_text": "Telemarketing to business numbers is permitted, but the called party must have had an opportunity to object to such calls when their number was collected:. Strong identification requirements apply for call centers.",
+      "notes_for_product": "Art. L.223-1 Consumer Code (Bloctel):; Décret 2022-1313 (call hours)::; ARCEP Plan de Numérotation 2023:",
+      "dnc": [
+        {
+          "name": "Bloctel",
+          "url": "https://www.bloctel.gouv.fr",
+          "access": "bulk",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Low",
+          "url": null,
+          "updated": "2025-08-18"
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        },
+        {
+          "code": "NO_ANON_CLI",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "DE": {
+      "country": "Germany",
+      "iso": "DE",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Market research calls (if genuinely not sales-related) may not fall under UWG §7’s marketing call ban. However",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to consumers are illegal without explicit prior consent:. German law treats unsolicited calls as an aggressive practice unless the consumer has actively agreed (opt-in)",
+      "regime_b2b_text": "Telemarketing to businesses is only allowed if the individual called can be presumed to have an interest and to have implicitly consented (“presumed consent”):. Otherwise, explicit consent is required even for B2B.",
+      "notes_for_product": "2025-08-18",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No major legislative changes since 2021. Enforcement remains strict",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "high-profile fines have been issued for unlawful calls. Draft laws propose even tighter controls on spoofed calls.",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "GR": {
+      "country": "Greece",
+      "iso": "GR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "it applies even to companies they have a relationship with.",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed except where the consumer has opted out. Consumers can register objections (e.g. via their telecom provider) to avoid marketing calls (opt-out system):",
+      "regime_b2b_text": "Telemarketing to businesses is generally allowed; no specific B2B telemarketing provisions were found",
+      "notes_for_product": "2020-01-01",
+      "dnc": [
+        {
+          "name": "No official national DNC (opt-outs handled via operators)",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "HU": {
+      "country": "Hungary",
+      "iso": "HU",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "existing customers may be contacted",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "no significant changes recently. electronic communications act and advertising act provisions still apply",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to consumers are allowed unless the consumer has explicitly opted out beforehand (no national list; opt-out handled case-by-case):",
+      "regime_b2b_text": "Telemarketing to businesses faces no specific prohibition",
+      "notes_for_product": "2017-06-01",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "IE": {
+      "country": "Ireland",
+      "iso": "IE",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Limited. Irish law allows a form of “previous business context” for email/SMS",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "but such entities can register on ndd to opt out",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers requires prior consent unless a “soft opt-in” applies (existing customer with similar product):. Live marketing calls to mobile numbers are generally prohibited without explicit consent:. All cold calls must be screened against the National Do-Not-Call list.",
+      "regime_b2b_text": "Telemarketing to corporate entities is permitted without prior consent",
+      "notes_for_product": "but number used should permit a return call or identification.",
+      "dnc": [
+        {
+          "name": "opt-out (for corporates)",
+          "url": "National Directory Database (NDD) opt-out list",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Caller ID must not be withheld (PECR requirement). No special prefix mandated",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "IT": {
+      "country": "Italy",
+      "iso": "IT",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "09:00",
+            "20:00"
+          ]
+        ],
+        "Sat": [
+          [
+            "10:00",
+            "19:00"
+          ]
+        ],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No automatic exemption. Being a customer does not exempt a company from checking RPO:. (Companies can call recent customers for similar products under soft opt-in for email/SMS, but for calls they must still honor RPO listings.)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is regulated on an opt-out basis via the Registro Pubblico delle Opposizioni (RPO):. Telemarketers may call consumers only if they are not listed in RPO and have not otherwise objected. Specific calling hours must be respected per the industry code",
+      "regime_b2b_text": "Telemarketing to business numbers is also covered by the RPO opt-out scheme (companies can register their lines):. Marketing calls to businesses are allowed unless the number is on RPO or the business objected",
+      "notes_for_product": "2024) imposes stricter rules on call times",
+      "dnc": [
+        {
+          "name": "Registro Pubblico delle Opposizioni (RPO)",
+          "url": "https://registrodelleopposizioni.it",
+          "access": "bulk",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "RPO was expanded to cover mobile numbers and businesses. A new Telemarketing Code of Conduct (effective Sept 28",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "LV": {
+      "country": "Latvia",
+      "iso": "LV",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Direct marketing rules apply only to natural persons. Calls to a number owned by a company are not considered “consumer” calls:. Individuals have the right to object at any time to further calls.",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing is generally allowed if the call is made to a number that belongs to a legal entity or was made public by the individual; purely private numbers are protected (opt-out by default)",
+      "regime_b2b_text": "Telemarketing to companies (legal entities) is allowed unless the company/employee has previously opted out. Calls to publicly listed business contacts are generally permissible:",
+      "notes_for_product": "Information Society Services Law §9:; DPA guidance (LV)",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Low",
+          "url": null,
+          "updated": "2025-08-18"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "LT": {
+      "country": "Lithuania",
+      "iso": "LT",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "“Soft opt-in” exception exists for electronic channels in context of similar products",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is only allowed with prior consent (opt-in):. Unsolicited calls to individuals without consent are prohibited",
+      "regime_b2b_text": "Telemarketing to business contacts also requires consent unless an exception for existing relationships applies:. Lithuania does not differentiate strongly between consumer and business targets for calls",
+      "notes_for_product": "Low",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2020-01-01",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "LU": {
+      "country": "Luxembourg",
+      "iso": "LU",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "If an individual gave prior consent or their number is public in a directory without opting out",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "no significant changes. electronic privacy act still governs (only natural persons’ communications require consent)",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers requires prior consent (natural persons are protected under the Electronic Privacy Act):. Unsolicited calls to individuals are not allowed unless opted in",
+      "regime_b2b_text": "No specific law for B2B calls: – marketing to corporate entities is generally allowed without consent. Only calls to natural persons (consumers) require opt-in by law",
+      "notes_for_product": "2017-01-01",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "MT": {
+      "country": "Malta",
+      "iso": "MT",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "an existing customer can be called",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed as long as the consumer has been given a clear chance to opt out of future calls. Essentially an opt-out regime – the first call is allowed",
+      "regime_b2b_text": "opt-out",
+      "notes_for_product": "2013-01-01",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "NL": {
+      "country": "The Netherlands",
+      "iso": "NL",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Non-commercial calls (survey",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "2021 amendment to article 11.7 of the telecommunications act introduced the consumer opt-in requirement and ended the opt-out registry",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers now requires prior consent. As of 2021, cold calls to consumers are prohibited unless the consumer has explicitly opted in, or if there is a recent existing customer relationship (within 3 years) for similar products/services.",
+      "regime_b2b_text": "Telemarketing to companies (corporate subscribers) remains allowed without prior consent. However",
+      "notes_for_product": "2021-07-01",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "None (former \"\"Bel-me-niet\"\" register discontinued)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "PL": {
+      "country": "Poland",
+      "iso": "PL",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "explicit opt-in is strictly required for telemarketing. Enforcement by UKE is active.",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to consumers require prior consent by law (opt-in). Poland’s law (Telecommunications Act Art. 172) prohibits calling or sending marketing communications without the subscriber’s prior consent",
+      "regime_b2b_text": "Telemarketing to companies/entrepreneurs also generally requires consent unless perhaps calling a generic office line without personal data. Polish law does not explicitly exempt B2B calls from the consent requirement.",
+      "notes_for_product": "Telecommunications Act Art. 172:; UODO/PDPO guidance",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Low",
+          "url": null,
+          "updated": "2025-08-18"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "PT": {
+      "country": "Portugal",
+      "iso": "PT",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "if they registered on the opt-out list or otherwise objected",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed unless the consumer has opted out. Portugal maintains an official opt-out list for consumers (and even legal persons) – marketers must not call numbers on this list:",
+      "regime_b2b_text": "No specific distinction; legal persons can also register on the opt-out list:. Generally",
+      "notes_for_product": "but pending implementation.",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "Lista Nacional de Não Receção de Comunicações (Consumer General Directorate’s opt-out list)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "'302' for marketing)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "RO": {
+      "country": "Romania",
+      "iso": "RO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "legitimate_interest (one-party recording legal; must inform under GDPR)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "There is no specific statute explicitly addressing live telemarketing calls to consumers. Unsolicited automated calls are explicitly forbidden without consent, but live calls fall under general data protection and fair practice rules. Marketers should obtain consent or at minimum honor any objections.",
+      "regime_b2b_text": "but implied by GDPR objection rights)",
+      "notes_for_product": "No recent legislative change. Enforcement largely through GDPR (ANSPDCP can sanction misuse of personal data in marketing).",
+      "dnc": [
+        {
+          "name": "no special B2B telemarketing law. Calls to companies are generally allowed",
+          "url": "but any personal data use (calling a person) must respect objection rights",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "per general telecom rules).",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "SK": {
+      "country": "Slovakia",
+      "iso": "SK",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "but inform recommended)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers requires prior consent, unless the number is publicly available and not opted out. Slovakia operates an opt-out list; if a consumer is not on that list and has publicly provided their number, calls may be made (opt-in by default, with opt-out signals considered):.",
+      "regime_b2b_text": "Telemarketing to businesses is allowed. However",
+      "notes_for_product": "marketers may call without separate consent:. Purely informational calls or those by certain regulated industries might not count as “marketing”.",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "Do-Not-Call List (Teleoff)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "If a person publicly shares their contact (e.g. as solo entrepreneur) without opting out",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "SI": {
+      "country": "Slovenia",
+      "iso": "SI",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "The law explicitly requires consent for automated calling and fax marketing:. By omission",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "There are no specific rules prohibiting live person-to-person telemarketing calls to consumers in Slovenia. Unsolicited calls with a human operator are generally allowed (opt-out regime de facto). However, the use of automated calling machines or recorded messages is strictly forbidden without prior consent:.",
+      "regime_b2b_text": "No special legislation for B2B telemarketing; such calls are allowed unless objected to",
+      "notes_for_product": "Low",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2022-07-15",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "ES": {
+      "country": "Spain",
+      "iso": "ES",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "if the consumer is on Lista Robinson (or has objected)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to consumers are allowed unless the person has opted out, for example through the Robinson List (Spain’s DNC list). Marketers must not call individuals who have registered their objection::.",
+      "regime_b2b_text": "Telemarketing to business contacts is generally allowed. Employees can also register their personal or work numbers on the Robinson list to opt out of marketing:",
+      "notes_for_product": "but currently no dedicated prefix is mandated aside from not misusing certain number ranges.",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "Lista Robinson",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Caller ID must be presented. Spain considered special prefixes (in 2020 a proposal for telemarketing prefix ‘+34 902’ or similar)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "SE": {
+      "country": "Sweden",
+      "iso": "SE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "but DPA recommends informing; consent if recording for secondary uses)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "that overrides nix (valid ~3 months)",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed unless the consumer has registered their number on the NIX register (opt-out)::. Telemarketers must not call NIX-listed individuals without explicit consent. Sweden thus follows an opt-out regime enforced by self-regulation.",
+      "regime_b2b_text": "Telemarketing to businesses is permitted. If the call is clearly in connection to the recipient’s professional role or a company contact",
+      "notes_for_product": "political campaigns",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "NIX-Telefon",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "NIX opt-out does not cover calls for market research",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "CH": {
+      "country": "Switzerland",
+      "iso": "CH",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified (common practice: business hours on weekdays)",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is allowed unless the consumer has indicated their number is not to receive marketing calls. In practice, Swiss consumers can add an asterisk (*) in phone directories to opt out of sales calls:. Telemarketers are legally obliged to check directory listings and avoid calling *-marked numbers (opt-out system).",
+      "regime_b2b_text": "Telemarketing to businesses is allowed. The * opt-out system primarily applies to private individuals’ numbers. Companies’ main lines can be called",
+      "notes_for_product": "If the consumer has expressly consented to marketing calls",
+      "dnc": [
+        {
+          "name": "opt-out",
+          "url": "Phone Directory Asterisk (\"\"*\"\" marker in directories)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "but not for new marketing if the customer opted out.",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "GB": {
+      "country": "United Kingdom",
+      "iso": "GB",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Calls made purely for market research (no selling) are not covered by PECR’s marketing rules. Also",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing calls to individuals (consumers, sole traders, some partnerships) are allowed only if the person has not opted out. The Telephone Preference Service (TPS) is the official opt-out list – it is illegal to call any residential number on TPS without specific consent::.",
+      "regime_b2b_text": "Telemarketing to companies (corporate bodies) is allowed unless the number is registered on the Corporate TPS (CTPS)::. B2B calls to corporate entities do not require prior consent, but must cease if the organization opts out via CTPS or directly.",
+      "notes_for_product": "expected to come into force 2025.",
+      "dnc": [
+        {
+          "name": "Telephone Preference Service (TPS) / Corporate TPS",
+          "url": "https://www.tpsonline.org.uk",
+          "access": "api",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "enforcement has increased. In 2023–2024 the ICO issued large fines for firms ignoring TPS::. The UK government announced plans (2023) to outlaw cold calls for financial products",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [
+        {
+          "code": "SURVEY_EXEMPT",
+          "value": true
+        }
+      ],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    }
+  },
+  "countries": [
+    {
+      "iso": "AT",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "HR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "CZ",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "DK",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "EE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "FI",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "FR",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "DE",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "GR",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "HU",
+      "confidence": "no significant changes recently. electronic communications act and advertising act provisions still apply",
+      "last_verified": null
+    },
+    {
+      "iso": "IE",
+      "confidence": "but such entities can register on ndd to opt out",
+      "last_verified": null
+    },
+    {
+      "iso": "IT",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "LV",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "LT",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "LU",
+      "confidence": "no significant changes. electronic privacy act still governs (only natural persons’ communications require consent)",
+      "last_verified": null
+    },
+    {
+      "iso": "MT",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "NL",
+      "confidence": "2021 amendment to article 11.7 of the telecommunications act introduced the consumer opt-in requirement and ended the opt-out registry",
+      "last_verified": null
+    },
+    {
+      "iso": "PL",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "PT",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "RO",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "SK",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "SI",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "ES",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "SE",
+      "confidence": "that overrides nix (valid ~3 months)",
+      "last_verified": null
+    },
+    {
+      "iso": "CH",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "GB",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "AT",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    }
+  ]
+}

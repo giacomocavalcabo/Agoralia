@@ -59,7 +59,8 @@
         "rpo": "Numéro bloqué RPO/DNC pour {iso}.",
         "budget": "Plafond budget atteint.",
         "concurrency": "Aucun créneau disponible pour l'instant."
-      }
+      },
+      "badge": { "tz":"TZ", "lang":"Langue" }
     },
     "analytics": {
       "title": "Analyses",
@@ -71,6 +72,18 @@
       "title": "Historique",
       "columns": { "time":"Heure","direction":"Direction","to":"À","from":"De","company":"Société","outcome":"Résultat","duration":"Durée","cost":"Coût" },
       "drawer": { "open_full": "Ouvrir l’appel complet" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "Membres",
+        "invite": "Inviter",
+        "audit": "Audit",
+        "email": "Email",
+        "role": "Rôle",
+        "remove": "Supprimer",
+        "send_invite": "Envoyer l’invitation",
+        "pending": "Invitations en attente"
+      }
     }
   }
 }

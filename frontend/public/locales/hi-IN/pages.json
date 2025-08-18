@@ -71,6 +71,18 @@
       "title": "इतिहास",
       "columns": { "time":"समय","direction":"दिशा","to":"को","from":"से","company":"कंपनी","outcome":"परिणाम","duration":"अवधि","cost":"लागत" },
       "drawer": { "open_full": "पूरी कॉल खोलें" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "सदस्य",
+        "invite": "निमंत्रण",
+        "audit": "ऑडिट",
+        "email": "ईमेल",
+        "role": "भूमिका",
+        "remove": "हटाएँ",
+        "send_invite": "निमंत्रण भेजें",
+        "pending": "लंबित निमंत्रण"
+      }
     }
   }
 }

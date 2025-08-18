@@ -59,7 +59,8 @@
         "rpo": "Numero bloccato RPO/DNC per {iso}.",
         "budget": "Budget cap raggiunto.",
         "concurrency": "Nessuno slot libero ora."
-      }
+      },
+      "badge": { "tz":"Fuso", "lang":"Lingua" }
     },
     "analytics": {
       "title": "Analytics",
