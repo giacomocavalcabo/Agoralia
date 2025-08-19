@@ -3,12 +3,15 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import Card from '../../components/ui/Card'
 import { Button } from '../../components/ui/button'
-import { useKbList } from '../../lib/kbApi'
+import { useKbList, useCreateKb } from '../../lib/kbApi'
 import { CompletenessMeter } from '../../components/kb/CompletenessMeter'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { trackKbEvent, KB_EVENTS } from '../../lib/telemetry'
 
 export default function KnowledgeBase() {
   const navigate = useNavigate();
+  const [isCreatingCompany, setIsCreatingCompany] = useState(false);
   
   // Fetch KB overview data
   const { data: kbData, isLoading } = useQuery({
@@ -19,14 +22,35 @@ export default function KnowledgeBase() {
   
   // Fetch KB list using new hook
   const { data: kbList } = useKbList({});
+  const createKb = useCreateKb();
   const items = kbList?.items ?? [];
   
   const company = items.find(i => i.kind === 'company');
   const offers = items.filter(i => i.kind === 'offer_pack');
 
-  const handleCreateCompany = () => {
-    // TODO: Implement create company KB
-    console.log('Create company KB');
+  const handleCreateCompany = async () => {
+    if (isCreatingCompany) return;
+    
+    setIsCreatingCompany(true);
+    try {
+      const result = await createKb.mutateAsync({
+        kind: 'company',
+        name: 'Company Knowledge Base',
+        type: 'company',
+        locale_default: 'it-IT'
+      });
+      
+      if (result?.id) {
+        trackKbEvent(KB_EVENTS.CREATE, { kind: 'company', type: 'company', success: true });
+        navigate(`/knowledge/company/${result.id}`);
+      }
+    } catch (error) {
+      console.error('Error creating company KB:', error);
+      trackKbEvent(KB_EVENTS.CREATE, { kind: 'company', type: 'company', success: false });
+      // TODO: Show error toast
+    } finally {
+      setIsCreatingCompany(false);
+    }
   };
 
   const handleCreateOfferPack = () => {
@@ -86,8 +110,12 @@ export default function KnowledgeBase() {
                 <p className="text-sm text-gray-500 mb-3">
                   Crea la knowledge base della tua azienda
                 </p>
-                <Button onClick={handleCreateCompany} size="sm">
-                  Crea Company KB
+                <Button 
+                  onClick={handleCreateCompany} 
+                  size="sm"
+                  disabled={isCreatingCompany}
+                >
+                  {isCreatingCompany ? 'Creazione...' : 'Crea Company KB'}
                 </Button>
               </>
             )}
@@ -99,13 +127,13 @@ export default function KnowledgeBase() {
             Offer Packs
           </div>
         }>
-            <div className="text-3xl font-semibold">{offers.length}</div>
-            <p className="text-sm text-gray-500 mb-3">
-              {offers.length === 0 ? 'Nessun offer pack creato' : 'Offer pack disponibili'}
-            </p>
-            <Button onClick={handleCreateOfferPack} size="sm" variant="outline">
-              {offers.length === 0 ? 'Crea il primo' : 'Gestisci'}
-            </Button>
+          <div className="text-3xl font-semibold">{offers.length}</div>
+          <p className="text-sm text-gray-500 mt-1">
+            {offers.length === 0 ? 'Nessun offer pack creato' : 'Offer pack disponibili'}
+          </p>
+          <Button className="mt-3" onClick={handleCreateOfferPack} size="sm">
+            {offers.length === 0 ? 'Crea il primo' : 'Gestisci'}
+          </Button>
         </Card>
 
         <Card title={
@@ -114,82 +142,32 @@ export default function KnowledgeBase() {
             Assignments
           </div>
         }>
-            <p className="text-sm text-gray-500 mb-3">
-              Configura la KB per numeri, campagne e agenti
-            </p>
-            <Button onClick={handleAssignments} size="sm" variant="outline">
-              Apri
-            </Button>
+          <p className="text-sm text-gray-500 mb-3">
+            Configura la KB per numeri, campagne e agenti
+          </p>
+          <Button className="mt-3" onClick={handleAssignments} size="sm">
+            Apri
+          </Button>
         </Card>
       </div>
 
-      {items.length > 0 && (
-        <Card title="Knowledge Bases">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Progresso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Azioni
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {items.map((kb) => (
-                    <tr key={kb.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{kb.name}</div>
-                        <div className="text-sm text-gray-500">{kb.kind}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {kb.type || 'generic'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          kb.status === 'published' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {kb.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="w-32">
-                          <CompletenessMeter 
-                            completeness={kb.completeness_pct || 0}
-                            freshness={kb.freshness_score || 0}
-                            showDetails={false}
-                          />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => navigate(`/knowledge/${kb.kind === 'company' ? 'company' : 'offers'}/${kb.id}`)}
-                        >
-                          {kb.kind === 'company' ? 'Apri' : 'Modifica'}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Quick Stats */}
+      {kbData && (
+        <Card title="Progresso Globale">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div className="text-2xl font-semibold">{kbData.total_kbs || 0}</div>
+              <div className="text-sm text-gray-500">Knowledge Base</div>
             </div>
+            <div>
+              <div className="text-2xl font-semibold">{kbData.avg_completeness || 0}%</div>
+              <div className="text-sm text-gray-500">Completezza Media</div>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold">{kbData.published_count || 0}</div>
+              <div className="text-sm text-gray-500">Pubblicate</div>
+            </div>
+          </div>
         </Card>
       )}
     </div>

@@ -6,7 +6,7 @@ import { RequireRole } from '../../lib/workspace';
 import { PrecedenceBanner, PrecedenceImpact } from '../../components/kb/PrecedenceBanner';
 import { useAssignments, useAssignKb, useKbList } from '../../lib/kbApi';
 import { trackKbEvent, KB_EVENTS } from '../../lib/telemetry';
-import { CogIcon, PhoneIcon, UserIcon, ChartBarIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CogIcon, PhoneIcon, UserIcon, ChartBarIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function Assignments() {
   const canEdit = useCanEdit();
@@ -62,7 +62,7 @@ export default function Assignments() {
         if (scope === 'workspace_default') {
           return { ...prev, workspace_default: newAssignment };
         } else {
-          const existing = prev[scope]?.filter(a => a.scope_id === scopeId) || [];
+          const existing = prev[scope]?.filter(a => a.scope_id !== scopeId) || [];
           const others = prev[scope]?.filter(a => a.scope_id !== scopeId) || [];
           return { ...prev, [scope]: [...others, newAssignment] };
         }
@@ -101,18 +101,18 @@ export default function Assignments() {
       
       if (agentConflicts.length > 0) {
         conflicts.push({
-          scope: 'agent', 
+          scope: 'agent',
           description: 'Sovrascritto da campagna (priorità massima)'
         });
       }
     } else if (scope === 'number') {
-      // Numero ha priorità su agente
+      // Numero ha priorità media
       const agentConflicts = mockAssignments.agent?.filter(a => a.kb_id !== kbId) || [];
       
       if (agentConflicts.length > 0) {
         conflicts.push({
           scope: 'agent',
-          description: 'Sovrascritto da numero (priorità superiore)'
+          description: 'Sovrascritto da numero (priorità media)'
         });
       }
     }
@@ -120,17 +120,10 @@ export default function Assignments() {
     setConflictingAssignments(conflicts);
   };
 
-  const getAssignmentForScope = (scope, scopeId) => {
-    if (scope === 'workspace_default') {
-      return mockAssignments.workspace_default;
-    }
-    return mockAssignments[scope]?.find(a => a.scope_id === scopeId);
-  };
-
   const getScopeLabel = (scope, scopeId) => {
     switch (scope) {
       case 'workspace_default':
-        return 'Workspace Default';
+        return 'Default per tutto il workspace';
       case 'number':
         return `Numero ${scopeId}`;
       case 'campaign':
@@ -142,220 +135,286 @@ export default function Assignments() {
     }
   };
 
-  const renderWorkspaceTab = () => (
-    <Card title="Workspace Default KB">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            KB di default per il workspace
-          </label>
-          <select
-            value={mockAssignments.workspace_default?.kb_id || ''}
-            onChange={(e) => handleAssignKb('workspace_default', null, e.target.value)}
-            disabled={!canEdit}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-50"
-          >
-            <option value="">Seleziona KB</option>
-            {items.map((kb) => (
-              <option key={kb.id} value={kb.id}>
-                {kb.name} ({kb.kind})
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="text-sm text-gray-500">
-          Questa KB sarà utilizzata come fallback quando non ci sono assegnazioni specifiche
-        </p>
-      </div>
-    </Card>
-  );
-
-  const renderNumberTab = () => (
-    <Card title="Assegnazioni per Numero">
-      <div className="space-y-4">
-        <p className="text-sm text-gray-500">
-          Assegna KB specifiche per numeri di telefono (caller ID)
-        </p>
-        
-        <div className="space-y-3">
-          {['+390123456789', '+390987654321'].map((number) => {
-            const assignment = getAssignmentForScope('number', number);
-            return (
-              <div key={number} className="flex items-center gap-3 p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium">{number}</div>
-                  <div className="text-sm text-gray-500">Caller ID</div>
-                </div>
-                <select
-                  value={assignment?.kb_id || ''}
-                  onChange={(e) => handleAssignKb('number', number, e.target.value)}
-                  disabled={!canEdit}
-                  className="px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-50"
-                >
-                  <option value="">Usa default</option>
-                  {items.map((kb) => (
-                    <option key={kb.id} value={kb.id}>
-                      {kb.name}
-                    </option>
-                  ))}
-                </select>
-                {assignment && (
-                  <CheckIcon className="h-5 w-5 text-green-600" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </Card>
-  );
-
-  const renderCampaignTab = () => (
-    <Card title="Assegnazioni per Campagna">
-      <div className="space-y-4">
-        <p className="text-sm text-gray-500">
-          Assegna KB specifiche per campagne di marketing
-        </p>
-        
-        <div className="space-y-3">
-          {['camp-1', 'camp-2'].map((campaign) => {
-            const assignment = getAssignmentForScope('campaign', campaign);
-            return (
-              <div key={campaign} className="flex items-center gap-3 p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium">{campaign}</div>
-                  <div className="text-sm text-gray-500">Campagna Marketing</div>
-                </div>
-                <select
-                  value={assignment?.kb_id || ''}
-                  onChange={(e) => handleAssignKb('campaign', campaign, e.target.value)}
-                  disabled={!canEdit}
-                  className="px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-50"
-                >
-                  <option value="">Usa default</option>
-                  {items.map((kb) => (
-                    <option key={kb.id} value={kb.id}>
-                      {kb.name}
-                    </option>
-                  ))}
-                </select>
-                {assignment && (
-                  <CheckIcon className="h-5 w-5 text-green-600" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </Card>
-  );
-
-  const renderAgentTab = () => (
-    <Card title="Assegnazioni per Agente">
-      <div className="space-y-4">
-        <p className="text-sm text-gray-500">
-          Assegna KB specifiche per agenti di vendita
-        </p>
-        
-        <div className="space-y-3">
-          {['agent-1', 'agent-2'].map((agent) => {
-            const assignment = getAssignmentForScope('agent', agent);
-            return (
-              <div key={agent} className="flex items-center gap-3 p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium">{agent}</div>
-                  <div className="text-sm text-gray-500">Agente Vendite</div>
-                </div>
-                <select
-                  value={assignment?.kb_id || ''}
-                  onChange={(e) => handleAssignKb('agent', agent, e.target.value)}
-                  disabled={!canEdit}
-                  className="px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-50"
-                >
-                  <option value="">Usa default</option>
-                  {items.map((kb) => (
-                    <option key={kb.id} value={kb.id}>
-                      {kb.name}
-                    </option>
-                  ))}
-                </select>
-                {assignment && (
-                  <CheckIcon className="h-5 w-5 text-green-600" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </Card>
-  );
+  const getPrecedenceImpact = (scope) => {
+    switch (scope) {
+      case 'campaign':
+        return 'high';
+      case 'number':
+        return 'medium';
+      case 'agent':
+        return 'low';
+      default:
+        return 'none';
+    }
+  };
 
   return (
     <RequireRole role="editor">
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Assignments</h1>
-            <p className="text-sm text-gray-500">
-              Configura la KB per numeri, campagne e agenti
+            <h1 className="text-2xl font-semibold">Assegnazioni Knowledge Base</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Configura quale KB utilizzare per numeri, campagne e agenti
             </p>
           </div>
         </div>
-        
+
+        {/* Precedence Banner */}
         <PrecedenceBanner />
-        
-        {/* Conflitti di Precedenza */}
-        {conflictingAssignments.length > 0 && (
-          <PrecedenceImpact 
-            currentScope={activeTab}
-            conflictingAssignments={conflictingAssignments}
-          />
-        )}
 
         {/* Tabs */}
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8">
+          <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <tab.icon className="h-4 w-4" />
-                {tab.name}
+                <div className="flex items-center gap-2">
+                  <tab.icon className="h-4 w-4" />
+                  {tab.name}
+                </div>
               </button>
             ))}
           </nav>
         </div>
 
         {/* Tab Content */}
-        <div className="mt-6">
-          {activeTab === 'workspace' && renderWorkspaceTab()}
-          {activeTab === 'number' && renderNumberTab()}
-          {activeTab === 'campaign' && renderCampaignTab()}
-          {activeTab === 'agent' && renderAgentTab()}
+        <div className="space-y-6">
+          {/* Workspace Default */}
+          {activeTab === 'workspace' && (
+            <Card title="Workspace Default">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>Questa KB verrà utilizzata come fallback per tutti i numeri, campagne e agenti che non hanno assegnazioni specifiche.</p>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-medium">
+                      {mockAssignments.workspace_default?.name || 'Nessuna KB assegnata'}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {mockAssignments.workspace_default ? 'KB di default attiva' : 'Configura una KB di default'}
+                    </div>
+                  </div>
+                  
+                  <select
+                    value={mockAssignments.workspace_default?.kb_id || ''}
+                    onChange={(e) => handleAssignKb('workspace_default', null, e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={!canEdit}
+                  >
+                    <option value="">Seleziona KB</option>
+                    {items.map((kb) => (
+                      <option key={kb.id} value={kb.id}>
+                        {kb.name} ({kb.kind})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Per Numero */}
+          {activeTab === 'number' && (
+            <Card title="Per Numero">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>Assegna KB specifiche per singoli numeri di telefono. Queste hanno priorità sul workspace default ma sono sovrascritte dalle campagne.</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {mockAssignments.number?.map((assignment) => (
+                    <div key={assignment.scope_id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{getScopeLabel('number', assignment.scope_id)}</div>
+                        <div className="text-sm text-gray-500">{assignment.name}</div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <PrecedenceImpact impact="medium" />
+                        <select
+                          value={assignment.kb_id}
+                          onChange={(e) => handleAssignKb('number', assignment.scope_id, e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          disabled={!canEdit}
+                        >
+                          {items.map((kb) => (
+                            <option key={kb.id} value={kb.id}>
+                              {kb.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add new number assignment */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-500">
+                      Aggiungi assegnazione per numero
+                    </div>
+                    <div className="mt-2 text-xs text-gray-400">
+                      Funzionalità in fase di sviluppo
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Per Campagna */}
+          {activeTab === 'campaign' && (
+            <Card title="Per Campagna">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>Assegna KB specifiche per campagne. Queste hanno la priorità massima e sovrascrivono tutte le altre assegnazioni.</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {mockAssignments.campaign?.map((assignment) => (
+                    <div key={assignment.scope_id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{getScopeLabel('campaign', assignment.scope_id)}</div>
+                        <div className="text-sm text-gray-500">{assignment.name}</div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <PrecedenceImpact impact="high" />
+                        <select
+                          value={assignment.kb_id}
+                          onChange={(e) => handleAssignKb('campaign', assignment.scope_id, e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          disabled={!canEdit}
+                        >
+                          {items.map((kb) => (
+                            <option key={kb.id} value={kb.id}>
+                              {kb.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add new campaign assignment */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-500">
+                      Aggiungi assegnazione per campagna
+                    </div>
+                    <div className="mt-2 text-xs text-gray-400">
+                      Funzionalità in fase di sviluppo
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Per Agente */}
+          {activeTab === 'agent' && (
+            <Card title="Per Agente">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>Assegna KB specifiche per agenti. Queste hanno la priorità più bassa e sono sovrascritte da numeri e campagne.</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {mockAssignments.agent?.map((assignment) => (
+                    <div key={assignment.scope_id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{getScopeLabel('agent', assignment.scope_id)}</div>
+                        <div className="text-sm text-gray-500">{assignment.name}</div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <PrecedenceImpact impact="low" />
+                        <select
+                          value={assignment.kb_id}
+                          onChange={(e) => handleAssignKb('agent', assignment.scope_id, e.target.value)}
+                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          disabled={!canEdit}
+                        >
+                          {items.map((kb) => (
+                            <option key={kb.id} value={kb.id}>
+                              {kb.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add new agent assignment */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-500">
+                      Aggiungi assegnazione per agente
+                    </div>
+                    <div className="mt-2 text-xs text-gray-400">
+                      Funzionalità in fase di sviluppo
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
+
+        {/* Conflicts Warning */}
+        {conflictingAssignments.length > 0 && (
+          <Card title="Conflitti Rilevati" className="border-yellow-200 bg-yellow-50">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-yellow-800">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                <span className="font-medium">Attenzione: alcune assegnazioni verranno sovrascritte</span>
+              </div>
+              
+              <ul className="text-sm text-yellow-700 space-y-1">
+                {conflictingAssignments.map((conflict, index) => (
+                  <li key={index} className="ml-6">
+                    • {conflict.description}
+                  </li>
+                ))}
+              </ul>
+              
+              <div className="text-xs text-yellow-600 mt-2">
+                Questo è il comportamento atteso secondo le regole di precedenza.
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Summary */}
         <Card title="Riepilogo Assegnazioni">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {tabs.map((tab) => {
-              const count = tab.id === 'workspace' ? 
-                (mockAssignments.workspace_default ? 1 : 0) :
-                mockAssignments[tab.id]?.length || 0;
-              
-              return (
-                <div key={tab.id} className="text-center p-4 border rounded-lg">
-                  <tab.icon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <div className="text-2xl font-semibold">{count}</div>
-                  <div className="text-sm text-gray-500">{tab.name}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="font-medium mb-2">Priorità (dall'alto verso il basso):</div>
+              <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                <li>Campagne (priorità massima)</li>
+                <li>Numeri di telefono</li>
+                <li>Agenti</li>
+                <li>Workspace default (fallback)</li>
+              </ol>
+            </div>
+            
+            <div>
+              <div className="font-medium mb-2">Stato attuale:</div>
+              <div className="space-y-1 text-gray-600">
+                <div>• Workspace default: {mockAssignments.workspace_default ? 'Configurato' : 'Non configurato'}</div>
+                <div>• Numeri: {mockAssignments.number?.length || 0} assegnazioni</div>
+                <div>• Campagne: {mockAssignments.campaign?.length || 0} assegnazioni</div>
+                <div>• Agenti: {mockAssignments.agent?.length || 0} assegnazioni</div>
+              </div>
+            </div>
           </div>
         </Card>
       </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 import { useStartImport, useImportJob, useCommitImport, useCancelImport } from '../../lib/kbApi';
 import { getKBErrorMessage, isRetryableError } from '../../lib/errorHandler';
-import { CogIcon, DocumentTextIcon, GlobeAltIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CogIcon, DocumentTextIcon, GlobeAltIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 const STEPS = [
   { id: 'source', label: 'Sorgente', icon: DocumentTextIcon },
@@ -19,6 +19,8 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
     targetKbId: null
   });
   const [jobId, setJobId] = useState(null);
+  const [error, setError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const startImport = useStartImport();
   const { data: job } = useImportJob(jobId);
@@ -27,6 +29,9 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
 
   const handleStartImport = async () => {
     if (!importData.source) return;
+    
+    setIsProcessing(true);
+    setError(null);
     
     try {
       const result = await startImport.mutateAsync({
@@ -41,12 +46,18 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
       }
     } catch (error) {
       const errorInfo = getKBErrorMessage(error);
+      setError(errorInfo);
       console.error('Import start failed:', errorInfo);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleCommit = async () => {
     if (!jobId) return;
+    
+    setIsProcessing(true);
+    setError(null);
     
     try {
       await commitImport.mutateAsync({
@@ -58,20 +69,84 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
       onClose();
     } catch (error) {
       const errorInfo = getKBErrorMessage(error);
+      setError(errorInfo);
       console.error('Import commit failed:', errorInfo);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleCancel = async () => {
     if (!jobId) return;
     
+    setIsProcessing(true);
+    setError(null);
+    
     try {
       await cancelImport.mutateAsync({ jobId });
       onClose();
     } catch (error) {
       const errorInfo = getKBErrorMessage(error);
+      setError(errorInfo);
       console.error('Import cancel failed:', errorInfo);
+    } finally {
+      setIsProcessing(false);
     }
+  };
+
+  const handleSourceChange = (kind, source) => {
+    setImportData(prev => ({
+      ...prev,
+      kind,
+      source
+    }));
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleSourceChange('file', {
+        type: 'file',
+        name: file.name,
+        size: file.size,
+        file: file
+      });
+    }
+  };
+
+  const handleUrlInput = (event) => {
+    const url = event.target.value;
+    if (url) {
+      handleSourceChange('url', {
+        type: 'url',
+        url: url
+      });
+    }
+  };
+
+  const handleCsvUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleSourceChange('csv', {
+        type: 'csv',
+        name: file.name,
+        size: file.size,
+        file: file
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setCurrentStep(0);
+    setImportData({
+      kind: 'csv',
+      source: null,
+      mapping: {},
+      targetKbId: null
+    });
+    setJobId(null);
+    setError(null);
+    setError(null);
   };
 
   if (!isOpen) return null;
@@ -100,13 +175,8 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
                   <step.icon className="h-4 w-4" />
                 )}
               </div>
-              <span className={`ml-2 text-sm font-medium ${
-                index <= currentStep ? 'text-blue-600' : 'text-gray-500'
-              }`}>
-                {step.label}
-              </span>
               {index < STEPS.length - 1 && (
-                <div className={`w-16 h-0.5 mx-4 ${
+                <div className={`w-16 h-0.5 mx-2 ${
                   index < currentStep ? 'bg-blue-500' : 'bg-gray-300'
                 }`} />
               )}
@@ -114,84 +184,138 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
           ))}
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div className="flex items-center gap-2 text-red-800">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              <div>
+                <div className="font-medium">{error.title}</div>
+                <div className="text-sm">{error.message}</div>
+                {error.details && (
+                  <div className="text-xs mt-1">{error.details}</div>
+                )}
+              </div>
+            </div>
+            {error.retry && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => setError(null)}
+              >
+                Riprova
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Step Content */}
         {currentStep === 0 && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo di import
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'csv', label: 'CSV', icon: DocumentTextIcon },
-                  { id: 'file', label: 'File', icon: DocumentTextIcon },
-                  { id: 'url', label: 'Sito', icon: GlobeAltIcon }
-                ].map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => setImportData(prev => ({ ...prev, kind: type.id }))}
-                    className={`p-3 border rounded-lg text-center transition-colors ${
-                      importData.kind === type.id
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <type.icon className="h-5 w-5 mx-auto mb-1" />
-                    <div className="text-xs font-medium">{type.label}</div>
-                  </button>
-                ))}
+            <h3 className="text-lg font-medium">Seleziona la sorgente</h3>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {/* CSV Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCsvUpload}
+                  className="hidden"
+                  id="csv-upload"
+                />
+                <label htmlFor="csv-upload" className="cursor-pointer">
+                  <div className="text-center">
+                    <DocumentTextIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <div className="font-medium">Carica file CSV</div>
+                    <div className="text-sm text-gray-500">Leads, prodotti, policy</div>
+                  </div>
+                </label>
+              </div>
+
+              {/* File Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.txt,.md"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <div className="text-center">
+                    <DocumentTextIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <div className="font-medium">Carica documento</div>
+                    <div className="text-sm text-gray-500">PDF, DOCX, TXT, MD</div>
+                  </div>
+                </label>
+              </div>
+
+              {/* URL Input */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                <div className="text-center">
+                  <GlobeAltIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <div className="font-medium">Inserisci URL</div>
+                  <input
+                    type="url"
+                    placeholder="https://example.com"
+                    onChange={handleUrlInput}
+                    className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {importData.kind === 'url' ? 'URL del sito' : 'File'}
-              </label>
-              {importData.kind === 'url' ? (
-                <input
-                  type="url"
-                  placeholder="https://example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  onChange={(e) => setImportData(prev => ({ ...prev, source: e.target.value }))}
-                />
-              ) : (
-                <input
-                  type="file"
-                  accept={importData.kind === 'csv' ? '.csv' : '.pdf,.docx,.txt,.md'}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  onChange={(e) => setImportData(prev => ({ ...prev, source: e.target.files[0] }))}
-                />
-              )}
-            </div>
+            {/* Source Preview */}
+            {importData.source && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="text-sm text-blue-800">
+                  <div className="font-medium">Sorgente selezionata:</div>
+                  <div className="mt-1">
+                    {importData.source.type === 'file' && (
+                      <>📁 {importData.source.name} ({(importData.source.size / 1024).toFixed(1)} KB)</>
+                    )}
+                    {importData.source.type === 'url' && (
+                      <>🌐 {importData.source.url}</>
+                    )}
+                    {importData.source.type === 'csv' && (
+                      <>📊 {importData.source.name} ({(importData.source.size / 1024).toFixed(1)} KB)</>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <Button 
-              onClick={() => setCurrentStep(1)}
-              disabled={!importData.source}
-              className="w-full"
-            >
-              Avanti
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Annulla
+              </Button>
+              <Button 
+                onClick={() => setCurrentStep(1)}
+                disabled={!importData.source}
+              >
+                Avanti
+              </Button>
+            </div>
           </div>
         )}
 
         {currentStep === 1 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Mapping automatico dei campi. Puoi modificare le associazioni se necessario.
-            </p>
+            <h3 className="text-lg font-medium">Configura il mapping</h3>
             
-            {/* TODO: Implement mapping table */}
-            <div className="text-center py-8 text-gray-500">
-              <CogIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-              <p>Mapping automatico in corso...</p>
+            <div className="text-sm text-gray-600">
+              <p>Configurazione del mapping in fase di sviluppo.</p>
+              <p>Per ora procediamo direttamente all'import.</p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCurrentStep(0)}>
                 Indietro
               </Button>
-              <Button onClick={handleStartImport} disabled={startImport.isPending}>
-                {startImport.isPending ? 'Avvio...' : 'Avvia Import'}
+              <Button onClick={handleStartImport} disabled={isProcessing}>
+                {isProcessing ? 'Avvio...' : 'Avvia Import'}
               </Button>
             </div>
           </div>
@@ -199,61 +323,59 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
 
         {currentStep === 2 && job && (
           <div className="space-y-4">
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-2">Status Import</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm ${
-                    job.status === 'completed' ? 'text-green-600' : 
-                    job.status === 'failed' ? 'text-red-600' : 'text-blue-600'
-                  }`}>
-                    {job.status}
-                  </span>
-                </div>
-                
-                {job.progress && (
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${job.progress}%` }}
-                    ></div>
-                  </div>
-                )}
-                
-                {job.cost_estimate && (
-                  <div className="text-sm text-gray-600">
-                    Costo stimato: ${job.cost_estimate}
-                  </div>
+            <h3 className="text-lg font-medium">Review & Commit</h3>
+            
+            {/* Job Status */}
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium">Status: {job.status}</span>
+                {job.progress_pct !== undefined && (
+                  <span className="text-sm text-gray-500">{job.progress_pct}%</span>
                 )}
               </div>
+              
+              {job.progress_pct !== undefined && (
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${job.progress_pct}%` }}
+                  ></div>
+                </div>
+              )}
+
+              {job.cost_estimated_cents && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Costo stimato: €{(job.cost_estimated_cents / 100).toFixed(2)}
+                </div>
+              )}
             </div>
 
-            {job.status === 'completed' && (
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleCommit}
-                  disabled={commitImport.isPending}
-                  className="flex-1"
-                >
-                  {commitImport.isPending ? 'Commit...' : 'Commit Import'}
-                </Button>
-                <Button 
-                  onClick={handleCancel}
-                  variant="outline"
-                  disabled={cancelImport.isPending}
-                >
-                  {cancelImport.isPending ? 'Annullamento...' : 'Annulla (best-effort)'}
-                </Button>
-              </div>
-            )}
-
-            {job.status === 'failed' && (
-              <div className="text-red-600 text-sm">
-                Import fallito. Riprova o contatta il supporto.
-              </div>
-            )}
+            {/* Actions */}
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Annullamento...' : 'Annulla (best-effort)'}
+              </Button>
+              <Button 
+                onClick={handleCommit}
+                disabled={isProcessing || job.status !== 'completed'}
+              >
+                {isProcessing ? 'Commit...' : 'Commit Import'}
+              </Button>
+            </div>
           </div>
         )}
+
+        {/* Footer */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="text-xs text-gray-500 text-center">
+            <p>L'import verrà processato in background. Puoi chiudere questa finestra.</p>
+            <p>Riceverai una notifica quando il processo sarà completato.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

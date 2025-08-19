@@ -20,6 +20,7 @@ lxml==4.9.3
 langdetect==1.0.9  # Python alternative to fasttext for language detection
 simhash==2.1.2
 tiktoken>=0.7.0
+pgvector==0.2.4  # PostgreSQL vector extension support
 
 # CRM Integrations dependencies
 httpx==0.25.2
