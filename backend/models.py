@@ -384,10 +384,19 @@ class KbField(Base):
     label = Column(String, nullable=False)
     value_text = Column(Text)
     value_json = Column(JSON)
-    lang = Column(String, default="en-US")
+    lang = Column(String, default="en-US")  # BCP-47 format
     source_id = Column(String, ForeignKey("kb_sources.id"))
     confidence = Column(Integer, default=100)  # 0-100
+    completeness_pct = Column(Integer, default=0)  # 0-100
+    freshness_score = Column(Integer, default=100)  # 0-100
+    version = Column(Integer, default=1, nullable=False)  # Optimistic locking
     updated_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Unique constraint will be added via migration
+    __table_args__ = (
+        # This will be enforced at the database level
+        # UniqueConstraint('kb_id', 'section_id', 'key', 'lang', name='uq_kb_fields_kb_section_key_lang')
+    )
 
 
 class KbSource(Base):
@@ -444,12 +453,16 @@ class KbImportJob(Base):
     source_id = Column(String, ForeignKey("kb_sources.id"), nullable=False)
     target_kb_id = Column(String, ForeignKey("knowledge_bases.id"))
     template = Column(String)  # company, offer_pack, etc.
-    status = Column(String, default="pending")  # pending, processing, completed, failed
+    status = Column(String, default="queued")  # queued, running, reviewing, committing, done, failed, canceled
     progress_pct = Column(Integer, default=0)
-    estimated_cost_cents = Column(Integer, default=0)
-    actual_cost_cents = Column(Integer, default=0)
-    error_message = Column(Text)
+    progress_json = Column(JSON)  # Detailed progress tracking
+    cost_estimated_cents = Column(Integer, default=0)
+    cost_actual_cents = Column(Integer, default=0)
+    template_json = Column(JSON)  # Template configuration
+    error_details = Column(JSON)  # Detailed error information
+    idempotency_key = Column(String, unique=True)  # Prevent duplicate jobs
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
 
 

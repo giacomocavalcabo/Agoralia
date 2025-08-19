@@ -227,11 +227,34 @@ def send_notification_job(notification_id: str, target_user_id: str, kind: str, 
 
 # ===================== Knowledge Base Import Jobs =====================
 
+def _is_job_cancelled(job_id: str) -> bool:
+    """Check if job was cancelled via Redis key"""
+    try:
+        import redis
+        r = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
+        return r.exists(f"kb:job:{job_id}:cancelled")
+    except:
+        return False
+
+def _set_job_cancelled(job_id: str) -> None:
+    """Mark job as cancelled in Redis"""
+    try:
+        import redis
+        r = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
+        r.setex(f"kb:job:{job_id}:cancelled", 3600, "1")  # 1 hour TTL
+    except:
+        pass
+
 @dramatiq.actor(queue_name='q:kb:import')
 def kb_import_job(job_id: str):
     """Process knowledge base import job (CSV, file, or URL)"""
     try:
         print(f"Starting KB import job {job_id}")
+        
+        # Check if job was cancelled
+        if _is_job_cancelled(job_id):
+            print(f"Job {job_id} was cancelled, exiting")
+            return {"job_id": job_id, "status": "cancelled"}
         
         # Get job details from database
         with next(get_db()) as db:
@@ -280,8 +303,20 @@ def kb_import_job(job_id: str):
                 job.completed_at = datetime.utcnow()
                 db.commit()
         
-        # Retry with exponential backoff
-        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+        # Retry with exponential backoff and max retries
+        max_retries = 3
+        current_retries = getattr(job, 'retry_count', 0) or 0
+        
+        if current_retries >= max_retries:
+            job.status = "failed_permanent"
+            job.error_message = f"Job failed permanently after {max_retries} retries: {str(e)}"
+            db.commit()
+            return {"job_id": job_id, "status": "failed_permanent"}
+        
+        # Exponential backoff with jitter
+        delay = min(300000 * (2 ** current_retries), 3600000)  # Max 1 hour
+        jitter = random.randint(0, 10000)  # 0-10 seconds
+        raise dramatiq.Retry(delay=delay + jitter)
 
 
 def _process_csv_import(db: Session, job: KbImportJob, source: KbSource) -> dict:
@@ -306,11 +341,25 @@ def _process_csv_import(db: Session, job: KbImportJob, source: KbSource) -> dict
     source.status = "completed"
     db.commit()
     
+    # Track AI usage costs
+    usage = AiUsage(
+        id=f"usage_{secrets.token_urlsafe(8)}",
+        workspace_id=job.workspace_id,
+        kind="kb_extraction",
+        tokens_in=100,  # Mock for now
+        tokens_out=50,
+        cost_micros=5000,  # $0.00005
+        job_id=job.id
+    )
+    db.add(usage)
+    db.commit()
+    
     return {
         "job_id": job.id,
         "source_type": "csv",
         "chunks_created": 0,
-        "estimated_cost_cents": 50
+        "estimated_cost_cents": 50,
+        "tokens_used": 150
     }
 
 

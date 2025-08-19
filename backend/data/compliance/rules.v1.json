@@ -1,5 +1,1338 @@
 {
   "fused_by_iso": {
+    "ZA": {
+      "country": "South Africa",
+      "iso": "ZA",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be withheld",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing regulated under CPA and ECT Act",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found",
+      "notes_for_product": "Apply consumer rules conservatively to B2B",
+      "dnc": [
+        {
+          "name": "National Opt-Out Registry",
+          "url": "https://www.nationaloptout.co.za",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Information Regulator (POPIA)",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "ICASA",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "National Consumer Commission",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "NG": {
+      "country": "Nigeria",
+      "iso": "NG",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must be displayed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing restricted under NCC Do-Not-Disturb Directive",
+      "regime_b2b_text": "B2B not covered",
+      "notes_for_product": "Apply consumer rules conservatively to B2B",
+      "dnc": [
+        {
+          "name": "Do Not Disturb Registry",
+          "url": "https://ncc.gov.ng",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "NCC (Do-Not-Disturb)",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "NITDA (NDPR)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "KE": {
+      "country": "Kenya",
+      "iso": "KE",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be spoofed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing regulated under Data Protection Act",
+      "regime_b2b_text": "B2B not specifically regulated",
+      "notes_for_product": "Apply consumer rules conservatively to B2B",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ODPC Kenya",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "CAK (Competition Authority)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "GH": {
+      "country": "Ghana",
+      "iso": "GH",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be spoofed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing under Data Protection Act",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in policy",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Protection Commission Ghana",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "NCA Ghana",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "ET": {
+      "country": "Ethiopia",
+      "iso": "ET",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing not specifically regulated",
+      "regime_b2b_text": "No specific B2B regulation",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply strict consent requirement",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "TZ": {
+      "country": "Tanzania",
+      "iso": "TZ",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must be displayed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing regulated under EPOCA",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Treat all marketing as opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "TCRA (Tanzania Communications Regulatory Authority)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "UG": {
+      "country": "Uganda",
+      "iso": "UG",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID display required",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing under Data Protection and Privacy Act",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict consent model",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "NITA-U Uganda",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "UCC (Communications Commission)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "RW": {
+      "country": "Rwanda",
+      "iso": "RW",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be spoofed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Marketing calls under Data Protection Law 2021",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Adopt conservative opt-in until clarified",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "RURA (Utilities Reg. Authority)",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Data Protection Office",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "SN": {
+      "country": "Senegal",
+      "iso": "SN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be hidden",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing covered by PDP Law 2021",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict consent until clearer rules",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "CDP Senegal",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "ARTP Senegal",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "CI": {
+      "country": "Côte d'Ivoire",
+      "iso": "CI",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must not be spoofed",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing under Data Protection Law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Treat as opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ARTCI (Telecom Regulator)",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Data Protection Authority CI",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "CM": {
+      "country": "Cameroon",
+      "iso": "CM",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection framework limited no specific telemarketing law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply strict opt-in due to uncertainty",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "CD": {
+      "country": "Democratic Republic of Congo",
+      "iso": "CD",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply conservative consent-based rules",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "AO": {
+      "country": "Angola",
+      "iso": "AO",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID not regulated",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing under Data Protection Law 2011",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict consent approach",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "INACOM Angola",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Data Protection Law 2011",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "MZ": {
+      "country": "Mozambique",
+      "iso": "MZ",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "INCM Mozambique",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Consumer Law references",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "ZM": {
+      "country": "Zambia",
+      "iso": "ZM",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID must be accurate",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Electronic Communications Act covers marketing",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply conservative consent-based rule",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ZICTA",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Zambia Data Protection Act",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "ZW": {
+      "country": "Zimbabwe",
+      "iso": "ZW",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer Protection Act applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "POTRAZ Zimbabwe",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Consumer Protection Act",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BW": {
+      "country": "Botswana",
+      "iso": "BW",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Act 2018 applies to marketing",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "DPA Botswana",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "BOCRA telecom regulator",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "NA": {
+      "country": "Namibia",
+      "iso": "NA",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Bill pending 2024",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Bill pending; no DNC yet",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Treat as opt-in until law passes",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "MW": {
+      "country": "Malawi",
+      "iso": "MW",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing framework",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply conservative opt-in",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "BJ": {
+      "country": "Benin",
+      "iso": "BJ",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Digital Code covers consent",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ARCEP Benin",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Digital Code 2018",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "TG": {
+      "country": "Togo",
+      "iso": "TG",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Electronic Communications Law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ARCEP Togo",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "Data Protection Authority CNIL-Togo",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BF": {
+      "country": "Burkina Faso",
+      "iso": "BF",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "CIL Burkina Faso",
+          "url": null,
+          "updated": null
+        },
+        {
+          "title": "ARCEP regulator",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "ML": {
+      "country": "Mali",
+      "iso": "ML",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "APDP Mali",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "NE": {
+      "country": "Niger",
+      "iso": "NE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "None",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing law",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": null,
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Apply conservative opt-in",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "GN": {
+      "country": "Guinea",
+      "iso": "GN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Law applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "APDP Guinea",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "SL": {
+      "country": "Sierra Leone",
+      "iso": "SL",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Act 2023 applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Protection Commission Sierra Leone",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "LR": {
+      "country": "Liberia",
+      "iso": "LR",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection & Privacy Act 2022 applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Liberia Data Protection Office",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "GM": {
+      "country": "Gambia",
+      "iso": "GM",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Act applies",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Gambia DPA",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "MU": {
+      "country": "Mauritius",
+      "iso": "MU",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Act 2017 regulates marketing",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Mauritius Data Protection Commissioner",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "SC": {
+      "country": "Seychelles",
+      "iso": "SC",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Data Protection Act 2021 regulates marketing",
+      "regime_b2b_text": "B2B not regulated",
+      "notes_for_product": "Apply strict opt-in",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "None",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Seychelles Data Protection Authority",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
     "US": {
       "country": "United States",
       "iso": "US",
@@ -4789,6 +6122,156 @@
     }
   },
   "countries": [
+    {
+      "iso": "ZA",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NG",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "KE",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "GH",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "ET",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "TZ",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "UG",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "RW",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "SN",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "CI",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "CM",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "CD",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "AO",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MZ",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "ZM",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "ZW",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "BW",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NA",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "MW",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "BJ",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "TG",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "BF",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "ML",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NE",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "GN",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "SL",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "LR",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "GM",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MU",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "SC",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
     {
       "iso": "US",
       "confidence": "high",
