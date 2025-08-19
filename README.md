@@ -1,182 +1,281 @@
-# Agoralia
+# Agoralia - AI-Powered Outbound Calling Platform
 
-A modern, scalable cold calling and lead management platform with AI-powered agents, multi-language support, and comprehensive CRM integration.
+A modern, compliance-first platform for AI-powered outbound calling with structured outcomes and phone number management.
 
 ## 🚀 Features
 
-- **AI-Powered Agents**: Retell integration for intelligent outbound/inbound calling
-- **Multi-Language Support**: 5 languages (EN, IT, FR, AR, HI) with RTL support
-- **Lead Management**: Advanced filtering, scoring, and campaign management
-- **CRM Integration**: HubSpot, Zoho, Odoo, Google Calendar
-- **Compliance**: Legal review, country-specific rules, DNC management
-- **Analytics**: Real-time dashboards, call analytics, performance metrics
-- **Team Management**: Role-based access control, multi-user support
+### Phone Numbers (Provisioning & Caller ID)
+- **BYO (Bring Your Own)**: Verify your own numbers with voice/SMS verification
+- **Number Purchase**: Buy numbers through Agoralia with country-specific compliance
+- **KYC Integration**: Automated KYC verification for regulated countries
+- **Inbound Routing**: Configure routing to agents, business hours, and voicemail
+- **Compliance Preflight**: Real-time compliance checks before call placement
 
-## 🛠 Tech Stack
+### Structured Call Outcomes
+- **AI-Powered Extraction**: LLM-based outcome extraction from call transcripts
+- **Template System**: Pre-built templates (Sales, Support, Booking) + custom fields
+- **CRM Integration**: HubSpot, Zoho, Odoo sync with field mapping
+- **Post-call Review**: Rich UI for reviewing and editing call outcomes
+- **Export & Analytics**: Filter, search, and export outcomes with metrics
 
-### Frontend
-- **React 18** with Vite
-- **Internationalization (i18n)** with lazy-loaded locales
-- **Modern UI/UX** with CSS variables and dark mode
-- **Responsive Design** with mobile-first approach
+### Admin Console
+- **Global Visibility**: Monitor all users, workspaces, calls, and campaigns
+- **Compliance Management**: Generate PDF attestations, view preflight logs
+- **User Management**: Impersonation, role management, account suspension
+- **Notifications**: Bulk email/in-app notifications with delivery tracking
+- **Search & Filters**: Unified global search across all entities
+
+### Modern Authentication
+- **Multi-method**: Password, Magic Link, OAuth, Passkey, TOTP 2FA
+- **RBAC**: Role-based access control at workspace level
+- **Session Management**: Redis-backed sessions with CSRF protection
+- **SSO Ready**: SAML integration for enterprise customers
+
+## 🏗️ Architecture
 
 ### Backend
-- **FastAPI** (Python 3.11+)
-- **SQLAlchemy** with Alembic migrations
-- **Redis** for caching and session management
-- **Dramatiq** for background task processing
+- **FastAPI**: Modern Python web framework
+- **PostgreSQL**: Primary database with Alembic migrations
+- **Redis**: Session store and task queues
+- **Dramatiq**: Background task processing
+- **SQLAlchemy**: ORM with repository pattern
 
-### Infrastructure
-- **Frontend**: Vercel (CDN + Edge Functions)
-- **Backend**: Railway (API + Worker)
-- **Database**: Railway Postgres
-- **Cache**: Upstash Redis
-- **Storage**: Cloudflare R2
-- **Voice**: Retell AI
+### Frontend
+- **React 18**: Modern UI with hooks and context
+- **Vite**: Fast build tool and dev server
+- **Tailwind CSS**: Utility-first styling
+- **shadcn/ui**: High-quality component library
+- **i18n**: Multi-language support (EN, IT, FR, AR, HI)
 
-## 📁 Project Structure
+### Integrations
+- **Retell**: AI calling provider integration
+- **Postmark/SendGrid**: Email delivery
+- **WeasyPrint**: PDF generation for compliance docs
 
+## 📋 Requirements
+
+### Backend Dependencies
+```bash
+pip install -r backend/requirements.txt
 ```
-agoralia/
-├── frontend/                 # React application
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/          # Application pages
-│   │   ├── layouts/        # Layout components
-│   │   ├── lib/            # Utilities and API
-│   │   └── locales/        # i18n translation files
-│   ├── package.json
-│   └── vite.config.js
-├── backend/                 # FastAPI application
-│   ├── alembic/            # Database migrations
-│   ├── main.py             # Main application
-│   ├── worker.py           # Background tasks
-│   └── requirements.txt
-└── README.md
+
+Key packages:
+- `fastapi==0.104.1` - Web framework
+- `weasyprint==60.2` - PDF generation
+- `dramatiq[redis]==1.15.0` - Task queues
+- `bcrypt==4.1.2` - Password hashing
+
+### Frontend Dependencies
+```bash
+cd frontend
+npm install
 ```
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL
-- Redis
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Backend Setup
+### 1. Backend Setup
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 
 # Set environment variables
-cp .env.example .env
-# Edit .env with your configuration
+export DATABASE_URL="postgresql://user:pass@localhost/agoralia"
+export REDIS_URL="redis://localhost:6379"
+export ADMIN_EMAILS="admin@example.com"
 
 # Run migrations
 alembic upgrade head
 
-# Start the application
-uvicorn main:app --reload
+# Start the server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Worker Setup
+### 2. Frontend Setup
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Set API base URL
+export VITE_API_BASE_URL="http://localhost:8000"
+
+# Start dev server
+npm run dev
+```
+
+### 3. Background Workers
 ```bash
 cd backend
+
+# Start Dramatiq worker
 dramatiq worker
 ```
-
-## 🌍 Internationalization
-
-The application supports 5 languages:
-- **English (en-US)** - Default
-- **Italian (it-IT)**
-- **French (fr-FR)**
-- **Arabic (ar-EG)** - RTL support
-- **Hindi (hi-IN)**
-
-Translations are lazy-loaded and support fallback mechanisms.
 
 ## 🔧 Configuration
 
 ### Environment Variables
-
-#### Backend
 ```bash
-DATABASE_URL=postgresql://user:pass@localhost/db
+# Database
+DATABASE_URL=postgresql://user:pass@localhost/agoralia
+
+# Redis
 REDIS_URL=redis://localhost:6379
-RETELL_API_KEY=your_retell_key
-RETELL_WEBHOOK_SECRET=your_webhook_secret
-DEFAULT_FROM_NUMBER=+12025551234
-JWT_SECRET=your_jwt_secret
-FRONTEND_ORIGIN=https://your-app.vercel.app
-ADMIN_EMAILS=admin@example.com
+
+# Admin Access
+ADMIN_EMAILS=admin@example.com,admin2@example.com
+
+# Email Providers
+EMAIL_PROVIDER=postmark  # or sendgrid
+POSTMARK_TOKEN=your_token
+SENDGRID_API_KEY=your_key
+
+# Retell Integration
+RETELL_API_KEY=your_key
+RETELL_WEBHOOK_SECRET=your_secret
 ```
 
-#### Frontend
+### Compliance Rules
+Country-specific compliance rules are configured in `backend/data/compliance/`:
+- `raw/` - Source CSV files from compliance databases
+- `rules.v1.json` - Compiled rules for runtime use
+
+## 📱 Usage
+
+### Phone Numbers
+1. **Add BYO Number**: Enter E.164, verify via voice/SMS
+2. **Buy Number**: Select country, type, capabilities
+3. **Configure Routing**: Set agent, hours, voicemail
+4. **Set Default**: Choose default caller ID for workspace
+
+### Campaigns
+1. **Create Campaign**: Name, goal, language, template
+2. **Select Template**: Choose outcome template (Sales, Support, etc.)
+3. **Configure Compliance**: Set quiet hours, DNC checks
+4. **Launch**: Start calling with AI agents
+
+### Outcomes
+1. **AI Extraction**: Automatic outcome extraction post-call
+2. **Review & Edit**: Human review and editing of outcomes
+3. **CRM Sync**: Automatic sync to configured CRM systems
+4. **Analytics**: Filter, export, and analyze call results
+
+## 🧪 Testing
+
+### Run Test Stubs
 ```bash
-VITE_API_BASE_URL=https://your-api.railway.app
+cd backend
+python test_stubs.py
 ```
+
+### Test PDF Generation
+```bash
+cd backend
+python compliance_pdf.py
+```
+
+## 📊 API Endpoints
+
+### Phone Numbers
+- `POST /numbers/byo` - Verify BYO number
+- `POST /numbers/buy` - Purchase number
+- `POST /numbers/:id/route` - Configure routing
+- `GET /numbers` - List workspace numbers
+
+### Outcomes
+- `GET /calls/:id/outcome` - Get call outcome
+- `PATCH /calls/:id/outcome` - Edit outcome
+- `GET /outcomes` - List outcomes with filters
+- `POST /templates` - Create outcome template
+
+### Admin
+- `GET /admin/search` - Global search
+- `POST /admin/compliance/attestations/generate` - Generate PDF
+- `GET /admin/users` - List users
+- `POST /admin/notifications/send` - Send notifications
+
+## 🔒 Security & Compliance
+
+### Authentication
+- HttpOnly cookies with CSRF protection
+- Session-based authentication with Redis
+- Role-based access control (RBAC)
+- Impersonation for admin support
+
+### Compliance
+- Real-time DNC checking
+- Quiet hours enforcement
+- Caller ID validation
+- GDPR/privacy law compliance
+- Audit logging for all actions
+
+### Data Protection
+- E.164 number hashing for compliance reports
+- PII minimization in exports
+- Encrypted storage of sensitive data
+- Regular security audits
 
 ## 🚀 Deployment
 
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set build command: `npm ci && npm run build`
-3. Set output directory: `dist`
-4. Configure environment variables
+### Railway (Recommended)
+```bash
+# Deploy to Railway
+railway up
+```
 
-### Backend (Railway)
-1. Create two services:
-   - **API Service**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-   - **Worker Service**: `dramatiq backend.worker`
-2. Configure environment variables
-3. Set up PostgreSQL and Redis services
+### Docker
+```bash
+# Build and run
+docker-compose up -d
+```
 
-### Database
-- Run migrations: `alembic upgrade head`
-- Seed initial data if needed
+### Manual
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn main:app --host 0.0.0.0 --port $PORT
 
-## 📚 API Documentation
+# Frontend
+cd frontend
+npm run build
+serve -s dist -l $PORT
+```
 
-Once deployed, API documentation is available at:
-- **Swagger UI**: `/docs`
-- **ReDoc**: `/redoc`
+## 📈 Monitoring
 
-## 🔒 Security
+### Health Checks
+- Database connectivity
+- Redis availability
+- External API status
+- Worker queue health
 
-- JWT-based authentication
-- Role-based access control
-- Admin-only endpoints with email verification
-- CORS configuration for production domains
-- Environment variable protection
+### Metrics
+- Call success rates
+- Outcome extraction accuracy
+- Compliance violation rates
+- System performance
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create feature branch
+3. Make changes with tests
+4. Submit pull request
 
 ## 📄 License
 
-This project is proprietary software. All rights reserved.
+MIT License - see LICENSE file for details
 
 ## 🆘 Support
 
-For support and questions:
-- Create an issue on GitHub
-- Contact the development team
+- **Documentation**: [docs.agoralia.ai](https://docs.agoralia.ai)
+- **Issues**: GitHub Issues
+- **Email**: support@agoralia.ai
 
 ---
 
-**Agoralia** - Transforming cold calling with AI intelligence.
+**Built with ❤️ by the Agoralia team**
