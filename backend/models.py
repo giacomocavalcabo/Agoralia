@@ -2,7 +2,7 @@ import enum
 from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from db import Base
+from .db import Base
 
 
 # ===================== CRM Enums =====================
