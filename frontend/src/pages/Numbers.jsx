@@ -229,21 +229,21 @@ export default function Numbers(){
             {/* Compliance preflight check */}
             {buyIso && COUNTRY_RULES[buyIso] && (
               <div className="panel border border-blue-200 bg-blue-50">
-                <div className="kpi-title mb-3 text-blue-800">Compliance Requirements for {buyIso}</div>
+                <div className="kpi-title mb-3 text-blue-800">Requisiti di Compliance per {buyIso}</div>
                 <div className="space-y-2 text-sm text-blue-700">
                   {COUNTRY_RULES[buyIso].kyc_required && (
                     <div className="flex items-center gap-2">
                       <span className="text-red-600">⚠</span>
-                      <span>KYC verification required</span>
+                      <span>Verifica KYC richiesta</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
                     <span className="text-blue-600">ℹ</span>
-                    <span>Quiet hours: {JSON.stringify(COUNTRY_RULES[buyIso].quiet_hours)}</span>
+                    <span>Orari silenziosi: configurati</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-blue-600">ℹ</span>
-                    <span>DNC check: {COUNTRY_RULES[buyIso].dnc_required ? 'Required' : 'Not required'}</span>
+                    <span>Controllo DNC: {COUNTRY_RULES[buyIso].dnc_required ? 'Richiesto' : 'Non richiesto'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-blue-600">ℹ</span>

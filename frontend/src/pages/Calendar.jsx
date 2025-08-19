@@ -191,18 +191,92 @@ export default function Calendar(){
             })}
           </div>
         ) : (
-          <ul className="m-0 pl-4">
-            {events.map(e=> {
-              const date = new Date(e.at)
-              const timeStr = date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
-              const dateStr = date.toLocaleDateString('it-IT', { month: 'short', day: 'numeric' })
-              return (
-                <li key={e.id} className="kpi-title">
-                  [{e.kind}] {e.title || ''} {dateStr} {timeStr}
-                </li>
-              )
-            })}
-          </ul>
+          <div className="grid grid-cols-7 gap-1">
+            {/* Header row with day names */}
+            {['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'].map(day => (
+              <div key={day} className="text-center text-sm font-semibold text-ink-600 p-2 border-b border-line">
+                {day}
+              </div>
+            ))}
+            
+            {/* Calendar grid */}
+            {(() => {
+              const monthStart = new Date(range.start)
+              const monthEnd = new Date(range.end)
+              const startDate = new Date(monthStart)
+              startDate.setDate(1)
+              const endDate = new Date(monthEnd)
+              endDate.setDate(monthEnd.getDate())
+              
+              // Get first day of month and adjust to start of week
+              const firstDay = new Date(startDate)
+              const dayOfWeek = firstDay.getDay()
+              firstDay.setDate(firstDay.getDate() - dayOfWeek)
+              
+              const days = []
+              const currentDate = new Date(firstDay)
+              
+              while (currentDate <= endDate || days.length < 42) { // 6 weeks max
+                days.push(new Date(currentDate))
+                currentDate.setDate(currentDate.getDate() + 1)
+              }
+              
+              return days.map((date, index) => {
+                const isCurrentMonth = date.getMonth() === monthStart.getMonth()
+                const isToday = date.toDateString() === new Date().toDateString()
+                const dayEvents = events.filter(e => {
+                  const eventDate = new Date(e.at)
+                  return eventDate.toDateString() === date.toDateString()
+                })
+                
+                return (
+                  <div
+                    key={index}
+                    className={`min-h-[80px] p-1 border border-line ${
+                      isCurrentMonth ? 'bg-bg-card' : 'bg-bg-app/50'
+                    } ${isToday ? 'ring-2 ring-brand-500' : ''}`}
+                  >
+                    <div className={`text-xs text-right mb-1 ${
+                      isCurrentMonth ? 'text-ink-900' : 'text-ink-400'
+                    } ${isToday ? 'font-bold' : ''}`}>
+                      {date.getDate()}
+                    </div>
+                    <div className="space-y-1">
+                      {dayEvents.slice(0, 3).map((event, eventIndex) => {
+                        const eventDate = new Date(event.at)
+                        const timeStr = eventDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+                        const getEventColor = (kind) => {
+                          if (kind === 'scheduled') return 'bg-success/20 text-success border-success/30'
+                          if (kind === 'blocked') return 'bg-ink-600/20 text-ink-600 border-ink-600/30'
+                          if (kind === 'warn') return 'bg-warn/20 text-warn border-warn/30'
+                          return 'bg-info/20 text-info border-info/30'
+                        }
+                        
+                        return (
+                          <div
+                            key={eventIndex}
+                            className={`text-xs p-1 rounded border ${getEventColor(event.kind)} truncate cursor-pointer`}
+                            onClick={() => {
+                              setSelected(event)
+                              setDrawerOpen(true)
+                            }}
+                            title={`${event.title || ''} ${timeStr}`}
+                          >
+                            {event.title || event.kind} {timeStr}
+                          </div>
+                        )
+                      })}
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-ink-500 text-center">
+                          +{dayEvents.length - 3} altri
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            })()}
+          </div>
         )}
       </div>
 

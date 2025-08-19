@@ -54,10 +54,10 @@ export default function Analytics(){
   return (
     <div style={{ display:'grid', gap:12 }}>
       <div className="panel flex items-center justify-between gap-2">
-        <div className="kpi-title">{t('pages.analytics.title')||'Analytics'}</div>
+        <div className="kpi-title">Analytics</div>
         <div className="flex gap-2">
           <label className="kpi-title inline-flex items-center gap-1.5">
-            {t('pages.analytics.filters.range') || 'Range'}
+            Range
             <select value={filters.range} onChange={e=> setFilters({ ...filters, range:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
               <option value="7d">7d</option>
               <option value="30d">30d</option>
@@ -65,7 +65,7 @@ export default function Analytics(){
             </select>
           </label>
           <label className="kpi-title inline-flex items-center gap-1.5">
-            {t('pages.analytics.filters.scope') || 'Scope'}
+            Scope
             <select value={filters.scope} onChange={e=> setFilters({ ...filters, scope:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
               <option value="all">All</option>
               <option value="campaign">Campaign</option>
@@ -73,31 +73,31 @@ export default function Analytics(){
               <option value="language">Language</option>
             </select>
           </label>
-          <a href={`/api/analytics/export.csv?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">{t('pages.analytics.actions.export_csv')||'Export CSV'}</a>
-          <a href={`/api/analytics/export.json?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">{t('pages.analytics.actions.export_json')||'Export JSON'}</a>
+          <a href={`/api/analytics/export.csv?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">Export CSV</a>
+          <a href={`/api/analytics/export.json?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">Export JSON</a>
         </div>
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0, 1fr))', gap:12 }}>
-        <KPI label={t('pages.analytics.kpi.calls')||'Calls'} value={data?.kpi?.calls ?? 0} />
-        <KPI label={t('pages.analytics.kpi.connected_rate')||'Connected'} value={Math.round((data?.kpi?.connected_rate ?? 0)*100) + '%'} />
-        <KPI label={t('pages.analytics.kpi.qualified_rate')||'Qualified'} value={Math.round((data?.kpi?.qualified_rate ?? 0)*100) + '%'} />
+        <KPI label="Chiamate" value={data?.kpi?.calls ?? 0} />
+        <KPI label="Connesse" value={Math.round((data?.kpi?.connected_rate ?? 0)*100) + '%'} />
+        <KPI label="Qualificate" value={Math.round((data?.kpi?.qualified_rate ?? 0)*100) + '%'} />
       </div>
 
       <div className="panel" aria-describedby="desc-calls">
-        <div className="kpi-title mb-2" id="desc-calls">{t('pages.analytics.charts.calls_over_time')||'Calls over time'}</div>
-        <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={120} />
+        <div className="kpi-title mb-2" id="desc-calls">Chiamate nel tempo</div>
+        <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={80} />
       </div>
 
       <div className="panel flex flex-wrap items-center gap-3">
-        <div className="kpi-title">{t('pages.analytics.filters.language')||'Language'}</div>
+        <div className="kpi-title">Lingua</div>
         {['en-US','it-IT','fr-FR','hi-IN'].map(code=> (
           <label key={code} className="kpi-title inline-flex items-center gap-1.5">
             <input type="checkbox" checked={filters.lang.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, lang: e.target.checked ? [...f.lang, code] : f.lang.filter(x=> x!==code) }))} />{code}
           </label>
         ))}
         <div className="w-px h-5 bg-line" />
-        <div className="kpi-title">{t('pages.analytics.filters.direction')||'Direction'}</div>
+        <div className="kpi-title">Direzione</div>
         {['inbound','outbound'].map(code=> (
           <label key={code} className="kpi-title inline-flex items-center gap-1.5">
             <input type="checkbox" checked={filters.direction.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, direction: e.target.checked ? [...f.direction, code] : f.direction.filter(x=> x!==code) }))} />{code}
@@ -107,12 +107,12 @@ export default function Analytics(){
 
       <div className="panel" aria-describedby="desc-outcomes">
         <div className="kpi-title mb-2" id="desc-outcomes">{t('pages.analytics.charts.outcomes_over_time')||'Outcomes (recent days)'}</div>
-        <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={160} />
+        <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={100} />
       </div>
 
       <div className="panel" aria-describedby="desc-lang">
         <div className="kpi-title mb-2" id="desc-lang">{t('pages.analytics.charts.lang_distribution')||'By language'}</div>
-        <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={140} />
+        <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={80} />
       </div>
 
       <div className="panel" aria-label="By tables">
