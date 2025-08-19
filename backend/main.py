@@ -2544,9 +2544,13 @@ def start_kb_import(
     with next(get_db()) as db:
         # Check idempotency if key provided
         if payload.idempotency_key:
+            # Create hash of payload for true idempotency
+            payload_hash = hashlib.sha256(json.dumps(payload.dict(), sort_keys=True).encode()).hexdigest()
+            
             existing_job = db.query(KbImportJob).filter(
                 KbImportJob.workspace_id == workspace_id,
-                KbImportJob.meta_json.contains({"idempotency_key": payload.idempotency_key})
+                KbImportJob.meta_json.contains({"idempotency_key": payload.idempotency_key}),
+                KbImportJob.meta_json.contains({"payload_hash": payload_hash})
             ).first()
             
             if existing_job:
@@ -2554,7 +2558,8 @@ def start_kb_import(
                     "job_id": existing_job.id,
                     "source_id": existing_job.source_id,
                     "status": existing_job.status,
-                    "idempotent": True
+                    "idempotent": True,
+                    "message": "Duplicate request detected, returning existing job"
                 }
         
         # Create source record
@@ -2583,10 +2588,11 @@ def start_kb_import(
             status="pending"
         )
         
-        # Store idempotency key in job metadata
+        # Store idempotency key and payload hash in job metadata
         if payload.idempotency_key:
             job.meta_json = job.meta_json or {}
             job.meta_json["idempotency_key"] = payload.idempotency_key
+            job.meta_json["payload_hash"] = payload_hash
         
         db.add(job)
         db.commit()
@@ -3679,13 +3685,16 @@ def commit_import_job(
         if job.status != "completed":
             raise HTTPException(status_code=400, detail="Import job not completed")
         
-        # Apply field mappings and merge changes
+        # Apply field mappings and merge changes with advisory lock
         if job.target_kb_id:
-            # Update existing KB
+            # Acquire advisory lock to prevent concurrent commits on same KB
+            db.execute(f"SELECT pg_advisory_xact_lock('{job.target_kb_id}')")
+            
+            # Update existing KB with FOR UPDATE
             target_kb = db.query(KnowledgeBase).filter(
                 KnowledgeBase.id == job.target_kb_id,
                 KnowledgeBase.workspace_id == workspace_id
-            ).first()
+            ).with_for_update().first()
             
             if not target_kb:
                 raise HTTPException(status_code=404, detail="Target KB not found")
@@ -3715,6 +3724,8 @@ def commit_import_job(
         # Update job status
         job.status = "committed"
         job.completed_at = datetime.utcnow()
+        
+        # Commit all changes in transaction
         db.commit()
         
         return {
