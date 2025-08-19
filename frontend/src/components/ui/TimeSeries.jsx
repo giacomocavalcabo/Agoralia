@@ -1,31 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
-import {
-	Chart as ChartJS,
-	LineElement,
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	Tooltip,
-	Legend,
-	AreaElement,
-	Filler
-} from 'chart.js'
-import zoomPlugin from 'chartjs-plugin-zoom'
-import annotationPlugin from 'chartjs-plugin-annotation'
-
-ChartJS.register(
-	LineElement, 
-	CategoryScale, 
-	LinearScale, 
-	PointElement, 
-	Tooltip, 
-	Legend,
-	AreaElement,
-	Filler,
-	zoomPlugin,
-	annotationPlugin
-)
 
 export default function TimeSeries({ 
 	data = { created: [], finished: [], qualified: [], contact_rate: [] },
@@ -35,11 +9,21 @@ export default function TimeSeries({
 	className = ''
 }) {
 	const [selectedDays, setSelectedDays] = useState(days)
+	const chartRef = useRef(null)
 	
 	const handleDaysChange = (newDays) => {
 		setSelectedDays(newDays)
 		if (onDaysChange) onDaysChange(newDays)
 	}
+	
+	// Cleanup chart on unmount (CRITICAL for memory management)
+	useEffect(() => {
+		return () => {
+			if (chartRef.current) {
+				chartRef.current.destroy()
+			}
+		}
+	}, [])
 	
 	const chartData = {
 		labels: labels.slice(-selectedDays),
@@ -82,7 +66,7 @@ export default function TimeSeries({
 				borderWidth: 2,
 				fill: false,
 				tension: 0.4,
-				yAxisID: 'y1',
+				yAxisID: 'y2',
 				borderDash: [5, 5]
 			}
 		]
@@ -91,6 +75,7 @@ export default function TimeSeries({
 	const options = {
 		responsive: true,
 		maintainAspectRatio: false,
+		parsing: false,
 		interaction: {
 			mode: 'index',
 			intersect: false,
@@ -98,7 +83,7 @@ export default function TimeSeries({
 		plugins: {
 			legend: {
 				display: true,
-				position: 'top',
+				position: 'bottom',
 				labels: {
 					usePointStyle: true,
 					padding: 20,
@@ -117,8 +102,8 @@ export default function TimeSeries({
 					label: function(context) {
 						const label = context.dataset.label || ''
 						const value = context.parsed.y
-						if (context.datasetIndex === 3) { // Contact Rate
-							return `${label}: ${value.toFixed(1)}%`
+						if (context.dataset.yAxisID === 'y2') { // Contact Rate
+							return `${label}: ${Math.round(value)}%`
 						}
 						return `${label}: ${value}`
 					}
@@ -141,13 +126,13 @@ export default function TimeSeries({
 			},
 			annotation: {
 				annotations: {
-					line1: {
+					warn: {
 						type: 'line',
 						yMin: 80,
 						yMax: 80,
+						borderDash: [6, 6],
 						borderColor: 'var(--warn)',
 						borderWidth: 2,
-						borderDash: [5, 5],
 						label: {
 							content: '80% Target',
 							enabled: true,
@@ -162,7 +147,8 @@ export default function TimeSeries({
 				type: 'category',
 				grid: {
 					color: 'var(--line)',
-					drawBorder: false
+					drawBorder: false,
+					display: false
 				},
 				ticks: {
 					color: 'var(--ink-600)',
@@ -173,6 +159,7 @@ export default function TimeSeries({
 				type: 'linear',
 				display: true,
 				position: 'left',
+				beginAtZero: true,
 				grid: {
 					color: 'var(--line)',
 					drawBorder: false
@@ -182,10 +169,12 @@ export default function TimeSeries({
 					font: { size: 11 }
 				}
 			},
-			y1: {
+			y2: {
 				type: 'linear',
 				display: true,
 				position: 'right',
+				min: 0,
+				max: 100,
 				grid: {
 					drawOnChartArea: false,
 				},
@@ -225,7 +214,11 @@ export default function TimeSeries({
 			
 			{/* Chart */}
 			<div className="h-64">
-				<Line data={chartData} options={options} />
+				<Line 
+					ref={chartRef}
+					data={chartData} 
+					options={options} 
+				/>
 			</div>
 			
 			{/* Summary stats */}

@@ -11,5 +11,14 @@ export default defineConfig({
 				format: 'es'
 			}
 		}
+	},
+	server: {
+		proxy: {
+			'/ws': {
+				target: 'http://localhost:8000',
+				ws: true,
+				changeOrigin: true
+			}
+		}
 	}
 })

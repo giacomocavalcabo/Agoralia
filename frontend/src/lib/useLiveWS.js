@@ -12,6 +12,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const fallbackTimerRef = useRef(null)
 	const reconnectTimeoutRef = useRef(null)
 	const eventQueue = useRef([])
+	const failCount = useRef(0)
+	const maxFailures = 3
 	
 	// Queue events (max 200)
 	const addEvent = useCallback((event) => {
@@ -23,8 +25,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const fallbackPoll = useCallback(async () => {
 		try {
 			const [liveResponse, eventsResponse] = await Promise.all([
-				fetch('/calls/live').then(r => r.json()).catch(() => ({ items: [] })),
-				fetch('/events/recent?limit=20').then(r => r.json()).catch(() => ({ items: [] }))
+				fetch('/calls/live', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] })),
+				fetch('/events/recent?limit=20', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] }))
 			])
 			
 			setLiveCalls(liveResponse.items || [])
@@ -48,7 +50,16 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 		}
 	}, [])
 	
-	// WebSocket connection
+	// Start fallback polling
+	const startPolling = useCallback(() => {
+		if (fallbackTimerRef.current) return
+		
+		console.log('Starting fallback polling')
+		fallbackPoll() // Immediate poll
+		fallbackTimerRef.current = setInterval(fallbackPoll, fallbackInterval)
+	}, [fallbackPoll, fallbackInterval])
+	
+	// WebSocket connection with exponential backoff
 	const connect = useCallback(() => {
 		if (wsRef.current?.readyState === WebSocket.OPEN) return
 		
@@ -58,6 +69,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 			wsRef.current.onopen = () => {
 				console.log('WebSocket connected')
 				setIsConnected(true)
+				failCount.current = 0 // Reset failure count
+				
 				// Clear fallback timer when WS connects
 				if (fallbackTimerRef.current) {
 					clearInterval(fallbackTimerRef.current)
@@ -131,13 +144,19 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 				console.log('WebSocket disconnected')
 				setIsConnected(false)
 				
-				// Start fallback polling
-				if (!fallbackTimerRef.current) {
-					fallbackTimerRef.current = setInterval(fallbackPoll, fallbackInterval)
-				}
+				failCount.current++
 				
-				// Attempt reconnection
-				reconnectTimeoutRef.current = setTimeout(connect, 5000)
+				// Start fallback polling after 3 failures
+				if (failCount.current >= maxFailures) {
+					console.log('Max failures reached, starting fallback polling')
+					startPolling()
+				} else {
+					// Exponential backoff: 1s, 2s, 4s, 8s, 15s max
+					const backoffDelay = Math.min(15000, 1000 * Math.pow(2, failCount.current - 1))
+					console.log(`Reconnecting in ${backoffDelay}ms (attempt ${failCount.current})`)
+					
+					reconnectTimeoutRef.current = setTimeout(connect, backoffDelay)
+				}
 			}
 			
 			wsRef.current.onerror = (error) => {
@@ -147,12 +166,16 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 			
 		} catch (error) {
 			console.error('Failed to create WebSocket:', error)
-			// Fallback to polling immediately
-			if (!fallbackTimerRef.current) {
-				fallbackTimerRef.current = setInterval(fallbackPoll, fallbackInterval)
+			failCount.current++
+			
+			// Fallback to polling immediately on creation failure
+			if (failCount.current >= maxFailures) {
+				startPolling()
+			} else {
+				reconnectTimeoutRef.current = setTimeout(connect, 1000)
 			}
 		}
-	}, [url, fallbackInterval, fallbackPoll, addEvent])
+	}, [url, startPolling])
 	
 	// Disconnect function
 	const disconnect = useCallback(() => {
@@ -173,11 +196,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	// Manual fallback trigger
 	const triggerFallback = useCallback(() => {
 		disconnect()
-		fallbackPoll()
-		if (!fallbackTimerRef.current) {
-			fallbackTimerRef.current = setInterval(fallbackPoll, fallbackInterval)
-		}
-	}, [disconnect, fallbackPoll, fallbackInterval])
+		startPolling()
+	}, [disconnect, startPolling])
 	
 	// Initial connection
 	useEffect(() => {
@@ -203,6 +223,7 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 		connect,
 		disconnect,
 		triggerFallback,
-		pushFallback: addEvent
+		pushFallback: addEvent,
+		failCount: failCount.current
 	}
 }

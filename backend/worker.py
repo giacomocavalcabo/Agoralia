@@ -4,6 +4,11 @@ import json
 import os
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
+from sqlalchemy.orm import Session
+
+# Import database models
+from .db import get_db
+from .models import KbImportJob, KbSource
 
 # Mock LLM client for MVP (replace with OpenAI/Anthropic in production)
 class MockLLMClient:
@@ -218,5 +223,226 @@ def send_notification_job(notification_id: str, target_user_id: str, kind: str, 
     except Exception as e:
         print(f"Notification sending failed: {e}")
         raise dramatiq.Retry(delay=60000)  # Retry in 1 minute
+
+
+# ===================== Knowledge Base Import Jobs =====================
+
+@dramatiq.actor(queue_name='q:kb:import')
+def kb_import_job(job_id: str):
+    """Process knowledge base import job (CSV, file, or URL)"""
+    try:
+        print(f"Starting KB import job {job_id}")
+        
+        # Get job details from database
+        with next(get_db()) as db:
+            job = db.query(KbImportJob).filter(KbImportJob.id == job_id).first()
+            if not job:
+                raise ValueError(f"Import job {job_id} not found")
+            
+            # Update status to running
+            job.status = "running"
+            job.progress_pct = 10
+            db.commit()
+            
+            # Get source details
+            source = db.query(KbSource).filter(KbSource.id == job.source_id).first()
+            if not source:
+                raise ValueError(f"Source {job.source_id} not found")
+            
+            # Process based on source type
+            if source.kind == "csv":
+                result = _process_csv_import(db, job, source)
+            elif source.kind == "file":
+                result = _process_file_import(db, job, source)
+            elif source.kind == "url":
+                result = _process_url_import(db, job, source)
+            else:
+                raise ValueError(f"Unsupported source type: {source.kind}")
+            
+            # Update job status
+            job.status = "completed"
+            job.progress_pct = 100
+            job.completed_at = datetime.utcnow()
+            db.commit()
+            
+            print(f"KB import job {job_id} completed successfully")
+            return result
+            
+    except Exception as e:
+        print(f"KB import job {job_id} failed: {e}")
+        
+        # Update job status to failed
+        with next(get_db()) as db:
+            job = db.query(KbImportJob).filter(KbImportJob.id == job_id).first()
+            if job:
+                job.status = "failed"
+                job.error_message = str(e)
+                job.completed_at = datetime.utcnow()
+                db.commit()
+        
+        # Retry with exponential backoff
+        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+
+
+def _process_csv_import(db: Session, job: KbImportJob, source: KbSource) -> dict:
+    """Process CSV import for knowledge base"""
+    print(f"Processing CSV import for job {job.id}")
+    
+    # Update progress
+    job.progress_pct = 20
+    db.commit()
+    
+    # TODO: Implement CSV processing
+    # 1. Parse CSV with streaming
+    # 2. Detect headers and suggest mapping
+    # 3. Create chunks for AI processing
+    # 4. Estimate costs
+    
+    # Mock processing for now
+    import time
+    time.sleep(2)
+    
+    # Update source status
+    source.status = "completed"
+    db.commit()
+    
+    return {
+        "job_id": job.id,
+        "source_type": "csv",
+        "chunks_created": 0,
+        "estimated_cost_cents": 50
+    }
+
+
+def _process_file_import(db: Session, job: KbImportJob, source: KbSource) -> dict:
+    """Process file import (PDF, DOCX, TXT, MD) for knowledge base"""
+    print(f"Processing file import for job {job.id}")
+    
+    # Update progress
+    job.progress_pct = 30
+    db.commit()
+    
+    # TODO: Implement file processing
+    # 1. Extract text from file
+    # 2. Split into chunks (800-1200 tokens)
+    # 3. Generate embeddings
+    # 4. Extract structured data with AI
+    
+    # Mock processing for now
+    import time
+    time.sleep(3)
+    
+    # Update source status
+    source.status = "completed"
+    db.commit()
+    
+    return {
+        "job_id": job.id,
+        "source_type": "file",
+        "chunks_created": 0,
+        "estimated_cost_cents": 150
+    }
+
+
+def _process_url_import(db: Session, job: KbImportJob, source: KbSource) -> dict:
+    """Process URL import for knowledge base"""
+    print(f"Processing URL import for job {job.id}")
+    
+    # Update progress
+    job.progress_pct = 40
+    db.commit()
+    
+    # TODO: Implement URL processing
+    # 1. Crawl URL with depth limit
+    # 2. Extract text with Readability
+    # 3. Split into chunks
+    # 4. Generate embeddings
+    
+    # Mock processing for now
+    import time
+    time.sleep(2)
+    
+    # Update source status
+    source.status = "completed"
+    db.commit()
+    
+    return {
+        "job_id": job.id,
+        "source_type": "url",
+        "chunks_created": 0,
+        "estimated_cost_cents": 100
+    }
+
+
+@dramatiq.actor(queue_name='q:kb:embedding')
+def kb_embedding_job(chunk_ids: list[str]):
+    """Generate embeddings for knowledge base chunks"""
+    try:
+        print(f"Generating embeddings for {len(chunk_ids)} chunks")
+        
+        # TODO: Implement embedding generation
+        # 1. Batch chunks (32 at a time)
+        # 2. Call OpenAI embedding API
+        # 3. Update kb_chunks.embedding
+        # 4. Track costs in ai_usage
+        
+        # Mock processing for now
+        import time
+        time.sleep(1)
+        
+        print(f"Embeddings generated for {len(chunk_ids)} chunks")
+        return {"success": True, "chunks_processed": len(chunk_ids)}
+        
+    except Exception as e:
+        print(f"Embedding generation failed: {e}")
+        raise dramatiq.Retry(delay=60000)  # Retry in 1 minute
+
+
+@dramatiq.actor(queue_name='q:kb:extraction')
+def kb_extraction_job(chunk_ids: list[str], template: str, lang: str = "en-US"):
+    """Extract structured data from knowledge base chunks using AI"""
+    try:
+        print(f"Extracting data from {len(chunk_ids)} chunks using template {template}")
+        
+        # TODO: Implement AI extraction
+        # 1. Get chunks from database
+        # 2. Call AI client with template
+        # 3. Update kb_fields with extracted data
+        # 4. Track costs in ai_usage
+        
+        # Mock processing for now
+        import time
+        time.sleep(2)
+        
+        print(f"Data extraction completed for {len(chunk_ids)} chunks")
+        return {"success": True, "chunks_processed": len(chunk_ids)}
+        
+    except Exception as e:
+        print(f"Data extraction failed: {e}")
+        raise dramatiq.Retry(delay=120000)  # Retry in 2 minutes
+
+
+@dramatiq.actor(queue_name='q:kb:metrics')
+def kb_metrics_recalculation_job(kb_id: str):
+    """Recalculate KB completeness and freshness metrics"""
+    try:
+        print(f"Recalculating metrics for KB {kb_id}")
+        
+        # TODO: Implement metrics recalculation
+        # 1. Count sections and fields
+        # 2. Calculate completeness percentage
+        # 3. Calculate freshness score
+        # 4. Update knowledge_bases table
+        
+        # Mock processing for now
+        import time
+        time.sleep(0.5)
+        
+        print(f"Metrics recalculated for KB {kb_id}")
+        return {"success": True, "kb_id": kb_id}
+        
+    except Exception as e:
+        print(f"Metrics recalculation failed for KB {kb_id}: {e}")
+        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
 
 

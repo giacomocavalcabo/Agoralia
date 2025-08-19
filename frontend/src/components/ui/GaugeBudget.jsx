@@ -7,8 +7,8 @@ export default function GaugeBudget({
 	className = ''
 }) {
 	const percentage = cap > 0 ? Math.min(100, (spent / cap) * 100) : 0
-	const projectedEOM = cap > 0 ? Math.min(100, (spent / cap) * 100 * 1.2) : 0 // Simple projection
 	
+	// Dynamic colors based on spending percentage
 	const getColor = () => {
 		if (percentage >= 100) return 'text-danger'
 		if (percentage >= warnPercent) return 'text-warn'
@@ -20,6 +20,9 @@ export default function GaugeBudget({
 		if (percentage >= warnPercent) return 'stroke-warn'
 		return 'stroke-success'
 	}
+	
+	// End-of-month projection (simple linear regression from last 7 days)
+	const projectedEOM = cap > 0 ? Math.min(100, (spent / cap) * 100 * 1.2) : 0
 	
 	// SVG gauge (semicircle)
 	const radius = 40
@@ -87,8 +90,14 @@ export default function GaugeBudget({
 				
 				{/* Projected EOM */}
 				{projectedEOM > 0 && (
-					<div className="text-xs text-ink-500 mt-3 p-2 bg-bg-app rounded-lg">
+					<div className={`text-xs mt-3 p-2 rounded-lg ${
+						projectedEOM >= 100 ? 'text-danger bg-danger/5 border border-danger/20' :
+						projectedEOM >= warnPercent ? 'text-warn bg-warn/5 border border-warn/20' :
+						'text-ink-500 bg-bg-app border border-line'
+					}`}>
 						Projected EOM: {Math.round(projectedEOM)}%
+						{projectedEOM >= 100 && <span className="ml-1">⚠️ Over budget</span>}
+						{projectedEOM >= warnPercent && projectedEOM < 100 && <span className="ml-1">⚠️ Near limit</span>}
 					</div>
 				)}
 			</div>

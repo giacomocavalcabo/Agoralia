@@ -2357,6 +2357,16 @@ def create_knowledge_base(
         
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create", {
+            "field": "metadata",
+            "old_values": {},
+            "new_values": payload.dict(exclude_unset=True)
+        })
+        
         return {
             "id": kb_id,
             "name": kb.name,
@@ -2475,10 +2485,11 @@ def update_knowledge_base(
     request: Request,
     kb_id: str,
     payload: schemas.KnowledgeBaseUpdate,
+    if_match: str = Header(None, alias="If-Match"),
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update knowledge base metadata"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = _get_workspace_from_user(request)
     
     with next(get_db()) as db:
         kb = db.query(KnowledgeBase).filter(
@@ -2488,6 +2499,10 @@ def update_knowledge_base(
         
         if not kb:
             raise HTTPException(status_code=404, detail="Knowledge base not found")
+        
+        # Check If-Match header for concurrency control
+        if if_match and if_match != kb.updated_at.isoformat():
+            raise HTTPException(status_code=412, detail="Precondition failed - resource modified")
         
         # Update fields
         if payload.name is not None:
@@ -2506,6 +2521,13 @@ def update_knowledge_base(
         kb.updated_at = datetime.utcnow()
         db.commit()
         
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "update", {
+            "field": "metadata",
+            "old_values": {},
+            "new_values": payload.dict(exclude_unset=True)
+        })
+        
         return {"id": kb_id, "status": "updated"}
 
 
@@ -2520,6 +2542,21 @@ def start_kb_import(
     user_id = "u_1"  # In production, get from session
     
     with next(get_db()) as db:
+        # Check idempotency if key provided
+        if payload.idempotency_key:
+            existing_job = db.query(KbImportJob).filter(
+                KbImportJob.workspace_id == workspace_id,
+                KbImportJob.meta_json.contains({"idempotency_key": payload.idempotency_key})
+            ).first()
+            
+            if existing_job:
+                return {
+                    "job_id": existing_job.id,
+                    "source_id": existing_job.source_id,
+                    "status": existing_job.status,
+                    "idempotent": True
+                }
+        
         # Create source record
         source_id = f"source_{secrets.token_urlsafe(8)}"
         source = KbSource(
@@ -2545,8 +2582,13 @@ def start_kb_import(
             template=payload.template or "generic",
             status="pending"
         )
-        db.add(job)
         
+        # Store idempotency key in job metadata
+        if payload.idempotency_key:
+            job.meta_json = job.meta_json or {}
+            job.meta_json["idempotency_key"] = payload.idempotency_key
+        
+        db.add(job)
         db.commit()
         
         # TODO: Queue background job for processing
@@ -2808,6 +2850,16 @@ def create_kb_section(
         db.add(section)
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create_section", {
+            "section_id": section_id,
+            "section_key": section.key,
+            "section_title": section.title
+        })
+        
         return {
             "id": section_id,
             "key": section.key,
@@ -2849,6 +2901,15 @@ def update_kb_section(
         section.updated_at = datetime.utcnow()
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "update_section", {
+            "section_id": section_id,
+            "changes": payload.dict(exclude_unset=True)
+        })
+        
         return {"id": section_id, "status": "updated"}
 
 
@@ -2877,6 +2938,15 @@ def delete_kb_section(
         # Delete section
         db.delete(section)
         db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "delete_section", {
+            "section_id": section_id,
+            "section_key": section.key
+        })
         
         return {"id": section_id, "status": "deleted"}
 
@@ -2926,6 +2996,16 @@ def create_kb_field(
         db.add(field)
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create_field", {
+            "field_id": field_id,
+            "field_key": field.key,
+            "field_label": field.label
+        })
+        
         return {
             "id": field_id,
             "key": field.key,
@@ -2969,6 +3049,15 @@ def update_kb_field(
         field.updated_at = datetime.utcnow()
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, field.kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, field.kb_id, "u_1", "update_field", {
+            "field_id": field_id,
+            "changes": payload.dict(exclude_unset=True)
+        })
+        
         return {"id": field_id, "status": "updated"}
 
 
@@ -2994,6 +3083,15 @@ def delete_kb_field(
         # Delete field
         db.delete(field)
         db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, field.kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, field.kb_id, "u_1", "delete_field", {
+            "field_id": field_id,
+            "field_key": field.key
+        })
         
         return {"id": field_id, "status": "deleted"}
 
@@ -3246,6 +3344,16 @@ def create_kb_field(
         db.add(field)
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create_field", {
+            "field_id": field_id,
+            "field_key": field.key,
+            "field_label": field.label
+        })
+        
         return {
             "id": field_id,
             "key": field.key,
@@ -3288,6 +3396,15 @@ def update_kb_field(
         
         field.updated_at = datetime.utcnow()
         db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, field.kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, field.kb_id, "u_1", "update_field", {
+            "field_id": field_id,
+            "changes": payload.dict(exclude_unset=True)
+        })
         
         return {"id": field_id, "status": "updated"}
 
@@ -3374,6 +3491,16 @@ def create_kb_section(
         db.add(section)
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create_section", {
+            "section_id": section_id,
+            "section_key": section.key,
+            "section_title": section.title
+        })
+        
         return {
             "id": section_id,
             "key": section.key,
@@ -3415,6 +3542,15 @@ def update_kb_section(
         section.updated_at = datetime.utcnow()
         db.commit()
         
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "update_section", {
+            "section_id": section_id,
+            "changes": payload.dict(exclude_unset=True)
+        })
+        
         return {"id": section_id, "status": "updated"}
 
 
@@ -3443,6 +3579,15 @@ def delete_kb_section(
         # Delete section
         db.delete(section)
         db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "delete_section", {
+            "section_id": section_id,
+            "section_key": section.key
+        })
         
         return {"id": section_id, "status": "deleted"}
 
@@ -3508,4 +3653,151 @@ def retry_import_job(
         # kb_import_job.send(job_id)
         
         return {"job_id": job_id, "status": "retrying"}
+
+
+@app.post("/kb/imports/{job_id}/commit")
+def commit_import_job(
+    request: Request,
+    job_id: str,
+    payload: schemas.ImportReviewRequest,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Commit and apply import job changes"""
+    workspace_id = _get_workspace_from_user(request)
+    user_id = "u_1"  # In production, get from session
+    
+    with next(get_db()) as db:
+        # Verify job exists and belongs to workspace
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Import job not found")
+        
+        if job.status != "completed":
+            raise HTTPException(status_code=400, detail="Import job not completed")
+        
+        # Apply field mappings and merge changes
+        if job.target_kb_id:
+            # Update existing KB
+            target_kb = db.query(KnowledgeBase).filter(
+                KnowledgeBase.id == job.target_kb_id,
+                KnowledgeBase.workspace_id == workspace_id
+            ).first()
+            
+            if not target_kb:
+                raise HTTPException(status_code=404, detail="Target KB not found")
+            
+            # Apply changes based on mappings in job.meta_json
+            mappings = job.meta_json.get("mappings", {}) if job.meta_json else {}
+            
+            # TODO: Apply actual field updates based on mappings
+            # For now, just update the timestamp
+            target_kb.updated_at = datetime.utcnow()
+            
+            # Publish if requested
+            if payload.publish_after:
+                target_kb.status = "published"
+                target_kb.published_at = datetime.utcnow()
+            
+            # Recalculate metrics
+            _recalculate_kb_metrics(db, target_kb.id)
+            
+            # Audit trail
+            _audit_kb_change(db, target_kb.id, user_id, "import_commit", {
+                "job_id": job_id,
+                "auto_merge": payload.auto_merge,
+                "publish_after": payload.publish_after
+            })
+        
+        # Update job status
+        job.status = "committed"
+        job.completed_at = datetime.utcnow()
+        db.commit()
+        
+        return {
+            "job_id": job_id, 
+            "status": "committed",
+            "target_kb_id": job.target_kb_id
+        }
+
+
+@app.post("/kb/imports/{job_id}/cancel")
+def cancel_import_job(
+    request: Request,
+    job_id: str,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Cancel an import job"""
+    workspace_id = _get_workspace_from_user(request)
+    
+    with next(get_db()) as db:
+        # Verify job exists and belongs to workspace
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Import job not found")
+        
+        if job.status in ["completed", "failed", "canceled", "committed"]:
+            raise HTTPException(status_code=400, detail="Cannot cancel job in terminal state")
+        
+        job.status = "canceled"
+        job.completed_at = datetime.utcnow()
+        db.commit()
+        
+        # TODO: Cancel background job if running
+        # dramatiq.cancel(job_id)
+        
+        return {"job_id": job_id, "status": "canceled"}
+
+
+def _recalculate_kb_metrics(db: Session, kb_id: str) -> None:
+    """Recalculate KB completeness and freshness metrics"""
+    # Get all sections and fields for KB
+    sections = db.query(KbSection).filter(KbSection.kb_id == kb_id).all()
+    fields = db.query(KbField).filter(KbField.kb_id == kb_id).all()
+    
+    # Calculate completeness
+    total_sections = len(sections)
+    total_fields = len(fields)
+    
+    if total_sections == 0:
+        completeness_pct = 0
+    else:
+        # Section completeness (50% weight)
+        section_completeness = sum(s.completeness_pct or 0 for s in sections) / total_sections
+        
+        # Field completeness (50% weight)
+        field_completeness = sum(1 for f in fields if f.value_text or f.value_json) / total_fields if total_fields > 0 else 0
+        
+        completeness_pct = int((section_completeness * 0.5 + field_completeness * 0.5) * 100)
+    
+    # Calculate freshness (days since last update)
+    now = datetime.utcnow()
+    last_updated = max(
+        [kb.updated_at for kb in [sections + fields] if hasattr(kb, 'updated_at') and kb.updated_at],
+        default=now
+    )
+    
+    days_since_update = (now - last_updated).days
+    if days_since_update <= 7:
+        freshness_score = 100
+    elif days_since_update <= 30:
+        freshness_score = 75
+    elif days_since_update <= 90:
+        freshness_score = 50
+    else:
+        freshness_score = 25
+    
+    # Update KB metrics
+    kb = db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
+    if kb:
+        kb.completeness_pct = completeness_pct
+        kb.freshness_score = freshness_score
+        db.commit()
 

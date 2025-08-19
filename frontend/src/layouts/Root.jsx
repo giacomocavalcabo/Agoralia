@@ -1,20 +1,32 @@
-import { Outlet } from 'react-router-dom'
-import AppShell from '../components/AppShell.jsx'
-import CreateDrawer from '../components/CreateDrawer.jsx'
+import { Outlet, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import AppHeader from '../components/AppHeader.jsx'
+import Sidebar from '../components/Sidebar.jsx'
 
 export default function Root() {
-	const imp = (()=>{ try { return JSON.parse(localStorage.getItem('impersonate_user')||'null') } catch { return null } })()
+	const location = useLocation()
+	
+	// Apply dark theme only to Dashboard
+	useEffect(() => {
+		const isDashboard = location.pathname === '/'
+		document.body.classList.toggle('dark', isDashboard)
+		
+		return () => {
+			document.body.classList.remove('dark')
+		}
+	}, [location.pathname])
 	
 	return (
-		<AppShell>
-			{imp && (
-				<div style={{ padding:'8px 20px', background:'#FEF3C7', borderBottom:'1px solid #FDE68A', display:'flex', alignItems:'center', gap:12 }}>
-					<span style={{ fontWeight:700 }}>Impersonating {imp.email || imp.name || imp.id}</span>
-					<button className="btn" onClick={()=>{ localStorage.removeItem('impersonate_token'); localStorage.removeItem('impersonate_user'); location.reload() }}>Return</button>
+		<div className="min-h-screen bg-bg-app">
+			<div className="grid grid-cols-[auto_1fr]">
+				<Sidebar />
+				<div className="flex flex-col">
+					<AppHeader />
+					<main className="flex-1 p-6">
+						<Outlet />
+					</main>
 				</div>
-			)}
-			<CreateDrawer />
-			<Outlet />
-		</AppShell>
+			</div>
+		</div>
 	)
 }
