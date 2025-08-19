@@ -1,4 +1,3 @@
-# Core GTK stack
 libcairo2
 libgdk-pixbuf2.0-0
 libglib2.0-0
@@ -8,14 +7,8 @@ libpangocairo-1.0-0
 libpangoft2-1.0-0
 libharfbuzz0b
 libfribidi0
-
-# Dev headers
 libffi-dev
-
-# Utility
 shared-mime-info
-
-# Fonts
 fonts-dejavu-core
 fonts-liberation
 fonts-noto-core
