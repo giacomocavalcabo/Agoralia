@@ -1,7 +1,46 @@
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON
+import enum
+from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from .db import Base
+from db import Base
+
+
+# ===================== CRM Enums =====================
+
+class CrmProvider(enum.Enum):
+    HUBSPOT = "hubspot"
+    ZOHO = "zoho"
+    ODOO = "odoo"
+
+
+class CrmConnectionStatus(enum.Enum):
+    CONNECTED = "connected"
+    ERROR = "error"
+    DISCONNECTED = "disconnected"
+
+
+class CrmObjectType(enum.Enum):
+    CONTACT = "contact"
+    COMPANY = "company"
+    DEAL = "deal"
+    ACTIVITY = "activity"
+
+
+class CrmSyncDirection(enum.Enum):
+    PUSH = "push"
+    PULL = "pull"
+
+
+class CrmLogLevel(enum.Enum):
+    INFO = "info"
+    WARN = "warn"
+    ERROR = "error"
+
+
+class CrmWebhookStatus(enum.Enum):
+    PENDING = "pending"
+    PROCESSED = "processed"
+    ERROR = "error"
 
 
 class User(Base):
@@ -303,8 +342,8 @@ class CrmConnection(Base):
     __tablename__ = "crm_connections"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
-    status = Column(Enum('connected', 'error', 'disconnected', name='crm_connection_status'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    status = Column(Enum(CrmConnectionStatus, name='crm_connection_status'), nullable=False)
     access_token_enc = Column(Text, nullable=False)
     refresh_token_enc = Column(Text, nullable=False)
     expires_at = Column(DateTime, nullable=False)
@@ -321,8 +360,8 @@ class CrmEntityLink(Base):
     __tablename__ = "crm_entity_links"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
-    object = Column(Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
     local_id = Column(String, nullable=False)
     remote_id = Column(String, nullable=False)
     remote_etag = Column(String, nullable=True)
@@ -333,8 +372,8 @@ class CrmFieldMapping(Base):
     __tablename__ = "crm_field_mappings"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
-    object = Column(Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
     mapping_json = Column(JSON, nullable=False)
     picklists_json = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -345,8 +384,8 @@ class CrmSyncCursor(Base):
     __tablename__ = "crm_sync_cursors"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
-    object = Column(Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
     since_ts = Column(DateTime, nullable=True)
     cursor_token = Column(String, nullable=True)
     page_after = Column(String, nullable=True)
@@ -357,10 +396,10 @@ class CrmSyncLog(Base):
     __tablename__ = "crm_sync_logs"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
-    level = Column(Enum('info', 'warn', 'error', name='crm_log_level'), nullable=False)
-    object = Column(Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False)
-    direction = Column(Enum('push', 'pull', name='crm_sync_direction'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    level = Column(Enum(CrmLogLevel, name='crm_log_level'), nullable=False)
+    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
+    direction = Column(Enum(CrmSyncDirection, name='crm_sync_direction'), nullable=False)
     correlation_id = Column(String, nullable=True)
     message = Column(Text, nullable=False)
     payload_json = Column(JSON, nullable=True)
@@ -370,38 +409,20 @@ class CrmSyncLog(Base):
 class CrmWebhookEvent(Base):
     __tablename__ = "crm_webhook_events"
     id = Column(String, primary_key=True)
-    provider = Column(Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False)
+    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
     event_id = Column(String, nullable=False)
-    object = Column(Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False)
+    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
     payload_json = Column(JSON, nullable=False)
-    status = Column(Enum('pending', 'processed', 'error', name='crm_webhook_status'), nullable=False)
+    status = Column(Enum(CrmWebhookStatus, name='crm_webhook_status'), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     processed_at = Column(DateTime, nullable=True)
 
 
 # Legacy models for backward compatibility (will be removed in future)
-class HubSpotConnection(Base):
-    __tablename__ = "hubspot_connections"
-    id = Column(String, primary_key=True)
-    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    access_token = Column(String, nullable=False)
-    refresh_token = Column(String, nullable=False)
-    expires_at = Column(DateTime, nullable=False)
-    portal_id = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-
-
-# Legacy CrmFieldMapping (will be replaced by the new one above)
-class CrmFieldMappingLegacy(Base):
-    __tablename__ = "crm_field_mappings_legacy"
-    id = Column(String, primary_key=True)
-    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    crm_provider = Column(String, nullable=False)  # 'hubspot', 'zoho', etc.
-    mapping_json = Column(JSON, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+# Note: Legacy models removed to avoid conflicts with new CRM models
+# The new CrmConnection model replaces HubSpotConnection
+# The new CrmFieldMapping model replaces the legacy version
 
 
 class ExportJob(Base):
@@ -552,4 +573,11 @@ class AiUsage(Base):
     cost_micros = Column(Integer, default=0)  # cost in microcents
     job_id = Column(String, ForeignKey("kb_import_jobs.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ===================== Legacy Models for Backward Compatibility =====================
+
+# Note: Legacy models removed to avoid conflicts with new CRM models
+# The new CrmConnection model replaces HubSpotConnection
+# The new CrmFieldMapping model replaces the legacy version
 

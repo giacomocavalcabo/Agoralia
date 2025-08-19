@@ -9,7 +9,10 @@ import secrets
 import json
 
 from db import get_db
-from models import CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog
+from models import (
+    CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog,
+    CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus
+)
 from integrations import HubSpotClient, ZohoClient, OdooClient
 
 router = APIRouter(prefix="/crm", tags=["CRM"])

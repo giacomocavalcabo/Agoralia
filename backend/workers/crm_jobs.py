@@ -8,11 +8,12 @@ from datetime import datetime
 import logging
 
 from services.crm_sync import crm_sync_service
+from models import CrmProvider, CrmObjectType, CrmSyncDirection, CrmLogLevel
 
 logger = logging.getLogger(__name__)
 
 
-@dramatiq.actor(queue_name='q:crm_pull')
+@dramatiq.actor(queue_name='crm_pull')
 def crm_pull_delta_job(workspace_id: str, provider: str, object_type: str, 
                         since: Optional[str] = None, cursor: Optional[str] = None):
     """Pull delta changes from CRM"""
@@ -46,7 +47,7 @@ def crm_pull_delta_job(workspace_id: str, provider: str, object_type: str,
         raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
 
 
-@dramatiq.actor(queue_name='q:crm_push')
+@dramatiq.actor(queue_name='crm_push')
 def crm_push_outcomes_job(workspace_id: str, provider: str, call_id: str, call_data: Dict[str, Any]):
     """Push call outcomes to CRM"""
     try:
@@ -74,7 +75,7 @@ def crm_push_outcomes_job(workspace_id: str, provider: str, call_id: str, call_d
         raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
 
 
-@dramatiq.actor(queue_name='q:crm_backfill')
+@dramatiq.actor(queue_name='crm_backfill')
 def crm_backfill_job(workspace_id: str, provider: str, object_type: str, limit: int = 1000):
     """Backfill data from CRM (first-time sync)"""
     try:
@@ -102,7 +103,7 @@ def crm_backfill_job(workspace_id: str, provider: str, object_type: str, limit: 
         raise dramatiq.Retry(delay=600000)  # Retry in 10 minutes
 
 
-@dramatiq.actor(queue_name='q:crm_webhook')
+@dramatiq.actor(queue_name='crm_webhook')
 def crm_webhook_dispatcher_job(event_id: str, provider: str, workspace_id: str, 
                                payload: Dict[str, Any]):
     """Process CRM webhook events"""
@@ -123,7 +124,7 @@ def crm_webhook_dispatcher_job(event_id: str, provider: str, workspace_id: str,
         raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
 
 
-@dramatiq.actor(queue_name='q:crm_sync')
+@dramatiq.actor(queue_name='crm_sync')
 def crm_sync_job(workspace_id: str, provider: str, mode: str, 
                   objects: Optional[list] = None, backfill: bool = False):
     """General CRM sync job (legacy compatibility)"""

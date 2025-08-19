@@ -17,24 +17,13 @@ depends_on = None
 
 
 def upgrade():
-    # Create enum types
-    op.execute("CREATE TYPE crm_provider AS ENUM ('hubspot', 'zoho', 'odoo')")
-    op.execute("CREATE TYPE crm_connection_status AS ENUM ('connected', 'error', 'disconnected')")
-    op.execute("CREATE TYPE crm_object_type AS ENUM ('contact', 'company', 'deal', 'activity')")
-    op.execute("CREATE TYPE crm_sync_direction AS ENUM ('push', 'pull')")
-    op.execute("CREATE TYPE crm_log_level AS ENUM ('info', 'warn', 'error')")
-    op.execute("CREATE TYPE crm_webhook_status AS ENUM ('pending', 'processed', 'error')")
-    
-    # Drop old tables if they exist
-    op.drop_table('hubspot_connections')
-    op.drop_table('crm_field_mappings')
-    
+    # Create tables with enum columns (SQLAlchemy will handle enum creation)
     # Create crm_connections table
     op.create_table('crm_connections',
         sa.Column('id', sa.String(), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
-        sa.Column('status', postgresql.ENUM('connected', 'error', 'disconnected', name='crm_connection_status'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('status', sa.Enum('connected', 'error', 'disconnected', name='crm_connection_status'), nullable=False),
         sa.Column('access_token_enc', sa.Text(), nullable=False),
         sa.Column('refresh_token_enc', sa.Text(), nullable=False),
         sa.Column('expires_at', sa.DateTime(), nullable=False),
@@ -52,8 +41,8 @@ def upgrade():
     op.create_table('crm_entity_links',
         sa.Column('id', sa.String(), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
-        sa.Column('object', postgresql.ENUM('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('object', sa.Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
         sa.Column('local_id', sa.String(), nullable=False),
         sa.Column('remote_id', sa.String(), nullable=False),
         sa.Column('remote_etag', sa.String(), nullable=True),
@@ -65,8 +54,8 @@ def upgrade():
     op.create_table('crm_field_mappings',
         sa.Column('id', sa.String(), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
-        sa.Column('object', postgresql.ENUM('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('object', sa.Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
         sa.Column('mapping_json', postgresql.JSON(astext_type=sa.Text()), nullable=False),
         sa.Column('picklists_json', postgresql.JSON(astext_type=sa.Text()), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False),
@@ -78,8 +67,8 @@ def upgrade():
     op.create_table('crm_sync_cursors',
         sa.Column('id', sa.String(), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
-        sa.Column('object', postgresql.ENUM('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('object', sa.Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
         sa.Column('since_ts', sa.DateTime(), nullable=True),
         sa.Column('cursor_token', sa.String(), nullable=True),
         sa.Column('page_after', sa.String(), nullable=True),
@@ -91,10 +80,10 @@ def upgrade():
     op.create_table('crm_sync_logs',
         sa.Column('id', sa.String(), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
-        sa.Column('level', postgresql.ENUM('info', 'warn', 'error', name='crm_log_level'), nullable=False),
-        sa.Column('object', postgresql.ENUM('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
-        sa.Column('direction', postgresql.ENUM('push', 'pull', name='crm_sync_direction'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('level', sa.Enum('info', 'warn', 'error', name='crm_log_level'), nullable=False),
+        sa.Column('object', sa.Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
+        sa.Column('direction', sa.Enum('push', 'pull', name='crm_sync_direction'), nullable=False),
         sa.Column('correlation_id', sa.String(), nullable=True),
         sa.Column('message', sa.Text(), nullable=False),
         sa.Column('payload_json', postgresql.JSON(astext_type=sa.Text()), nullable=True),
@@ -105,12 +94,12 @@ def upgrade():
     # Create crm_webhook_events table
     op.create_table('crm_webhook_events',
         sa.Column('id', sa.String(), nullable=False),
-        sa.Column('provider', postgresql.ENUM('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
+        sa.Column('provider', sa.Enum('hubspot', 'zoho', 'odoo', name='crm_provider'), nullable=False),
         sa.Column('workspace_id', sa.String(), nullable=False),
         sa.Column('event_id', sa.String(), nullable=False),
-        sa.Column('object', postgresql.ENUM('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
+        sa.Column('object', sa.Enum('contact', 'company', 'deal', 'activity', name='crm_object_type'), nullable=False),
         sa.Column('payload_json', postgresql.JSON(astext_type=sa.Text()), nullable=False),
-        sa.Column('status', postgresql.ENUM('pending', 'processed', 'error', name='crm_webhook_status'), nullable=False),
+        sa.Column('status', sa.Enum('pending', 'processed', 'error', name='crm_webhook_status'), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('processed_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id')

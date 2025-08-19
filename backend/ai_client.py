@@ -1,11 +1,10 @@
 import os
 import json
-import hashlib
-import tiktoken
-from typing import Dict, Any, List, Optional, Tuple
+import asyncio
+from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
-import openai
-from .schemas import KbKind, KbType, CompanyKbTemplate, OfferPackTemplate
+import tiktoken
+from schemas import KbKind, KbType, CompanyKbTemplate, OfferPackTemplate
 
 
 class AIClient:

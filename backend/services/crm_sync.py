@@ -9,7 +9,10 @@ import json
 import logging
 
 from db import get_db
-from models import CrmConnection, CrmEntityLink, CrmSyncCursor, CrmSyncLog
+from models import (
+    CrmConnection, CrmEntityLink, CrmSyncCursor, CrmSyncLog,
+    CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel
+)
 from integrations import HubSpotClient, ZohoClient, OdooClient
 from metrics import track_crm_operation, track_entities_synced
 
@@ -21,9 +24,9 @@ class CrmSyncService:
     
     def __init__(self):
         self.clients = {
-            'hubspot': HubSpotClient,
-            'zoho': ZohoClient,
-            'odoo': OdooClient
+            CrmProvider.HUBSPOT.value: HubSpotClient,
+            CrmProvider.ZOHO.value: ZohoClient,
+            CrmProvider.ODOO.value: OdooClient
         }
     
     async def get_client(self, workspace_id: str, provider: str) -> Optional[Any]:
@@ -33,7 +36,7 @@ class CrmSyncService:
             connection = db.query(CrmConnection).filter(
                 CrmConnection.workspace_id == workspace_id,
                 CrmConnection.provider == provider,
-                CrmConnection.status == 'connected'
+                CrmConnection.status == CrmConnectionStatus.CONNECTED.value
             ).first()
             
             if not connection:
@@ -92,11 +95,11 @@ class CrmSyncService:
                 db.add(sync_cursor)
             
             # Pull data from CRM
-            if object_type == 'contact':
+            if object_type == CrmObjectType.CONTACT.value:
                 entities = await client.pull_contacts({"since": sync_cursor.since_ts})
-            elif object_type == 'company':
+            elif object_type == CrmObjectType.COMPANY.value:
                 entities = await client.pull_companies({"since": sync_cursor.since_ts})
-            elif object_type == 'deal':
+            elif object_type == CrmObjectType.DEAL.value:
                 entities = await client.pull_deals({"since": sync_cursor.since_ts})
             else:
                 return {"success": False, "error": f"Unknown object type: {object_type}"}
@@ -106,7 +109,7 @@ class CrmSyncService:
             sync_cursor.updated_at = datetime.utcnow()
             
             # Log sync operation
-            self._log_sync(workspace_id, provider, 'pull', object_type, 
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PULL.value, object_type, 
                           f"Pulled {len(entities)} {object_type}s", {"count": len(entities)})
             
             # Track metrics
@@ -124,8 +127,8 @@ class CrmSyncService:
             
         except Exception as e:
             logger.error(f"Delta pull failed for {provider} {object_type}: {e}")
-            self._log_sync(workspace_id, provider, 'pull', object_type, 
-                          f"Pull failed: {str(e)}", {"error": str(e)}, level='error')
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PULL.value, object_type, 
+                          f"Pull failed: {str(e)}", {"error": str(e)}, level=CrmLogLevel.ERROR.value)
             return {"success": False, "error": str(e)}
         finally:
             db.close()
@@ -195,7 +198,7 @@ class CrmSyncService:
                 deal_result = await client.upsert_deal(deal_data)
             
             # Log sync operation
-            self._log_sync(workspace_id, provider, 'push', 'activity', 
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PUSH.value, CrmObjectType.ACTIVITY.value, 
                           f"Pushed call outcome for {call_id}", {
                               "call_id": call_id,
                               "contact_created": bool(contact_result),
@@ -213,8 +216,8 @@ class CrmSyncService:
             
         except Exception as e:
             logger.error(f"Push outcomes failed for {provider} call {call_id}: {e}")
-            self._log_sync(workspace_id, provider, 'push', 'activity', 
-                          f"Push failed: {str(e)}", {"error": str(e), "call_id": call_id}, level='error')
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PUSH.value, CrmObjectType.ACTIVITY.value, 
+                          f"Push failed: {str(e)}", {"error": str(e), "call_id": call_id}, level=CrmLogLevel.ERROR.value)
             return {"success": False, "error": str(e)}
     
     async def backfill(self, workspace_id: str, provider: str, object_type: str, 
@@ -227,17 +230,17 @@ class CrmSyncService:
         
         try:
             # Pull all data (with pagination if needed)
-            if object_type == 'contact':
+            if object_type == CrmObjectType.CONTACT.value:
                 entities = await client.pull_contacts({"limit": limit})
-            elif object_type == 'company':
+            elif object_type == CrmObjectType.COMPANY.value:
                 entities = await client.pull_companies({"limit": limit})
-            elif object_type == 'deal':
+            elif object_type == CrmObjectType.DEAL.value:
                 entities = await client.pull_deals({"limit": limit})
             else:
                 return {"success": False, "error": f"Unknown object type: {object_type}"}
             
             # Log backfill operation
-            self._log_sync(workspace_id, provider, 'pull', object_type, 
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PULL.value, object_type, 
                           f"Backfilled {len(entities)} {object_type}s", {"count": len(entities), "backfill": True})
             
             # Track metrics
@@ -253,8 +256,8 @@ class CrmSyncService:
             
         except Exception as e:
             logger.error(f"Backfill failed for {provider} {object_type}: {e}")
-            self._log_sync(workspace_id, provider, 'pull', object_type, 
-                          f"Backfill failed: {str(e)}", {"error": str(e), "backfill": True}, level='error')
+            self._log_sync(workspace_id, provider, CrmSyncDirection.PULL.value, object_type, 
+                          f"Backfill failed: {str(e)}", {"error": str(e), "backfill": True}, level=CrmLogLevel.ERROR.value)
             return {"success": False, "error": str(e)}
     
     def _log_sync(self, workspace_id: str, provider: str, direction: str, 

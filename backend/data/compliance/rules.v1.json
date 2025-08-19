@@ -35,7 +35,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -76,7 +76,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -117,7 +117,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -158,7 +158,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -199,7 +199,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -240,7 +240,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -281,7 +281,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -322,7 +322,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -363,7 +363,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -404,7 +404,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -445,7 +445,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -486,7 +486,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -527,7 +527,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -732,7 +732,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -773,7 +773,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -814,7 +814,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -947,7 +947,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -991,7 +991,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1032,7 +1032,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1073,7 +1073,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1155,7 +1155,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1196,7 +1196,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1237,7 +1237,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1278,7 +1278,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1319,7 +1319,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1363,7 +1363,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1404,7 +1404,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1445,7 +1445,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1491,7 +1491,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": true,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1542,7 +1542,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1588,7 +1588,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -1634,7 +1634,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1675,7 +1675,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1719,7 +1719,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1809,7 +1809,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1858,7 +1858,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -1956,7 +1956,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2000,7 +2000,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2044,7 +2044,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2088,7 +2088,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2264,7 +2264,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2313,7 +2313,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2401,7 +2401,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2445,7 +2445,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2489,7 +2489,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2533,7 +2533,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2577,7 +2577,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2621,7 +2621,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2665,7 +2665,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2714,7 +2714,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2752,7 +2752,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2787,7 +2787,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2822,7 +2822,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2857,7 +2857,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2892,7 +2892,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2927,7 +2927,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -2962,7 +2962,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -3006,7 +3006,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -3047,7 +3047,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -3088,7 +3088,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -3425,7 +3425,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -3507,7 +3507,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -3873,7 +3873,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -3908,7 +3908,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -3943,7 +3943,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -3978,7 +3978,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4013,7 +4013,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4048,7 +4048,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4083,7 +4083,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4134,7 +4134,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -4172,7 +4172,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4207,7 +4207,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4242,7 +4242,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4277,7 +4277,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4312,7 +4312,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -4347,7 +4347,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": true,
         "has_quiet_hours": false
@@ -5386,7 +5386,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5430,7 +5430,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5471,7 +5471,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5512,7 +5512,7 @@
       "flags": {
         "requires_consent_b2c": true,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5553,7 +5553,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5594,7 +5594,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5635,7 +5635,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
@@ -5676,7 +5676,7 @@
       "flags": {
         "requires_consent_b2c": false,
         "requires_consent_b2b": false,
-        "requires_dnc_scrub": false,
+        "requires_dnc_scrub": true,
         "allows_automated": true,
         "recording_requires_consent": false,
         "has_quiet_hours": false
