@@ -50,7 +50,7 @@ A modern, compliance-first platform for AI-powered outbound calling with structu
 ### Integrations
 - **Retell**: AI calling provider integration
 - **Postmark/SendGrid**: Email delivery
-- **WeasyPrint**: PDF generation for compliance docs
+- **Chromium Headless**: PDF generation for compliance docs
 
 ## 📋 Requirements
 
@@ -61,7 +61,7 @@ pip install -r backend/requirements.txt
 
 Key packages:
 - `fastapi==0.104.1` - Web framework
-- `weasyprint==60.2` - PDF generation
+- `chromium` - PDF generation via headless browser
 - `dramatiq[redis]==1.15.0` - Task queues
 - `bcrypt==4.1.2` - Password hashing
 

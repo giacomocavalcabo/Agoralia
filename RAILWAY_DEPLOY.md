@@ -1,30 +1,15 @@
-# 🚀 Railway Deployment Guide
+# 🚀 Railway Deployment Guide - Agoralia
 
-## ⚠️ WeasyPrint Fix Completo per Nixpacks
+## ✅ Chromium PDF Generator Fix Completo per Nixpacks
 
-### Problema
-WeasyPrint fallisce su Railway perché richiede **librerie native complete** per text shaping, font rendering e bi-directional text.
+Chromium headless fallisce su Railway perché richiede **binario completo** per rendering HTML e generazione PDF.
 
-### Soluzione Completa
-Il file `apt.txt` nella root contiene **TUTTE** le dipendenze necessarie:
+### 🔧 Soluzione: apt.txt + Chromium Headless
+
+1. **Aggiungi `apt.txt` nella root del servizio backend:**
 
 ```txt
-# Core grafico
-libcairo2
-libgdk-pixbuf2.0-0
-
-# Text shaping & layout
-libpango-1.0-0
-libpangocairo-1.0-0
-libpangoft2-1.0-0
-libharfbuzz0b
-libfribidi0
-
-# Varie utili
-libffi-dev
-shared-mime-info
-
-# Font (evita crash con CJK/emoji/RTL)
+chromium
 fonts-dejavu-core
 fonts-liberation
 fonts-noto-core
@@ -32,142 +17,66 @@ fonts-noto-cjk
 fonts-noto-color-emoji
 ```
 
-## 🚀 Deploy Steps
+2. **Commit e push:**
 
-### 1. Push su GitHub
 ```bash
-git add -A
-git commit -m "Fix WeasyPrint completo per Railway: apt.txt + lazy import"
-git push origin main
+git add apt.txt
+git commit -m "Fix Chromium completo per Railway: apt.txt + headless mode"
+git push
 ```
 
-### 2. Railway Auto-Deploy
-- Railway rileva automaticamente il nuovo commit
-- Nixpacks legge `apt.txt` e installa **TUTTE** le librerie
-- Build completa con successo
+3. **Railway rebuild automatico** → installerà Chromium
 
-### 3. Verifica Deploy
+4. **Test locale (opzionale):**
+
 ```bash
-# Test locale (opzionale)
-python backend/test_weasyprint.py
-
-# Test endpoint health
-curl https://your-app.railway.app/health
-
-# Test WeasyPrint specifico
-curl https://your-app.railway.app/weasyprint/health
+# Test Chromium specifico
+curl https://your-app.railway.app/pdf/health
 ```
 
-## 📋 Checklist Pre-Deploy
+### 📋 Checklist Pre-Deploy
 
-- [ ] `apt.txt` presente nella root con **TUTTE** le dipendenze
-- [ ] `railway.toml` configurato per Nixpacks
-- [ ] `requirements.txt` include `weasyprint>=61.0`
-- [ ] Import WeasyPrint **lazy** (non in cima ai moduli)
-- [ ] Endpoint `/health` e `/weasyprint/health` funzionanti
-- [ ] Test WeasyPrint passano localmente (opzionale)
+- [ ] `apt.txt` include `chromium` e fonts
+- [ ] `requirements.txt` non include `weasyprint`
+- [ ] Endpoint `/pdf/health` e `/pdf/generate` funzionanti
+- [ ] Test PDF passano localmente (opzionale)
 
-## 🔍 Troubleshooting Completo
+### 🚨 Troubleshooting
 
-### Build Fallisce
+#### Chromium Not Found Error
+
 ```bash
-# Verifica logs Railway
-railway logs
+# Controlla se Chromium è installato
+which chromium
+which chromium-browser
 
-# Controlla che apt.txt sia letto
-# Dovrebbe vedere: "Installing system packages..."
-# E poi: "Installing libcairo2, libpango-1.0-0, etc."
+# Controlla health check Chromium
+curl /pdf/health
 ```
 
-### WeasyPrint Import Error
+#### PDF Generation Fails
+
 ```bash
-# Test dipendenze sistema
-python backend/test_weasyprint.py
-
-# Verifica librerie installate
-ldd /usr/local/lib/python3.11/site-packages/weasyprint/*.so
+# Controlla log Railway per errori Chromium
+# Verifica che --no-sandbox sia usato
+# Controlla che fonts siano installati
 ```
 
-### Runtime Error con PDF
-```bash
-# Controlla health check WeasyPrint
-curl /weasyprint/health
+### 📚 Risorse
 
-# Verifica font disponibili
-ls /usr/share/fonts/truetype/
-ls /usr/share/fonts/opentype/
-```
-
-### Errori Specifici
-
-#### "Pango could not be initialized"
-```bash
-# Manca libpango-1.0-0
-# Verifica apt.txt e redeploy
-```
-
-#### "Cairo surface could not be created"
-```bash
-# Manca libcairo2
-# Verifica apt.txt e redeploy
-```
-
-#### "Font not found"
-```bash
-# Manca fonts-noto-core
-# Verifica apt.txt e redeploy
-```
-
-#### "HarfBuzz error"
-```bash
-# Manca libharfbuzz0b
-# Verifica apt.txt e redeploy
-```
-
-## 🎯 Perché Questa Soluzione Funziona
-
-### Prima (Incompleta)
-- Solo libcairo2, libpango-1.0-0
-- Mancavano HarfBuzz, Fribidi, font
-- WeasyPrint si inizializzava ma crashava al primo PDF
-
-### Ora (Completa)
-- **Tutte** le librerie native necessarie
-- Font per tutte le lingue (CJK, arabo, RTL)
-- Text shaping avanzato (HarfBuzz)
-- Bi-directional text (Fribidi)
-
-## 🚨 Se Ancora Fallisce
-
-### 1. Verifica Logs Railway
-```bash
-railway logs --tail 100
-```
-
-### 2. Controlla Build Steps
-Dovresti vedere:
-```
-Installing system packages...
-Installing libcairo2...
-Installing libpango-1.0-0...
-Installing libharfbuzz0b...
-Installing fonts-noto-core...
-```
-
-### 3. Alternative Estreme
-Se ancora non funziona, passa a Dockerfile:
-```dockerfile
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y \
-    libcairo2 libpango-1.0-0 libharfbuzz0b \
-    fonts-noto-core fonts-noto-cjk
-# ... resto del Dockerfile
-```
-
-## 📚 Riferimenti
-
+- [Chromium Headless Documentation](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/headless.md)
 - [Railway Nixpacks](https://docs.railway.app/deploy/deployments/nixpacks)
-- [WeasyPrint Dependencies](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation)
-- [Apt.txt Format](https://docs.railway.app/deploy/deployments/nixpacks#apt-txt)
-- [Pango/HarfBuzz](https://pango.gnome.org/)
-- [Cairo Graphics](https://cairographics.org/)
+- [Container PDF Generation](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker)
+
+### 🔄 Migrazione da WeasyPrint
+
+**Prima (WeasyPrint):**
+- Librerie native complesse (GTK, Pango, Cairo)
+- Problemi di compatibilità container
+- CSS support limitato
+
+**Ora (Chromium):**
+- Binario standalone
+- Container-friendly con `--no-sandbox`
+- CSS moderno completo (flexbox, grid, media queries)
+- Rendering identico al browser
