@@ -2,15 +2,15 @@
 libcairo2
 libgdk-pixbuf2.0-0
 libglib2.0-0
+libgobject-2.0-dev
 libpango-1.0-0
 libpangocairo-1.0-0
 libpangoft2-1.0-0
 libharfbuzz0b
 libfribidi0
 
-# Dev headers (alcuni pacchetti li richiedono per binding Python)
+# Dev headers
 libffi-dev
-libgobject-2.0-dev
 
 # Utility
 shared-mime-info
