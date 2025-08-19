@@ -35,12 +35,13 @@ try:
 except Exception:  # pragma: no cover
     redis = None  # type: ignore
 
+# WeasyPrint import lazy per evitare crash all'avvio
+PDF_GENERATOR_AVAILABLE = False
 try:
     from .compliance_pdf import CompliancePDFGenerator
     PDF_GENERATOR_AVAILABLE = True
-except ImportError:
-    PDF_GENERATOR_AVAILABLE = False
-    print("Warning: PDF generator not available. Compliance attestations will use fallback.")
+except Exception as e:
+    print(f"Warning: PDF generator not available: {e}. Compliance attestations will use fallback.")
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
@@ -2190,4 +2191,33 @@ async def admin_calls_live_stream(request: Request, _guard: None = Depends(admin
         media_type="text/plain",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
     )
+
+@app.get("/weasyprint/health")
+async def weasyprint_health():
+    """Health check endpoint for WeasyPrint PDF generator"""
+    try:
+        if PDF_GENERATOR_AVAILABLE:
+            from weasyprint import HTML
+            # Test basic functionality
+            html_content = "<html><body><h1>Test</h1></body></html>"
+            doc = HTML(string=html_content)
+            # Don't actually generate PDF in health check
+            return {
+                "ok": True,
+                "weasyprint": "available",
+                "message": "PDF generator ready"
+            }
+        else:
+            return {
+                "ok": False,
+                "weasyprint": "unavailable",
+                "message": "PDF generator not available - check system dependencies"
+            }
+    except Exception as e:
+        return {
+            "ok": False,
+            "weasyprint": "error",
+            "error": str(e),
+            "message": "PDF generator failed to initialize"
+        }
 

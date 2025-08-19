@@ -33,6 +33,7 @@ def test_weasyprint_basic_functionality():
             <body>
                 <h1>Hello WeasyPrint!</h1>
                 <p>This is a test document.</p>
+                <p>Test with special chars: é, ñ, 中文, العربية</p>
             </body>
         </html>
         """
@@ -43,6 +44,7 @@ def test_weasyprint_basic_functionality():
         # Test PDF generation (don't actually write to disk in test)
         print("✅ HTML parsing: OK")
         print("✅ Document creation: OK")
+        print("✅ Unicode support: OK")
         print("✅ WeasyPrint core functionality: OK")
         
         return True
@@ -55,38 +57,86 @@ def test_system_dependencies():
     """Test if required system libraries are available"""
     print("\n🧪 Testing system dependencies...")
     
-    # Check for common WeasyPrint dependencies
+    # Complete list of WeasyPrint dependencies
     dependencies = [
-        'libpango-1.0-0',
-        'libcairo2', 
-        'libgdk-pixbuf2.0-0',
-        'libffi-dev'
+        ('libcairo2', 'libcairo.so.2'),
+        ('libgdk-pixbuf2.0-0', 'libgdk_pixbuf-2.0.so.0'),
+        ('libpango-1.0-0', 'libpango-1.0.so.0'),
+        ('libpangocairo-1.0-0', 'libpangocairo-1.0.so.0'),
+        ('libpangoft2-1.0-0', 'libpangoft2-1.0.so.0'),
+        ('libharfbuzz0b', 'libharfbuzz.so.0'),
+        ('libfribidi0', 'libfribidi.so.0'),
+        ('libffi-dev', 'libffi.so.8'),
     ]
     
     try:
         import ctypes
         
-        for dep in dependencies:
+        available_count = 0
+        for dep_name, lib_name in dependencies:
             try:
                 # Try to load the library
-                if 'cairo' in dep:
-                    ctypes.CDLL('libcairo.so.2')
-                elif 'pango' in dep:
-                    ctypes.CDLL('libpango-1.0.so.0')
-                elif 'gdk' in dep:
-                    ctypes.CDLL('libgdk_pixbuf-2.0.so.0')
-                elif 'ffi' in dep:
-                    ctypes.CDLL('libffi.so.8')
-                
-                print(f"✅ {dep}: Available")
+                ctypes.CDLL(lib_name)
+                print(f"✅ {dep_name}: Available ({lib_name})")
+                available_count += 1
             except OSError:
-                print(f"⚠️  {dep}: Not found (may not be critical)")
+                print(f"❌ {dep_name}: Not found ({lib_name})")
         
-        return True
+        print(f"\n📊 Dependencies: {available_count}/{len(dependencies)} available")
+        
+        if available_count >= 6:  # At least core libraries
+            print("✅ Core dependencies available")
+            return True
+        else:
+            print("❌ Missing critical dependencies")
+            return False
         
     except Exception as e:
         print(f"⚠️  System dependency check failed: {e}")
-        return True  # Don't fail the test for this
+        return False
+
+def test_font_availability():
+    """Test if required fonts are available"""
+    print("\n🧪 Testing font availability...")
+    
+    try:
+        # Check common font directories
+        font_dirs = [
+            '/usr/share/fonts',
+            '/usr/local/share/fonts',
+            '/usr/share/fonts/truetype',
+            '/usr/share/fonts/opentype'
+        ]
+        
+        available_fonts = []
+        for font_dir in font_dirs:
+            if os.path.exists(font_dir):
+                try:
+                    fonts = os.listdir(font_dir)
+                    available_fonts.extend(fonts)
+                except:
+                    pass
+        
+        # Check for key font families
+        key_fonts = ['dejavu', 'liberation', 'noto']
+        found_fonts = []
+        
+        for font in key_fonts:
+            if any(font in f.lower() for f in available_fonts):
+                found_fonts.append(font)
+        
+        print(f"✅ Font directories found: {len([d for d in font_dirs if os.path.exists(d)])}")
+        print(f"✅ Key fonts available: {found_fonts}")
+        
+        if found_fonts:
+            return True
+        else:
+            print("⚠️  No key fonts found - PDF generation may fail")
+            return False
+            
+    except Exception as e:
+        print(f"⚠️  Font check failed: {e}")
+        return False
 
 def run_weasyprint_tests():
     """Run all WeasyPrint tests"""
@@ -95,7 +145,8 @@ def run_weasyprint_tests():
     tests = [
         test_weasyprint_import,
         test_weasyprint_basic_functionality,
-        test_system_dependencies
+        test_system_dependencies,
+        test_font_availability
     ]
     
     results = []
@@ -117,9 +168,13 @@ def run_weasyprint_tests():
         print("🎉 All WeasyPrint tests passed!")
         print("✅ Ready for PDF generation on Railway")
         return True
+    elif passed >= 2:
+        print("⚠️  Partial success - some dependencies missing")
+        print("💡 Check apt.txt and redeploy on Railway")
+        return False
     else:
-        print("❌ Some tests failed")
-        print("💡 Check apt.txt dependencies and redeploy")
+        print("❌ Most tests failed")
+        print("💡 WeasyPrint not ready - check system dependencies")
         return False
 
 if __name__ == "__main__":

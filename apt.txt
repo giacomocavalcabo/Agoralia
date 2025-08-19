@@ -1,15 +1,21 @@
-libpango-1.0-0
+# Core grafico
 libcairo2
 libgdk-pixbuf2.0-0
-libffi-dev
-shared-mime-info
+
+# Text shaping & layout
+libpango-1.0-0
+libpangocairo-1.0-0
 libpangoft2-1.0-0
 libharfbuzz0b
-libpng16-16
-libjpeg62-turbo
-libx11-6
-libxext6
-libxrender1
-libxcb1
-libxcb-render0
-libxcb-shm0
+libfribidi0
+
+# Varie utili
+libffi-dev
+shared-mime-info
+
+# Font (evita crash con CJK/emoji/RTL)
+fonts-dejavu-core
+fonts-liberation
+fonts-noto-core
+fonts-noto-cjk
+fonts-noto-color-emoji
