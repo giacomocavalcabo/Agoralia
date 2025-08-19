@@ -192,7 +192,16 @@ export default function Calendar(){
           </div>
         ) : (
           <ul className="m-0 pl-4">
-            {events.map(e=> (<li key={e.id} className="kpi-title">[{e.kind}] {e.title || ''} {e.at}</li>))}
+            {events.map(e=> {
+              const date = new Date(e.at)
+              const timeStr = date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+              const dateStr = date.toLocaleDateString('it-IT', { month: 'short', day: 'numeric' })
+              return (
+                <li key={e.id} className="kpi-title">
+                  [{e.kind}] {e.title || ''} {dateStr} {timeStr}
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>

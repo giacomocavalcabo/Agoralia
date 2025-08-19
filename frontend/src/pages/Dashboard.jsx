@@ -82,10 +82,10 @@ export default function Dashboard() {
 				</div>
 			) : (
 				<div className="grid grid-cols-12 gap-4">
-					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.calls_today')||'Chiamate oggi'} value={summary?.calls_today ?? 0} /></div>
-					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.minutes_mtd')||'Minuti mese'} value={summary?.minutes_mtd ?? 0} /></div>
-					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.avg_duration')||'Durata media'} value={fmtMMSS(summary?.avg_duration_sec || 0)} /></div>
-					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label={t('pages.dashboard.kpi.connected')||'Tasso di contatto'} value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} status={(summary?.success_rate??0)<0.15?'danger':(summary?.success_rate??0)<0.25?'warn':'success'} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Chiamate oggi" value={summary?.calls_today ?? 0} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Minuti mese" value={summary?.minutes_mtd ?? 0} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Durata media" value={fmtMMSS(summary?.avg_duration_sec || 0)} /></div>
+					<div className="col-span-12 sm:col-span-6 xl:col-span-3"><KpiTile label="Tasso di contatto" value={`${Math.round((summary?.success_rate ?? 0)*100)}%`} status={(summary?.success_rate??0)<0.15?'danger':(summary?.success_rate??0)<0.25?'warn':'success'} /></div>
 				</div>
 			)}
 

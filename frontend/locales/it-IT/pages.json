@@ -47,5 +47,8 @@
     "business_hours": "Orari Lavorativi",
     "enable_voicemail": "Abilita Segreteria",
     "voicemail_message": "Messaggio Segreteria"
+  },
+  "history": {
+    "title": "Cronologia Chiamate e Risultati"
   }
 }

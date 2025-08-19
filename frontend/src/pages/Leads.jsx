@@ -104,12 +104,14 @@ export default function Leads(){
 	return (
 		<div className="grid gap-3">
 			<div className="flex items-center gap-2">
-				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.schedule')}</button>
-				<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.import')}</button>
-				<div className="ml-auto flex gap-1.5">
+				<div className="flex gap-1.5">
 					{chips.map((c,i)=>(<Chip key={i} label={c} onRemove={()=> setChips(chips.filter((_,j)=> j!==i))} />))}
 				</div>
-				<button onClick={()=> setAddOpen(true)} className="btn ml-2">{t('pages.leads.actions.add')}</button>
+				<div className="ml-auto flex gap-2">
+					<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.schedule')}</button>
+					<button className="rounded-xl border border-line bg-bg-app px-3 py-2 text-sm">{t('pages.leads.actions.import')}</button>
+					<button onClick={()=> setAddOpen(true)} className="btn">{t('pages.leads.actions.add')}</button>
+				</div>
 			</div>
 
 			{loading ? (

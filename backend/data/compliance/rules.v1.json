@@ -2349,6 +2349,533 @@
         "missing_last_verified"
       ]
     },
+    "AR": {
+      "country": "Argentina",
+      "iso": "AR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No specific caller ID prefixes mandated nationally.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing regulated via national DNC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Treat mixed datasets as consumer by default; check DNC before any B2C/B2B-to-individual calls; announce recording.",
+      "dnc": [
+        {
+          "name": "Registro Nacional \"No Llame\"",
+          "url": "https://nollame.aaip.gob.ar",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ley 26.951 (Boletín Oficial) https://www.boletinoficial.gob.ar/detalleAviso/primera/308122/20240524 | AAIP No Llame https://nollame.aaip.gob.ar | Texto Ley 26.951 (Infoleg/SAIJ) https://servicios.infoleg.gob.ar/infolegInternet/anexos/225000-229999/225930/norma.htm",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BO": {
+      "country": "Bolivia",
+      "iso": "BO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No national caller ID/telemarketing prefixes identified.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific consumer telemarketing regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative: apply consumer-style quiet hours and disclosures; avoid automated burst campaigns; obtain explicit consent for recordings.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ley 164 (Telecom) https://www.minedu.gob.bo/files/documentos-normativos/leyes/ley_164___ley_general_de_telecomunicaciones_tecnologias_de_informacin_y_comunicacion.pdf | ATT denuncia plataforma https://plataformas.att.gob.bo/index.php/denuncias/inicioDenunciaUsuario",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "BR": {
+      "country": "Brazil",
+      "iso": "BR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "0303 prefix requirement revoked (Aug 2025); Anatel implementing STIR/SHAKEN authenticated/identified calling (Origem Verificada).",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing partially regulated (sector DNC; anti-spoofing/authenticated calls)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Enforce CLI authentication (STIR/SHAKEN) where available; don’t rely on 0303; consult NMP for participating sectors; record with announcement + opt-out.",
+      "dnc": [
+        {
+          "name": "Não Me Perturbe (telecom & consignado)",
+          "url": "https://www.naomeperturbe.com.br",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Agência Brasil (revocation) https://agenciabrasil.ebc.com.br/geral/noticia/2025-08/anatel-revoga-obrigatoriedade-do-uso-do-prefixo-0303-em-ligacoes | Anatel: Autenticação e Identificação de Chamadas https://www.gov.br/anatel/pt-br/regulado/acompanhamento-e-controle/autenticacao-e-identificacao-de-chamadas | Anatel: Não Me Perturbe https://www.gov.br/anatel/pt-br/consumidor/telemarketing/nao-me-perturbe",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "CL": {
+      "country": "Chile",
+      "iso": "CL",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Mandatory prefixes: 600 (solicited/expected), 809 (unsolicited/spam) effective 2025-08-13.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing identified via mandatory prefixes; per-company opt-out via SERNAC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Product must present banner explaining 600/809 logic; tag unsolicited campaigns as 809; keep disclosure/recording prompts.",
+      "dnc": [
+        {
+          "name": "SERNAC 'No Molestar' (preferences, not national DNC)",
+          "url": "https://www.sernac.cl/portal/619/w3-article-6106.html",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "SUBTEL release (12 Aug 2025) https://www.subtel.gob.cl/desde-este-miercoles-las-llamadas-comerciales-y-masivas-deberan-llevar-los-prefijos-600-y-809-para-su-identificacion/ | SUBTEL 'Prefijos Únicos' explainer https://www.subtel.gob.cl/prefijos-unicos/ | Gobierno de Chile notice https://www.gob.cl/noticias/parte-hoy-conoce-prefijos-identificar-llamadas-no-deseadas/",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "CO": {
+      "country": "Colombia",
+      "iso": "CO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "07:00",
+            "19:00"
+          ]
+        ],
+        "Sat": [
+          [
+            "08:00",
+            "15:00"
+          ]
+        ],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Caller ID prefix not mandated; CRC advancing anti-spam controls.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing regulated; hours fixed by Ley 2300/2023",
+      "regime_b2b_text": "Mixed/Unclear for B2B (treat contacts to individuals as B2C)",
+      "notes_for_product": "Always schedule within legal window; check RNE before every campaign (incl. ER). Play recording/monitoring notice.",
+      "dnc": [
+        {
+          "name": "Registro de Números Excluidos (RNE)",
+          "url": "https://www.crcom.gov.co/es/gestion/rne",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ley 2300/2023 (Función Pública) https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=219399 | CRC – Registro de Números Excluidos https://www.crcom.gov.co/es/gestion/rne | RNE Términos https://tramitescrcom.gov.co/tramites/publico/rne/terminosRNE.xhtml",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "EC": {
+      "country": "Ecuador",
+      "iso": "EC",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "ARCOTEL mandates identifiable numbers for such calls.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing restricted: identification & prior express consent required for commercial/publicity/proselitist calls",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Gate outbound to contacts with stored consent; include AI/recording disclosure per global setting.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ARCOTEL release (Min. Telecom) https://www.telecomunicaciones.gob.ec/nueva-normativa-exige-la-identificacion-de-llamadas-comerciales-publicitarias-o-proselitistas/ | LOPDP (Ley Orgánica DP) https://www.finanzaspopulares.gob.ec/wp-content/uploads/2021/07/ley_organica_de_proteccion_de_datos_personales.pdf | Reglamento LOPDP (2023) https://www.cosede.gob.ec/wp-content/uploads/2023/12/REGLAMENTO-GENERAL-A-LA-LEY-ORG%C3%81NICA-DE-PROTECCION-DE-DATOS-PERSONALES_compressed-1.pdf",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "GY": {
+      "country": "Guyana",
+      "iso": "GY",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No specific national caller ID/telemarketing prefixes identified.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific consumer telemarketing regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative: apply consumer-style time windows and opt-out handling; avoid robocalls without explicit consent.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "NTA Guyana https://www.nta.gy/ | CCAC (Consumer Commission) https://ccac.gov.gy/",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "PY": {
+      "country": "Paraguay",
+      "iso": "PY",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [],
+        "Sat": [],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Covers calls/SMS/WhatsApp; excludes emergencies/legal obligations.",
+      "recent_changes": null,
+      "last_verified": null,
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing regulated via “No Molestar” (mobile)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "SEDECO – No Molestar https://nomolestar.sedeco.gov.py | SEDECO sitio https://www.paraguay.gov.py/instituciones/sedeco",
+      "dnc": [
+        {
+          "name": "Registro 'No Molestar' (SEDECO",
+          "url": "móviles)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "2025-08-18",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": true
+      },
+      "_errors": [
+        "missing_last_verified"
+      ]
+    },
+    "PE": {
+      "country": "Peru",
+      "iso": "PE",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No national telemarketing prefix mandate.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing prohibited without prior consent (Ley 32323/2025)",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Treat all outbound marketing as consent-only; log consent proof; include clear opt-out on SMS/email.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "El Peruano (oficial) – Ley 32323 https://elperuano.pe/noticia/242631/ley-32323-que-prohibe-llamadas-y-mensajes-publicitarios-no-autorizados | INDECOPI (comunicados) https://www.gob.pe/indecopi",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "SR": {
+      "country": "Suriname",
+      "iso": "SR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No national prefix mandates identified.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific consumer telemarketing regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative: limit call intensity, provide opt-out, obtain consent for recordings.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Telecommunications Authority Suriname (TAS) https://www.tas.sr/ | Ministry of Economic Affairs & Entrepreneurship https://gov.sr/",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "UY": {
+      "country": "Uruguay",
+      "iso": "UY",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": {
+        "Mon-Fri": [
+          [
+            "09:00",
+            "21:00"
+          ]
+        ],
+        "Sat": [
+          [
+            "09:00",
+            "19:00"
+          ]
+        ],
+        "Sun": []
+      },
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "“No Llame” national; no special prefixes mandated.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Consumer telemarketing regulated via national DNC",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Always check DNC and schedule within legal window; store ER consent evidence 4+ years.",
+      "dnc": [
+        {
+          "name": "Registro Nacional “No Llame”",
+          "url": "https://www.gub.uy/unidad-reguladora-servicios-comunicaciones/institucional/preguntas-frecuentes/registro-nacional-llame",
+          "access": "unknown",
+          "check_required_for_er": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "URSEC FAQ (horarios) https://www.gub.uy/unidad-reguladora-servicios-comunicaciones/institucional/preguntas-frecuentes/registro-nacional-llame | IMPO Decreto 132/022 https://www.impo.com.uy/bases/decretos/132-2022/6 | Trámite URSEC https://www.gub.uy/tramites/consulta-registro-nacional-no-llame",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "VE": {
+      "country": "Venezuela",
+      "iso": "VE",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "No national telemarketing prefixes identified.",
+      "recent_changes": null,
+      "last_verified": "2025-08-18",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific consumer telemarketing/DNC regime found.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation found.",
+      "notes_for_product": "Conservative: treat as consent/opt-out regime; avoid robocalls; announce recording; keep low cadence.",
+      "dnc": [
+        {
+          "name": "N/A",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "CONATEL https://www.conatel.gob.ve/ | Ley de Telecomunicaciones (1996) https://www.conatel.gob.ve/marco-legal/ | Ministerio del Poder Popular para Comercio Nacional (consumidor) https://mincomercionacional.gob.ve/",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
     "AE": {
       "country": "United Arab Emirates",
       "iso": "AE",
@@ -3496,6 +4023,66 @@
     },
     {
       "iso": "BG",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "AR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BO",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "BR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "CL",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "CO",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "EC",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "GY",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "PY",
+      "confidence": "low",
+      "last_verified": null
+    },
+    {
+      "iso": "PE",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "SR",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "UY",
+      "confidence": "low",
+      "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "VE",
       "confidence": "low",
       "last_verified": "2025-08-18"
     },

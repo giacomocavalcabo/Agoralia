@@ -47,5 +47,8 @@
     "business_hours": "Business Hours",
     "enable_voicemail": "Enable Voicemail",
     "voicemail_message": "Voicemail Message"
+  },
+  "history": {
+    "title": "Call History & Outcomes"
   }
 }
