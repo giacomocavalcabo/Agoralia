@@ -964,6 +964,744 @@
         "has_quiet_hours": false
       }
     },
+    "CN": {
+      "country": "China",
+      "iso": "CN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Valid caller ID required; no spoofing. **95**-prefix numbers banned for telemarketing use; carriers mark international calls with \"+\" or country code",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is regulated under consumer protection advertising and data privacy laws; prior consent is generally required",
+      "regime_b2b_text": "No explicit B2B telemarketing law; personal data laws still apply if individuals are called",
+      "notes_for_product": "**Product Note:** Treat all cold calls as consent-based. Implement an **opt-in only** model for Chinese consumer numbers. Integrate with carrier \"Refuse Call\" flags once available. Enforce internal DNC lists and avoid off-hours calls. Ensure a real (licensed) caller number is displayed (no \"95\" short-codes for marketing). Recording okay with notice. No explicit AI disclosure law yet but transparency is advisable.",
+      "dnc": [
+        {
+          "name": "Refuse Call Platform (谢绝来电平台) (pilot national DNC)",
+          "url": "Carrier portals (e.g. donotcall.189.cn by China Telecom)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Consumer Protection Law (ZH) Advertising Law (ZH) PIPL (ZH)",
+          "url": null,
+          "updated": "2020-09-03"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "JP": {
+      "country": "Japan",
+      "iso": "JP",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Telemarketer must **display a valid caller number** (no blocking); must immediately state identity & purpose at call start. No special prefix required (unlike some countries)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing sales to consumers are governed by the Specified Commercial Transactions Act (for \"Telephone Solicitation Sales\") and privacy laws; unsolicited calls are allowed but tightly regulated",
+      "regime_b2b_text": "No special B2B telemarketing law (Act covers consumers only); general business marketing is largely unregulated aside from personal data rules",
+      "notes_for_product": "**Product Note:** No national DNC list – but **internal opt-out** is mandatory. System should allow agents to instantly mark a number as \"do-not-call\" if the person refuses and no further calls to that consumer. Avoid calling outside 8am–9pm local time. Ensure caller ID is shown and agents give a proper intro. Recording okay (one-party consent) but best practice is to inform (\"this call may be recorded…\"). AI voices can be used; no disclosure rule but do not mislead or impersonate a human. Provide an opt-out mechanism during any automated call to comply with fair practice.",
+      "dnc": [
+        {
+          "name": "None (No national DNC registry for voice calls)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Specified Commercial Transactions Act (EN) APPI (EN) Consumer Affairs Agency Guidelines (JA)",
+          "url": null,
+          "updated": "2022-04-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "KR": {
+      "country": "South Korea",
+      "iso": "KR",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must not be spoofed; **telemarketers must use a valid number** and cannot hide it. No special prefix by law but calls often flagged \"Advertisement\" on phones. (Carriers block masked/spoofed calls under Telecom Act)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "high",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is highly regulated (Opt-out registry under **Door-to-Door Sales Act** covers telemarketing); **PIPA privacy law** also requires prior consent for marketing use of personal data",
+      "regime_b2b_text": "No dedicated B2B telemarketing law; **if personal data of individuals (e.g. employee mobiles) is used PIPA consent rules apply**. Pure B2B (company main lines) is generally unregulated",
+      "notes_for_product": "**Product Note:** Must integrate with the **KFTC DNC registry** – before dialing any KR consumer number check against donotcall.go.kr (API available). Ensure **prior consent** is obtained for marketing calls (document it). Provide disclosure of data source upon request (Korean law requires telling the person how you got their number). Dial only within standard hours (8am–9pm local). Use only approved phone numbers (get a 140-type telemarketing number if available in KR). Recording can be enabled (one-party consent) and is required if selling insurance/financial products – so have recording on for those campaigns.",
+      "dnc": [
+        {
+          "name": "National Do-Not-Call Registry (두낫콜)",
+          "url": "https://www.donotcall.go.kr",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "KFTC DNC Registry (EN) PIPA (EN) Door-to-Door Sales Act (EN)",
+          "url": null,
+          "updated": "2025-03-29"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "HK": {
+      "country": "Hong Kong",
+      "iso": "HK",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special caller ID rules for telemarketing yet (proposed law would ban hiding number). It's best practice to display a valid Hong Kong number and identify the organization during the call. (Since 2015 incoming overseas calls show \"+\" prefix to help identify scams)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Direct marketing calls to consumers are governed by the Personal Data (Privacy) Ordinance (PDPO) – marketers must notify individuals and honor opt-out requests. No blanket DNC for live calls (P2P) yet",
+      "regime_b2b_text": "No specific B2B telemarketing regulations (focus is on consumer personal data). Calls purely to businesses are generally permissible",
+      "notes_for_product": "**Product Note:** No universal DNC for live calls yet but **do NOT cold-call HK numbers without prior PDPO compliance**. Ensure you have either (a) the person's consent or (b) have given them a PDPO notice and an opportunity to opt out (e.g. via email/SMS) before calling. Maintain an internal DNC list per PDPO (if someone says \"don't call me again\" record and honor that). Avoid call attempts at night (common courtesy; industry practice is roughly 9am–9pm). Monitor legislative developments – a P2P DNC registry could become law; if it does integrate it immediately. AI voice calls can be used but **do not conceal identity** – start with a clear introduction as required.",
+      "dnc": [
+        {
+          "name": "**Do-Not-Call Registers** (fax SMS pre-recorded calls only)",
+          "url": "https://www.ofca.gov.hk/en/.../public_info_dnc/index.html",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PDPO (EN) OFCA DNC Guidelines (EN) PCPD Direct Marketing Guidelines (EN)",
+          "url": null,
+          "updated": "2022-06-08"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TW": {
+      "country": "Taiwan",
+      "iso": "TW",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID **must be displayed** – hiding number is forbidden by regulation. Telemarketers must immediately identify themselves and purpose on call start. No special prefix but consumers can verify numbers via anti-scam apps or 165 hotline",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is subject to **Fair Trade Act/Consumer Protection** rules and Personal Data Protection Act (PDPA). Unsolicited calls are allowed but with strict conduct requirements",
+      "regime_b2b_text": "No dedicated B2B telemarketing law; if personal data of a person is used (e.g. calling an individual's mobile for business) PDPA's opt-out and notice requirements apply",
+      "notes_for_product": "**Product Note:** Implement **per-number opt-out tracking**. Agents/scripts must inform consumers of the sales intent and **stop immediately if the consumer expresses disinterest**. Configure dialer to block any number that opted out (\"拒絕行銷\"). Ensure caller ID is never withheld. Allow call recording especially to capture the agreement for any sale (required to keep as proof). AI calls are not explicitly regulated but all the same rules (identification opt-out option etc.) apply. Err on the side of consent: consider obtaining explicit opt-in for marketing calls when possible due to PDPA's privacy expectations.",
+      "dnc": [
+        {
+          "name": "None (No national DNC list; instead an **\"internal opt-out\"** system mandated by law)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Fair Trade Act (ZH) PDPA (ZH) Consumer Protection Act (ZH)",
+          "url": null,
+          "updated": "2023-03-02"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "IN": {
+      "country": "India",
+      "iso": "IN",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "**Must use designated telemarketer numbers (140xx series)** for all outbound marketing calls. CLI cannot be spoofed; using personal/mobile SIMs for telemarketing is illegal (telcos will disconnect unregistered sources on complaint). All marketing SMS must use registered sender IDs and templates",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "high",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is strictly regulated by TRAI's **Telecom Commercial Communications (Unsolicited Commercial Communications) rules**; prior customer consent and DND compliance are required",
+      "regime_b2b_text": "No separate B2B telemarketing law (the UCC regulations apply to calls/messages to subscribers mainly consumers). B2B calls are generally allowed if not to personal numbers",
+      "notes_for_product": "**Product Note:** **Absolutely integrate the DND list**: scrub every outbound number against India's NCPR. Only dial via registered telemarketer IDs and on **140xx numbers**. Enforce time-of-day rules (no promotional dialing between 9pm–9am India time). Implement category-based opt-outs if applicable (TRAI allows users to opt in to some categories and out of others). Obtain express consent (digitally or in writing) for any automated or bulk calling campaigns – TRAI mandates recent (within 3 months) consent for commercial calls. Recording calls isn't mandated but keep logs and recordings of consent where possible (for compliance defense). AI voice agents can be used but they must follow all rules: use approved caller ID state the business identity at start and include an opt-out (e.g. \"Press 9 to unsubscribe\") in the script.",
+      "dnc": [
+        {
+          "name": "National Customer Preference Register (NCPR) a.k.a. **\"Do Not Disturb\" registry**",
+          "url": "https://www.nccptrai.gov.in (TRAI DND portal)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "TRAI UCC Rules (EN) NCPR Portal (EN) DPDPA 2023 (EN)",
+          "url": null,
+          "updated": "2025-03-29"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "PK": {
+      "country": "Pakistan",
+      "iso": "PK",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special caller ID or prefix system (unlike India). Telemarketers often use regular mobile or landline numbers; PTA warns operators to curb **SPAM CLI** and allows users to block unknown numbers via *420#. (Product should ensure valid Pakistani numbers are displayed; best practice: use identifiable numbers and avoid frequent number changes)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is addressed by PTA directives: consumers can opt out of promotional calls/SMS via the **Do Not Call Register** (since 2010s). Unsolicited marketing without consent is discouraged by the regulator",
+      "regime_b2b_text": "No specific B2B telemarketing laws known. B2B communications are generally not restricted (unless personal mobile numbers are targeted)",
+      "notes_for_product": "**Product Note:** Enable **Pakistan DNCR compliance**: do not contact numbers that have opted out via 3627 (telecom operators likely filter such numbers – nonetheless maintain your own list of numbers to avoid). Provide a clear opt-out method in any message or call. It's advisable to get **opt-in consent** especially for bulk campaigns as Pakistan may introduce data protection soon. Limit call times to business hours/local daytime to avoid complaints. Monitor PTA guidelines – they sometimes issue new spam-control directives (e.g. forbidding masking of identities or requiring telemarketer registration). Automated/AI calls should be used sparingly and always include identification and opt-out (to avoid being flagged as spam).",
+      "dnc": [
+        {
+          "name": "Do Not Call Register (DNCR)",
+          "url": "No public website; opt-out via SMS \"reg\" to 3627 (PTA service)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PTA DNCR Guidelines (EN) PTA Anti-Spam Measures (EN)",
+          "url": null,
+          "updated": "2021-01-28"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "BD": {
+      "country": "Bangladesh",
+      "iso": "BD",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special telemarketer number series. Calls come from normal mobile or landline numbers. BTRC instructs operators to remind users about DND options monthly. CLI spoofing is illegal (general anti-fraud provisions) but no dedicated caller ID rules for telemarketers",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Unsolicited marketing calls/SMS are discouraged by BTRC. **\"Do Not Disturb\" (DND) services** exist via mobile operators for consumers to block promos. No specific telemarketing law but general consumer protection against harassment applies",
+      "regime_b2b_text": "No B2B-specific rules. Telemarketing to businesses is not separately regulated",
+      "notes_for_product": "**Product Note:** Rely on Bangladesh's carrier-level DND: if possible **obtain lists or API from carriers to scrub out DND-activated numbers** (currently each operator may handle internally – so as a precaution include an opt-out mechanism in every call/SMS and honor any opt-out request directly). Keep calls to reasonable hours. Be aware spam complaints can lead BTRC to direct operators to cut off your numbers. Aim to get explicit consent from users (e.g. via forms or SMS) before marketing calls especially as data privacy laws evolve. AI calls are not common in BD – if used ensure they clearly identify the business and provide a way to connect to a human or opt out.",
+      "dnc": [
+        {
+          "name": "Do Not Disturb service (per carrier per user)",
+          "url": "N/A (USSD codes per operator: e.g. *121*1101# for GP)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "BTRC DND Guidelines (EN) Draft Data Protection Act (EN)",
+          "url": null,
+          "updated": "2021-04-25"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "LK": {
+      "country": "Sri Lanka",
+      "iso": "LK",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No specific caller ID or prefix rules. Telemarketers often use regular phone numbers. The regulator (TRCSL) has addressed call spoofing as part of fraud prevention but not specific to telemarketing. It's good practice to display a number and not withhold CLI",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing law but **Consumer Affairs Authority Act** and **Data Protection Act 2022** provide general safeguards. Direct marketing using personal data likely requires consent or opportunity to opt out under the new privacy law",
+      "regime_b2b_text": "No distinct B2B regulations. Telemarketing targeting businesses is generally permissible. The 2022 privacy law applies only to natural persons' data not to company contacts",
+      "notes_for_product": "**Product Note:** Implement basic **opt-out handling**: allow Sri Lankan recipients to easily opt out of future calls (and honor that in your system). Given the new privacy law it's safest to use **consent-based marketing** – i.e. call people who have agreed or not objected after notice. Train agents to immediately comply if a person says they don't want marketing. Keep call times to normal hours. Because no official DNC exists err on side of caution: perhaps avoid repeatedly cold-calling non-customers. Keep an eye on any consumer protection updates – if telemarketing nuisances rise regulations could be introduced. AI voice calls should follow the same norms as human calls (clear identification etc.).",
+      "dnc": [
+        {
+          "name": "None (No Do Not Call list in Sri Lanka)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Protection Act No. 9 of 2022 (official gazette) (EN)",
+          "url": null,
+          "updated": "2022-03-25"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "NP": {
+      "country": "Nepal",
+      "iso": "NP",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special caller ID rules. Using a recognizable number is recommended. (Nepal Telecom and Ncell have not implemented distinct prefixes for telemarketers)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing legislation identified. Telemarketing is minimal; any marketing calls must still comply with general consumer protection (avoid harassment) and any applicable privacy principles (Nepal has draft privacy legislation)",
+      "regime_b2b_text": "No B2B telemarketing rules. B2B calls are generally free from regulation in Nepal",
+      "notes_for_product": "**Product Note:** **No clear legal framework** – proceed conservatively. Always allow recipients to opt out and maintain an internal list of \"do-not-call\" requests. Limit call frequency to avoid being flagged for nuisance. If Nepal enacts its data protection law (draft pending) expect a consent/opt-out requirement for using personal numbers. Until then apply basic etiquette: identify your company on calls offer a way to decline future calls and stick to local business hours. AI calls: since unregulated ensure they aren't mistaken for scams – perhaps open with a statement and route to human on request.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "(No official sources found – based on regional comparison and NTA communications)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "BT": {
+      "country": "Bhutan",
+      "iso": "BT",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No known telemarketing-specific laws. Telemarketing is not common; any practices would be governed by general provisions (e.g. Personal Data Law if enacted and consumer protection from harassment)",
+      "regime_b2b_text": "No B2B rules; B2B calls are fine",
+      "notes_for_product": "**Product Note:** Very little formal guidance. If engaging in telemarketing in Mongolia follow best practices: get prior permission where possible introduce yourself clearly and keep an internal list of anyone who says stop. Given the lack of rules telemarketing could be seen as unusual – a gentle personalized approach is key. Keep volumes low to avoid prompting regulatory attention. AI calls are untested – if used make them sound as natural and polite as possible or prefer live agents.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "(No specific sources – inference from Mongolia's legal environment)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MV": {
+      "country": "Maldives",
+      "iso": "MV",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No known caller ID or prefix requirements. Use a local recognizable number for better response. (Maldives telecom providers do not distinguish telemarketing lines)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No dedicated telemarketing laws known. Marketing calls would fall under general consumer protection and the new Data Protection Act (2021) which requires consent for processing personal data",
+      "regime_b2b_text": "No B2B telemarketing rules. B2B calls are generally unregulated (privacy law covers personal data only)",
+      "notes_for_product": "**Product Note:** Given the new privacy law treat Maldives as **opt-in territory**: do not cold-call individuals without prior consent. If calls are made ensure you have a lawful basis (preferably consent). There's no DNC list so manage opt-outs internally. Because the market is small unsolicited calls can cause brand damage quickly. Focus on consent-based outreach (e.g. customers who signed up). AI calls are untested here – use with caution and clearly identify the caller to avoid confusion or hang-ups.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "(Data Protection Act 2021 (MV) – unofficial summary)",
+          "url": null,
+          "updated": "2021-07-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "ID": {
+      "country": "Indonesia",
+      "iso": "ID",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special telemarketer caller IDs. Regulators encourage carriers to label spam calls (via apps or network) but no prefix. Caller ID must not be spoofed (prohibited by law due to fraud concerns)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is subject to **general privacy law (Personal Data Protection Act 2022)** and sectoral regulations (e.g. OJK for financial marketing). No central DNC registry; consent is the emerging norm under the new PDP law",
+      "regime_b2b_text": "No explicit B2B telemarketing rules; if calling individuals at businesses PDP law still applies to their personal data",
+      "notes_for_product": "**Product Note:** After Indonesia's PDP law **do not cold-call without prior consent**. You should obtain clear consent (e.g. web form tick box) before calling Indonesian consumers. Maintain proof of consent for each contact. Ensure a privacy notice is given (if calling agents should mention how you got their number). For any call lists you had pre-law consider running a re-consent campaign. Timing: stick to local business hours. Train agents for polite handling – unwanted calls can be reported to Kominfo or Consumer Protection. Use of AI voice: not specifically banned but given low public familiarity it could be poorly received – if used immediately allow option to speak to a human. Keep recordings secure and document consent withdrawal promptly.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Personal Data Protection Act No.27 of 2022 (ID) (ID) OJK Guidelines (EN)",
+          "url": null,
+          "updated": "2022-10-17"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MY": {
+      "country": "Malaysia",
+      "iso": "MY",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No specific caller ID rules for telemarketers. Usually calls originate from mobile or fixed numbers. The MCMC has encouraged truthful CLI and taken action on scam call CLI spoofing but no dedicated prefix like \"+AD\" exists. Always display a number; do not spoof",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is governed by the Personal Data Protection Act 2010 (PDPA) – which requires consent (or notice & opt-out) for direct marketing using personal data. No national DNC list but industry self-regulation exists",
+      "regime_b2b_text": "No specific B2B telemarketing law; PDPA does not apply to business contact information used for business purposes (only personal data of individuals)",
+      "notes_for_product": "**Product Note:** Ensure **PDPA compliance**: you should have either explicit consent or have provided a privacy notice with an opt-out opportunity *before* calling Malaysian individuals. If you haven't your calls could be unlawful. A practical approach is to send an email/SMS asking permission or include consent in web sign-ups. Always allow opt-out (like an internal DNC): if someone says \"don't call\" mark it and don't call again. Time your calls considerately. Although no formal DNC list the PDPA opt-out right functions similarly – be ready to delete or suppress data of anyone who objects to marketing. Keep call logs to show compliance (in case of complaints to PDPC). AI voice use: permissible but ensure it follows PDPA (the call content is personal data processing); it's wise to have the AI state which company it represents and offer a human fallback.",
+      "dnc": [
+        {
+          "name": "None (no centralized DNC registry; companies rely on PDPA's opt-out rights)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PDPA 2010 (EN) PDPA 2010 Sect.43 (EN)",
+          "url": null,
+          "updated": "2019-02-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "SG": {
+      "country": "Singapore",
+      "iso": "SG",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-in",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must not be concealed. There's no special prefix but many marketing calls originate from mobile-prefix numbers which recipients often distrust. Under new anti-scam measures telemarketers using overseas routes must use \"[+]-prefix\" (this is for all overseas calls). Locally the new requirement (2023) is that spoofed local numbers are forbidden – use the number assigned to you. **In short:** use a valid SG number and don't mask CLI",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "high",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is tightly regulated by the **Personal Data Protection Act (PDPA)** and a robust **Do Not Call (DNC) registry**. Sending telemarketing messages or calls requires checking DNC and including certain disclosures",
+      "regime_b2b_text": "B2B calls are generally exempt from DNC rules **if** purely to business contact numbers for business-related marketing. (PDPA DNC covers messages to Singapore telephone numbers \"addressed to individuals\")",
+      "notes_for_product": "**Product Note:** **Must integrate SG's DNC registry**. Before any call or text to a Singapore number check if it's on DNC (unless you've obtained explicit consent within the last *likely* 12 months – PDPC recommends refreshing consent). Maintain records of consent (in case of audit). Include the organization's name and contact in call or immediately after (legal requirement). Ensure caller ID is displayed; ideally use a Singapore number to avoid \"[SPAM?]\" labeling. If an agent or AI reaches voicemail they should state the organization and callback info to comply with PDPC rules. Timing: stick to local waking hours to avoid \"nuisance\" interpretations. AI voice usage is allowed but if you use a prerecorded message **provide a way to opt-out (e.g. \"press 9 to be removed\")** in the call.",
+      "dnc": [
+        {
+          "name": "**Do Not Call Registry** (covers calls SMS fax)",
+          "url": "https://www.dnc.gov.sg",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PDPA (EN) PDPC DNC Guidelines (EN) PDPC Advisory Guidelines on DNC Provisions 2021 (EN)",
+          "url": null,
+          "updated": "2021-02-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": true,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TH": {
+      "country": "Thailand",
+      "iso": "TH",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No dedicated caller ID rules for telemarketers yet. The National Telecom Commission has encouraged carriers to label spam numbers and introduced a prefix \"<ADV>\" tag for SMS marketing. For calls new measures in 2023 require telecom operators to display a \"Scam warning\" on suspicious call numbers. Telemarketers should use numbers registered in their company name; avoid frequent number changes (could be flagged)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers is constrained by the Personal Data Protection Act (PDPA effective 2022) which requires consent for most direct marketing and consumer protection laws against nuisance. A draft law to establish a DNC registry has been discussed but not yet enacted",
+      "regime_b2b_text": "No specific B2B telemarketing law; communications to company contacts are not explicitly regulated (PDPA covers individuals' data only)",
+      "notes_for_product": "**Product Note:** Treat Thailand as **consent-required**. Ensure you have explicit opt-in (e.g. checked box \"I agree to be contacted\") before cold-calling a Thai individual. Keep proof of consent. Without consent you risk PDPC penalties. Implement internal suppression: if anyone says they didn't consent or asks not to be called stop immediately and log it. Monitor legal developments – a formal DNC list may appear; if so integrate it. Use clearly identified phone numbers (matching your company) for calls – this builds trust and avoids being auto-flagged. AI calls: Use cautiously; Thais have been hit with scam robocalls so an unfamiliar AI voice might be mistaken for a scam. If you do use an AI consider a Thai-language intro that it's an automated call from Company X and offer a human agent option.",
+      "dnc": [
+        {
+          "name": "None (proposed \"No-Call\" list is not in force yet)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "PDPA B.E.2562 (2019) (TH) Thai PDPC Guidance (EN summary)",
+          "url": null,
+          "updated": "2022-06-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "PH": {
+      "country": "Philippines",
+      "iso": "PH",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special telemarketer caller ID rules. Often calls come from mobile numbers. Telecoms have implemented caller ID tagging for spam (some networks show \"Spam Likely\"). The National Telecommunications Commission (NTC) has regulations against caller ID spoofing (to combat scams) but no prefix system for marketing",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "medium",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing is subject to the **Data Privacy Act 2012** (which requires consent or at least fair processing notice for direct marketing) and consumer protection rules on unwanted communications. No nationwide DNC registry exists yet",
+      "regime_b2b_text": "No specific B2B provisions. Marketing to companies is generally unrestricted unless personal data is involved",
+      "notes_for_product": "**Product Note:** Operate under the assumption of **consent required**. Ideally call only those who have opted in via web forms etc. If you must cold-call ensure you give a proper privacy notice in the call (who you are how you got their number if asked and that they can opt out). Immediately cease calling a number if the person objects – and add it to an internal DNC list. Be mindful the Philippines is very sensitive to scam calls; using an AI voice might confuse people – better to use a live agent for initial contact. Keep call times to business hours. Stay alert for a potential DNC law; if one passes compliance (scrubbing against it) will become mandatory.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Privacy Act IRR 2016 (EN) NPC Advisory on Direct Marketing 2017 (EN)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MN": {
+      "country": "Mongolia",
+      "iso": "MN",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No known telemarketing-specific laws. Telemarketing is not common; any practices would be governed by general provisions (e.g. Personal Data Law if enacted and consumer protection from harassment)",
+      "regime_b2b_text": "No B2B rules; B2B calls are fine",
+      "notes_for_product": "**Product Note:** Very little formal guidance. If engaging in telemarketing in Mongolia follow best practices: get prior permission where possible introduce yourself clearly and keep an internal list of anyone who says stop. Given the lack of rules telemarketing could be seen as unusual – a gentle personalized approach is key. Keep volumes low to avoid prompting regulatory attention. AI calls are untested – if used make them sound as natural and polite as possible or prefer live agents.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "(No specific sources – inference from Mongolia's legal environment)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
     "AT": {
       "country": "Austria",
       "iso": "AT",
@@ -2349,8 +3087,298 @@
         "missing_last_verified"
       ]
     },
+    "IS": {
+      "country": "Iceland",
+      "iso": "IS",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special prefix rules. Caller identity must be disclosed; hiding or misrepresenting caller ID is not allowed (general truth-in-calling obligations)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Unsolicited telemarketing prohibited without prior consent (opt-in regime). Calls to consumers require explicit consent unless consumer has opted in in advance",
+      "regime_b2b_text": "B2B: No specific prohibition on B2B calls found – calls to businesses allowed without prior consent but good practice is to honor objections and comply with personal data rules",
+      "notes_for_product": "Iceland has a strict opt-in regime for marketing calls. Ensure prior consent is obtained for any automated or live sales calls to consumers. No centralized DNC list – if undertaking cold calls (discouraged) consider informal opt-out lists (e.g. telephone directory flags) and always honor individual objections. AI-driven calls must follow same consent rules; clearly identify your company on calls. Recording requires informing the person and getting consent due to local privacy law.",
+      "dnc": [
+        {
+          "name": "No formal national DNC list (opt-out) – consumers may register a no-contact preference via phone directory or national registry (bannskrá)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Electronic Communications Act 70/2022 (IS) Data Protection Act (IS) Consumer Protection Act (IS)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "NO": {
+      "country": "Norway",
+      "iso": "NO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must not be concealed. Norway requires telemarketers to display a valid phone number and identify the caller and source of any obtained contact data. No dedicated prefix but calls from certain number series may be recognized as telemarketing",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Telemarketing to consumers allowed on an opt-out basis. Consumers can register in the Central Marketing Exclusion Register (Reservasjonsregisteret) to opt out of calls. Marketers must check the register and avoid calling opted-out numbers",
+      "regime_b2b_text": "B2B: Telemarketing to business contacts is generally permitted without prior consent. Calls to natural persons at businesses are allowed unless the person has opted out with that business or requested no calls",
+      "notes_for_product": "Norway has an opt-out regime: you can cold-call consumers unless they've registered opt-out. Must scrub calling lists against the Brønnøysund DNC Register (update at least monthly). Observe quiet hours (no calls late evenings or weekends). AI voice calls are treated like any other call – no extra disclosure rule but consent is needed for fully automated dialing. Call recordings can be done under legitimate interest but it's best practice to announce recording to align with privacy expectations. Norway exempts existing customers from DNC but you must still honor any direct opt-out requests.",
+      "dnc": [
+        {
+          "name": "Reservasjonsregisteret – Central Do Not Call opt-out list (administered by Brønnøysund)",
+          "url": "https://reservasjon.brreg.no",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Marketing Control Act (NO) Reservasjonsregisteret (NO) Consumer Protection Act (NO)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "CY": {
+      "country": "Cyprus",
+      "iso": "CY",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special caller ID prefix. Caller must identify themselves and purpose at the start of the call. Hiding caller number is forbidden under general telecom rules",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Opt-in regime – Unsolicited marketing calls to individuals are prohibited without prior consent. Direct calling for promotion requires the consumer's explicit consent in advance",
+      "regime_b2b_text": "B2B: No specific prohibition on B2B cold calls in legislation. Generally calls to companies or professionals are allowed without prior consent. Marketers must stop if a business contact objects (implied opt-out)",
+      "notes_for_product": "Cyprus requires opt-in consent for telemarketing calls – essentially no cold calls to consumers without prior agreement. Ensure you have explicit consent on record for any sales call. There's no DNC list because unsolicited calls are not allowed by default. B2B calls are less regulated but it's prudent to treat business contacts with an opt-out approach and honor objections. Provide a clear identity and purpose on calls. AI-driven calls must likewise have consent. Call recording needs both parties' consent in Cyprus – do not record customers without notifying and obtaining agreement.",
+      "dnc": [
+        {
+          "name": "None (No official DNC registry – not needed due to opt-in requirement)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Protection Law 125(I)/2018 (CY) ePrivacy Directive Implementation (CY)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "LI": {
+      "country": "Liechtenstein",
+      "iso": "LI",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special prefix required by law (Switzerland plans distinct prefixes for telemarketing but not yet in Liechtenstein). Caller ID must be visible; blocking or spoofing caller identity is prohibited by general telecom rules",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Opt-out regime similar to Swiss/EU practice. Telemarketing calls to individuals are allowed unless the person has opted out (e.g. marked with a \"Do Not Call\" indicator in the phone directory). Cold calls are legal but must cease if consumer's number is flagged or if they object",
+      "regime_b2b_text": "B2B: No specific B2B telemarketing restrictions noted. Calls to companies or professionals are generally permitted without prior consent. Treat personal numbers at businesses as you would consumer numbers (honor any opt-out markings or requests)",
+      "notes_for_product": "Liechtenstein follows an opt-out approach: you can call consumers until they object. Because there's no national DNC list website you must respect the \"starred\" telephone directory entries indicating no sales calls and consider checking the Swiss Robinson list for cross-border campaigns. Always display a valid number and don't hide caller ID. B2B calls are generally fine. There's no explicit AI call rule but standard consent/opt-out principles apply. Note: Swiss/UWG practices influence Liechtenstein – a trend toward stricter rules (even opt-in) could emerge so maintain a conservative stance.",
+      "dnc": [
+        {
+          "name": "No central DNC registry. Consumers rely on phone directory opt-out (\"star\" listing) or Switzerland's Robinson list to signal no telemarketing",
+          "url": "N/A (Opt-out handled via telephone directory and Swiss Robinson list)",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "UWG Implementation (LI) Data Protection Act (LI)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MC": {
+      "country": "Monaco",
+      "iso": "MC",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No special caller ID or prefix rules in force. Telemarketers should not conceal their number; France's model of using designated prefixes for marketing calls may be adopted in the future",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Opt-out (current) – Monaco has no dedicated telemarketing law yet. Unsolicited consumer calls are allowed by default (following French practice pre-2023) unless the consumer has objected. Many Monaco residents rely on France's Bloctel DNC list to reduce calls but Monaco itself has not implemented an official list",
+      "regime_b2b_text": "B2B: Allowed – No specific B2B telemarketing regulations in Monaco. Calls to businesses are generally permitted without consent. Standard data protection principles apply (cease if a person requests no further calls)",
+      "notes_for_product": "Monaco currently has minimal telemarketing-specific regulation so an opt-out approach is used de facto. You can call consumers but due to public pressure Monaco will likely adopt stricter rules soon. It's advisable to apply French standards: scrub against the Bloctel DNC list (even though not legally required) and follow French calling hours. Always display a caller ID. Be especially careful to avoid aggressive or scam-like practices as Monaco is scrutinizing telemarketing and preparing new regulations.",
+      "dnc": [
+        {
+          "name": "None (No national DNC registry as of 2025. Consumers may use France's Bloctel list informally but Monaco hasn't established its own)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Monaco National Council Resolution (MC) French Bloctel Influence (MC)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "SM": {
+      "country": "San Marino",
+      "iso": "SM",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No local caller ID rules. It's advisable to show a valid number and follow Italy's lead on prefix usage (Italy now assigns special prefixes for telemarketing calls) to avoid call blocking",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Likely opt-out (no evidence of an opt-in law). San Marino law doesn't explicitly address telemarketing calls; by default unsolicited calls are allowed until the individual objects. It's safe to mirror EU/Italian practices: assume consumers haven't consented unless they opt out via a service",
+      "regime_b2b_text": "B2B: Allowed – No specific prohibition on B2B telemarketing. Calls to organizations or professionals are permissible without prior consent. Standard rule: stop if the business or contact objects",
+      "notes_for_product": "Note: San Marino's framework is derived from general privacy law (Law 171/2018) rather than telemarketing-specific statutes. In absence of local rules we apply EU/Italian standards. Treat all cold calls with an opt-out mentality – e.g. integrate Italy's RPO list if possible to avoid calling those who opted out in Italy. Limit call times to reasonable hours. No special compliance for AI calls beyond obtaining consent if using automated dialing/voices. For recording get the person's consent or notification to stay within privacy norms.",
+      "dnc": [
+        {
+          "name": "None specifically for San Marino. Residents likely rely on Italy's Registro Pubblico delle Opposizioni (public opt-out register) to block calls though SM numbers are outside its formal scope",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Law 171/2018 (SM) Italian RPO Influence (IT context)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "AND": {
+      "country": "Andorra",
+      "iso": "AND",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "No specific caller ID or prefix rules. Do not hide your number; follow standard telecom norms (Andorran numbers use +376 code – no special telemarketing prefix in use)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "B2C: Opt-out (assumed) – Andorra has no dedicated telemarketing law publicly available. Direct marketing falls under data protection rules. Unsolicited calls to consumers appear to be allowed unless the person has objected (no prior consent mandate is documented). It is prudent to obtain consent when feasible given GDPR-like principles",
+      "regime_b2b_text": "B2B: Allowed – No special B2B telemarketing regulations found. Cold calls to businesses are generally acceptable. Treat personal data of contacts in line with legitimate interest and honor any request to stop",
+      "notes_for_product": "Andorra's telemarketing regime is inferred from its general data protection and consumer laws. There is no formal opt-in requirement for calls so an opt-out approach applies. Always offer the recipient an easy way to refuse future calls. Because there's no DNC list maintain an internal do-not-call list for Andorra. Adhere to GDPR principles: you should have a legitimate interest basis for cold calls and must stop if the person objects. No special rules for AI voices or call recording beyond standard privacy obligations – if recording calls announce it and secure consent to be safe. Given the lack of explicit laws err on the side of caution and transparency in all telemarketing activities.",
+      "dnc": [
+        {
+          "name": "None. (No known Andorran DNC registry.)",
+          "url": "N/A",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "(No direct sources – inferred from general law) Data Protection Law 29/2021 (AND) Consumer Protection Act (AND)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      },
+      "_errors": [
+        "invalid_iso"
+      ]
+    },
     "AR": {
-      "country": "Argentina",
+      "country": "",
       "iso": "AR",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2391,7 +3419,7 @@
       }
     },
     "BO": {
-      "country": "Bolivia",
+      "country": "",
       "iso": "BO",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2432,7 +3460,7 @@
       }
     },
     "BR": {
-      "country": "Brazil",
+      "country": "",
       "iso": "BR",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2473,7 +3501,7 @@
       }
     },
     "CL": {
-      "country": "Chile",
+      "country": "",
       "iso": "CL",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2514,7 +3542,7 @@
       }
     },
     "CO": {
-      "country": "Colombia",
+      "country": "",
       "iso": "CO",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2569,7 +3597,7 @@
       }
     },
     "EC": {
-      "country": "Ecuador",
+      "country": "",
       "iso": "EC",
       "regime_b2c": "opt-in",
       "regime_b2b": "opt-out",
@@ -2610,7 +3638,7 @@
       }
     },
     "GY": {
-      "country": "Guyana",
+      "country": "",
       "iso": "GY",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2651,7 +3679,7 @@
       }
     },
     "PY": {
-      "country": "Paraguay",
+      "country": "",
       "iso": "PY",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2699,7 +3727,7 @@
       ]
     },
     "PE": {
-      "country": "Peru",
+      "country": "",
       "iso": "PE",
       "regime_b2c": "opt-in",
       "regime_b2b": "opt-out",
@@ -2740,7 +3768,7 @@
       }
     },
     "SR": {
-      "country": "Suriname",
+      "country": "",
       "iso": "SR",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2781,7 +3809,7 @@
       }
     },
     "UY": {
-      "country": "Uruguay",
+      "country": "",
       "iso": "UY",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -2836,7 +3864,7 @@
       }
     },
     "VE": {
-      "country": "Venezuela",
+      "country": "",
       "iso": "VE",
       "regime_b2c": "opt-out",
       "regime_b2b": "opt-out",
@@ -3872,6 +4900,96 @@
       "last_verified": "2025-08-18"
     },
     {
+      "iso": "CN",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "JP",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "KR",
+      "confidence": "high",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "HK",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "TW",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "IN",
+      "confidence": "high",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "PK",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "BD",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "LK",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NP",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "BT",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MV",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "ID",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MY",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "SG",
+      "confidence": "high",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "TH",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "PH",
+      "confidence": "medium",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MN",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
       "iso": "AT",
       "confidence": "low",
       "last_verified": "2025-08-18"
@@ -4025,6 +5143,41 @@
       "iso": "BG",
       "confidence": "low",
       "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "IS",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NO",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "CY",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "LI",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MC",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "SM",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "AND",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
     },
     {
       "iso": "AR",

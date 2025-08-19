@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 import { I18nProvider } from './lib/i18n.jsx'
 import { ToastProvider } from './components/ToastProvider.jsx'
+import QueryProvider from './providers/QueryProvider.jsx'
+import StripeProvider from './providers/StripeProvider.jsx'
 import Root from './layouts/Root.jsx'
 
 const modules = import.meta.glob('./pages/*.jsx', { eager: true })
@@ -22,22 +24,26 @@ function Placeholder({ name }){
 const rootEl = document.getElementById('root')
 if (rootEl) {
 	createRoot(rootEl).render(
-		<ToastProvider>
-			<I18nProvider>
-				<BrowserRouter>
-					<Routes>
-						<Route element={<Root />}> {/* layout */}
-							{pages.map(({ name, Component }) => (
-								name === 'Dashboard'
-									? <Route key={name} index element={Component ? <Component /> : <Placeholder name={name} />} />
-									: <Route key={name} path={slugify(name)} element={Component ? <Component /> : <Placeholder name={name} />} />
-							))}
-							<Route path="*" element={<Navigate to="/" replace />} />
-						</Route>
-					</Routes>
-				</BrowserRouter>
-			</I18nProvider>
-		</ToastProvider>
+		<QueryProvider>
+			<StripeProvider>
+				<ToastProvider>
+					<I18nProvider>
+						<BrowserRouter>
+							<Routes>
+								<Route element={<Root />}> {/* layout */}
+									{pages.map(({ name, Component }) => (
+										name === 'Dashboard'
+											? <Route key={name} index element={Component ? <Component /> : <Placeholder name={name} />} />
+											: <Route key={name} path={slugify(name)} element={Component ? <Component /> : <Placeholder name={name} />} />
+									))}
+									<Route path="*" element={<Navigate to="/" replace />} />
+								</Route>
+							</Routes>
+						</BrowserRouter>
+					</I18nProvider>
+				</ToastProvider>
+			</StripeProvider>
+		</QueryProvider>
 	)
 }
 
