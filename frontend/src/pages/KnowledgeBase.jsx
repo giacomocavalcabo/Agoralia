@@ -3,10 +3,10 @@ import { PlusIcon, DocumentTextIcon, CogIcon, ChartBarIcon } from '@heroicons/re
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { ProgressBar } from '../components/ui/ProgressBar'
-import { Card } from '../components/ui/Card'
+import Card from '../components/ui/Card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/Badge'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function KnowledgeBase() {
   const [selectedView, setSelectedView] = useState('overview')
