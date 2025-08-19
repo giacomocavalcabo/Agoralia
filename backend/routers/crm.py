@@ -7,6 +7,9 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 import secrets
 import json
+import os
+import hmac
+import hashlib
 
 from ..db import get_db
 from ..models import (
@@ -15,7 +18,7 @@ from ..models import (
     Call, CallOutcome
 )
 from ..integrations import HubSpotClient, ZohoClient, OdooClient
-from deps.auth import get_tenant_id, require_workspace_access
+from ..deps.auth import get_tenant_id, require_workspace_access
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
 
@@ -429,36 +432,127 @@ async def get_sync_status(
 
 @router.post("/webhooks/hubspot")
 async def hubspot_webhook(request: Request) -> dict:
-    """Handle HubSpot webhook events"""
+    """Handle HubSpot webhook events with signature verification"""
     
-    # In production, verify signature and process webhook
+    # Get webhook secret from environment
+    webhook_secret = os.getenv("CRM_HUBSPOT_WEBHOOK_SECRET")
+    if not webhook_secret:
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+    
+    # Get request body and headers
     body = await request.body()
     headers = dict(request.headers)
     
-    # Log webhook event
-    print(f"HubSpot webhook received: {headers.get('x-hubspot-signature')}")
+    # Verify HubSpot signature
+    signature = headers.get("x-hubspot-signature")
+    if not signature:
+        raise HTTPException(status_code=401, detail="Missing HubSpot signature")
     
-    return {
-        "status": "received",
-        "provider": "hubspot",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    # Verify signature using HMAC SHA256
+    
+    expected_signature = hmac.new(
+        webhook_secret.encode('utf-8'),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+    
+    if not hmac.compare_digest(signature, expected_signature):
+        raise HTTPException(status_code=401, detail="Invalid HubSpot signature")
+    
+    try:
+        # Parse webhook payload
+        payload = json.loads(body.decode('utf-8'))
+        
+        # Extract event information
+        event_id = payload.get("eventId")
+        subscription_type = payload.get("subscriptionType")
+        object_type = payload.get("objectType")
+        
+        # Log webhook event
+        print(f"HubSpot webhook verified: {subscription_type} for {object_type}")
+        
+        # Queue webhook processing job
+        from workers.crm_jobs import crm_webhook_dispatcher_job
+        crm_webhook_dispatcher_job.send(
+            "hubspot", 
+            event_id, 
+            payload,
+            datetime.utcnow().isoformat()
+        )
+        
+        return {
+            "status": "received",
+            "provider": "hubspot",
+            "event_id": event_id,
+            "subscription_type": subscription_type,
+            "object_type": object_type,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+    except Exception as e:
+        # Log error but don't expose details
+        print(f"HubSpot webhook processing error: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
 
 
 @router.post("/webhooks/zoho")
 async def zoho_webhook(request: Request) -> dict:
-    """Handle Zoho webhook events"""
+    """Handle Zoho webhook events with secret verification"""
     
+    # Get webhook secret from environment
+    webhook_secret = os.getenv("CRM_ZOHO_WEBHOOK_SECRET")
+    if not webhook_secret:
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+    
+    # Get request body and headers
     body = await request.body()
     headers = dict(request.headers)
     
-    print(f"Zoho webhook received: {headers.get('x-zoho-signature')}")
+    # Verify Zoho webhook secret
+    received_secret = headers.get("x-zoho-webhook-secret")
+    if not received_secret:
+        raise HTTPException(status_code=401, detail="Missing Zoho webhook secret")
     
-    return {
-        "status": "received",
-        "provider": "zoho",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    if not hmac.compare_digest(received_secret, webhook_secret):
+        raise HTTPException(status_code=401, detail="Invalid Zoho webhook secret")
+    
+    try:
+        # Parse webhook payload
+        payload = json.loads(body.decode('utf-8'))
+        
+        # Extract event information
+        event_id = payload.get("event_id") or f"zoho_{datetime.utcnow().timestamp()}"
+        module = payload.get("module")
+        operation = payload.get("operation")
+        
+        # Log webhook event
+        print(f"Zoho webhook verified: {operation} on {module}")
+        
+        # Queue webhook processing job
+        from workers.crm_jobs import crm_webhook_dispatcher_job
+        crm_webhook_dispatcher_job.send(
+            "zoho", 
+            event_id, 
+            payload,
+            datetime.utcnow().isoformat()
+        )
+        
+        return {
+            "status": "received",
+            "provider": "zoho",
+            "event_id": event_id,
+            "module": module,
+            "operation": operation,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+    except Exception as e:
+        print(f"Zoho webhook processing error: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
 
 
 # ===================== Test Connections =====================
