@@ -2,14 +2,47 @@ import React, { useEffect, useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+
+// Only load Stripe if we have a valid API key
+const stripePromise = STRIPE_PUBLISHABLE_KEY && STRIPE_PUBLISHABLE_KEY.startsWith('pk_') 
+  ? loadStripe(STRIPE_PUBLISHABLE_KEY)
+  : null
 
 export default function StripeProvider({ children }) {
   const [stripeLoaded, setStripeLoaded] = useState(false)
+  const [stripeError, setStripeError] = useState(null)
 
   useEffect(() => {
+    if (!STRIPE_PUBLISHABLE_KEY) {
+      console.warn('Stripe publishable key not found. Payment features will be disabled.')
+      setStripeLoaded(true) // Allow app to continue without Stripe
+      return
+    }
+
+    if (!STRIPE_PUBLISHABLE_KEY.startsWith('pk_')) {
+      setStripeError('Invalid Stripe publishable key format')
+      setStripeLoaded(true)
+      return
+    }
+
     if (stripePromise) {
-      stripePromise.then(() => setStripeLoaded(true))
+      stripePromise
+        .then((stripe) => {
+          if (stripe) {
+            setStripeLoaded(true)
+          } else {
+            setStripeError('Failed to load Stripe')
+            setStripeLoaded(true)
+          }
+        })
+        .catch((error) => {
+          console.error('Stripe loading error:', error)
+          setStripeError(error.message)
+          setStripeLoaded(true)
+        })
+    } else {
+      setStripeLoaded(true)
     }
   }, [])
 
@@ -22,6 +55,17 @@ export default function StripeProvider({ children }) {
         </div>
       </div>
     )
+  }
+
+  if (stripeError) {
+    console.warn('Stripe error:', stripeError)
+    // Continue without Stripe Elements wrapper
+    return children
+  }
+
+  if (!stripePromise) {
+    // No Stripe key, continue without Stripe Elements wrapper
+    return children
   }
 
   return (

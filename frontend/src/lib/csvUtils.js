@@ -196,18 +196,122 @@ export function exportToCSV(data, fields) {
     return ''
   }
 
-  // Protect against CSV injection
+  // Enhanced protection against CSV injection
   const protectValue = (value) => {
-    if (typeof value === 'string' && value.match(/^[=+\-@]/)) {
-      return "'" + value
+    if (value === null || value === undefined) {
+      return ''
     }
-    return value
+    
+    const stringValue = String(value)
+    
+    // Check for CSV injection patterns
+    if (stringValue.match(/^[=+\-@]/)) {
+      return "'" + stringValue
+    }
+    
+    // Check for other potentially dangerous patterns
+    if (stringValue.includes('=') || stringValue.includes('+') || stringValue.includes('-') || stringValue.includes('@')) {
+      // If it contains these characters but doesn't start with them, still protect
+      if (stringValue.match(/^[0-9]/)) {
+        return "'" + stringValue
+      }
+    }
+    
+    // Escape quotes and wrap in quotes if contains comma, newline, or quote
+    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+      return '"' + stringValue.replace(/"/g, '""') + '"'
+    }
+    
+    return stringValue
   }
 
+  // Add BOM for Excel compatibility
+  const BOM = '\uFEFF'
+  
   const headers = fields.map(field => `"${field}"`).join(',')
   const rows = data.map(row => 
-    fields.map(field => `"${protectValue(row[field] || '')}"`).join(',')
+    fields.map(field => protectValue(row[field] || '')).join(',')
   )
 
-  return [headers, ...rows].join('\n')
+  return BOM + [headers, ...rows].join('\n')
+}
+
+/**
+ * Safe CSV download with proper MIME type and filename
+ * @param {array} data - Data to export
+ * @param {array} fields - Fields to include
+ * @param {string} filename - Filename for download
+ */
+export function downloadCSV(data, fields, filename = 'export.csv') {
+  const csvContent = exportToCSV(data, fields)
+  
+  // Create blob with proper MIME type
+  const blob = new Blob([csvContent], { 
+    type: 'text/csv;charset=utf-8;' 
+  })
+  
+  // Create download link
+  const link = document.createElement('a')
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+}
+
+/**
+ * Validate CSV data before export
+ * @param {array} data - Data to validate
+ * @param {array} fields - Fields to validate
+ * @returns {object} Validation result
+ */
+export function validateExportData(data, fields) {
+  const errors = []
+  const warnings = []
+  
+  if (!Array.isArray(data) || data.length === 0) {
+    errors.push('No data to export')
+    return { isValid: false, errors, warnings }
+  }
+  
+  if (!Array.isArray(fields) || fields.length === 0) {
+    errors.push('No fields specified for export')
+    return { isValid: false, errors, warnings }
+  }
+  
+  // Check for potentially dangerous data
+  data.forEach((row, index) => {
+    fields.forEach(field => {
+      const value = row[field]
+      if (value !== null && value !== undefined) {
+        const stringValue = String(value)
+        
+        // Check for CSV injection patterns
+        if (stringValue.match(/^[=+\-@]/)) {
+          warnings.push(`Row ${index + 1}, field "${field}": Value starts with potentially dangerous character (${stringValue[0]})`)
+        }
+        
+        // Check for very long values
+        if (stringValue.length > 1000) {
+          warnings.push(`Row ${index + 1}, field "${field}": Very long value (${stringValue.length} characters)`)
+        }
+        
+        // Check for binary-like data
+        if (stringValue.includes('\0') || stringValue.includes('\x00')) {
+          errors.push(`Row ${index + 1}, field "${field}": Contains null bytes`)
+        }
+      }
+    })
+  })
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  }
 }

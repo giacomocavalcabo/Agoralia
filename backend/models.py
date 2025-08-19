@@ -341,3 +341,126 @@ class ExportJob(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
 
+
+# ===================== Sprint 8: Knowledge Base System =====================
+
+class KnowledgeBase(Base):
+    __tablename__ = "knowledge_bases"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    kind = Column(String, nullable=False)  # company, offer_pack, faq_policy
+    name = Column(String, nullable=False)
+    type = Column(String)  # saas, consulting, physical, marketplace, logistics, manufacturing, other
+    locale_default = Column(String, default="en-US")
+    version = Column(String, default="1.0.0")
+    status = Column(String, default="draft")  # draft, published
+    completeness_pct = Column(Integer, default=0)  # 0-100
+    freshness_score = Column(Integer, default=100)  # 0-100
+    meta_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    published_at = Column(DateTime)
+
+
+class KbSection(Base):
+    __tablename__ = "kb_sections"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    key = Column(String, nullable=False)  # purpose, vision, value_props, etc.
+    title = Column(String, nullable=False)
+    order_index = Column(Integer, default=0)
+    content_md = Column(Text)
+    content_json = Column(JSON)
+    completeness_pct = Column(Integer, default=0)  # 0-100
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbField(Base):
+    __tablename__ = "kb_fields"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    section_id = Column(String, ForeignKey("kb_sections.id"))
+    key = Column(String, nullable=False)
+    label = Column(String, nullable=False)
+    value_text = Column(Text)
+    value_json = Column(JSON)
+    lang = Column(String, default="en-US")
+    source_id = Column(String, ForeignKey("kb_sources.id"))
+    confidence = Column(Integer, default=100)  # 0-100
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbSource(Base):
+    __tablename__ = "kb_sources"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    kind = Column(String, nullable=False)  # csv, file, url
+    url = Column(String)
+    filename = Column(String)
+    sha256 = Column(String, nullable=False)
+    meta_json = Column(JSON)
+    status = Column(String, default="pending")  # pending, processing, completed, failed
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbChunk(Base):
+    __tablename__ = "kb_chunks"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"))
+    section_id = Column(String, ForeignKey("kb_sections.id"))
+    source_id = Column(String, ForeignKey("kb_sources.id"))
+    sha256 = Column(String, nullable=False)
+    text = Column(Text, nullable=False)
+    lang = Column(String, default="en-US")
+    tokens = Column(Integer, default=0)
+    embedding = Column(JSON)  # pgvector will be added via migration
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbAssignment(Base):
+    __tablename__ = "kb_assignments"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    scope = Column(String, nullable=False)  # workspace_default, number, campaign, agent
+    scope_id = Column(String)  # number_id, campaign_id, agent_id
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbHistory(Base):
+    __tablename__ = "kb_history"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    actor_user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    diff_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbImportJob(Base):
+    __tablename__ = "kb_import_jobs"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    source_id = Column(String, ForeignKey("kb_sources.id"), nullable=False)
+    target_kb_id = Column(String, ForeignKey("knowledge_bases.id"))
+    template = Column(String)  # company, offer_pack, etc.
+    status = Column(String, default="pending")  # pending, processing, completed, failed
+    progress_pct = Column(Integer, default=0)
+    estimated_cost_cents = Column(Integer, default=0)
+    actual_cost_cents = Column(Integer, default=0)
+    error_message = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime)
+
+
+class AiUsage(Base):
+    __tablename__ = "ai_usage"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    kind = Column(String, nullable=False)  # kb_extraction, kb_embedding, kb_summary
+    tokens_in = Column(Integer, default=0)
+    tokens_out = Column(Integer, default=0)
+    cost_micros = Column(Integer, default=0)  # cost in microcents
+    job_id = Column(String, ForeignKey("kb_import_jobs.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+

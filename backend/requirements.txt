@@ -4,9 +4,8 @@ sqlalchemy==2.0.23
 alembic==1.12.1
 psycopg2-binary==2.9.9
 redis==5.0.1
-dramatiq[redis]==1.15.0
-httpx==0.25.2
+dramatiq==1.15.0
 bcrypt==4.1.2
-weasyprint>=61.0
-aiofiles==23.2.1
 pyotp==2.9.0
+weasyprint>=61.0
+phonenumbers==8.13.25
