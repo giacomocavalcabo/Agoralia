@@ -65,6 +65,16 @@
     "coming_soon": {
       "title": "Coming Soon",
       "description": "More integrations will be available in future updates"
+    },
+    "mapping": {
+      "saved": {
+        "title": "Mapping Saved",
+        "description": "Field mapping has been saved successfully"
+      },
+      "error": {
+        "title": "Mapping Error",
+        "description": "Failed to save field mapping"
+      }
     }
   },
   "campaigns": {

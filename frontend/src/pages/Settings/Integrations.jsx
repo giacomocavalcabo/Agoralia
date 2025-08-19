@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
 import { useToast } from '../../components/ToastProvider';
 import { useTranslation } from '../../lib/i18n';
+import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
 
 const Integrations = () => {
   const { t } = useTranslation();
@@ -15,6 +16,8 @@ const Integrations = () => {
     odoo: { connected: false, status: 'disconnected' }
   });
   const [loading, setLoading] = useState({});
+  const [activeTab, setActiveTab] = useState('crm');
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
   useEffect(() => {
     // Load integration status
@@ -36,20 +39,24 @@ const Integrations = () => {
   };
 
   const handleConnect = async (provider) => {
-    setLoading({ ...loading, [provider]: true });
+    setLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      // In production, call actual API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
+      // In production, this would start OAuth flow
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setIntegrations(prev => ({
         ...prev,
-        [provider]: { connected: true, status: 'connected' }
+        [provider]: { 
+          connected: true, 
+          status: 'connected', 
+          portal_id: provider === 'hubspot' ? '12345' : undefined 
+        }
       }));
       
       toast({
         title: t('integrations.connected.title'),
-        description: t('integrations.connected.description', { provider }),
+        description: t('integrations.connected.description', { provider: provider.toUpperCase() }),
         type: 'success'
       });
       
@@ -60,16 +67,16 @@ const Integrations = () => {
         type: 'error'
       });
     } finally {
-      setLoading({ ...loading, [provider]: false });
+      setLoading(prev => ({ ...prev, [provider]: false }));
     }
   };
 
   const handleDisconnect = async (provider) => {
-    setLoading({ ...loading, [provider]: true });
+    setLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      // In production, call actual API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
+      // In production, this would revoke tokens
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setIntegrations(prev => ({
         ...prev,
@@ -78,7 +85,7 @@ const Integrations = () => {
       
       toast({
         title: t('integrations.disconnected.title'),
-        description: t('integrations.disconnected.description', { provider }),
+        description: t('integrations.disconnected.description', { provider: provider.toUpperCase() }),
         type: 'success'
       });
       
@@ -89,32 +96,37 @@ const Integrations = () => {
         type: 'error'
       });
     } finally {
-      setLoading({ ...loading, [provider]: false });
+      setLoading(prev => ({ ...prev, [provider]: false }));
     }
   };
 
   const handleTest = async (provider) => {
-    setLoading({ ...loading, [`${provider}_test`]: true });
+    setLoading(prev => ({ ...prev, [`${provider}_test`]: true }));
     
     try {
-      // In production, call actual test API
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Mock delay
+      // In production, this would test the connection
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: t('integrations.test.success.title'),
-        description: t('integrations.test.success.description', { provider }),
+        description: t('integrations.test.success.description', { provider: provider.toUpperCase() }),
         type: 'success'
       });
       
     } catch (error) {
       toast({
         title: t('integrations.test.error.title'),
-        description: t('integrations.test.error.description'),
+        description: t('integrations.test.error.description', { provider: provider.toUpperCase() }),
         type: 'error'
       });
     } finally {
-      setLoading({ ...loading, [`${provider}_test`]: false });
+      setLoading(prev => ({ ...prev, [`${provider}_test`]: false }));
     }
+  };
+
+  const handleMappingUpdate = (objectType, mapping, picklists) => {
+    console.log('Mapping updated:', { objectType, mapping, picklists });
+    // In production, this would update the mapping in the backend
   };
 
   const getStatusColor = (status) => {
@@ -135,6 +147,11 @@ const Integrations = () => {
     }
   };
 
+  const openMappingEditor = (provider) => {
+    setSelectedProvider(provider);
+    setActiveTab('mapping');
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
@@ -146,9 +163,10 @@ const Integrations = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="crm" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="crm">{t('integrations.tabs.crm')}</TabsTrigger>
+          <TabsTrigger value="mapping">Field Mapping</TabsTrigger>
           <TabsTrigger value="other">{t('integrations.tabs.other')}</TabsTrigger>
         </TabsList>
 
@@ -208,6 +226,16 @@ const Integrations = () => {
                     </>
                   )}
                 </div>
+                
+                {integrations.hubspot.connected && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => openMappingEditor('hubspot')}
+                    className="w-full"
+                  >
+                    Configure Field Mapping
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -254,11 +282,21 @@ const Integrations = () => {
                         disabled={loading.zoho}
                         className="flex-1"
                       >
-                        {loading.zoho ? t('common.disconnecting') : t('integrations.disconnect')}
+                        {loading.zoho_test ? t('common.disconnecting') : t('integrations.disconnect')}
                       </Button>
                     </>
                   )}
                 </div>
+                
+                {integrations.zoho.connected && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => openMappingEditor('zoho')}
+                    className="w-full"
+                  >
+                    Configure Field Mapping
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -266,10 +304,10 @@ const Integrations = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <span className="text-purple-600 font-bold">O</span>
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span className="text-green-600 font-bold">O</span>
                   </div>
-                  Odoo CRM
+                  Odoo
                   <Badge variant={getStatusColor(integrations.odoo.status)}>
                     {getStatusText(integrations.odoo.status)}
                   </Badge>
@@ -305,24 +343,70 @@ const Integrations = () => {
                         disabled={loading.odoo}
                         className="flex-1"
                       >
-                        {loading.odoo ? t('common.disconnecting') : t('integrations.disconnect')}
+                        {loading.odoo_test ? t('common.disconnecting') : t('integrations.disconnect')}
                       </Button>
                     </>
                   )}
                 </div>
+                
+                {integrations.odoo.connected && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => openMappingEditor('odoo')}
+                    className="w-full"
+                  >
+                    Configure Field Mapping
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
+        <TabsContent value="mapping" className="space-y-6">
+          {selectedProvider ? (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Field Mapping - {selectedProvider.toUpperCase()}
+                </h2>
+                <Button 
+                  variant="outline"
+                  onClick={() => setActiveTab('crm')}
+                >
+                  Back to Integrations
+                </Button>
+              </div>
+              
+              <CRMFieldMappingEditor
+                workspaceId="ws_1"
+                provider={selectedProvider}
+                onMappingUpdate={handleMappingUpdate}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Select a CRM Provider
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Choose a connected CRM provider to configure field mapping
+              </p>
+              <Button onClick={() => setActiveTab('crm')}>
+                Go to Integrations
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+
         <TabsContent value="other" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('integrations.coming_soon.title')}</CardTitle>
+              <CardTitle>Coming Soon</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('integrations.coming_soon.description')}
+                More integrations will be available in future updates.
               </p>
             </CardContent>
           </Card>

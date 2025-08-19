@@ -4,7 +4,7 @@ import asyncio
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 import tiktoken
-from schemas import KbKind, KbType, CompanyKbTemplate, OfferPackTemplate
+from .schemas import KbKind, KbType, CompanyKbTemplate, OfferPackTemplate
 
 
 class AIClient:

@@ -142,7 +142,7 @@ def update_field_mappings_count(provider: str, workspace_id: str, count: int):
 
 # Example usage in CRM clients:
 """
-from metrics import track_crm_operation
+# from metrics import track_crm_operation  # Commented out to avoid circular import
 
 class HubSpotClient:
     @track_crm_operation("hubspot", "upsert_contact")

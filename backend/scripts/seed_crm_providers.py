@@ -13,8 +13,8 @@ import secrets
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_db, engine
-from models import HubSpotConnection, CrmFieldMapping
+from ..db import get_db, engine
+from ..models import HubSpotConnection, CrmFieldMapping
 from sqlalchemy.orm import Session
 
 

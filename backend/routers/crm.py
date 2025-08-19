@@ -8,12 +8,13 @@ from datetime import datetime
 import secrets
 import json
 
-from db import get_db
-from models import (
+from ..db import get_db
+from ..models import (
     CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog,
-    CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus
+    CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus,
+    Call, CallOutcome
 )
-from integrations import HubSpotClient, ZohoClient, OdooClient
+from ..integrations import HubSpotClient, ZohoClient, OdooClient
 from deps.auth import get_tenant_id, require_workspace_access
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
@@ -496,3 +497,218 @@ async def test_crm_connection(
     result["workspace_id"] = workspace_id
     
     return result
+
+# ===================== Push Call Outcomes to CRM =====================
+
+@router.post("/calls/{call_id}/push-to-crm")
+async def push_call_to_crm(
+    call_id: str,
+    provider: str = Query(default="auto", description="CRM provider (auto, hubspot, zoho, odoo)"),
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Push call outcome to CRM system"""
+    
+    # Get call and outcome data
+    call = db.query(Call).filter(Call.id == call_id).first()
+    if not call:
+        raise HTTPException(status_code=404, detail="Call not found")
+    
+    outcome = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
+    if not outcome:
+        raise HTTPException(status_code=404, detail="Call outcome not found")
+    
+    # Determine provider if auto
+    if provider == "auto":
+        # Get first connected CRM for workspace
+        connection = db.query(CrmConnection).filter(
+            CrmConnection.workspace_id == workspace_id,
+            CrmConnection.status == CrmConnectionStatus.CONNECTED
+        ).first()
+        
+        if not connection:
+            raise HTTPException(status_code=400, detail="No connected CRM found for workspace")
+        
+        provider = connection.provider.value
+    else:
+        # Validate provider
+        try:
+            CrmProvider(provider)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid provider: {provider}")
+    
+    # Check if CRM is connected
+    connection = db.query(CrmConnection).filter(
+        CrmConnection.workspace_id == workspace_id,
+        CrmConnection.provider == provider,
+        CrmConnection.status == CrmConnectionStatus.CONNECTED
+    ).first()
+    
+    if not connection:
+        raise HTTPException(status_code=400, detail=f"CRM {provider} not connected")
+    
+    try:
+        # Get field mapping for this provider
+        mapping = db.query(CrmFieldMapping).filter(
+            CrmFieldMapping.workspace_id == workspace_id,
+            CrmFieldMapping.provider == provider,
+            CrmFieldMapping.object == CrmObjectType.CONTACT
+        ).first()
+        
+        if not mapping:
+            # Use default mapping
+            mapping = {
+                "mapping_json": get_default_mapping(provider, "contact"),
+                "picklists_json": {}
+            }
+        else:
+            mapping = {
+                "mapping_json": mapping.mapping_json,
+                "picklists_json": mapping.picklists_json or {}
+            }
+        
+        # Prepare call data for CRM push
+        call_data = {
+            "call_id": call_id,
+            "workspace_id": workspace_id,
+            "provider": provider,
+            "duration_s": call.duration_s,
+            "outcome": outcome.fields_json,
+            "summary": outcome.ai_summary_short,
+            "next_step": outcome.next_step,
+            "sentiment": outcome.sentiment,
+            "score_lead": outcome.score_lead,
+            "created_at": call.created_at.isoformat() if call.created_at else None,
+            "mapping": mapping
+        }
+        
+        # Queue background job for CRM push
+        from workers.crm_jobs import crm_push_outcomes_job
+        crm_push_outcomes_job.send(
+            workspace_id, provider, call_id, call_data
+        )
+        
+        # Update outcome synced timestamp
+        outcome.synced_crm_at = datetime.utcnow()
+        db.commit()
+        
+        return {
+            "message": f"Call outcome queued for push to {provider}",
+            "call_id": call_id,
+            "provider": provider,
+            "workspace_id": workspace_id,
+            "job_queued": True
+        }
+        
+    except Exception as e:
+        # Log error
+        from services.crm_sync import CrmSyncService
+        sync_service = CrmSyncService()
+        
+        # Create sync log entry
+        log_data = {
+            "workspace_id": workspace_id,
+            "provider": provider,
+            "level": CrmLogLevel.ERROR.value,
+            "object": CrmObjectType.ACTIVITY.value,
+            "direction": CrmSyncDirection.PUSH.value,
+            "correlation_id": call_id,
+            "message": f"Failed to queue call push: {str(e)}",
+            "payload_json": json.dumps(call_data) if 'call_data' in locals() else "{}"
+        }
+        
+        # Note: In production, this would be async
+        print(f"CRM sync log error: {log_data}")
+        
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to push call to CRM: {str(e)}"
+        )
+
+
+# ===================== Helper Functions =====================
+
+def get_default_mapping(provider: str, object_type: str) -> dict:
+    """Get default field mapping for provider and object type"""
+    default_mappings = {
+        "hubspot": {
+            "contact": {
+                "email": "email",
+                "phone_e164": "phone",
+                "first_name": "firstname",
+                "last_name": "lastname",
+                "title": "jobtitle",
+                "country_iso": "country",
+                "company_id": "company"
+            },
+            "company": {
+                "name": "name",
+                "domain": "domain",
+                "phone": "phone",
+                "country_iso": "country",
+                "vat": "vat_number",
+                "address": "address"
+            },
+            "deal": {
+                "title": "dealname",
+                "amount_cents": "amount",
+                "currency": "currency",
+                "stage": "dealstage",
+                "pipeline": "pipeline"
+            }
+        },
+        "zoho": {
+            "contact": {
+                "email": "Email",
+                "phone_e164": "Phone",
+                "first_name": "First_Name",
+                "last_name": "Last_Name",
+                "title": "Title",
+                "country_iso": "Mailing_Country",
+                "company_id": "Account_Name"
+            },
+            "company": {
+                "name": "Account_Name",
+                "domain": "Website",
+                "phone": "Phone",
+                "country_iso": "Billing_Country",
+                "vat": "VAT",
+                "address": "Billing_Street"
+            },
+            "deal": {
+                "title": "Deal_Name",
+                "amount_cents": "Amount",
+                "currency": "Currency",
+                "stage": "Stage",
+                "pipeline": "Pipeline"
+            }
+        },
+        "odoo": {
+            "contact": {
+                "email": "email",
+                "phone_e164": "phone",
+                "first_name": "name (first part)",
+                "last_name": "name (last part)",
+                "title": "function",
+                "country_iso": "country_id",
+                "company_id": "parent_id"
+            },
+            "company": {
+                "name": "name",
+                "domain": "website",
+                "phone": "phone",
+                "country_iso": "country_id",
+                "vat": "vat",
+                "address": "street"
+            },
+            "deal": {
+                "title": "name",
+                "amount_cents": "expected_revenue",
+                "currency": "currency_id",
+                "stage": "stage_id",
+                "pipeline": "pipeline_id"
+            }
+        }
+    }
+    
+    return default_mappings.get(provider, {}).get(object_type, {})

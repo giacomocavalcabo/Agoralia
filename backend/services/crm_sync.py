@@ -8,13 +8,13 @@ import secrets
 import json
 import logging
 
-from db import get_db
-from models import (
+from ..db import get_db
+from ..models import (
     CrmConnection, CrmEntityLink, CrmSyncCursor, CrmSyncLog,
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel
 )
-from integrations import HubSpotClient, ZohoClient, OdooClient
-from metrics import track_crm_operation, track_entities_synced
+from ..integrations import HubSpotClient, ZohoClient, OdooClient
+from ..metrics import track_crm_operation, track_entities_synced
 
 logger = logging.getLogger(__name__)
 

@@ -5,8 +5,8 @@ from fastapi import HTTPException, Header, Query, Depends
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from db import get_db
-from models import User, Workspace, WorkspaceMember
+from ..db import get_db
+from ..models import User, Workspace, WorkspaceMember
 
 
 def get_tenant_id(
