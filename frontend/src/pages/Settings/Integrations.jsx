@@ -6,10 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Ta
 import { useToast } from '../../components/ToastProvider';
 import { useTranslation } from '../../lib/i18n';
 import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
+import CRMSyncStatus from '../../components/CRMSyncStatus';
 
 const Integrations = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  
   const [integrations, setIntegrations] = useState({
     hubspot: { connected: false, status: 'disconnected' },
     zoho: { connected: false, status: 'disconnected' },
@@ -152,6 +154,11 @@ const Integrations = () => {
     setActiveTab('mapping');
   };
 
+  const openSyncStatus = (provider) => {
+    setSelectedProvider(provider);
+    setActiveTab('sync');
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
@@ -167,6 +174,7 @@ const Integrations = () => {
         <TabsList>
           <TabsTrigger value="crm">{t('integrations.tabs.crm')}</TabsTrigger>
           <TabsTrigger value="mapping">Field Mapping</TabsTrigger>
+          <TabsTrigger value="sync">Sync Status</TabsTrigger>
           <TabsTrigger value="other">{t('integrations.tabs.other')}</TabsTrigger>
         </TabsList>
 
@@ -228,13 +236,22 @@ const Integrations = () => {
                 </div>
                 
                 {integrations.hubspot.connected && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => openMappingEditor('hubspot')}
-                    className="w-full"
-                  >
-                    Configure Field Mapping
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => openMappingEditor('hubspot')}
+                      className="w-full"
+                    >
+                      Field Mapping
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => openSyncStatus('hubspot')}
+                      className="w-full"
+                    >
+                      Sync Status
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -289,13 +306,22 @@ const Integrations = () => {
                 </div>
                 
                 {integrations.zoho.connected && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => openMappingEditor('zoho')}
-                    className="w-full"
-                  >
-                    Configure Field Mapping
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => openMappingEditor('zoho')}
+                      className="w-full"
+                    >
+                      Field Mapping
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => openSyncStatus('zoho')}
+                      className="w-full"
+                    >
+                      Sync Status
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -350,13 +376,22 @@ const Integrations = () => {
                 </div>
                 
                 {integrations.odoo.connected && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => openMappingEditor('odoo')}
-                    className="w-full"
-                  >
-                    Configure Field Mapping
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => openMappingEditor('odoo')}
+                      className="w-full"
+                    >
+                      Field Mapping
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => openSyncStatus('odoo')}
+                      className="w-full"
+                    >
+                      Sync Status
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -391,6 +426,41 @@ const Integrations = () => {
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Choose a connected CRM provider to configure field mapping
+              </p>
+              <Button onClick={() => setActiveTab('crm')}>
+                Go to Integrations
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="sync" className="space-y-6">
+          {selectedProvider ? (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Sync Status - {selectedProvider.toUpperCase()}
+                </h2>
+                <Button 
+                  variant="outline"
+                  onClick={() => setActiveTab('crm')}
+                >
+                  Back to Integrations
+                </Button>
+              </div>
+              
+              <CRMSyncStatus
+                workspaceId="ws_1"
+                provider={selectedProvider}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Select a CRM Provider
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Choose a connected CRM provider to view sync status
               </p>
               <Button onClick={() => setActiveTab('crm')}>
                 Go to Integrations

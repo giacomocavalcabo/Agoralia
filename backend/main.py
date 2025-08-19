@@ -882,7 +882,7 @@ async def admin_attestations_generate(request: Request, payload: dict, _guard: N
         
         if PDF_GENERATOR_AVAILABLE:
             # Use Chromium PDF generator
-            from pdf_chromium import html_to_pdf_chromium
+            from .pdf_chromium import html_to_pdf_chromium
             
             # Generate HTML content (you can customize this)
             html_content = f"""
@@ -2449,7 +2449,7 @@ async def pdf_health():
     """Health check endpoint for Chromium PDF generator"""
     try:
         if PDF_GENERATOR_AVAILABLE:
-            from pdf_chromium import get_chromium_version
+            from .pdf_chromium import get_chromium_version
             version = get_chromium_version()
             return {
                 "ok": True,

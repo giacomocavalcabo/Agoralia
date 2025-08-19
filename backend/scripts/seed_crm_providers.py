@@ -196,7 +196,7 @@ def main():
     print("🌱 Seeding CRM providers...")
     
     # Create database tables if they don't exist
-    from models import Base
+    from ..models import Base
     Base.metadata.create_all(bind=engine)
     
     # Seed data

@@ -626,6 +626,79 @@ async def push_call_to_crm(
         )
 
 
+# ===================== Sync Logs =====================
+
+@router.get("/sync/logs")
+async def get_sync_logs(
+    provider: str = Query(..., description="CRM provider"),
+    workspace_id: str = Query(default="ws_1"),
+    level: Optional[str] = Query(None, description="Log level filter"),
+    object: Optional[str] = Query(None, description="Object type filter"),
+    direction: Optional[str] = Query(None, description="Sync direction filter"),
+    limit: int = Query(default=50, description="Number of logs to return"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get CRM sync logs with optional filtering"""
+    
+    # Build query
+    query = db.query(CrmSyncLog).filter(
+        CrmSyncLog.workspace_id == workspace_id,
+        CrmSyncLog.provider == provider
+    )
+    
+    # Apply filters
+    if level:
+        try:
+            log_level = CrmLogLevel(level)
+            query = query.filter(CrmSyncLog.level == log_level)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid log level: {level}")
+    
+    if object:
+        try:
+            object_type = CrmObjectType(object)
+            query = query.filter(CrmSyncLog.object == object_type)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid object type: {object}")
+    
+    if direction:
+        try:
+            sync_direction = CrmSyncDirection(direction)
+            query = query.filter(CrmSyncLog.direction == sync_direction)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid sync direction: {direction}")
+    
+    # Get logs ordered by creation time (newest first)
+    logs = query.order_by(CrmSyncLog.created_at.desc()).limit(limit).all()
+    
+    # Convert to dict format
+    log_entries = []
+    for log in logs:
+        log_entries.append({
+            "id": log.id,
+            "level": log.level.value,
+            "object": log.object.value,
+            "direction": log.direction.value,
+            "message": log.message,
+            "correlation_id": log.correlation_id,
+            "payload_json": log.payload_json,
+            "created_at": log.created_at.isoformat() if log.created_at else None
+        })
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": provider,
+        "logs": log_entries,
+        "total": len(log_entries),
+        "filters": {
+            "level": level,
+            "object": object,
+            "direction": direction,
+            "limit": limit
+        }
+    }
+
+
 # ===================== Helper Functions =====================
 
 def get_default_mapping(provider: str, object_type: str) -> dict:
