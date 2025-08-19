@@ -1,0 +1,46 @@
+# CRM Integration Environment Variables
+# Copy this to .env and fill in your actual values
+
+# ===================== HubSpot =====================
+CRM_HUBSPOT_CLIENT_ID=your_hubspot_client_id
+CRM_HUBSPOT_CLIENT_SECRET=your_hubspot_client_secret
+CRM_HUBSPOT_REDIRECT_URI=https://your-domain.com/crm/hubspot/callback
+
+# ===================== Zoho CRM =====================
+CRM_ZOHO_CLIENT_ID=your_zoho_client_id
+CRM_ZOHO_CLIENT_SECRET=your_zoho_client_secret
+CRM_ZOHO_REDIRECT_URI=https://your-domain.com/crm/zoho/callback
+
+# ===================== Odoo CRM =====================
+ODOO_DEFAULT_URL=https://your-odoo-instance.com
+ODOO_DEFAULT_DATABASE=your_database_name
+ODOO_DEFAULT_USERNAME=your_username
+ODOO_DEFAULT_PASSWORD=your_password
+
+# Optional: API Key for Odoo (alternative to username/password)
+ODOO_API_KEY=your_api_key
+ODOO_DEFAULT_TIMEOUT=30
+
+# ===================== CRM Configuration =====================
+CRM_WEBHOOK_SECRET=your_webhook_secret_for_verification
+CRM_SYNC_PAGE_SIZE=200
+CRM_SYNC_RPS=5  # requests per second
+CRM_SYNC_TIMEOUT=30     # seconds
+
+# ===================== Security =====================
+# Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+CRM_ENCRYPTION_KEY=your_32_byte_encryption_key
+
+# ===================== Database =====================
+DATABASE_URL=postgresql://user:password@localhost:5432/coldai
+
+# ===================== Redis (for Dramatiq) =====================
+REDIS_URL=redis://localhost:6379/0
+
+# ===================== AI Services =====================
+OPENAI_API_KEY=your_openai_api_key
+
+# ===================== Email Providers =====================
+EMAIL_PROVIDER=postmark  # postmark, sendgrid
+POSTMARK_TOKEN=your_postmark_token
+SENDGRID_API_KEY=your_sendgrid_api_key

@@ -14,6 +14,7 @@ from models import (
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus
 )
 from integrations import HubSpotClient, ZohoClient, OdooClient
+from deps.auth import get_tenant_id, require_workspace_access
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
 

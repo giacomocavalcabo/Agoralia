@@ -7,8 +7,8 @@ from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from db import Base, engine, get_db
-from models import (
+from .db import Base, engine, get_db
+from .models import (
     User, Workspace, WorkspaceMember, Campaign, Call, UserAuth,
     Notification, NotificationTarget, Number, NumberVerification, InboundRoute,
     CallOutcome, Template, CrmConnection, MagicLink, CrmFieldMapping, ExportJob,
@@ -42,7 +42,7 @@ except Exception:  # pragma: no cover
 # Chromium PDF generator
 PDF_GENERATOR_AVAILABLE = False
 try:
-    from pdf_chromium import html_to_pdf_chromium, check_chromium_available
+    from .pdf_chromium import html_to_pdf_chromium, check_chromium_available
     PDF_GENERATOR_AVAILABLE = check_chromium_available()
     if PDF_GENERATOR_AVAILABLE:
         print("✅ Chromium PDF generator available")
@@ -52,9 +52,9 @@ except Exception as e:
     print(f"Warning: Chromium PDF generator not available: {e}. Compliance attestations will use fallback.")
 
 # Knowledge Base imports
-import schemas
-from ai_client import ai_client, get_kb_template, create_default_sections
-from routers import crm
+from . import schemas
+from .ai_client import ai_client, get_kb_template, create_default_sections
+from .routers import crm
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")

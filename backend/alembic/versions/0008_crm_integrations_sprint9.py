@@ -17,7 +17,58 @@ depends_on = None
 
 
 def upgrade():
-    # Create tables with enum columns (SQLAlchemy will handle enum creation)
+    # Create enum types safely (only if they don't exist)
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_provider') THEN
+                CREATE TYPE crm_provider AS ENUM ('hubspot', 'zoho', 'odoo');
+            END IF;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_connection_status') THEN
+                CREATE TYPE crm_connection_status AS ENUM ('connected', 'error', 'disconnected');
+            END IF;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_object_type') THEN
+                CREATE TYPE crm_object_type AS ENUM ('contact', 'company', 'deal', 'activity');
+            END IF;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_sync_direction') THEN
+                CREATE TYPE crm_sync_direction AS ENUM ('push', 'pull');
+            END IF;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_log_level') THEN
+                CREATE TYPE crm_log_level AS ENUM ('info', 'warn', 'error');
+            END IF;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crm_webhook_status') THEN
+                CREATE TYPE crm_webhook_status AS ENUM ('pending', 'processed', 'error');
+            END IF;
+        END $$;
+    """)
+    
+    # Drop old tables if they exist to avoid conflicts
+    op.execute("DROP TABLE IF EXISTS hubspot_connections CASCADE;")
+    op.execute("DROP TABLE IF EXISTS crm_field_mappings CASCADE;")
     # Create crm_connections table
     op.create_table('crm_connections',
         sa.Column('id', sa.String(), nullable=False),

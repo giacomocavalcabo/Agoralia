@@ -9,6 +9,12 @@ import logging
 
 from services.crm_sync import crm_sync_service
 from models import CrmProvider, CrmObjectType, CrmSyncDirection, CrmLogLevel
+from config.crm import crm_config
+import os
+
+# Job configuration
+MAX_RETRIES = int(os.getenv("CRM_JOB_MAX_RETRIES", "3"))
+RETRY_DELAY_BASE = int(os.getenv("CRM_JOB_RETRY_DELAY", "300000"))  # 5 minutes in ms
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +50,7 @@ def crm_pull_delta_job(workspace_id: str, provider: str, object_type: str,
             
     except Exception as e:
         logger.error(f"Delta pull job failed: {e}")
-        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+        raise dramatiq.Retry(delay=RETRY_DELAY_BASE)
 
 
 @dramatiq.actor(queue_name='crm_push')
@@ -72,7 +78,7 @@ def crm_push_outcomes_job(workspace_id: str, provider: str, call_id: str, call_d
             
     except Exception as e:
         logger.error(f"Push outcomes job failed: {e}")
-        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+        raise dramatiq.Retry(delay=RETRY_DELAY_BASE)
 
 
 @dramatiq.actor(queue_name='crm_backfill')
@@ -100,7 +106,7 @@ def crm_backfill_job(workspace_id: str, provider: str, object_type: str, limit: 
             
     except Exception as e:
         logger.error(f"Backfill job failed: {e}")
-        raise dramatiq.Retry(delay=600000)  # Retry in 10 minutes
+        raise dramatiq.Retry(delay=RETRY_DELAY_BASE * 2)  # Longer delay for backfill
 
 
 @dramatiq.actor(queue_name='crm_webhook')
@@ -121,7 +127,7 @@ def crm_webhook_dispatcher_job(event_id: str, provider: str, workspace_id: str,
         
     except Exception as e:
         logger.error(f"Webhook dispatcher job failed: {e}")
-        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+        raise dramatiq.Retry(delay=RETRY_DELAY_BASE)
 
 
 @dramatiq.actor(queue_name='crm_sync')
@@ -161,4 +167,4 @@ def crm_sync_job(workspace_id: str, provider: str, mode: str,
         
     except Exception as e:
         logger.error(f"CRM sync job failed: {e}")
-        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+        raise dramatiq.Retry(delay=RETRY_DELAY_BASE)

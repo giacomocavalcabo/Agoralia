@@ -8,6 +8,12 @@ from functools import wraps
 
 
 # CRM Operation Counters
+crm_requests_total = Counter(
+    'crm_requests_total',
+    'Total number of CRM API requests',
+    ['provider', 'object', 'verb', 'status']
+)
+
 crm_operations_total = Counter(
     'crm_operations_total',
     'Total number of CRM operations',
@@ -36,7 +42,14 @@ crm_rate_limit_hits = Counter(
 crm_errors_total = Counter(
     'crm_errors_total',
     'Total number of CRM errors',
-    ['provider', 'error_type', 'operation']
+    ['provider', 'error_type', 'operation', 'code']
+)
+
+crm_backfill_seconds = Histogram(
+    'crm_backfill_seconds',
+    'Time spent on CRM backfill operations',
+    ['provider', 'object'],
+    buckets=[1, 5, 10, 30, 60, 120, 300, 600, 1800]
 )
 
 # CRM Data Metrics
