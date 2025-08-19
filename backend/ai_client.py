@@ -1,10 +1,18 @@
 import os
 import json
 import asyncio
+import hashlib
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 import tiktoken
 from .schemas import KbKind, KbType, CompanyKbTemplate, OfferPackTemplate
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("Warning: OpenAI package not available, using mock client")
 
 
 class AIClient:
@@ -13,16 +21,19 @@ class AIClient:
     def __init__(self):
         self.provider = os.getenv("AI_PROVIDER", "openai").lower()
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         self.embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
         
-        if self.provider == "openai" and self.api_key:
-            openai.api_key = self.api_key
+        if self.provider == "openai" and self.api_key and OPENAI_AVAILABLE:
+            self.client = OpenAI(api_key=self.api_key)
+            print(f"✅ OpenAI client initialized with model: {self.model}")
         elif self.provider == "mock":
             print("Using Mock AI Client for development")
+            self.client = None
         else:
             print(f"Warning: AI provider '{self.provider}' not configured, using mock")
             self.provider = "mock"
+            self.client = None
     
     def _count_tokens(self, text: str) -> int:
         """Count tokens in text using tiktoken"""
@@ -35,9 +46,9 @@ class AIClient:
     
     def _estimate_cost(self, tokens_in: int, tokens_out: int = 0) -> int:
         """Estimate cost in microcents based on OpenAI pricing"""
-        # GPT-3.5-turbo: $0.0015/1K input, $0.002/1K output
-        input_cost = (tokens_in / 1000) * 0.0015 * 1000000  # microcents
-        output_cost = (tokens_out / 1000) * 0.002 * 1000000  # microcents
+        # GPT-4o-mini: $0.00015/1K input, $0.0006/1K output
+        input_cost = (tokens_in / 1000) * 0.00015 * 1000000  # microcents
+        output_cost = (tokens_out / 1000) * 0.0006 * 1000000  # microcents
         return int(input_cost + output_cost)
     
     def _get_cache_key(self, content: str, operation: str) -> str:
@@ -46,7 +57,7 @@ class AIClient:
     
     def extract_kb_fields(self, text: str, template: str, lang: str = "en-US") -> Tuple[Dict[str, Any], int, int]:
         """Extract structured fields from text using AI"""
-        if self.provider == "mock":
+        if self.provider == "mock" or not self.client:
             return self._mock_extract_fields(text, template, lang)
         
         try:
@@ -58,8 +69,8 @@ class AIClient:
             else:
                 prompt = self._build_generic_prompt(text, template, lang)
             
-            # Call OpenAI
-            response = openai.ChatCompletion.create(
+            # Call OpenAI with new client syntax
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are an expert at extracting structured information from business documents. Return only valid JSON."},
@@ -86,14 +97,14 @@ class AIClient:
     
     def generate_embeddings(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
         """Generate embeddings for texts"""
-        if self.provider == "mock":
+        if self.provider == "mock" or not self.client:
             return self._mock_generate_embeddings(texts)
         
         try:
             embeddings = []
             for i in range(0, len(texts), batch_size):
                 batch = texts[i:i + batch_size]
-                response = openai.Embedding.create(
+                response = self.client.embeddings.create(
                     input=batch,
                     model=self.embedding_model
                 )
@@ -107,173 +118,196 @@ class AIClient:
             return self._mock_generate_embeddings(texts)
     
     def _build_company_prompt(self, text: str, lang: str) -> str:
-        """Build prompt for company KB extraction"""
+        """Build prompt for company information extraction"""
+        lang_instruction = "Rispondi in italiano" if lang.startswith("it") else "Respond in English"
+        
         return f"""
-Extract company information from the following text and return a JSON object with these fields:
-- purpose: Company purpose in 1 sentence
-- vision: Company vision statement
-- brand_voice: {{"dos": [list of brand voice do's], "donts": [list of brand voice don'ts]}}
-- operating_areas: [{{"country_iso": "IT", "langs": ["it-IT"]}}]
-- icp: {{"industries": [target industries], "roles": [target roles]}}
-- contacts: {{"sales": "email", "support": "phone"}}
-- policies: {{"returns": "policy", "shipping": "policy", "warranty": "policy"}}
-- legal_defaults: {{"disclosure": "default", "recording": true/false}}
-
-Text: {text}
-Language: {lang}
-
-Return only valid JSON:
-"""
+        {lang_instruction}
+        
+        Extract company information from this text and return as JSON:
+        
+        {text}
+        
+        Return JSON with these fields:
+        {{
+            "name": "Company name",
+            "industry": "Industry/sector",
+            "size": "Company size (small/medium/large)",
+            "location": "Location/country",
+            "description": "Brief description",
+            "website": "Website if mentioned",
+            "phone": "Phone number if mentioned",
+            "email": "Email if mentioned"
+        }}
+        """
     
     def _build_offer_pack_prompt(self, text: str, lang: str) -> str:
-        """Build prompt for offer pack extraction"""
+        """Build prompt for offer pack information extraction"""
+        lang_instruction = "Rispondi in italiano" if lang.startswith("it") else "Respond in English"
+        
         return f"""
-Extract product/service information from the following text and return a JSON object with these fields:
-- name: Product/service name
-- type: Business type (saas, consulting, physical, marketplace, logistics, manufacturing, other)
-- languages: [supported languages]
-- value_props: [value propositions]
-- differentiators: [competitive differentiators]
-- pricing_bands: [{{"label": "tier", "from": 0, "to": 999, "currency": "EUR"}}]
-- qualification: {{"budget": "requirement", "authority": "requirement", "need": "requirement", "timing": "requirement"}}
-- objections: [{{"q": "objection", "a": "response"}}]
-- scripts: {{"opening": "opening script", "closing": "closing script"}}
-- cta: [call to action options]
-- faq: [{{"q": "question", "a": "answer"}}]
-
-Text: {text}
-Language: {lang}
-
-Return only valid JSON:
-"""
+        {lang_instruction}
+        
+        Extract offer pack information from this text and return as JSON:
+        
+        {text}
+        
+        Return JSON with these fields:
+        {{
+            "title": "Offer title",
+            "description": "Offer description",
+            "price": "Price if mentioned",
+            "validity": "Validity period if mentioned",
+            "features": ["Feature 1", "Feature 2"],
+            "target_audience": "Target audience",
+            "conditions": "Special conditions if any"
+        }}
+        """
     
     def _build_generic_prompt(self, text: str, template: str, lang: str) -> str:
-        """Build generic prompt for unknown templates"""
+        """Build generic prompt for other templates"""
+        lang_instruction = "Rispondi in italiano" if lang.startswith("it") else "Respond in English"
+        
         return f"""
-Extract structured information from the following text based on the template '{template}'.
-Return a JSON object with relevant fields.
-
-Text: {text}
-Language: {lang}
-
-Return only valid JSON:
-"""
+        {lang_instruction}
+        
+        Extract structured information from this text using template '{template}' and return as JSON:
+        
+        {text}
+        
+        Analyze the text and return relevant information in JSON format.
+        """
     
     def _mock_extract_fields(self, text: str, template: str, lang: str) -> Tuple[Dict[str, Any], int, int]:
-        """Mock field extraction for development"""
-        tokens_in = self._count_tokens(text)
-        tokens_out = 100  # Mock output tokens
+        """Mock implementation for development/testing"""
+        print(f"Mock AI: Extracting {template} fields from text ({len(text)} chars)")
         
         if template == "company":
-            extracted_data = {
-                "purpose": f"Mock company purpose extracted from {len(text)} characters",
-                "vision": f"Mock vision statement for {lang}",
-                "brand_voice": {
-                    "dos": ["Professional", "Helpful", "Transparent"],
-                    "donts": ["Pushy", "Vague", "Unprofessional"]
-                },
-                "operating_areas": [{"country_iso": "IT", "langs": [lang]}],
-                "icp": {"industries": ["Technology", "Manufacturing"], "roles": ["Manager", "Director"]},
-                "contacts": {"sales": "sales@example.com", "support": "+39000000000"},
-                "policies": {"returns": "30 days", "shipping": "Free over €50", "warranty": "2 years"},
-                "legal_defaults": {"disclosure": "standard", "recording": True}
+            mock_data = {
+                "name": "Mock Company Ltd",
+                "industry": "Technology",
+                "size": "medium",
+                "location": "Italy",
+                "description": "Mock company description",
+                "website": "https://mock.com",
+                "phone": "+39 123 456 789",
+                "email": "info@mock.com"
             }
         elif template == "offer_pack":
-            extracted_data = {
-                "name": f"Mock {template} product",
-                "type": "saas",
-                "languages": [lang],
-                "value_props": ["Efficiency", "Cost savings", "Easy to use"],
-                "differentiators": ["AI-powered", "24/7 support", "Customizable"],
-                "pricing_bands": [{"label": "Starter", "from": 0, "to": 99, "currency": "EUR"}],
-                "qualification": {"budget": "€100-1000", "authority": "Decision maker", "need": "Immediate", "timing": "1-3 months"},
-                "objections": [{"q": "Too expensive", "a": "ROI in 3 months"}],
-                "scripts": {"opening": "Hello, I'm calling about...", "closing": "Thank you for your time"},
-                "cta": ["book_demo", "send_quote"],
-                "faq": [{"q": "How does it work?", "a": "Simple setup process"}]
+            mock_data = {
+                "title": "Mock Offer Pack",
+                "description": "Mock offer description",
+                "price": "€99/month",
+                "validity": "30 days",
+                "features": ["Feature 1", "Feature 2", "Feature 3"],
+                "target_audience": "Small businesses",
+                "conditions": "Standard terms apply"
             }
         else:
-            extracted_data = {
-                "extracted_text": text[:100] + "...",
+            mock_data = {
+                "extracted": True,
                 "template": template,
-                "language": lang
+                "content_length": len(text)
             }
         
-        return extracted_data, tokens_in, tokens_out
+        # Mock token counts
+        tokens_in = len(text) // 4
+        tokens_out = len(json.dumps(mock_data)) // 4
+        
+        return mock_data, tokens_in, tokens_out
     
     def _mock_generate_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Mock embedding generation for development"""
-        # Generate mock 384-dimensional embeddings
-        import random
-        random.seed(42)  # Consistent for development
+        """Mock embeddings for development/testing"""
+        print(f"Mock AI: Generating embeddings for {len(texts)} texts")
         
-        embeddings = []
+        # Generate mock embeddings (1536-dimensional like text-embedding-3-small)
+        mock_embeddings = []
         for text in texts:
-            # Generate deterministic mock embedding based on text hash
-            text_hash = hash(text) % 1000000
-            random.seed(text_hash)
-            embedding = [random.uniform(-1, 1) for _ in range(384)]
-            embeddings.append(embedding)
+            # Simple hash-based mock embedding
+            import random
+            random.seed(hash(text) % 2**32)
+            embedding = [random.uniform(-1, 1) for _ in range(1536)]
+            # Normalize
+            norm = sum(x*x for x in embedding) ** 0.5
+            embedding = [x/norm for x in embedding]
+            mock_embeddings.append(embedding)
         
-        return embeddings
+        return mock_embeddings
 
 
 # Global AI client instance
 ai_client = AIClient()
 
 
-# Template definitions
-KB_TEMPLATES = {
-    "company": {
-        "name": "Company Knowledge Base",
-        "sections": [
-            {"key": "purpose", "title": "Purpose", "order_index": 1},
-            {"key": "vision", "title": "Vision", "order_index": 2},
-            {"key": "brand_voice", "title": "Brand Voice", "order_index": 3},
-            {"key": "operating_areas", "title": "Operating Areas", "order_index": 4},
-            {"key": "icp", "title": "Ideal Customer Profile", "order_index": 5},
-            {"key": "contacts", "title": "Contacts", "order_index": 6},
-            {"key": "policies", "title": "Policies", "order_index": 7},
-            {"key": "legal_defaults", "title": "Legal Defaults", "order_index": 8}
+def get_kb_template(template_type: str, lang: str = "en-US") -> Dict[str, Any]:
+    """Get Knowledge Base template for given type and language"""
+    if template_type == "company":
+        return CompanyKbTemplate(lang=lang).dict()
+    elif template_type == "offer_pack":
+        return OfferPackTemplate(lang=lang).dict()
+    else:
+        return {"type": template_type, "lang": lang, "fields": []}
+
+
+def create_default_sections(kb_id: str, template_type: str, lang: str = "en-US") -> List[Dict[str, Any]]:
+    """Create default sections for new Knowledge Base"""
+    if template_type == "company":
+        sections = [
+            {
+                "id": f"section_{kb_id}_company_info",
+                "kb_id": kb_id,
+                "title": "Company Information" if lang.startswith("en") else "Informazioni Aziendali",
+                "order": 1,
+                "content": "Basic company details and overview"
+            },
+            {
+                "id": f"section_{kb_id}_products",
+                "kb_id": kb_id,
+                "title": "Products & Services" if lang.startswith("en") else "Prodotti e Servizi",
+                "order": 2,
+                "content": "Description of products and services offered"
+            },
+            {
+                "id": f"section_{kb_id}_contact",
+                "kb_id": kb_id,
+                "title": "Contact Information" if lang.startswith("en") else "Informazioni di Contatto",
+                "order": 3,
+                "content": "How to get in touch with the company"
+            }
         ]
-    },
-    "offer_pack": {
-        "name": "Offer Pack",
-        "sections": [
-            {"key": "overview", "title": "Overview", "order_index": 1},
-            {"key": "value_props", "title": "Value Propositions", "order_index": 2},
-            {"key": "differentiators", "title": "Differentiators", "order_index": 3},
-            {"key": "pricing", "title": "Pricing", "order_index": 4},
-            {"key": "qualification", "title": "Qualification (BANT)", "order_index": 5},
-            {"key": "objections", "title": "Objections & Responses", "order_index": 6},
-            {"key": "scripts", "title": "Scripts", "order_index": 7},
-            {"key": "cta", "title": "Call to Action", "order_index": 8},
-            {"key": "faq", "title": "FAQ", "order_index": 9}
+    elif template_type == "offer_pack":
+        sections = [
+            {
+                "id": f"section_{kb_id}_offer_details",
+                "kb_id": kb_id,
+                "title": "Offer Details" if lang.startswith("en") else "Dettagli Offerta",
+                "order": 1,
+                "content": "Detailed description of the offer"
+            },
+            {
+                "id": f"section_{kb_id}_pricing",
+                "kb_id": kb_id,
+                "title": "Pricing" if lang.startswith("en") else "Prezzi",
+                "order": 2,
+                "content": "Pricing information and options"
+            },
+            {
+                "id": f"section_{kb_id}_terms",
+                "kb_id": kb_id,
+                "title": "Terms & Conditions" if lang.startswith("en") else "Termini e Condizioni",
+                "order": 3,
+                "content": "Terms and conditions of the offer"
+            }
         ]
-    }
-}
-
-
-def get_kb_template(template_name: str) -> Dict[str, Any]:
-    """Get KB template by name"""
-    return KB_TEMPLATES.get(template_name, {})
-
-
-def create_default_sections(kb_id: str, template_name: str) -> List[Dict[str, Any]]:
-    """Create default sections for a new KB"""
-    template = get_kb_template(template_name)
-    sections = []
-    
-    for section_data in template.get("sections", []):
-        section = {
-            "id": f"section_{len(sections) + 1}",
-            "kb_id": kb_id,
-            **section_data,
-            "content_md": None,
-            "content_json": None,
-            "completeness_pct": 0,
-            "updated_at": datetime.utcnow()
-        }
-        sections.append(section)
+    else:
+        sections = [
+            {
+                "id": f"section_{kb_id}_general",
+                "kb_id": kb_id,
+                "title": "General Information" if lang.startswith("en") else "Informazioni Generali",
+                "order": 1,
+                "content": "General information and overview"
+            }
+        ]
     
     return sections
