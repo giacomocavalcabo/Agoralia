@@ -3902,6 +3902,12 @@ def cancel_import_job(
         return {"job_id": job_id, "status": "canceled"}
 
 
+async def get_tenant_id(request: Request) -> str:
+    """Get tenant ID from request (placeholder implementation)"""
+    # In production, extract from JWT token or session
+    # For now, use workspace ID from header or default
+    return request.headers.get("X-Workspace-Id", "ws_1")
+
 def _recalculate_kb_metrics(db: Session, kb_id: str) -> None:
     """Recalculate KB completeness and freshness metrics"""
     # Get all sections and fields for KB
@@ -3948,7 +3954,7 @@ def _recalculate_kb_metrics(db: Session, kb_id: str) -> None:
         db.commit()
 
 @app.get("/metrics/funnel")
-async def get_funnel_metrics(days: int = 30, tenant_id: str = Depends(get_tenant_id)):
+async def get_funnel_metrics(days: int = 30):
 	"""Get conversion funnel metrics for the specified period"""
 	try:
 		# Calculate date range
@@ -3969,7 +3975,7 @@ async def get_funnel_metrics(days: int = 30, tenant_id: str = Depends(get_tenant
 		raise HTTPException(status_code=500, detail="Failed to get funnel metrics")
 
 @app.get("/metrics/agents/top")
-async def get_top_agents(days: int = 30, limit: int = 10, tenant_id: str = Depends(get_tenant_id)):
+async def get_top_agents(days: int = 30, limit: int = 10):
 	"""Get top performing agents for the specified period"""
 	try:
 		# Calculate date range
@@ -3991,7 +3997,7 @@ async def get_top_agents(days: int = 30, limit: int = 10, tenant_id: str = Depen
 		raise HTTPException(status_code=500, detail="Failed to get top agents")
 
 @app.get("/metrics/geo")
-async def get_geo_metrics(days: int = 30, tenant_id: str = Depends(get_tenant_id)):
+async def get_geo_metrics(days: int = 30):
 	"""Get geographic distribution metrics for the specified period"""
 	try:
 		# Calculate date range
@@ -4013,7 +4019,7 @@ async def get_geo_metrics(days: int = 30, tenant_id: str = Depends(get_tenant_id
 		raise HTTPException(status_code=500, detail="Failed to get geo metrics")
 
 @app.get("/metrics/cost/series")
-async def get_cost_series(days: int = 30, tenant_id: str = Depends(get_tenant_id)):
+async def get_cost_series(days: int = 30):
 	"""Get cost series data for sparkline and projections"""
 	try:
 		# Calculate date range
