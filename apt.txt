@@ -1,19 +1,21 @@
-# Core grafico
+# Cairo + GTK core
 libcairo2
 libgdk-pixbuf2.0-0
+libgobject-2.0-0
+libglib2.0-0
 
-# Text shaping & layout
+# Pango + text shaping
 libpango-1.0-0
 libpangocairo-1.0-0
 libpangoft2-1.0-0
 libharfbuzz0b
 libfribidi0
 
-# Varie utili
+# Altri utili
 libffi-dev
 shared-mime-info
 
-# Font (evita crash con CJK/emoji/RTL)
+# Fonts (evita crash con emoji, lingue CJK, RTL)
 fonts-dejavu-core
 fonts-liberation
 fonts-noto-core
