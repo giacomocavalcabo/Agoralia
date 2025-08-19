@@ -6119,6 +6119,584 @@
         "recording_requires_consent": false,
         "has_quiet_hours": false
       }
+    },
+    "AU": {
+      "country": "Australia",
+      "iso": "AU",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Caller ID must be provided (telemarketers number for return contact); no special prefix required",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing to consumers regulated under Do Not Call Register Act 2006 and ACMA industry standards",
+      "regime_b2b_text": "Business calls largely exempt from DNC; only general calling standards (hours ID) apply",
+      "notes_for_product": "Must scrub consumer numbers against DNC (heavy penalties for violations). Enforce calling-hour limits and ensure a valid CLI. Obtain express consent for any automated/prerecorded marketing. Always announce identity and honor opt-outs immediately. Record calls only with consent. Treat unclear cases conservatively (e.g. if consent is uncertain do not call).",
+      "dnc": [
+        {
+          "name": "Do Not Call Register",
+          "url": "https://www.donotcall.gov.au",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ACMA Say No to Telemarketers guide (EN)",
+          "url": null,
+          "updated": "2023-03-21"
+        },
+        {
+          "title": "ACMA DNC industry info (EN)",
+          "url": null,
+          "updated": "2023-03-21"
+        },
+        {
+          "title": "Do Not Call Register Act 2006 (legislation.gov.au EN)",
+          "url": null,
+          "updated": "2023-03-21"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "NZ": {
+      "country": "New Zealand",
+      "iso": "NZ",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Valid caller ID should be displayed (NZ Telco Code bars spoofing); no special prefix required for telemarketing.",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing statute; governed by overlapping laws (Privacy Act 2020) and self-regulation. Industry-run Do Not Call list for consumers. Fair Trading Act covers uninvited direct sales (5-day cooling-off written contract)",
+      "regime_b2b_text": "No special regulation for B2B telemarketing; business numbers cannot register on DNC (general consumer protections dont apply to business contacts)",
+      "notes_for_product": "No government DNC list – consider subscribing to Marketing Association list and always allow easy opt-out. Adhere to recommended call times (not before 8am or after 9pm local). Obtain express consent when possible especially for automated calls to meet privacy expectations. Immediately stop calling if a consumer objects. Use a real NZ number as Caller ID. Recording marketing calls without notice is discouraged – play a recording disclaimer to be safe.",
+      "dnc": [
+        {
+          "name": "Marketing Association Do Not Call Registry",
+          "url": "https://marketing.org.nz/do-not-call-do-not-mail",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "NZ Marketing Association DNC service page (EN)",
+          "url": null,
+          "updated": "2021-07-01"
+        },
+        {
+          "title": "NZ Consumer Protection guidance (EN)",
+          "url": null,
+          "updated": "2021-07-01"
+        },
+        {
+          "title": "Fair Trading Act 1986 (uninvited sales provisions EN)",
+          "url": null,
+          "updated": "2021-07-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "FJ": {
+      "country": "Fiji",
+      "iso": "FJ",
+      "regime_b2c": "opt-in",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified (no known caller ID requirements; advisable not to block CLI)",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing or DNC legislation. Telemarketing falls under general consumer protection and telecom confidentiality obligations. No requirement for prior consent to call identified.",
+      "regime_b2b_text": "No dedicated B2B calling rules; B2B telemarketing is unregulated beyond normal business practice.",
+      "notes_for_product": "Without clear regulations apply conservative standards: maintain an internal do-not-call list and respect customer requests. Follow hours similar to nearby markets (e.g. avoid early morning or late night calls). Ensure customer data is kept confidential per telecom rules. Treat consumer numbers as opt-out (dont call if they object). Recording marketing calls should only be done with explicit consent.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Telecommunications Act 2008 (FJ) (no marketing provisions)",
+          "url": null,
+          "updated": "2008-07-01"
+        },
+        {
+          "title": "Pacific Legal Network overview (EN)",
+          "url": null,
+          "updated": "2008-07-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "PG": {
+      "country": "Papua New Guinea",
+      "iso": "PG",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified; telemarketers typically should provide a callback number (no special prefix mandated).",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing laws. Telemarketing practices are subject to general consumer law (Fair Practices Act) and telecom regulations. No national DNC registry.",
+      "regime_b2b_text": "No targeted B2B rules; B2B telemarketing is generally unregulated.",
+      "notes_for_product": "No official DNC - maintain internal opt-out lists and honor customer requests promptly. Use local calling norms (avoid off-hours calls). Provide clear identification on calls and do not persist if asked to stop. Given the lack of specific law rely on general consumer protection principles (no misleading or harassing calls).",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "National ICT Act 2009 (PG) (no marketing provisions)",
+          "url": null,
+          "updated": "2009-01-01"
+        },
+        {
+          "title": "Pacific telecom regulatory info (EN)",
+          "url": null,
+          "updated": "2009-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "WS": {
+      "country": "Samoa",
+      "iso": "WS",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified (no mandated caller ID rules; best practice is to show a working number).",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No dedicated telemarketing law or DNC list. Telemarketing is governed only by general provisions (e.g. Telecommunications Act 2005 confidentiality and consumer protection laws).",
+      "regime_b2b_text": "No specific B2B telemarketing rules identified.",
+      "notes_for_product": "Treat consumer numbers as opt-out: only call if they havent objected. Maintain courtesy calling hours. Always identify the business at call start and keep calls brief if uninterested. With no formal rules our platform should default to stricter standards used elsewhere (e.g. NZ/AU) to preempt complaints.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Telecommunications Act 2005 (WS) (no marketing provisions)",
+          "url": null,
+          "updated": "2005-01-01"
+        },
+        {
+          "title": "Office of the Regulator consumer info (EN)",
+          "url": null,
+          "updated": "2005-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TO": {
+      "country": "Tonga",
+      "iso": "TO",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified; recommended to send a valid caller number (no special prefix mandated).",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No known telemarketing-specific regulations. General communications and consumer laws apply; no official DNC registry.",
+      "regime_b2b_text": "No particular B2B telemarketing framework.",
+      "notes_for_product": "Ensure an internal DNC process – if a Tongan consumer opts out do not call again. Adhere to polite calling times (e.g. daytime on weekdays). Without regulation rely on consent and courtesy: do not auto-dial repeatedly and always provide a contact number and identity on calls.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Communications Act (Tonga) (no marketing provisions)",
+          "url": null,
+          "updated": "2010-01-01"
+        },
+        {
+          "title": "Government consumer affairs notices (EN)",
+          "url": null,
+          "updated": "2010-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "KI": {
+      "country": "Kiribati",
+      "iso": "KI",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified (provide caller ID as good practice).",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific laws for telemarketing. Kiribati has no known DNC list or marketing-specific regulation; only broad consumer protection and telecom service rules apply.",
+      "regime_b2b_text": "No particular B2B telemarketing regulations.",
+      "notes_for_product": "Follow standard opt-out and disclosure practices. In absence of law treat all contacts respectfully: do not persist if consumer shows disinterest and keep records of those who opted out.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No specific sources (Kiribati telecom regulations do not cover marketing)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "TV": {
+      "country": "Tuvalu",
+      "iso": "TV",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No telemarketing-specific legal regime. No DNC registry or explicit requirements identified.",
+      "regime_b2b_text": "No distinct B2B rules.",
+      "notes_for_product": "Adopt general best practices as law is silent: respect customer wishes avoid odd-hour calls and always identify the caller.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Telecommunications rules (Tuvalu) – no marketing provisions",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "VU": {
+      "country": "Vanuatu",
+      "iso": "VU",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No explicit telemarketing regulation. Telecom law contains privacy provisions (cannot collect or share user info without consent) but no telemarketing-specific rules or DNC list.",
+      "regime_b2b_text": "No B2B-specific telemarketing laws.",
+      "notes_for_product": "Ensure explicit consent if using Vanuatu residents data for marketing to align with emerging privacy expectations. Maintain an internal opt-out list and do not call those who object. No formal call-time rules but mimic standards from other markets to avoid complaints. Monitor legal developments on privacy law.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Telecommunications & Radiocommunications Reg. Act 2009 (VU)",
+          "url": null,
+          "updated": "2023-03-01"
+        },
+        {
+          "title": "Govt. Data Privacy Policy 2023 (EN)",
+          "url": null,
+          "updated": "2023-03-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "MH": {
+      "country": "Marshall Islands",
+      "iso": "MH",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "legitimate_interest",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No known telemarketing regulations. The Marshall Islands do not maintain a DNC registry; telemarketing governed only by general advertising and consumer protection principles.",
+      "regime_b2b_text": "No specific B2B telemarketing provisions.",
+      "notes_for_product": "Default to strict opt-out practices. Provide identification on calls and immediately cease calling if requested. Use local time zones appropriately for scheduling calls.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No specific laws (MI) - general consumer law applies",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "FM": {
+      "country": "Micronesia (Fed. States)",
+      "iso": "FM",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing or DNC laws in FSM. Consumer contacts by phone are subject only to general fair practice standards.",
+      "regime_b2b_text": "No B2B-specific rules.",
+      "notes_for_product": "Adhere to basic courtesy and opt-out protocols. Without legal constraints align practices with international standards to avoid issues.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No specific sources (FSM)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "PW": {
+      "country": "Palau",
+      "iso": "PW",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No telemarketing law or DNC list in Palau. Only general consumer protection and privacy expectations apply.",
+      "regime_b2b_text": "No specific B2B telemarketing regulation.",
+      "notes_for_product": "Follow opt-out and disclosure best practices as in other jurisdictions. Keep records of any do-not-call requests.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No specific laws (PW)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "NR": {
+      "country": "Nauru",
+      "iso": "NR",
+      "regime_b2c": "opt-out",
+      "regime_b2b": "opt-out",
+      "quiet_hours": null,
+      "ai_disclosure": "depends",
+      "recording_basis": "consent",
+      "callerid_rules": "Not specified",
+      "recent_changes": null,
+      "last_verified": "2025-08-19",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No telemarketing regulations. Nauru has no DNC list; only general provisions (if any) against harassment or misuse of telecommunications apply.",
+      "regime_b2b_text": "None",
+      "notes_for_product": "Maintain internal DNC and respect consumer wishes. Otherwise operate with caution and transparency given no explicit rules.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": null,
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "No specific laws (NR)",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
     }
   },
   "countries": [
@@ -6921,6 +7499,71 @@
       "iso": "TR",
       "confidence": "low",
       "last_verified": "2025-08-18"
+    },
+    {
+      "iso": "AU",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NZ",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "FJ",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "PG",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "WS",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "TO",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "KI",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "TV",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "VU",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "MH",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "FM",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "PW",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
+    },
+    {
+      "iso": "NR",
+      "confidence": "low",
+      "last_verified": "2025-08-19"
     }
   ]
 }

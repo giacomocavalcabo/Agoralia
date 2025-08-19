@@ -24,6 +24,15 @@ export async function apiFetch(path, options = {}) {
 	return resp.text();
 }
 
+// Compatible API object for components
+export const api = {
+	get: (path) => apiFetch(path, { method: 'GET' }),
+	post: (path, data) => apiFetch(path, { method: 'POST', body: data }),
+	put: (path, data) => apiFetch(path, { method: 'PUT', body: data }),
+	patch: (path, data) => apiFetch(path, { method: 'PATCH', body: data }),
+	delete: (path) => apiFetch(path, { method: 'DELETE' }),
+};
+
 export function wsUrl(path) {
   const tenantId = localStorage.getItem('tenant_id')
   const qp = tenantId ? (path.includes('?') ? `&tenant_id=${tenantId}` : `?tenant_id=${tenantId}`) : ''

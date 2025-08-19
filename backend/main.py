@@ -2172,6 +2172,23 @@ async def health_check():
         "version": "0.1.0"
     }
 
+# ===================== Main Entry Point =====================
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    
+    # Use PORT from environment (Railway) or fallback to 8080
+    port = int(os.getenv("PORT", 8080))
+    
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",  # Bind to all interfaces
+        port=port,
+        reload=False,  # Disable reload in production
+        log_level="info"
+    )
+
 # ===================== Sprint 6: Admin Dashboard KPI =====================
 
 @app.get("/admin/kpi")
