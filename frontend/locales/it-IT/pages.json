@@ -1,4 +1,72 @@
 {
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bentornato",
+    "overview": "Panoramica",
+    "recent_activity": "Attività Recenti",
+    "quick_actions": "Azioni Rapide"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "profile": "Profilo",
+    "account": "Account",
+    "billing": "Fatturazione",
+    "team": "Team",
+    "integrations": "Integrazioni"
+  },
+  "integrations": {
+    "title": "Integrazioni",
+    "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
+    "tabs": {
+      "crm": "Sistemi CRM",
+      "other": "Altri Strumenti"
+    },
+    "hubspot": {
+      "description": "Sincronizza contatti, aziende e opportunità con HubSpot CRM"
+    },
+    "zoho": {
+      "description": "Connetti a Zoho CRM con supporto multi-DC"
+    },
+    "odoo": {
+      "description": "Integra con Odoo CRM usando JSON-RPC"
+    },
+    "status": {
+      "connected": "Connesso",
+      "connecting": "Connessione in corso",
+      "disconnected": "Disconnesso",
+      "error": "Errore"
+    },
+    "connect": "Connetti",
+    "disconnect": "Disconnetti",
+    "test": "Test Connessione",
+    "portal_id": "ID Portale",
+    "connected": {
+      "title": "Connesso con Successo",
+      "description": "Connesso con successo a {provider}"
+    },
+    "disconnected": {
+      "title": "Disconnesso con Successo",
+      "description": "Disconnesso con successo da {provider}"
+    },
+    "test": {
+      "success": {
+        "title": "Test Connessione Riuscito",
+        "description": "Test connessione a {provider} riuscito"
+      },
+      "error": {
+        "title": "Test Connessione Fallito",
+        "description": "Test connessione a {provider} fallito"
+      }
+    },
+    "error": {
+      "title": "Errore",
+      "description": "Si è verificato un errore durante l'elaborazione della richiesta"
+    },
+    "coming_soon": {
+      "title": "Prossimamente",
+      "description": "Altre integrazioni saranno disponibili negli aggiornamenti futuri"
+    }
+  },
   "campaigns": {
     "title": "Campagne",
     "step": "Passo {s}",

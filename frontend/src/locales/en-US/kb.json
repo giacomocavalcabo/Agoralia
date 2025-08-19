@@ -1,0 +1,68 @@
+{
+  "title": "Knowledge",
+  "company": "Company",
+  "offer_packs": "Offer Packs",
+  "assignments": "Assignments",
+  "imports": "Imports",
+  "completeness": "Completeness",
+  "freshness": "Freshness",
+  "publish": "Publish",
+  "unpublish": "Unpublish",
+  "new_offer_pack": "New Offer Pack",
+  "create_company_kb": "Create Company KB",
+  "import": "Import",
+  "manage": "Manage",
+  "open": "Open",
+  "edit": "Edit",
+  "view": "View",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "canceled": "Canceled"
+  },
+  "import": {
+    "start": "Start Import",
+    "mapping": "Field Mapping",
+    "review": "Review & Commit",
+    "source": "Source",
+    "wizard_title": "Import Knowledge Base",
+    "csv": "CSV",
+    "file": "File",
+    "url": "Website",
+    "cost_estimate": "Estimated Cost",
+    "commit": "Commit Import",
+    "cancel_best_effort": "Cancel (best-effort)"
+  },
+  "assign": {
+    "scope": {
+      "workspace_default": "Workspace Default",
+      "number": "Per Number",
+      "campaign": "Per Campaign",
+      "agent": "Per Agent"
+    },
+    "precedence": "Precedence Order",
+    "precedence_description": "KB assignments follow this priority order. A KB assigned at a higher level overrides those at lower levels."
+  },
+  "editor": {
+    "overview": "Overview",
+    "sections": "Sections",
+    "history": "History",
+    "autosave": "Saved",
+    "missing_fields": "Missing Required Fields",
+    "completeness_threshold": "Minimum 60% completeness required to publish"
+  },
+  "errors": {
+    "validation": "Validation Error",
+    "conflict": "Conflict Detected",
+    "rate_limit": "Rate Limit Reached",
+    "forbidden": "Access Denied",
+    "not_found": "Resource Not Found",
+    "unexpected": "Unexpected Error"
+  }
+}

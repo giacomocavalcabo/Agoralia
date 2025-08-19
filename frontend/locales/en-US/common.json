@@ -2,5 +2,8 @@
   "next": "Next",
   "prev": "Previous",
   "cancel": "Cancel",
-  "save": "Save"
+  "save": "Save",
+  "connecting": "Connecting...",
+  "disconnecting": "Disconnecting...",
+  "testing": "Testing..."
 }

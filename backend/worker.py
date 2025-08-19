@@ -99,9 +99,90 @@ def outcome_extract_job(call_id: str, agent_id: str, lang: str, template_id: str
         # In production, retry with exponential backoff
         raise dramatiq.Retry(delay=60000)  # Retry in 1 minute
 
+@dramatiq.actor(queue_name='q:crm_push')
+def crm_push_job(workspace_id: str, provider: str, entity_type: str, entity_data: Dict[str, Any]):
+    """Push data to specific CRM provider"""
+    try:
+        print(f"Pushing {entity_type} to {provider} CRM for workspace {workspace_id}")
+        
+        # In production, this would:
+        # 1. Get CRM connection details from database
+        # 2. Initialize appropriate client (HubSpot, Zoho, Odoo)
+        # 3. Map fields according to workspace mapping
+        # 4. Push data via CRM API
+        # 5. Log success/failure
+        
+        # Mock implementation
+        if provider == 'hubspot':
+            print(f"Pushing to HubSpot: {entity_type}")
+        elif provider == 'zoho':
+            print(f"Pushing to Zoho: {entity_type}")
+        elif provider == 'odoo':
+            print(f"Pushing to Odoo: {entity_type}")
+        
+        # Simulate API delay
+        import time
+        time.sleep(0.2)
+        
+        print(f"Successfully pushed {entity_type} to {provider}")
+        
+        return {
+            "success": True,
+            "workspace_id": workspace_id,
+            "provider": provider,
+            "entity_type": entity_type,
+            "status": "pushed"
+        }
+        
+    except Exception as e:
+        print(f"CRM push failed for {provider} {entity_type}: {e}")
+        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+
+
+@dramatiq.actor(queue_name='q:crm_pull')
+def crm_pull_job(workspace_id: str, provider: str, entity_type: str, filters: Optional[Dict[str, Any]] = None):
+    """Pull data from specific CRM provider"""
+    try:
+        print(f"Pulling {entity_type} from {provider} CRM for workspace {workspace_id}")
+        
+        # In production, this would:
+        # 1. Get CRM connection details from database
+        # 2. Initialize appropriate client
+        # 3. Pull data according to filters
+        # 4. Map fields back to internal schema
+        # 5. Store/update local data
+        
+        # Mock implementation
+        if provider == 'hubspot':
+            print(f"Pulling from HubSpot: {entity_type}")
+        elif provider == 'zoho':
+            print(f"Pulling from Zoho: {entity_type}")
+        elif provider == 'odoo':
+            print(f"Pulling from Odoo: {entity_type}")
+        
+        # Simulate API delay
+        import time
+        time.sleep(0.3)
+        
+        print(f"Successfully pulled {entity_type} from {provider}")
+        
+        return {
+            "success": True,
+            "workspace_id": workspace_id,
+            "provider": provider,
+            "entity_type": entity_type,
+            "status": "pulled",
+            "count": 25  # Mock count
+        }
+        
+    except Exception as e:
+        print(f"CRM pull failed for {provider} {entity_type}: {e}")
+        raise dramatiq.Retry(delay=300000)  # Retry in 5 minutes
+
+
 @dramatiq.actor(queue_name='q:crm_sync')
 def crm_sync_job(call_id: str, outcome_data: Dict[str, Any]):
-    """Sync call outcome to CRM systems"""
+    """Sync call outcome to CRM systems (legacy, kept for backward compatibility)"""
     try:
         print(f"Syncing outcome to CRM for call {call_id}")
         

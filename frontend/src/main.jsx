@@ -16,6 +16,9 @@ const pages = Object.entries(modules).map(([path, mod]) => {
 	return { name, Component: mod.default }
 })
 
+// Import KB routes
+import { kbRoutes } from './routes/kbRoutes.jsx'
+
 function slugify(name){ return name.toLowerCase() }
 function Placeholder({ name }){
 	return <div className="panel"><h1 style={{ marginTop:0 }}>{name}</h1><p className="kpi-title">This page will appear here once its component is exported.</p></div>
@@ -36,6 +39,16 @@ if (rootEl) {
 											? <Route key={name} index element={Component ? <Component /> : <Placeholder name={name} />} />
 											: <Route key={name} path={slugify(name)} element={Component ? <Component /> : <Placeholder name={name} />} />
 									))}
+									
+									{/* KB Routes */}
+									{kbRoutes.map((route, index) => (
+										<Route 
+											key={`kb-${index}`} 
+											path={route.path} 
+											element={route.element} 
+										/>
+									))}
+									
 									<Route path="*" element={<Navigate to="/" replace />} />
 								</Route>
 							</Routes>

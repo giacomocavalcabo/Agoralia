@@ -1,4 +1,72 @@
 {
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "recent_activity": "Recent Activity",
+    "quick_actions": "Quick Actions"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "account": "Account",
+    "billing": "Billing",
+    "team": "Team",
+    "integrations": "Integrations"
+  },
+  "integrations": {
+    "title": "Integrations",
+    "subtitle": "Connect your CRM and other tools to streamline your workflow",
+    "tabs": {
+      "crm": "CRM Systems",
+      "other": "Other Tools"
+    },
+    "hubspot": {
+      "description": "Sync contacts, companies, and deals with HubSpot CRM"
+    },
+    "zoho": {
+      "description": "Connect to Zoho CRM with multi-DC support"
+    },
+    "odoo": {
+      "description": "Integrate with Odoo CRM using JSON-RPC"
+    },
+    "status": {
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "disconnected": "Disconnected",
+      "error": "Error"
+    },
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "test": "Test Connection",
+    "portal_id": "Portal ID",
+    "connected": {
+      "title": "Connected Successfully",
+      "description": "Successfully connected to {provider}"
+    },
+    "disconnected": {
+      "title": "Disconnected Successfully", 
+      "description": "Successfully disconnected from {provider}"
+    },
+    "test": {
+      "success": {
+        "title": "Connection Test Successful",
+        "description": "Successfully tested connection to {provider}"
+      },
+      "error": {
+        "title": "Connection Test Failed",
+        "description": "Failed to test connection to {provider}"
+      }
+    },
+    "error": {
+      "title": "Error",
+      "description": "An error occurred while processing your request"
+    },
+    "coming_soon": {
+      "title": "Coming Soon",
+      "description": "More integrations will be available in future updates"
+    }
+  },
   "campaigns": {
     "title": "Campaigns",
     "step": "Step {s}",

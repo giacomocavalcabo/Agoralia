@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 const baseGroups = [
 	{ label: 'Home', items:[{ label:'Dashboard', to:'/' }]},
 	{ label: 'Operate', items:[{ label:'Leads', to:'/leads' },{ label:'Campaigns', to:'/campaigns' },{ label:'Calendar', to:'/calendar' },{ label:'Numbers', to:'/numbers' }]},
+	{ label: 'Knowledge', items:[{ label:'Knowledge Base', to:'/knowledge' },{ label:'Offer Packs', to:'/knowledge/offers' },{ label:'Imports', to:'/knowledge/imports' },{ label:'Assignments', to:'/knowledge/assignments' }]},
 	{ label: 'Analyze', items:[{ label:'Analytics', to:'/analytics' },{ label:'History', to:'/history' }]},
 	{ label: 'Data', items:[{ label:'Import', to:'/import' }]},
 	{ label: 'Configure', items:[{ label:'Settings', to:'/settings' },{ label:'Billing', to:'/billing' }]},

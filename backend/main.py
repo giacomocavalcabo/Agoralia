@@ -54,6 +54,7 @@ except Exception as e:
 # Knowledge Base imports
 from . import schemas
 from .ai_client import ai_client, get_kb_template, create_default_sections
+from .routers import crm
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
@@ -2161,6 +2162,158 @@ async def update_crm_mapping(payload: dict, db: Session = Depends(get_db)) -> di
     }
 
 
+# ===================== Sprint 9: CRM Integrations (Zoho & Odoo) =====================
+
+@app.post("/crm/zoho/connect")
+async def crm_zoho_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Connect Zoho CRM"""
+    workspace_id = payload.get("workspace_id", "ws_1")
+    
+    # In production, validate OAuth flow
+    # For now, return mock success
+    return {
+        "message": "Zoho CRM connected successfully",
+        "dc": "US",
+        "access_token": "mock_token"
+    }
+
+
+@app.post("/crm/zoho/disconnect")
+async def crm_zoho_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Disconnect Zoho CRM"""
+    # In production, revoke tokens
+    return {
+        "message": "Zoho CRM disconnected successfully"
+    }
+
+
+@app.post("/crm/zoho/sync")
+async def crm_zoho_sync(payload: dict) -> dict:
+    """Sync data to/from Zoho CRM"""
+    # In production, queue background job
+    return {
+        "message": "Zoho sync job queued",
+        "job_id": f"zoho_sync_{secrets.token_urlsafe(8)}"
+    }
+
+
+@app.get("/crm/zoho/mapping")
+async def get_zoho_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get Zoho field mapping"""
+    default_mapping = {
+        "contact": {
+            "firstname": "First_Name",
+            "lastname": "Last_Name",
+            "phone": "Phone",
+            "email": "Email",
+            "company": "Account_Name",
+            "country": "Mailing_Country"
+        },
+        "company": {
+            "name": "Account_Name",
+            "phone": "Phone",
+            "country": "Billing_Country",
+            "industry": "Industry"
+        },
+        "deal": {
+            "dealname": "Deal_Name",
+            "amount": "Amount",
+            "dealstage": "Stage",
+            "closedate": "Closing_Date"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "zoho",
+        "mapping": default_mapping
+    }
+
+
+@app.post("/crm/zoho/test")
+async def test_zoho_connection(payload: dict) -> dict:
+    """Test Zoho connection"""
+    # In production, validate credentials
+    return {
+        "status": "connected",
+        "dc": "US",
+        "org_name": "Demo Organization"
+    }
+
+
+@app.post("/crm/odoo/connect")
+async def crm_odoo_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Connect Odoo CRM"""
+    workspace_id = payload.get("workspace_id", "ws_1")
+    
+    # In production, validate connection
+    return {
+        "message": "Odoo CRM connected successfully",
+        "url": payload.get("url"),
+        "database": payload.get("database")
+    }
+
+
+@app.post("/crm/odoo/disconnect")
+async def crm_odoo_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Disconnect Odoo CRM"""
+    return {
+        "message": "Odoo CRM disconnected successfully"
+    }
+
+
+@app.post("/crm/odoo/sync")
+async def crm_odoo_sync(payload: dict) -> dict:
+    """Sync data to/from Odoo CRM"""
+    return {
+        "message": "Odoo sync job queued",
+        "job_id": f"odoo_sync_{secrets.token_urlsafe(8)}"
+    }
+
+
+@app.get("/crm/odoo/mapping")
+async def get_odoo_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get Odoo field mapping"""
+    default_mapping = {
+        "contact": {
+            "firstname": "name (first part)",
+            "lastname": "name (last part)",
+            "phone": "phone",
+            "email": "email",
+            "company": "parent_id",
+            "country": "country_id"
+        },
+        "company": {
+            "name": "name",
+            "phone": "phone",
+            "country": "country_id",
+            "industry": "industry"
+        },
+        "deal": {
+            "dealname": "name",
+            "amount": "expected_revenue",
+            "dealstage": "stage_id",
+            "closedate": "date_deadline"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "odoo",
+        "mapping": default_mapping
+    }
+
+
+@app.post("/crm/odoo/test")
+async def test_odoo_connection(payload: dict) -> dict:
+    """Test Odoo connection"""
+    return {
+        "status": "connected",
+        "url": payload.get("url"),
+        "database": payload.get("database")
+    }
+
+
 # ===================== Health Check =====================
 
 @app.get("/health")
@@ -2171,6 +2324,11 @@ async def health_check():
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "0.1.0"
     }
+
+# ===================== Include Routers =====================
+
+# Include CRM router
+app.include_router(crm.router)
 
 # ===================== Main Entry Point =====================
 
@@ -3232,6 +3390,345 @@ def delete_kb_field(
             "field_id": field_id,
             "field_key": field.key
         })
+        
+        return {"id": field_id, "status": "deleted"}
+
+
+@app.get("/kb/templates")
+def get_kb_templates(
+    request: Request,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get available KB templates"""
+    from .ai_client import KB_TEMPLATES
+    
+    return {
+        "templates": [
+            {
+                "name": template_name,
+                "display_name": template_data.get("name", template_name.title()),
+                "sections": template_data.get("sections", [])
+            }
+            for template_name, template_data in KB_TEMPLATES.items()
+        ]
+    }
+
+
+@app.post("/kb/imports/{job_id}/mapping")
+def update_import_mapping(
+    request: Request,
+    job_id: str,
+    payload: schemas.ImportMappingRequest,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Update field mappings for import job"""
+    workspace_id = _get_workspace_from_user(request)
+    
+    with next(get_db()) as db:
+        # Verify job exists and belongs to workspace
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Import job not found")
+        
+        # Update job with mappings
+        job.meta_json = job.meta_json or {}
+        job.meta_json["mappings"] = payload.mappings
+        db.commit()
+        
+        return {"job_id": job_id, "status": "mapping_updated"}
+
+
+@app.post("/kb/imports/{job_id}/commit")
+def commit_import_job(
+    request: Request,
+    job_id: str,
+    payload: schemas.ImportReviewRequest,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Commit and apply import job changes"""
+    workspace_id = _get_workspace_from_user(request)
+    
+    with next(get_db()) as db:
+        # Verify job exists and belongs to workspace
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Import job not found")
+        
+        if job.status != "completed":
+            raise HTTPException(status_code=400, detail="Import job not completed")
+        
+        # TODO: Process review and apply changes
+        # This would involve:
+        # 1. Applying field mappings
+        # 2. Merging conflicts based on auto_merge flag
+        # 3. Publishing if publish_after is True
+        
+        job.status = "reviewed"
+        if payload.publish_after:
+            # Update target KB status to published
+            if job.target_kb_id:
+                target_kb = db.query(KnowledgeBase).filter(
+                    KnowledgeBase.id == job.target_kb_id,
+                    KnowledgeBase.workspace_id == workspace_id
+                ).first()
+                if target_kb:
+                    target_kb.status = "published"
+                    target_kb.published_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return {"job_id": job_id, "status": "reviewed"}
+
+
+@app.get("/kb/assignments")
+def list_kb_assignments(
+    request: Request,
+    scope: str = Query(None, description="Filter by scope"),
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """List knowledge base assignments for workspace"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        query = db.query(KbAssignment).filter(
+            KbAssignment.workspace_id == workspace_id
+        )
+        
+        if scope:
+            query = query.filter(KbAssignment.scope == scope)
+        
+        assignments = query.all()
+        
+        # Enrich with KB details
+        enriched = []
+        for assignment in assignments:
+            kb = db.query(KnowledgeBase).filter(
+                KnowledgeBase.id == assignment.kb_id
+            ).first()
+            
+            if kb:
+                enriched.append({
+                    "id": assignment.id,
+                    "scope": assignment.scope,
+                    "scope_id": assignment.scope_id,
+                    "kb_id": assignment.kb_id,
+                    "kb_name": kb.name,
+                    "kb_kind": kb.kind,
+                    "kb_status": kb.status,
+                    "created_at": assignment.created_at
+                })
+        
+        return {"assignments": enriched}
+
+
+@app.get("/kb/ai-usage")
+def get_ai_usage(
+    request: Request,
+    period: str = Query("2025-01", description="Period in YYYY-MM format"),
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get AI usage statistics for workspace"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Parse period
+        try:
+            year, month = period.split("-")
+            start_date = datetime(int(year), int(month), 1)
+            if int(month) == 12:
+                end_date = datetime(int(year) + 1, 1, 1)
+            else:
+                end_date = datetime(int(year), int(month) + 1, 1)
+        except:
+            start_date = datetime(2025, 1, 1)
+            end_date = datetime(2025, 2, 1)
+        
+        # Get usage for period
+        usage = db.query(AiUsage).filter(
+            AiUsage.workspace_id == workspace_id,
+            AiUsage.created_at >= start_date,
+            AiUsage.created_at < end_date
+        ).all()
+        
+        # Aggregate by kind
+        by_kind = {}
+        total_tokens_in = 0
+        total_tokens_out = 0
+        total_cost_micros = 0
+        
+        for u in usage:
+            kind = u.kind
+            if kind not in by_kind:
+                by_kind[kind] = {
+                    "tokens_in": 0,
+                    "tokens_out": 0,
+                    "cost_micros": 0,
+                    "count": 0
+                }
+            
+            by_kind[kind]["tokens_in"] += u.tokens_in or 0
+            by_kind[kind]["tokens_out"] += u.tokens_out or 0
+            by_kind[kind]["cost_micros"] += u.cost_micros or 0
+            by_kind[kind]["count"] += 1
+            
+            total_tokens_in += u.tokens_in or 0
+            total_tokens_out += u.tokens_out or 0
+            total_cost_micros += u.cost_micros or 0
+        
+        return {
+            "period": period,
+            "by_kind": by_kind,
+            "totals": {
+                "tokens_in": total_tokens_in,
+                "tokens_out": total_tokens_out,
+                "cost_cents": total_cost_micros / 1000000,  # Convert microcents to cents
+                "jobs_count": len(usage)
+            }
+        }
+
+
+# ===================== Knowledge Base Fields Management =====================
+
+@app.post("/kb/{kb_id}/fields")
+def create_kb_field(
+    request: Request,
+    kb_id: str,
+    payload: schemas.KbFieldCreate,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Create a new field in knowledge base"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Verify KB exists and belongs to workspace
+        kb = db.query(KnowledgeBase).filter(
+            KnowledgeBase.id == kb_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if not kb:
+            raise HTTPException(status_code=404, detail="Knowledge base not found")
+        
+        # Verify section exists if specified
+        if payload.section_id:
+            section = db.query(KbSection).filter(
+                KbSection.id == payload.section_id,
+                KbSection.kb_id == kb_id
+            ).first()
+            if not section:
+                raise HTTPException(status_code=404, detail="Section not found")
+        
+        # Create field
+        field_id = f"field_{secrets.token_urlsafe(8)}"
+        field = KbField(
+            id=field_id,
+            kb_id=kb_id,
+            section_id=payload.section_id,
+            key=payload.key,
+            label=payload.label,
+            value_text=payload.value_text,
+            value_json=payload.value_json,
+            lang=payload.lang,
+            confidence=payload.confidence
+        )
+        db.add(field)
+        db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, kb_id, "u_1", "create_field", {
+            "field_id": field_id,
+            "field_key": field.key,
+            "field_label": field.label
+        })
+        
+        return {
+            "id": field_id,
+            "key": field.key,
+            "label": field.label,
+            "status": "created"
+        }
+
+
+@app.patch("/kb/fields/{field_id}")
+def update_kb_field(
+    request: Request,
+    field_id: str,
+    payload: schemas.KbFieldUpdate,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Update a knowledge base field"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Verify field exists and belongs to workspace
+        field = db.query(KbField).join(KnowledgeBase).filter(
+            KbField.id == field_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if not field:
+            raise HTTPException(status_code=404, detail="Field not found")
+        
+        # Update fields
+        if payload.label is not None:
+            field.label = payload.label
+        if payload.value_text is not None:
+            field.value_text = payload.value_text
+        if payload.value_json is not None:
+            field.value_json = payload.value_json
+        if payload.lang is not None:
+            field.lang = payload.lang
+        if payload.confidence is not None:
+            field.confidence = payload.confidence
+        
+        field.updated_at = datetime.utcnow()
+        db.commit()
+        
+        # Recalculate KB metrics
+        _recalculate_kb_metrics(db, field.kb_id)
+        
+        # Audit trail
+        _audit_kb_change(db, field.kb_id, "u_1", "update_field", {
+            "field_id": field_id,
+            "changes": payload.dict(exclude_unset=True)
+        })
+        
+        return {"id": field_id, "status": "updated"}
+
+
+@app.delete("/kb/fields/{field_id}")
+def delete_kb_field(
+    request: Request,
+    field_id: str,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Delete a knowledge base field"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Verify field exists and belongs to workspace
+        field = db.query(KbField).join(KnowledgeBase).filter(
+            KbField.id == field_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if not field:
+            raise HTTPException(status_code=404, detail="Field not found")
+        
+        # Delete field
+        db.delete(field)
+        db.commit()
         
         return {"id": field_id, "status": "deleted"}
 

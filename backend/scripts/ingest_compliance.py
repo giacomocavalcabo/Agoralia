@@ -287,6 +287,21 @@ def upsert(engine: Engine, tables: dict[str, Any], rec: dict) -> None:
 
 def load_raw_records(raw_dir: str) -> list[dict]:
     records: list[dict] = []
+    
+    # First priority: check for global CSV file
+    global_csv = os.path.join(raw_dir, "compliance_global.csv")
+    if os.path.exists(global_csv):
+        with open(global_csv, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                records.append(row)
+        return records
+    
+    # Fallback: check if continents directory exists, otherwise use raw directory
+    continents_dir = os.path.join(raw_dir, "continents")
+    if os.path.exists(continents_dir):
+        raw_dir = continents_dir
+    
     # Prefer JSON files if present, then CSV
     for fname in sorted(os.listdir(raw_dir)):
         path = os.path.join(raw_dir, fname)
@@ -534,6 +549,9 @@ def run() -> None:
             "confidence": it.get("confidence"),
             "last_verified": it.get("last_verified"),
         })
+    
+    # Sort countries alphabetically by ISO code
+    countries.sort(key=lambda x: x["iso"])
 
     compiled = {"fused_by_iso": fused_by_iso, "countries": countries}
     with open(out_path, "w", encoding="utf-8") as f:

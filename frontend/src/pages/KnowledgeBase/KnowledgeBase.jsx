@@ -1,10 +1,10 @@
 import { PlusIcon, DocumentTextIcon, CogIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../lib/api'
-import Card from '../components/ui/Card'
-import { Button } from '../components/ui/button'
-import { useKbList } from '../lib/kbApi'
-import { CompletenessMeter } from '../components/kb/CompletenessMeter'
+import { api } from '../../lib/api'
+import Card from '../../components/ui/Card'
+import { Button } from '../../components/ui/button'
+import { useKbList } from '../../lib/kbApi'
+import { CompletenessMeter } from '../../components/kb/CompletenessMeter'
 import { useNavigate } from 'react-router-dom'
 
 export default function KnowledgeBase() {

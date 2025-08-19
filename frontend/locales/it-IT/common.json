@@ -1,6 +1,9 @@
 {
   "next": "Avanti",
-  "prev": "Indietro",
+  "prev": "Precedente",
   "cancel": "Annulla",
-  "save": "Salva"
+  "save": "Salva",
+  "connecting": "Connessione in corso...",
+  "disconnecting": "Disconnessione in corso...",
+  "testing": "Test in corso..."
 }
