@@ -17,6 +17,6 @@ PyPDF2==3.0.1
 markdown==3.5.1
 beautifulsoup4==4.12.2
 lxml==4.9.3
-fasttext==0.9.2
+langdetect==1.0.9  # Python alternative to fasttext for language detection
 simhash==2.1.2
 tiktoken>=0.7.0
