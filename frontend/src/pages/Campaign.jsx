@@ -59,18 +59,18 @@ export default function Campaign(){
 
       {tab==='overview' && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0, 1fr))', gap:12 }}>
-          <KPI label={t('pages.campaigns.detail.kpi.leads')||'Leads'} value={kpi?.leads ?? 0} />
-          <KPI label={t('pages.campaigns.detail.kpi.calls')||'Calls'} value={kpi?.calls ?? 0} />
-          <KPI label={t('pages.campaigns.detail.kpi.qualified_rate')||'Qualified %'} value={(kpi?.qualified_rate ?? 0)+'%'} />
-          <KPI label={t('pages.campaigns.detail.kpi.avg_duration')||'Avg duration'} value={(kpi?.avg_duration_sec ?? 0)+'s'} />
-          <KPI label={t('pages.campaigns.detail.kpi.cost_per_min')||'Cost/min'} value={kpi?.cost_per_min ?? 0} />
-          <KPI label={t('pages.campaigns.detail.kpi.p95')||'p95'} value={(kpi?.p95 ?? 0)+' ms'} />
+          <KPI label="Leads" value={kpi?.leads ?? 0} />
+          <KPI label="Chiamate" value={kpi?.calls ?? 0} />
+          <KPI label="Qualificate %" value={(kpi?.qualified_rate ?? 0)+'%'} />
+          <KPI label="Durata media" value={(kpi?.avg_duration_sec ?? 0)+'s'} />
+          <KPI label="Costo/min" value={kpi?.cost_per_min ?? 0} />
+          <KPI label="p95" value={(kpi?.p95 ?? 0)+' ms'} />
         </div>
       )}
 
       {tab==='calendar' && (
         <div className="panel">
-          <div className="kpi-title" style={{ marginBottom:8 }}>Calendar</div>
+          <div className="kpi-title" style={{ marginBottom:8 }}>Calendario</div>
           <ul>
             {events.map(e=> (<li key={e.id} className="kpi-title">[{e.kind}] {e.title||''} {e.at}</li>))}
           </ul>
@@ -82,9 +82,9 @@ export default function Campaign(){
           <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
             <thead>
               <tr>
-                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Name</th>
-                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Phone</th>
-                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Status</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Nome</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Telefono</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Stato</th>
               </tr>
             </thead>
             <tbody>
@@ -103,16 +103,16 @@ export default function Campaign(){
       {tab==='settings' && (
         <div className="panel" style={{ display:'grid', gap:10 }}>
           <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.pacing')}</div>
+            <div className="kpi-title">Pacing (calls/min)</div>
             <input type="number" min="1" value={settings.pacing_npm} onChange={e=> setSettings({ ...settings, pacing_npm:e.target.value })} style={{ width:220, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
           </label>
           <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.budget')}</div>
+            <div className="kpi-title">Budget (centesimi)</div>
             <input type="number" min="0" value={settings.budget_cap_cents} onChange={e=> setSettings({ ...settings, budget_cap_cents:e.target.value })} style={{ width:220, padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8 }} />
           </label>
           <label style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
             <input type="checkbox" checked={settings.quiet_hours} onChange={e=> setSettings({ ...settings, quiet_hours:e.target.checked })} />
-            <span className="kpi-title">{t('pages.campaigns.fields.quiet_hours')}</span>
+            <span className="kpi-title">Rispetta orari silenziosi</span>
           </label>
           <div style={{ display:'flex', justifyContent:'flex-end' }}>
             <button onClick={async ()=>{
@@ -124,9 +124,9 @@ export default function Campaign(){
                 }
                 if (payload.budget_cap_cents == null) delete payload.budget_cap_cents
                 await apiFetch(`/campaigns/${id}`, { method:'PATCH', body: payload })
-                toast(t('pages.campaigns.toasts.updated') || 'Updated')
+                toast('Aggiornato')
               } catch(err){ toast(String(err?.message || err)) }
-            }} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>{t('common.save')}</button>
+            }} style={{ padding:'8px 12px', border:'1px solid var(--brand)', background:'var(--brand)', color:'white', borderRadius:8, fontWeight:700 }}>Salva</button>
           </div>
         </div>
       )}

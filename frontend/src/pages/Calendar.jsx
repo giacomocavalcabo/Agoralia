@@ -69,13 +69,13 @@ export default function Calendar(){
     <div className="grid gap-3">
       <div className="flex items-center gap-2">
         <div className="flex gap-1.5">
-          <button onClick={prev} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
-          <button onClick={today} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.today')||'Today'}</button>
-          <button onClick={next} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.next')}</button>
+          <button onClick={prev} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Precedente</button>
+          <button onClick={today} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Oggi</button>
+          <button onClick={next} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Successivo</button>
         </div>
         <div className="ml-auto flex gap-1.5">
-          <button aria-pressed={view==='week'} onClick={()=> setView('week')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='week'?'bg-bg-app':''}`}>{t('common.week')||'Week'}</button>
-          <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>{t('common.month')||'Month'}</button>
+          <button aria-pressed={view==='week'} onClick={()=> setView('week')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='week'?'bg-bg-app':''}`}>Settimana</button>
+          <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>Mese</button>
         </div>
       </div>
       <div className="kpi-title">{t('pages.calendar.range', { from: fromStr, to: toStr })}</div>
@@ -293,31 +293,31 @@ export default function Calendar(){
 
       <Modal title={t('pages.calendar.quick.title')} open={quickOpen} onClose={()=> setQuickOpen(false)} footer={
         <>
-          <button onClick={()=> setQuickOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
-          <button onClick={submitQuick} className="btn">{t('pages.calendar.quick.submit')}</button>
+          <button onClick={()=> setQuickOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
+          <button onClick={submitQuick} className="btn">Invia</button>
         </>
       }>
         <div className="grid gap-2.5">
           <label>
-            <div className="kpi-title">{t('pages.calendar.quick.lead')}</div>
+            <div className="kpi-title">Lead</div>
             <input value={quick.lead_id} onChange={e=> setQuick({ ...quick, lead_id:e.target.value })} className="input" />
           </label>
           <div className="grid grid-cols-2 gap-2.5">
             <label>
-              <div className="kpi-title">{t('pages.calendar.quick.agent')}</div>
+              <div className="kpi-title">Agente</div>
               <input value={quick.agent_id} onChange={e=> setQuick({ ...quick, agent_id:e.target.value })} className="input" />
             </label>
             <label>
-              <div className="kpi-title">{t('pages.calendar.quick.kb')}</div>
+              <div className="kpi-title">KB</div>
               <input value={quick.kb_id} onChange={e=> setQuick({ ...quick, kb_id:e.target.value })} className="input" />
             </label>
           </div>
           <label>
-            <div className="kpi-title">{t('pages.calendar.quick.from')}</div>
+            <div className="kpi-title">Da</div>
             <input placeholder={'+12025550123'} value={quick.from} onChange={e=> setQuick({ ...quick, from:e.target.value })} className="input" />
           </label>
           <label>
-            <div className="kpi-title">{t('pages.calendar.quick.datetime')}</div>
+            <div className="kpi-title">Data e Ora</div>
             <input type="datetime-local" value={quick.at ? new Date(quick.at).toISOString().slice(0,16) : ''} onChange={e=> setQuick({ ...quick, at: new Date(e.target.value).toISOString() })} className="input" />
           </label>
         </div>

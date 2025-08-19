@@ -92,7 +92,7 @@ export default function Dashboard() {
 			{/* Charts + Spend + Live */}
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-8">
-					<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
+					<Card title="Trends">
 						<div className="h-32 overflow-hidden">
 							{loading ? <SkeletonRow lines={6} /> : (
 								<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
@@ -108,10 +108,10 @@ export default function Dashboard() {
 					</Card>
 				</div>
 				<div className="col-span-12 md:col-span-6 xl:col-span-4">
-					<SpendCard title={t('pages.dashboard.spend_vs_budget')||'Spend vs Budget'} spendCents={summary?.spend_mtd_cents||0} budgetCents={summary?.budget_cap_cents||0} costPerMin={`${(summary?.spend_mtd_cents||0) && (summary?.minutes_mtd||0) ? `€${((summary.spend_mtd_cents/100)/Math.max(1,summary.minutes_mtd)).toFixed(2)}`:'—'}`} />
+					<SpendCard title="Spend vs Budget" spendCents={summary?.spend_mtd_cents||0} budgetCents={summary?.budget_cap_cents||0} costPerMin={`${(summary?.spend_mtd_cents||0) && (summary?.minutes_mtd||0) ? `€${((summary.spend_mtd_cents/100)/Math.max(1,summary.minutes_mtd)).toFixed(2)}`:'—'}`} />
 				</div>
 				<div className="col-span-12 md:col-span-6 xl:col-span-4">
-					<Card title={t('pages.dashboard.live.title')}>
+					<Card title="Live Calls">
 						<div className="h-48 overflow-y-auto">
 							{loading ? <SkeletonRow lines={4} /> : (
 								<DataTable
@@ -153,7 +153,7 @@ export default function Dashboard() {
 			</div>
 
 			{/* Recent activity */}
-			<Card title={t('pages.dashboard.activity')}>
+			<Card title="Recent Activity">
 				<div className="h-48 overflow-y-auto">
 					{loading ? <SkeletonRow lines={6} /> : (
 						<div className="grid gap-2">
