@@ -9,3 +9,4 @@ httpx==0.25.2
 bcrypt==4.1.2
 weasyprint==60.2
 aiofiles==23.2.1
+pyotp==2.9.0

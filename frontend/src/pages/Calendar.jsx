@@ -232,7 +232,7 @@ export default function Calendar(){
                 return (
                   <div
                     key={index}
-                    className={`min-h-[80px] p-1 border border-line ${
+                    className={`h-32 p-1 border border-line ${
                       isCurrentMonth ? 'bg-bg-card' : 'bg-bg-app/50'
                     } ${isToday ? 'ring-2 ring-brand-500' : ''}`}
                   >
@@ -241,7 +241,7 @@ export default function Calendar(){
                     } ${isToday ? 'font-bold' : ''}`}>
                       {date.getDate()}
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 max-h-20 overflow-hidden">
                       {dayEvents.slice(0, 3).map((event, eventIndex) => {
                         const eventDate = new Date(event.at)
                         const timeStr = eventDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
@@ -267,9 +267,20 @@ export default function Calendar(){
                         )
                       })}
                       {dayEvents.length > 3 && (
-                        <div className="text-xs text-ink-500 text-center">
+                        <button 
+                          className="text-xs text-brand-600 hover:text-brand-700 hover:underline text-center w-full cursor-pointer"
+                          onClick={() => {
+                            // Show all events for this day in a modal/drawer
+                            setSelected({ 
+                              title: `Eventi del ${date.toLocaleDateString('it-IT')}`, 
+                              events: dayEvents,
+                              date: date 
+                            })
+                            setDrawerOpen(true)
+                          }}
+                        >
                           +{dayEvents.length - 3} altri
-                        </div>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -315,24 +326,54 @@ export default function Calendar(){
       <Drawer open={drawerOpen} onClose={()=> setDrawerOpen(false)} title={selected ? (selected.title || 'Scheduled') : ''}>
         {selected && (
           <div className="grid gap-2">
-            <div className="kpi-title">{selected.at}</div>
-            <div className="flex gap-2">
-              <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.tz')||'TZ'}: UTC</span>
-              {selected.lang && <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
-            </div>
-            {(selected.kind==='blocked' || selected.kind==='warn') && (
-              <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
+            {selected.events ? (
+              // Multiple events for a day
+              <div>
+                <div className="text-sm text-ink-600 mb-3">
+                  {selected.date?.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+                <div className="space-y-2">
+                  {selected.events.map((event, index) => (
+                    <div key={index} className="p-3 border border-line rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`inline-block w-3 h-3 rounded-full ${
+                          event.kind === 'scheduled' ? 'bg-success' :
+                          event.kind === 'blocked' ? 'bg-ink-600' :
+                          event.kind === 'warn' ? 'bg-warn' : 'bg-info'
+                        }`}></span>
+                        <span className="font-semibold text-ink-900">{event.title || event.kind}</span>
+                        <span className="text-sm text-ink-600">
+                          {new Date(event.at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      {event.reason && <div className="text-sm text-ink-600">{event.reason}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Single event
+              <>
+                <div className="kpi-title">{selected.at}</div>
+                <div className="flex gap-2">
+                  <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.tz')||'TZ'}: UTC</span>
+                  {selected.lang && <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
+                </div>
+                {(selected.kind==='blocked' || selected.kind==='warn') && (
+                  <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
+                )}
+                <div className="flex gap-2">
+                  <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
+                  <button onClick={async ()=>{
+                    try{
+                      await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
+                      toast('Canceled'); setDrawerOpen(false); load()
+                    } catch(err){ toast(String(err?.message || err)) }
+                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
+                  <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
+                </div>
+              </>
             )}
-            <div className="flex gap-2">
-              <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
-              <button onClick={async ()=>{
-                try{
-                  await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
-                  toast('Canceled'); setDrawerOpen(false); load()
-                } catch(err){ toast(String(err?.message || err)) }
-              }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
-              <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
-            </div>
           </div>
         )}
       </Drawer>

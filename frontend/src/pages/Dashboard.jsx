@@ -93,12 +93,14 @@ export default function Dashboard() {
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-8">
 					<Card title={t('pages.dashboard.trends.calls') || 'Trends'}>
-						{loading ? <SkeletonRow lines={6} /> : (
-							<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
-								labels: trends.labels,
-								datasets:[{ data: trends.calls, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,.15)', fill:true, tension:.3 }]
-							}}/>
-						)}
+						<div className="h-32 overflow-hidden">
+							{loading ? <SkeletonRow lines={6} /> : (
+								<Line height={120} options={{ plugins:{ legend:{ display:false }}, responsive:true, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} data={{
+									labels: trends.labels,
+									datasets:[{ data: trends.calls, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,.15)', fill:true, tension:.3 }]
+								}}/>
+							)}
+						</div>
 						<div className="flex gap-2 mt-2">
 							<button className="btn" onClick={()=> setTrendDays(7)} disabled={trendDays===7}>7d</button>
 							<button className="btn" onClick={()=> setTrendDays(30)} disabled={trendDays===30}>30d</button>
@@ -110,57 +112,71 @@ export default function Dashboard() {
 				</div>
 				<div className="col-span-12 md:col-span-6 xl:col-span-4">
 					<Card title={t('pages.dashboard.live.title')}>
-						{loading ? <SkeletonRow lines={4} /> : (
-							<DataTable
-								columns={[
-									{ key:'lead', label:'Lead' },
-									{ key:'agent', label:'Agent' },
-									{ key:'status', label:'Status' },
-									{ key:'started_at', label:'Started' }
-								]}
-								chips={statusFilters.map(s=> ({ key:s, label:s }))}
-								onRemoveChip={(key)=> setStatusFilters((arr)=> arr.filter(s=> s!==key))}
-								onClearChips={()=> setStatusFilters([])}
-								rows={live
-									.filter(r=> statusFilters.length ? statusFilters.includes(String(r.status||'').toLowerCase()) : true)
-									.map(r=> ({
-										lead: r.lead ?? '—',
-										agent: r.agent ?? '—',
-										status: r.status ?? '—',
-										started_at: r.started_at ?? '—'
-									}))}
-							/>
-						)}
+						<div className="h-48 overflow-y-auto">
+							{loading ? <SkeletonRow lines={4} /> : (
+								<DataTable
+									columns={[
+										{ key:'lead', label:'Lead' },
+										{ key:'agent', label:'Agent' },
+										{ key:'status', label:'Status' },
+										{ key:'started_at', label:'Started' }
+									]}
+									chips={statusFilters.map(s=> ({ key:s, label:s }))}
+									onRemoveChip={(key)=> setStatusFilters((arr)=> arr.filter(s=> s!==key))}
+									onClearChips={()=> setStatusFilters([])}
+									rows={live
+										.filter(r=> statusFilters.length ? statusFilters.includes(String(r.status||'').toLowerCase()) : true)
+										.map(r=> ({
+											lead: r.lead ?? '—',
+											agent: r.agent ?? '—',
+											status: r.status ?? '—',
+											started_at: r.started_at ?? '—'
+										}))}
+								/>
+							)}
+						</div>
 					</Card>
 				</div>
 			</div>
 
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-6">
-					<TodayUpcoming loading={loading} items={upcoming.map(u=> ({ type:u.kind, lang:u.lang, lead:u.lead, localTime:u.local_time }))} />
+					<div className="h-64 overflow-y-auto">
+						<TodayUpcoming loading={loading} items={upcoming.map(u=> ({ type:u.kind, lang:u.lang, lead:u.lead, localTime:u.local_time }))} />
+					</div>
 				</div>
 				<div className="col-span-12 xl:col-span-6">
-					<CampaignHealth loading={loading} rows={campaigns.map(c=> ({ name:c.name, status:c.status, progress:c.progress_pct, qualified_pct:c.qualified_rate_pct, spend: typeof c.spend_cents==='number'? `€${(c.spend_cents/100).toFixed(2)}` : '—' }))} />
+					<div className="h-64 overflow-y-auto">
+						<CampaignHealth loading={loading} rows={campaigns.map(c=> ({ name:c.name, status:c.status, progress:c.progress_pct, qualified_pct:c.qualified_rate_pct, spend: typeof c.spend_cents==='number'? `€${(c.spend_cents/100).toFixed(2)}` : '—' }))} />
+					</div>
 				</div>
 			</div>
 
 			{/* Recent activity */}
 			<Card title={t('pages.dashboard.activity')}>
-				{loading ? <SkeletonRow lines={6} /> : (
-					<div className="grid gap-2">
-						{events.map((e,i)=>(<div key={i} className="panel p-3">{e.text ?? '—'}</div>))}
-						{!events.length && <div className="kpi-title">No activity yet</div>}
-					</div>
-				)}
+				<div className="h-48 overflow-y-auto">
+					{loading ? <SkeletonRow lines={6} /> : (
+						<div className="grid gap-2">
+							{events.map((e,i)=>(<div key={i} className="panel p-3">{e.text ?? '—'}</div>))}
+							{!events.length && <div className="kpi-title">No activity yet</div>}
+						</div>
+					)}
+				</div>
 			</Card>
 
 			<div className="grid grid-cols-12 gap-4">
 				<div className="col-span-12 xl:col-span-7">
-					<Tasks loading={loading} items={tasks.map(t=> ({ text: t.text, id:t.id }))} onAction={()=>{}} />
+					<div className="h-64 overflow-y-auto">
+						<Tasks loading={loading} items={tasks.map(t=> ({ text: t.text, id:t.id }))} onAction={()=>{}} />
+					</div>
 				</div>
 				<div className="col-span-12 xl:col-span-5">
-					<People loading={loading} members={members.map(m=> ({ name:m.name, email:m.email, role:m.role, last_activity:m.last_activity }))} />
-					<div className="mt-4"><Guides /></div>
+					<div className="h-48 overflow-y-auto">
+						<People loading={loading} members={members.map(m=> ({ name:m.name, email:m.email, role:m.role, last_activity:m.last_activity }))} />
+					</div>
+					<div className="mt-4 h-32 overflow-y-auto">
+						<Guides />
+					</div>
 				</div>
 			</div>
 		</div>

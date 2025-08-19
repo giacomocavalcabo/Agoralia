@@ -103,12 +103,12 @@ export default function Numbers(){
     try {
       // Simulate KYC submission
       await new Promise(resolve => setTimeout(resolve, 1000))
-      toast('KYC submitted successfully')
+      toast('KYC inviato con successo')
       setKycDrawer({ open: false, country: '', requirements: [] })
       // Now allow number purchase
       await buyNumber()
     } catch (e) {
-      toast('KYC submission failed')
+      toast('Invio KYC fallito')
     }
   }
 
@@ -127,46 +127,46 @@ export default function Numbers(){
       })
       const j = await r.json()
       await load()
-      alert(`Bought ${j.e164}`)
+      alert(`Acquistato ${j.e164}`)
     } catch (e) {
-      alert('Failed to buy number')
+      alert('Acquisto numero fallito')
     }
   }
 
   return (
     <div className="grid gap-3">
       <div className="panel flex gap-2">
-        <button className="btn" onClick={()=> setTab('my')} style={{ fontWeight: tab==='my'?700:600 }}>{t('numbers.my_numbers')||'My Numbers'}</button>
-        <button className="btn" onClick={()=> setTab('buy')} style={{ fontWeight: tab==='buy'?700:600 }}>{t('numbers.buy_numbers')||'Buy Numbers'}</button>
+        <button className="btn" onClick={()=> setTab('my')} style={{ fontWeight: tab==='my'?700:600 }}>I Miei Numeri</button>
+        <button className="btn" onClick={()=> setTab('buy')} style={{ fontWeight: tab==='buy'?700:600 }}>Acquista Numeri</button>
         <button className="btn" onClick={()=> setTab('policies')} style={{ fontWeight: tab==='policies'?700:600 }}>Policies</button>
       </div>
 
       {tab==='my' && (
         <div className="panel">
-          <div className="kpi-title mb-2">{t('numbers.use_my_number')||'Use my number'}</div>
+          <div className="kpi-title mb-2">Usa il mio numero</div>
           <div className="flex flex-wrap gap-2 items-end">
             <input className="input" placeholder="+3902..." value={byo.e164} onChange={e=> setByo({ ...byo, e164:e.target.value })} />
             <select className="input" value={byo.method} onChange={e=> setByo({ ...byo, method:e.target.value })}>
-              <option value="voice">Voice</option>
+              <option value="voice">Voce</option>
               <option value="sms">SMS</option>
             </select>
-            <button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/numbers/byo`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ e164: byo.e164, method:byo.method }) }); const j = await r.json(); setByo(b=> ({ ...b, verification_id:j.verification_id||'' })); } catch{} }}>Verify</button>
+            <button className="btn" onClick={async ()=>{ try{ const r = await fetch(`${api}/numbers/byo`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ e164: byo.e164, method:byo.method }) }); const j = await r.json(); setByo(b=> ({ ...b, verification_id:j.verification_id||'' })); } catch{} }}>Verifica</button>
             {!!byo.verification_id && (
               <>
-                <input className="input" placeholder="code" onKeyDown={async (e)=>{ if(e.key==='Enter'){ try{ await fetch(`${api}/numbers/byo/confirm`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ verification_id: byo.verification_id, code: e.currentTarget.value }) }); setByo({ e164:'', method:'voice', verification_id:'' }); load() } catch{} } }} />
+                <input className="input" placeholder="codice" onKeyDown={async (e)=>{ if(e.key==='Enter'){ try{ await fetch(`${api}/numbers/byo/confirm`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ verification_id: byo.verification_id, code: e.currentTarget.value }) }); setByo({ e164:'', method:'voice', verification_id:'' }); load() } catch{} } }} />
                 <span className="kpi-title">ID {byo.verification_id}</span>
               </>
             )}
           </div>
 
-          <div className="kpi-title mt-4">{t('numbers.default_from')||'Default caller ID'}</div>
+          <div className="kpi-title mt-4">Caller ID predefinito</div>
           <div className="flex gap-2 items-end">
             <input className="input" placeholder="+" value={defaultFrom} onChange={e=> setDefaultFrom(e.target.value)} />
-            <button className="btn" onClick={async ()=>{ try{ await fetch(`${api}/workspaces/ws_1/default_from`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ e164: defaultFrom }) }); } catch{} }}>Save</button>
+            <button className="btn" onClick={async ()=>{ try{ await fetch(`${api}/workspaces/ws_1/default_from`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ e164: defaultFrom }) }); } catch{} }}>Salva</button>
           </div>
 
           <table className="table mt-4">
-            <thead><tr><th>Number</th><th>Country</th><th>Source</th><th>Capabilities</th><th>Verified</th><th>Inbound</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Numero</th><th>Paese</th><th>Fonte</th><th>Capacità</th><th>Verificato</th><th>Inbound</th><th>Azioni</th></tr></thead>
             <tbody>
               {items.map(n=> (
                 <tr key={n.id}>
@@ -174,21 +174,21 @@ export default function Numbers(){
                   <td>{n.country_iso}</td>
                   <td>{n.source}</td>
                   <td>{(n.capabilities||[]).join(', ')}</td>
-                  <td>{n.verified? 'yes':'no'}</td>
-                  <td>{n.can_inbound? 'yes':'no'}</td>
+                  <td>{n.verified? 'sì':'no'}</td>
+                  <td>{n.can_inbound? 'sì':'no'}</td>
                   <td>
                     {n.can_inbound && (
                       <button 
                         className="btn-sm" 
                         onClick={() => setRoutingDrawer({ open: true, number: n })}
                       >
-                        {t('numbers.route') || 'Route'}
+                        Instrada
                       </button>
                     )}
                   </td>
                 </tr>
               ))}
-              {!items.length && <tr><td colSpan={7} className="muted">No numbers</td></tr>}
+              {!items.length && <tr><td colSpan={7} className="muted">Nessun numero</td></tr>}
             </tbody>
           </table>
         </div>
@@ -196,31 +196,31 @@ export default function Numbers(){
 
       {tab==='buy' && (
         <div className="panel">
-          <div className="kpi-title mb-4">{t('numbers.buy_number')||'Buy a number'}</div>
+          <div className="kpi-title mb-4">Acquista un numero</div>
           
           {/* Country selection with compliance info */}
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <label>
-                <div className="text-sm text-gray-600 mb-1">Country</div>
+                <div className="text-sm text-gray-600 mb-1">Paese</div>
                 <select 
                   value={buyIso} 
                   onChange={e => setBuyIso(e.target.value)} 
                   className="input"
                 >
-                  <option value="US">United States</option>
-                  <option value="IT">Italy</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
+                  <option value="US">Stati Uniti</option>
+                  <option value="IT">Italia</option>
+                  <option value="UK">Regno Unito</option>
+                  <option value="DE">Germania</option>
+                  <option value="FR">Francia</option>
                 </select>
               </label>
               
               <label>
-                <div className="text-sm text-gray-600 mb-1">Number Type</div>
+                <div className="text-sm text-gray-600 mb-1">Tipo di Numero</div>
                 <select className="input">
-                  <option value="geographic">Geographic</option>
-                  <option value="national">National</option>
+                  <option value="geographic">Geografico</option>
+                  <option value="national">Nazionale</option>
                   <option value="toll-free">Toll-free</option>
                 </select>
               </label>
@@ -265,7 +265,7 @@ export default function Numbers(){
                 onClick={buyNumber}
                 disabled={!buyIso}
               >
-                {t('numbers.buy_number')||'Buy a number'}
+                Acquista un numero
               </button>
               
               {buyIso && COUNTRY_RULES[buyIso]?.kyc_required && (
@@ -273,7 +273,7 @@ export default function Numbers(){
                   className="btn-secondary" 
                   onClick={() => openKyc(buyIso)}
                 >
-                  Complete KYC
+                  Completa KYC
                 </button>
               )}
             </div>
@@ -284,7 +284,7 @@ export default function Numbers(){
       {tab==='policies' && (
         <div className="panel">
           <div className="kpi-title">Policies</div>
-          <div className="muted">Country-specific caller ID rules will appear here.</div>
+          <div className="muted">Le regole di Caller ID specifiche per paese appariranno qui.</div>
         </div>
       )}
 
@@ -294,7 +294,7 @@ export default function Numbers(){
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">
-                {t('numbers.route_number') || 'Route Number'} {routingDrawer.number?.e164}
+                Instrada il Numero {routingDrawer.number?.e164}
               </h3>
               <button 
                 onClick={() => setRoutingDrawer({ open: false, number: null })}
@@ -306,7 +306,7 @@ export default function Numbers(){
 
             <div className="space-y-4">
               <label>
-                <div className="kpi-title">{t('numbers.agent_id') || 'Agent ID'}</div>
+                <div className="kpi-title">ID Agente</div>
                 <input 
                   value={routingForm.agent_id} 
                   onChange={e => setRoutingForm({ ...routingForm, agent_id: e.target.value })}
@@ -316,10 +316,10 @@ export default function Numbers(){
               </label>
 
               <div>
-                <div className="kpi-title mb-2">{t('numbers.business_hours') || 'Business Hours'}</div>
+                <div className="kpi-title mb-2">Orari di Lavoro</div>
                 <div className="grid grid-cols-2 gap-2">
                   <label>
-                    <div className="text-sm text-gray-600">Start</div>
+                    <div className="text-sm text-gray-600">Inizio</div>
                     <input 
                       type="time" 
                       value={routingForm.hours.start} 
@@ -331,7 +331,7 @@ export default function Numbers(){
                     />
                   </label>
                   <label>
-                    <div className="text-sm text-gray-600">End</div>
+                    <div className="text-sm text-gray-600">Fine</div>
                     <input 
                       type="time" 
                       value={routingForm.hours.end} 
@@ -344,7 +344,7 @@ export default function Numbers(){
                   </label>
                 </div>
                 <label className="mt-2 block">
-                  <div className="text-sm text-gray-600">Timezone</div>
+                  <div className="text-sm text-gray-600">Fuso Orario</div>
                   <select 
                     value={routingForm.hours.tz} 
                     onChange={e => setRoutingForm({ 
@@ -374,12 +374,12 @@ export default function Numbers(){
                     voicemail: { ...routingForm.voicemail, enabled: e.target.checked } 
                   })}
                 />
-                <span className="kpi-title">{t('numbers.enable_voicemail') || 'Enable Voicemail'}</span>
+                <span className="kpi-title">Abilita Voicemail</span>
               </label>
 
               {routingForm.voicemail.enabled && (
                 <label>
-                  <div className="kpi-title">{t('numbers.voicemail_message') || 'Voicemail Message'}</div>
+                  <div className="kpi-title">Messaggio Voicemail</div>
                   <textarea 
                     value={routingForm.voicemail.message} 
                     onChange={e => setRoutingForm({ 
@@ -398,13 +398,13 @@ export default function Numbers(){
                 onClick={() => setRoutingDrawer({ open: false, number: null })}
                 className="btn-secondary flex-1"
               >
-                {t('common.cancel') || 'Cancel'}
+                Annulla
               </button>
               <button 
                 onClick={saveRouting}
                 className="btn flex-1"
               >
-                {t('common.save') || 'Save'}
+                Salva
               </button>
             </div>
           </div>
@@ -417,7 +417,7 @@ export default function Numbers(){
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold">
-                KYC Verification for {kycDrawer.country}
+                Verifica KYC per {kycDrawer.country}
               </h3>
               <button 
                 onClick={() => setKycDrawer({ open: false, country: '', requirements: [] })}
@@ -429,7 +429,7 @@ export default function Numbers(){
 
             <div className="space-y-4">
               <div className="panel">
-                <div className="kpi-title mb-3">Requirements</div>
+                <div className="kpi-title mb-3">Requisiti</div>
                 <ul className="space-y-1 text-sm">
                   {kycDrawer.requirements.map((req, i) => (
                     <li key={i} className="flex items-start gap-2">
@@ -442,7 +442,7 @@ export default function Numbers(){
 
               <div className="grid grid-cols-2 gap-3">
                 <label>
-                  <div className="text-sm text-gray-600 mb-1">Company Name *</div>
+                  <div className="text-sm text-gray-600 mb-1">Nome Azienda *</div>
                   <input 
                     value={kycForm.company_name} 
                     onChange={e => setKycForm({ ...kycForm, company_name: e.target.value })}
@@ -452,7 +452,7 @@ export default function Numbers(){
                 </label>
                 
                 <label>
-                  <div className="text-sm text-gray-600 mb-1">Contact Email *</div>
+                  <div className="text-sm text-gray-600 mb-1">Email di Contatto *</div>
                   <input 
                     type="email"
                     value={kycForm.contact_email} 
@@ -464,7 +464,7 @@ export default function Numbers(){
               </div>
 
               <label>
-                <div className="text-sm text-gray-600 mb-1">Company Address *</div>
+                <div className="text-sm text-gray-600 mb-1">Indirizzo Azienda *</div>
                 <textarea 
                   value={kycForm.company_address} 
                   onChange={e => setKycForm({ ...kycForm, company_address: e.target.value })}
@@ -475,7 +475,7 @@ export default function Numbers(){
               </label>
 
               <label>
-                <div className="text-sm text-gray-600 mb-1">Contact Phone</div>
+                <div className="text-sm text-gray-600 mb-1">Telefono di Contatto</div>
                 <input 
                   value={kycForm.contact_phone} 
                   onChange={e => setKycForm({ ...kycForm, contact_phone: e.target.value })}
@@ -485,7 +485,7 @@ export default function Numbers(){
               </label>
 
               <label>
-                <div className="text-sm text-gray-600 mb-1">Business Document *</div>
+                <div className="text-sm text-gray-600 mb-1">Documento Aziendale *</div>
                 <input 
                   type="file" 
                   onChange={e => setKycForm({ ...kycForm, document_file: e.target.files[0] })}
@@ -494,7 +494,7 @@ export default function Numbers(){
                   required
                 />
                 <div className="text-xs text-gray-500 mt-1">
-                  Upload business license, registration, or similar document
+                  Carica licenza, registrazione o documento simile
                 </div>
               </label>
             </div>
@@ -504,14 +504,14 @@ export default function Numbers(){
                 onClick={() => setKycDrawer({ open: false, country: '', requirements: [] })}
                 className="btn-secondary flex-1"
               >
-                Cancel
+                Annulla
               </button>
               <button 
                 onClick={submitKyc}
                 className="btn flex-1"
                 disabled={!kycForm.company_name || !kycForm.company_address || !kycForm.contact_email || !kycForm.document_file}
               >
-                Submit KYC
+                Invia KYC
               </button>
             </div>
           </div>

@@ -11,11 +11,13 @@ from .db import Base, engine, get_db
 from .models import (
     User, Workspace, WorkspaceMember, Campaign, Call, UserAuth,
     Notification, NotificationTarget, Number, NumberVerification, InboundRoute,
-    CallOutcome, Template, CrmConnection,
+    CallOutcome, Template, CrmConnection, MagicLink, CrmFieldMapping, ExportJob,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 from sqlalchemy import or_
+import hashlib
+import pyotp
 
 try:
     # retell-sdk is optional during local dev, but required in prod for webhook verification
@@ -1659,4 +1661,522 @@ async def list_templates(request: Request):
             }
         ]
     }
+
+# ===================== Sprint 6: Auth & RBAC =====================
+
+@app.post("/auth/magic/request")
+async def auth_magic_request(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Request magic link authentication"""
+    email = payload.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email required")
+    
+    # Check if user exists
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Generate magic link token
+    import secrets
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    
+    # Create magic link record
+    magic_link = MagicLink(
+        id=f"ml_{secrets.token_urlsafe(16)}",
+        user_id=user.id,
+        token_hash=token_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
+    )
+    db.add(magic_link)
+    db.commit()
+    
+    # In production, send email with magic link
+    # For now, return token for testing
+    return {
+        "message": "Magic link sent to email",
+        "token": token,  # Remove in production
+        "expires_in": "15 minutes"
+    }
+
+
+@app.post("/auth/magic/verify")
+async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Verify magic link token"""
+    token = payload.get("token", "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Token required")
+    
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    
+    # Find magic link
+    magic_link = db.query(MagicLink).filter(
+        MagicLink.token_hash == token_hash,
+        MagicLink.expires_at > datetime.now(timezone.utc),
+        MagicLink.used_at.is_(None)
+    ).first()
+    
+    if not magic_link:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    # Mark as used
+    magic_link.used_at = datetime.now(timezone.utc)
+    db.add(magic_link)
+    
+    # Get user
+    user = db.query(User).filter(User.id == magic_link.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update last login
+    user.last_login_at = datetime.now(timezone.utc)
+    db.add(user)
+    db.commit()
+    
+    # Create session (in production, use proper session management)
+    session_id = f"session_{secrets.token_urlsafe(32)}"
+    
+    return {
+        "message": "Magic link verified successfully",
+        "session_id": session_id,
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin_global": user.is_admin_global
+        }
+    }
+
+
+@app.post("/auth/oauth/google/start")
+async def auth_google_start() -> dict:
+    """Start Google OAuth flow"""
+    # In production, redirect to Google OAuth
+    # For now, return mock URL
+    return {
+        "auth_url": "https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=email profile"
+    }
+
+
+@app.post("/auth/totp/setup")
+async def auth_totp_setup(request: Request, db: Session = Depends(get_db)) -> dict:
+    """Setup TOTP 2FA for user"""
+    # Get user from session (in production)
+    user_id = "u_1"  # Mock for now
+    
+    # Generate TOTP secret
+    import pyotp
+    secret = pyotp.random_base32()
+    
+    # Generate QR code URL
+    totp = pyotp.TOTP(secret)
+    qr_url = totp.provisioning_uri(
+        name="admin@example.com",
+        issuer_name="Agoralia"
+    )
+    
+    # Save secret to user_auth (in production)
+    return {
+        "secret": secret,  # Remove in production
+        "qr_url": qr_url,
+        "message": "Scan QR code with authenticator app"
+    }
+
+
+@app.post("/auth/totp/verify")
+async def auth_totp_verify(payload: dict) -> dict:
+    """Verify TOTP code"""
+    code = payload.get("code", "").strip()
+    secret = payload.get("secret", "").strip()
+    
+    if not code or not secret:
+        raise HTTPException(status_code=400, detail="Code and secret required")
+    
+    # Verify TOTP code
+    import pyotp
+    totp = pyotp.TOTP(secret)
+    
+    if totp.verify(code):
+        return {"message": "TOTP verified successfully"}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+
+
+# ===================== Sprint 6: Numbers Provisioning (Retell) =====================
+
+@app.post("/numbers/retell/provision")
+async def numbers_retell_provision(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Provision phone number from Retell"""
+    iso = (payload.get("country_iso") or "US").upper()
+    number_type = payload.get("type", "geographic")  # geographic, national, toll-free
+    capabilities = payload.get("capabilities", ["outbound"])
+    
+    # Mock Retell API call (in production, call actual Retell API)
+    import secrets
+    number_id = f"num_{secrets.token_urlsafe(16)}"
+    e164 = f"+1{secrets.token_urlsafe(9)}"  # Mock US number
+    
+    # Create number record
+    number = Number(
+        id=number_id,
+        workspace_id="ws_1",  # In production, get from session
+        e164=e164,
+        country_iso=iso,
+        source="agoralia",
+        capabilities=capabilities,
+        verified=True,
+        verification_method="none",
+        provider="retell",
+        provider_ref=f"retell_{number_id}",
+        can_inbound="inbound" in capabilities,
+        # New Sprint 6 fields
+        provider_number_id=f"retell_{number_id}",
+        verification_status="verified",
+        purchase_cost_cents=500,  # $5.00
+        monthly_cost_cents=100,   # $1.00/month
+        assigned_to="workspace",
+        assigned_id="ws_1"
+    )
+    
+    db.add(number)
+    db.commit()
+    
+    return {
+        "id": number_id,
+        "e164": e164,
+        "country_iso": iso,
+        "capabilities": capabilities,
+        "provider": "retell",
+        "costs": {
+            "purchase": "$5.00",
+            "monthly": "$1.00"
+        }
+    }
+
+
+@app.post("/numbers/verify-caller-id")
+async def numbers_verify_caller_id(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Start caller ID verification process"""
+    number_id = payload.get("number_id")
+    method = payload.get("method", "voice_otp")
+    
+    if not number_id:
+        raise HTTPException(status_code=400, detail="Number ID required")
+    
+    # Get number
+    number = db.query(Number).filter(Number.id == number_id).first()
+    if not number:
+        raise HTTPException(status_code=404, detail="Number not found")
+    
+    # Generate verification code
+    import secrets
+    code = str(secrets.randbelow(900000) + 100000)  # 6-digit code
+    
+    # Create verification record
+    verification = NumberVerification(
+        id=f"nv_{secrets.token_urlsafe(16)}",
+        number_id=number_id,
+        method=method,
+        code=code,
+        status="sent",
+        attempts=0,
+        last_sent_at=datetime.now(timezone.utc)
+    )
+    
+    db.add(verification)
+    db.commit()
+    
+    # In production, call Retell API to initiate voice call
+    # For now, return code for testing
+    return {
+        "verification_id": verification.id,
+        "method": method,
+        "code": code,  # Remove in production
+        "message": f"Calling {number.e164} to read verification code"
+    }
+
+
+# ===================== Sprint 6: Outcomes & CRM =====================
+
+@app.post("/calls/{call_id}/outcome")
+async def create_call_outcome(call_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Create or update call outcome with BANT/TRADE schema"""
+    
+    # Get or create outcome
+    outcome = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
+    if not outcome:
+        outcome = CallOutcome(
+            id=f"out_{call_id}",
+            call_id=call_id,
+            workspace_id="ws_1",  # In production, get from session
+            campaign_id=payload.get("campaign_id"),
+            template_name=payload.get("template_name", "BANT Qualification"),
+            schema_version=1
+        )
+    
+    # Update fields
+    if "fields_json" in payload:
+        outcome.fields_json = payload["fields_json"]
+    
+    if "bant_json" in payload:
+        outcome.bant_json = payload["bant_json"]
+    
+    if "disposition" in payload:
+        outcome.disposition = payload["disposition"]
+    
+    if "next_action" in payload:
+        outcome.next_action = payload["next_action"]
+    
+    if "summary_short" in payload:
+        outcome.ai_summary_short = payload["summary_short"]
+    
+    if "summary_long" in payload:
+        outcome.ai_summary_long = payload["summary_long"]
+    
+    if "action_items" in payload:
+        outcome.action_items_json = payload["action_items"]
+    
+    if "sentiment" in payload:
+        outcome.sentiment = payload["sentiment"]
+    
+    if "score" in payload:
+        outcome.score_lead = payload["score"]
+    
+    if "next_step" in payload:
+        outcome.next_step = payload["next_step"]
+    
+    outcome.updated_at = datetime.now(timezone.utc)
+    
+    db.add(outcome)
+    db.commit()
+    
+    # Trigger CRM sync if enabled
+    # In production, enqueue CRM sync job
+    
+    return {
+        "id": outcome.id,
+        "call_id": call_id,
+        "schema_version": outcome.schema_version,
+        "message": "Outcome saved successfully"
+    }
+
+
+@app.get("/calls/export.csv")
+async def export_calls_csv(
+    workspace_id: str = Query(default="ws_1"),
+    filters: str = Query(default="{}"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Export calls to CSV (async job)"""
+    
+    # Parse filters
+    try:
+        filter_data = json.loads(filters)
+    except json.JSONDecodeError:
+        filter_data = {}
+    
+    # Create export job
+    import secrets
+    job_id = f"export_{secrets.token_urlsafe(16)}"
+    
+    export_job = ExportJob(
+        id=job_id,
+        workspace_id=workspace_id,
+        user_id="u_1",  # In production, get from session
+        type="calls",
+        filters_json=filter_data,
+        status="pending"
+    )
+    
+    db.add(export_job)
+    db.commit()
+    
+    # In production, enqueue CSV generation job
+    # For now, return job status
+    
+    return {
+        "job_id": job_id,
+        "status": "pending",
+        "message": "CSV export job created. Check status for download link."
+    }
+
+
+# ===================== Sprint 6: CRM HubSpot Integration =====================
+
+@app.get("/crm/hubspot/start")
+async def crm_hubspot_start() -> dict:
+    """Start HubSpot OAuth flow"""
+    # In production, redirect to HubSpot OAuth
+    # For now, return mock URL
+    return {
+        "auth_url": "https://app.hubspot.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=contacts deals"
+    }
+
+
+@app.get("/crm/hubspot/callback")
+async def crm_hubspot_callback(code: str, state: str) -> dict:
+    """Handle HubSpot OAuth callback"""
+    # In production, exchange code for tokens
+    # For now, return mock success
+    
+    return {
+        "message": "HubSpot connected successfully",
+        "portal_id": "12345",
+        "access_token": "mock_token"
+    }
+
+
+@app.get("/crm/mapping")
+async def get_crm_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get CRM field mapping for workspace"""
+    
+    # Default mapping
+    default_mapping = {
+        "contact": {
+            "firstname": "name",
+            "lastname": "surname",
+            "phone": "phone",
+            "email": "email",
+            "company": "company"
+        },
+        "company": {
+            "name": "company",
+            "phone": "phone",
+            "country": "country"
+        },
+        "deal": {
+            "dealname": "opportunity_name",
+            "amount": "budget",
+            "dealstage": "next_step"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "hubspot",
+        "mapping": default_mapping
+    }
+
+
+@app.post("/crm/mapping")
+async def update_crm_mapping(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Update CRM field mapping"""
+    
+    workspace_id = payload.get("workspace_id", "ws_1")
+    provider = payload.get("provider", "hubspot")
+    mapping = payload.get("mapping", {})
+    
+    # Save mapping
+    mapping_record = CrmFieldMapping(
+        id=f"mapping_{secrets.token_urlsafe(16)}",
+        workspace_id=workspace_id,
+        crm_provider=provider,
+        mapping_json=mapping
+    )
+    
+    db.add(mapping_record)
+    db.commit()
+    
+    return {
+        "id": mapping_record.id,
+        "message": "CRM mapping updated successfully"
+    }
+
+
+# ===================== Sprint 6: Admin Dashboard KPI =====================
+
+@app.get("/admin/kpi")
+async def admin_kpi(request: Request, _guard: None = Depends(admin_guard)) -> dict:
+    """Get admin dashboard KPI data"""
+    
+    # Mock KPI data (in production, calculate from database)
+    kpi_data = {
+        "users": {
+            "total": 1250,
+            "active_7d": 847,
+            "active_30d": 1123
+        },
+        "minutes": {
+            "mtd": 45600,
+            "cap": 100000,
+            "utilization": 45.6
+        },
+        "calls": {
+            "today": 234,
+            "week": 1247,
+            "month": 5234
+        },
+        "performance": {
+            "success_rate": 78.5,
+            "avg_duration_sec": 187,
+            "error_rate": 2.1
+        },
+        "revenue": {
+            "mrr_cents": 1250000,  # $12,500
+            "arr_cents": 15000000,  # $150,000
+            "arpu_cents": 10000     # $100
+        }
+    }
+    
+    return kpi_data
+
+
+@app.get("/admin/usage")
+async def admin_usage(
+    period: str = Query(default="2025-01"),
+    request: Request = None,
+    _guard: None = Depends(admin_guard)
+) -> dict:
+    """Get usage analytics for admin"""
+    
+    # Mock usage data (in production, aggregate from database)
+    usage_data = {
+        "period": period,
+        "by_workspace": [
+            {
+                "workspace_id": "ws_1",
+                "name": "Demo Workspace",
+                "minutes": 1250,
+                "calls": 89,
+                "cost_cents": 2500
+            },
+            {
+                "workspace_id": "ws_2", 
+                "name": "Enterprise Client",
+                "minutes": 8900,
+                "calls": 456,
+                "cost_cents": 17800
+            }
+        ],
+        "by_language": [
+            {"lang": "en-US", "minutes": 4500, "calls": 234},
+            {"lang": "it-IT", "minutes": 3200, "calls": 189},
+            {"lang": "fr-FR", "minutes": 2400, "calls": 122}
+        ],
+        "by_country": [
+            {"iso": "US", "minutes": 3800, "calls": 198},
+            {"iso": "IT", "minutes": 3200, "calls": 189},
+            {"iso": "FR", "minutes": 2400, "calls": 122}
+        ]
+    }
+    
+    return usage_data
+
+
+@app.get("/admin/calls/live")
+async def admin_calls_live_stream(request: Request, _guard: None = Depends(admin_guard)):
+    """Stream live calls for admin dashboard (SSE)"""
+    
+    # Mock SSE response (in production, implement real-time streaming)
+    from fastapi.responses import StreamingResponse
+    
+    async def generate_live_calls():
+        # In production, stream real-time call updates
+        yield "data: {\"type\": \"live_calls\", \"data\": []}\n\n"
+    
+    return StreamingResponse(
+        generate_live_calls(),
+        media_type="text/plain",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
+    )
 

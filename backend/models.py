@@ -282,3 +282,62 @@ class CrmConnection(Base):
     oauth_tokens_json = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+# ===================== Sprint 6 Extensions =====================
+
+class MagicLink(Base):
+    __tablename__ = "magic_links"
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    token_hash = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ImpersonationSession(Base):
+    __tablename__ = "impersonation_sessions"
+    id = Column(String, primary_key=True)
+    admin_user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    target_user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    token_hash = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    ended_at = Column(DateTime, nullable=True)
+
+
+class HubSpotConnection(Base):
+    __tablename__ = "hubspot_connections"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    access_token = Column(String, nullable=False)
+    refresh_token = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    portal_id = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CrmFieldMapping(Base):
+    __tablename__ = "crm_field_mappings"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    crm_provider = Column(String, nullable=False)  # 'hubspot', 'zoho', etc.
+    mapping_json = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ExportJob(Base):
+    __tablename__ = "export_jobs"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    type = Column(String, nullable=False)  # 'calls', 'outcomes', 'leads'
+    filters_json = Column(JSON, nullable=True)
+    status = Column(String, nullable=False, default='pending')  # pending, processing, completed, failed
+    file_url = Column(String, nullable=True)
+    file_size_bytes = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+
