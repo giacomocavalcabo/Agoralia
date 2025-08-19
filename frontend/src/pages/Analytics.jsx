@@ -105,32 +105,34 @@ export default function Analytics(){
         ))}
       </div>
 
-      <div className="panel" aria-describedby="desc-outcomes">
-        <div className="kpi-title mb-2" id="desc-outcomes">{t('pages.analytics.charts.outcomes_over_time')||'Outcomes (recent days)'}</div>
-        <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={80} />
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="panel" aria-describedby="desc-outcomes">
+          <div className="kpi-title mb-2" id="desc-outcomes">Risultati nel tempo</div>
+          <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={80} />
+        </div>
 
-      <div className="panel" aria-describedby="desc-lang">
-        <div className="kpi-title mb-2" id="desc-lang">{t('pages.analytics.charts.lang_distribution')||'By language'}</div>
-        <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={60} />
+        <div className="panel" aria-describedby="desc-lang">
+          <div className="kpi-title mb-2" id="desc-lang">Per lingua</div>
+          <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={80} />
+        </div>
       </div>
 
       <div className="panel" aria-label="By tables">
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_campaign')||'By campaign'}</div>
+            <div className="kpi-title mb-1.5">By campaign</div>
             <ul className="m-0 pl-4">
               {(data?.tables?.by_campaign||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
             </ul>
           </div>
           <div>
-            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_agent')||'By agent'}</div>
+            <div className="kpi-title mb-1.5">By agent</div>
             <ul className="m-0 pl-4">
               {(data?.tables?.by_agent||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
             </ul>
           </div>
           <div>
-            <div className="kpi-title mb-1.5">{t('pages.analytics.tables.by_country')||'By country'}</div>
+            <div className="kpi-title mb-1.5">By country</div>
             <ul className="m-0 pl-4">
               {(data?.tables?.by_country||[]).map(r=> (<li key={r.iso} className="kpi-title">{r.iso}: {r.calls}</li>))}
             </ul>

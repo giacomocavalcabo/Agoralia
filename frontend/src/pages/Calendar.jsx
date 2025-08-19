@@ -356,21 +356,21 @@ export default function Calendar(){
               <>
                 <div className="kpi-title">{selected.at}</div>
                 <div className="flex gap-2">
-                  <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.tz')||'TZ'}: UTC</span>
-                  {selected.lang && <span className="kpi-title rounded-full border border-line px-2 py-0.5">{t('pages.calendar.badge.lang')||'Lang'}: {selected.lang}</span>}
+                  <span className="kpi-title rounded-full border border-line px-2 py-0.5">Fuso: UTC</span>
+                  {selected.lang && <span className="kpi-title rounded-full border border-line px-2 py-0.5">Lingua: {selected.lang}</span>}
                 </div>
                 {(selected.kind==='blocked' || selected.kind==='warn') && (
                   <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
                 )}
                 <div className="flex gap-2">
-                  <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.cancel')}</button>
+                  <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
                   <button onClick={async ()=>{
                     try{
                       await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
-                      toast('Canceled'); setDrawerOpen(false); load()
+                      toast('Annullato'); setDrawerOpen(false); load()
                     } catch(err){ toast(String(err?.message || err)) }
-                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_cancel')||'Cancel'}</button>
-                  <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('pages.calendar.drawer_reschedule')||'Reschedule'}</button>
+                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
+                  <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Riprogramma</button>
                 </div>
               </>
             )}
