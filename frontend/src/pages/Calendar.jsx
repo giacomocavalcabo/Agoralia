@@ -363,13 +363,13 @@ export default function Calendar(){
                   <div className="kpi-title">{selected.title || ''} {selected.reason ? `(${selected.reason})` : ''} {typeof selected.budget_used_pct==='number' ? `— ${selected.budget_used_pct}%` : ''} {typeof selected.used==='number' && typeof selected.limit==='number' ? `— ${selected.used}/${selected.limit}` : ''}</div>
                 )}
                 <div className="flex gap-2">
-                  <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
+                  <button onClick={()=> setDrawerOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Chiudi</button>
                   <button onClick={async ()=>{
                     try{
                       await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
                       toast('Annullato'); setDrawerOpen(false); load()
                     } catch(err){ toast(String(err?.message || err)) }
-                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
+                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla Evento</button>
                   <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Riprogramma</button>
                 </div>
               </>

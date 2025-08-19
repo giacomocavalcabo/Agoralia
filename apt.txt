@@ -1,2 +1,15 @@
-build-essential
-libpq-dev
+libpango-1.0-0
+libcairo2
+libgdk-pixbuf2.0-0
+libffi-dev
+shared-mime-info
+libpangoft2-1.0-0
+libharfbuzz0b
+libpng16-16
+libjpeg62-turbo
+libx11-6
+libxext6
+libxrender1
+libxcb1
+libxcb-render0
+libxcb-shm0

@@ -86,7 +86,9 @@ export default function Analytics(){
 
       <div className="panel" aria-describedby="desc-calls">
         <div className="kpi-title mb-2" id="desc-calls">Chiamate nel tempo</div>
-        <Line data={callsOverTime} options={{ responsive:true, maintainAspectRatio:false }} height={60} />
+        <div className="h-32 overflow-hidden">
+          <Line data={callsOverTime} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ display:false }}, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} height={120} />
+        </div>
       </div>
 
       <div className="panel flex flex-wrap items-center gap-3">
@@ -108,12 +110,16 @@ export default function Analytics(){
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="panel" aria-describedby="desc-outcomes">
           <div className="kpi-title mb-2" id="desc-outcomes">Risultati nel tempo</div>
-          <Bar data={outcomesOverTime} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={80} />
+          <div className="h-32 overflow-hidden">
+            <Bar data={outcomesOverTime} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={120} />
+          </div>
         </div>
 
         <div className="panel" aria-describedby="desc-lang">
           <div className="kpi-title mb-2" id="desc-lang">Per lingua</div>
-          <Doughnut data={langDistribution} options={{ plugins:{ legend:{ position:'bottom' } } }} height={80} />
+          <div className="h-32 overflow-hidden">
+            <Doughnut data={langDistribution} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }} height={120} />
+          </div>
         </div>
       </div>
 

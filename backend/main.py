@@ -2083,6 +2083,17 @@ async def update_crm_mapping(payload: dict, db: Session = Depends(get_db)) -> di
     }
 
 
+# ===================== Health Check =====================
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "0.1.0"
+    }
+
 # ===================== Sprint 6: Admin Dashboard KPI =====================
 
 @app.get("/admin/kpi")
