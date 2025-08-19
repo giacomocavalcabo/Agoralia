@@ -33,6 +33,13 @@ try:
 except Exception:  # pragma: no cover
     redis = None  # type: ignore
 
+try:
+    from .compliance_pdf import CompliancePDFGenerator
+    PDF_GENERATOR_AVAILABLE = True
+except ImportError:
+    PDF_GENERATOR_AVAILABLE = False
+    print("Warning: PDF generator not available. Compliance attestations will use fallback.")
+
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
 # ===================== In-memory store (dev) =====================
@@ -824,9 +831,72 @@ def admin_attestations(
 
 @app.post("/admin/compliance/attestations/generate")
 async def admin_attestations_generate(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
-    att_id = f"att_{len(_ATTESTATIONS)+1}"
-    _ATTESTATIONS[att_id] = {"id": att_id, **payload}
-    return {"id": att_id, "pdf_url": f"/attestations/{att_id}", "sha256": "sha256:demo"}
+    """Generate compliance attestation PDF"""
+    try:
+        workspace_id = payload.get("workspace_id")
+        campaign_id = payload.get("campaign_id")
+        iso = payload.get("iso", "US")
+        inputs = payload.get("inputs", {})
+        
+        if not workspace_id:
+            raise HTTPException(status_code=400, detail="workspace_id is required")
+        
+        if PDF_GENERATOR_AVAILABLE:
+            # Use real PDF generator
+            generator = CompliancePDFGenerator()
+            attestation = generator.generate_attestation_pdf(
+                workspace_id=workspace_id,
+                campaign_id=campaign_id,
+                iso=iso,
+                inputs=inputs,
+                signed_by_user_id="admin_user"  # In production, get from session
+            )
+            
+            # Store attestation in database (in production)
+            att_id = attestation['id']
+            _ATTESTATIONS[att_id] = {
+                "id": att_id,
+                "workspace_id": workspace_id,
+                "campaign_id": campaign_id,
+                "iso": iso,
+                "inputs": inputs,
+                "pdf_url": f"/attestations/{att_id}",
+                "sha256": attestation['hash'],
+                "generated_at": attestation['generated_at'],
+                "signed_by_user_id": attestation['signed_by_user_id']
+            }
+            
+            return {
+                "id": att_id,
+                "pdf_url": f"/attestations/{att_id}",
+                "sha256": attestation['hash'],
+                "message": "PDF generated successfully"
+            }
+        else:
+            # Fallback to mock attestation
+            att_id = f"att_{len(_ATTESTATIONS)+1}"
+            _ATTESTATIONS[att_id] = {
+                "id": att_id,
+                "workspace_id": workspace_id,
+                "campaign_id": campaign_id,
+                "iso": iso,
+                "inputs": inputs,
+                "pdf_url": f"/attestations/{att_id}",
+                "sha256": "sha256:fallback",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "signed_by_user_id": "admin_user"
+            }
+            
+            return {
+                "id": att_id,
+                "pdf_url": f"/attestations/{att_id}",
+                "sha256": "sha256:fallback",
+                "message": "Mock attestation created (PDF generator not available)"
+            }
+            
+    except Exception as e:
+        print(f"Failed to generate attestation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate attestation: {str(e)}")
 
 
 @app.get("/admin/compliance/preflight/logs")

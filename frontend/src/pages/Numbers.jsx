@@ -30,21 +30,33 @@ export default function Numbers(){
   const COUNTRY_RULES = {
     'US': {
       kyc_required: true,
-      quiet_hours: { 'Mon-Fri': [['08:00', '21:00'], ['Sat': ['09:00', '17:00']], 'Sun': [] },
+      quiet_hours: { 
+        'Mon-Fri': [['08:00', '21:00']], 
+        'Sat': [['09:00', '17:00']], 
+        'Sun': [] 
+      },
       dnc_required: true,
       caller_id_rules: 'Valid returnable CLI required',
       restrictions: ['No mobile numbers for marketing', 'TCPA compliance required']
     },
     'IT': {
       kyc_required: false,
-      quiet_hours: { 'Mon-Fri': [['09:00', '20:00'], 'Sat': [['09:00', '18:00']], 'Sun': [] },
+      quiet_hours: { 
+        'Mon-Fri': [['09:00', '20:00']], 
+        'Sat': [['09:00', '18:00']], 
+        'Sun': [] 
+      },
       dnc_required: true,
       caller_id_rules: 'No anonymous CLI allowed',
       restrictions: ['GDPR consent required', 'Italian language preferred']
     },
     'UK': {
       kyc_required: true,
-      quiet_hours: { 'Mon-Fri': [['08:00', '21:00'], 'Sat': [['09:00', '17:00']], 'Sun': [] },
+      quiet_hours: { 
+        'Mon-Fri': [['08:00', '21:00']], 
+        'Sat': [['09:00', '17:00']], 
+        'Sun': [] 
+      },
       dnc_required: true,
       caller_id_rules: 'Valid returnable CLI required',
       restrictions: ['PECR compliance required', 'Opt-out mechanism mandatory']
