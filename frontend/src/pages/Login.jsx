@@ -20,8 +20,11 @@ export default function Login() {
     setIsLoading(true);
     setError('');
     
+    console.log('Attempting login with:', { email, password: '***' });
+    
     try {
       const result = await login(email, password);
+      console.log('Login result:', result);
       
       if (result.requires_totp) {
         // Redirect to TOTP verification
@@ -37,6 +40,7 @@ export default function Login() {
       // Login successful
       navigate('/dashboard');
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
@@ -185,7 +189,7 @@ export default function Login() {
             {!isMagicLink && (
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
+                  {t('auth.password', 'Password')}
                 </label>
                 <div className="mt-1">
                   <input
@@ -197,7 +201,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter your password"
+                    placeholder={t('auth.enter_password', 'Enter your password')}
                   />
                 </div>
               </div>
@@ -207,7 +211,7 @@ export default function Login() {
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                    Forgot your password?
+                    {t('auth.forgot_password', 'Forgot your password?')}
                   </a>
                 </div>
               </div>
@@ -237,7 +241,7 @@ export default function Login() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : null}
-                {isMagicLink ? 'Send Magic Link' : 'Sign in'}
+                {isMagicLink ? t('auth.send_magic_link', 'Send Magic Link') : t('auth.sign_in', 'Sign in')}
               </button>
             </div>
           </form>

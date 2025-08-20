@@ -5,5 +5,22 @@
   "save": "Salva",
   "connecting": "Connessione in corso...",
   "disconnecting": "Disconnessione in corso...",
-  "testing": "Test in corso..."
+  "testing": "Test in corso...",
+  
+  "auth": {
+    "sign_in_title": "Accedi ad Agoralia",
+    "no_account": "Nessun account? Lo creeremo al primo login.",
+    "continue_with_google": "Accedi con Google",
+    "continue_with_microsoft": "Accedi con Microsoft",
+    "or_continue_with": "Oppure continua con",
+    "password": "Password",
+    "magic_link": "Link Magico",
+    "email_address": "Indirizzo email",
+    "enter_email": "Inserisci la tua email",
+    "enter_password": "Inserisci la tua password",
+    "forgot_password": "Password dimenticata?",
+    "sign_in": "Accedi",
+    "send_magic_link": "Invia Link Magico",
+    "need_help": "Hai problemi? Contatta il supporto"
+  }
 }
