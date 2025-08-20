@@ -500,128 +500,102 @@ schemas = {
     }
 }
 
-# Singleton instance
-_ai_client = None
+# ===================== COMPATIBILITY FUNCTIONS =====================
+# These functions are required by main.py and other modules
+
+# Global AI client instance
+ai_client = AIClient()
 
 def get_ai_client() -> AIClient:
-    """Get singleton AI client instance"""
-    global _ai_client
-    if _ai_client is None:
-        _ai_client = AIClient()
-    return _ai_client
+    """Get the global AI client instance."""
+    return ai_client
 
-    def process_batch(
-        self,
-        task: str,
-        items: List[Dict[str, Any]],
-        system: Optional[str] = None,
-        mode: Mode = "auto",
-        batch_size: int = 5,
-        max_concurrent: int = 3,
-        budget: Optional[float] = None,
-        **kwargs
-    ) -> List[Dict[str, Any]]:
-        """Process multiple items in batches with concurrency control"""
-        results = []
-        total_items = len(items)
-        
-        # Estimate total cost
-        if budget:
-            estimated_cost = self._estimate_batch_cost(task, items, mode)
-            if estimated_cost > budget:
-                # Reduce batch size to fit budget
-                batch_size = max(1, int(batch_size * (budget / estimated_cost)))
-                print(f"Reduced batch size to {batch_size} to fit budget ${budget}")
-        
-        # Process in batches
-        for i in range(0, total_items, batch_size):
-            batch = items[i:i + batch_size]
-            batch_results = self._process_batch_sync(task, batch, system, mode, **kwargs)
-            results.extend(batch_results)
-            
-            # Progress update
-            progress = min(100, ((i + batch_size) / total_items) * 100)
-            print(f"Batch processing: {progress:.1f}% complete")
-        
-        return results
-    
-    def _estimate_batch_cost(self, task: str, items: List[Dict[str, Any]], mode: Mode) -> float:
-        """Estimate total cost for batch processing"""
-        model = self._pick_model(task, "", None, mode)
-        total_cost = 0
-        
-        for item in items:
-            # Estimate input tokens
-            text = str(item.get("text", ""))
-            in_tokens = est_tokens(text)
-            
-            # Estimate output tokens based on task
-            out_tokens = self._estimate_output_tokens(task, text)
-            
-            # Calculate cost
-            cost = self._cost_estimate(model, in_tokens, out_tokens)
-            total_cost += cost
-        
-        return total_cost
-    
-    def _estimate_output_tokens(self, task: str, text: str) -> int:
-        """Estimate output tokens based on task and input length"""
-        base_tokens = {
-            "csv_field_mapping": 300,
-            "kb_extract": 900,
-            "kb_extract_simple": 400,
-            "call_summary": 800,
-            "bant_light": 300,
-            "bant_full": 700
-        }
-        
-        # Adjust based on input length
-        input_tokens = est_tokens(text)
-        base = base_tokens.get(task, 500)
-        
-        if input_tokens < 500:
-            return int(base * 0.7)  # Shorter input = shorter output
-        elif input_tokens > 2000:
-            return int(base * 1.3)  # Longer input = longer output
-        else:
-            return base
-    
-    def _process_batch_sync(self, task: str, batch: List[Dict[str, Any]], system: str, mode: Mode, **kwargs) -> List[Dict[str, Any]]:
-        """Process a single batch synchronously"""
-        results = []
-        
-        for item in batch:
-            try:
-                # Prepare user prompt
-                if task == "kb_extract" or task == "kb_extract_simple":
-                    user_prompt = f"Extract company information from this text: {item.get('text', '')}"
-                elif task == "csv_field_mapping":
-                    user_prompt = f"Map these CSV headers to company KB fields: {item.get('headers', [])}"
-                else:
-                    user_prompt = str(item.get("text", ""))
-                
-                # Process item
-                result = self.run(
-                    task=task,
-                    user=user_prompt,
-                    system=system,
-                    mode=mode,
-                    **kwargs
-                )
-                
-                results.append({
-                    "item_id": item.get("id"),
-                    "success": True,
-                    "result": result,
-                    "model_used": result.get("model", "unknown")
-                })
-                
-            except Exception as e:
-                results.append({
-                    "item_id": item.get("id"),
-                    "success": False,
-                    "error": str(e),
-                    "model_used": "none"
-                })
-        
-        return results
+# KB Templates for knowledge base creation
+KB_TEMPLATES = {
+    "company": {
+        "name": "Company Profile",
+        "description": "Standard company information template",
+        "sections": [
+            "company_overview",
+            "products_services", 
+            "target_market",
+            "competitive_advantage",
+            "contact_information"
+        ]
+    },
+    "offer_pack": {
+        "name": "Offer Package",
+        "description": "Sales offer template",
+        "sections": [
+            "offer_summary",
+            "pricing",
+            "features_benefits",
+            "terms_conditions",
+            "next_steps"
+        ]
+    },
+    "compliance": {
+        "name": "Compliance Guide",
+        "description": "Regulatory compliance template",
+        "sections": [
+            "regulatory_overview",
+            "requirements",
+            "implementation",
+            "monitoring",
+            "documentation"
+        ]
+    },
+    "product": {
+        "name": "Product Information",
+        "description": "Product details template",
+        "sections": [
+            "product_overview",
+            "features",
+            "specifications",
+            "use_cases",
+            "support"
+        ]
+    }
+}
+
+def get_kb_template(template_name: str = "company") -> dict:
+    """Get a knowledge base template by name."""
+    return KB_TEMPLATES.get(template_name, KB_TEMPLATES["company"])
+
+def create_default_sections(template_name: str = "company") -> List[str]:
+    """Create default sections for a knowledge base template."""
+    template = get_kb_template(template_name)
+    return template.get("sections", ["overview", "details"])
+
+# Schemas for structured output
+schemas = {
+    "company_extract": {
+        "type": "object",
+        "properties": {
+            "company_name": {"type": "string"},
+            "industry": {"type": "string"},
+            "size": {"type": "string"},
+            "location": {"type": "string"},
+            "products": {"type": "array", "items": {"type": "string"}},
+            "contact_info": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "phone": {"type": "string"},
+                    "website": {"type": "string"}
+                }
+            }
+        },
+        "required": ["company_name", "industry"]
+    },
+    "call_summary": {
+        "type": "object",
+        "properties": {
+            "summary": {"type": "string"},
+            "key_points": {"type": "array", "items": {"type": "string"}},
+            "next_actions": {"type": "array", "items": {"type": "string"}},
+            "sentiment": {"type": "string", "enum": ["positive", "neutral", "negative"]}
+        },
+        "required": ["summary", "key_points"]
+    }
+}
