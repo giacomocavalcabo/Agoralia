@@ -45,6 +45,22 @@ STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 # ===================== CORS & Security =====================
 CORS_ALLOWED_ORIGINS=https://app.agoralia.com,https://agoralia.com
 
+# ===================== Authentication & Admin =====================
+ADMIN_EMAIL_ALLOWLIST=giacomo.cavalcabo14@gmail.com
+SESSION_TTL_DAYS=14
+SESSION_SECRET=your_session_secret_here
+
+# ===================== OAuth Providers =====================
+OAUTH_GOOGLE_CLIENT_ID=your_google_client_id
+OAUTH_GOOGLE_CLIENT_SECRET=your_google_client_secret
+OAUTH_MS_CLIENT_ID=your_microsoft_client_id
+OAUTH_MS_CLIENT_SECRET=your_microsoft_client_secret
+
+# ===================== Email Service =====================
+EMAIL_PROVIDER=postmark  # or sendgrid
+POSTMARK_TOKEN=your_postmark_token
+SENDGRID_API_KEY=your_sendgrid_api_key
+
 # ===================== CRM Rate Limiting =====================
 CRM_SYNC_PAGE=200
 CRM_SYNC_RPS=5

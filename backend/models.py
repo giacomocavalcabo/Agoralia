@@ -52,6 +52,9 @@ class User(Base):
     tz = Column(String, default="UTC")
     is_admin_global = Column(Boolean, default=False)
     last_login_at = Column(DateTime)
+    email_verified_at = Column(DateTime)
+    totp_enabled = Column(Boolean, default=False)
+    totp_verified_at = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -118,6 +121,9 @@ class UserAuth(Base):
     pass_hash = Column(String)
     passkey_credential_json = Column(JSON)
     totp_secret = Column(String)
+    totp_verified_at = Column(DateTime)
+    recovery_codes_json = Column(JSON)
+    last_used_at = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -323,6 +329,18 @@ class MagicLink(Base):
     expires_at = Column(DateTime, nullable=False)
     used_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Session(Base):
+    __tablename__ = "sessions"
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_seen_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    ip = Column(String)
+    user_agent = Column(String)
+    revoked_at = Column(DateTime)
+    metadata_json = Column(JSON)
 
 
 class ImpersonationSession(Base):

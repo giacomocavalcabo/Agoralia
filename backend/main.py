@@ -1089,32 +1089,64 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 
 # ===================== Auth endpoints =====================
 @app.post("/auth/login")
-async def auth_login(payload: dict) -> Response:
+async def auth_login(payload: dict, request: Request) -> Response:
     email = (payload.get("email") or "").strip().lower()
     password = (payload.get("password") or "").encode("utf-8")
     if not email or not password:
         raise HTTPException(status_code=400, detail="Missing email or password")
+    
     with next(get_db()) as db:
         user = db.query(User).filter(User.email.ilike(email)).first()
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
         ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
         if not ua or not ua.pass_hash or bcrypt is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
         try:
             ok = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
         except Exception:
             ok = False
+        
         if not ok:
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        # Build claims (memberships minimal for now)
+        
+        # Check if TOTP is required
+        if user.totp_enabled:
+            # Return TOTP challenge instead of creating session
+            return Response(
+                content=json.dumps({
+                    "requires_totp": True,
+                    "user_id": user.id,
+                    "message": "TOTP code required"
+                }),
+                media_type="application/json"
+            )
+        
+        # Build claims with workspace memberships
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "role": wm.role
+            })
+        
         claims = {
             "user_id": user.id,
             "email": user.email,
+            "name": user.name,
             "is_admin_global": bool(user.is_admin_global),
-            "memberships": [],
+            "email_verified": bool(user.email_verified_at),
+            "memberships": memberships,
         }
-    resp = Response(content=json.dumps({"ok": True}), media_type="application/json")
+        
+        # Update last login
+        user.last_login_at = datetime.now(timezone.utc)
+        db.add(user)
+        db.commit()
+    
+    resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
     _create_session(resp, claims)
     return resp
 
@@ -1124,7 +1156,44 @@ def auth_me(request: Request) -> dict:
     sess = _get_session(request)
     if not sess:
         return {"authenticated": False}
-    return {"authenticated": True, "claims": sess.get("claims"), "csrf": sess.get("csrf")}
+    
+    # Get fresh user data from DB
+    with next(get_db()) as db:
+        user_id = sess.get("claims", {}).get("user_id")
+        if not user_id:
+            return {"authenticated": False}
+        
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return {"authenticated": False}
+        
+        # Get workspace memberships
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "workspace_name": workspace.name if workspace else "Unknown",
+                "role": wm.role
+            })
+        
+        return {
+            "authenticated": True,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "locale": user.locale,
+                "tz": user.tz,
+                "is_admin_global": bool(user.is_admin_global),
+                "email_verified": bool(user.email_verified_at),
+                "totp_enabled": bool(user.totp_enabled),
+                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            },
+            "memberships": memberships,
+            "csrf": sess.get("csrf")
+        }
 
 
 @app.post("/auth/logout")
@@ -1134,6 +1203,59 @@ async def auth_logout(request: Request) -> Response:
         _SESSIONS.delete(sid)
     resp = Response(content=json.dumps({"ok": True}), media_type="application/json")
     resp.delete_cookie("session_id", path="/")
+    return resp
+
+
+@app.post("/auth/totp/verify")
+async def auth_totp_verify(payload: dict, request: Request) -> Response:
+    """Verify TOTP code and complete login"""
+    user_id = payload.get("user_id")
+    code = payload.get("code", "").strip()
+    
+    if not user_id or not code:
+        raise HTTPException(status_code=400, detail="User ID and TOTP code required")
+    
+    with next(get_db()) as db:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.totp_enabled:
+            raise HTTPException(status_code=400, detail="Invalid user or TOTP not enabled")
+        
+        ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
+        if not ua or not ua.totp_secret:
+            raise HTTPException(status_code=400, detail="TOTP not configured")
+        
+        # Verify TOTP code
+        try:
+            totp = pyotp.TOTP(ua.totp_secret)
+            if not totp.verify(code, valid_window=1):
+                raise HTTPException(status_code=400, detail="Invalid TOTP code")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid TOTP code")
+        
+        # Build claims with workspace memberships
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "role": wm.role
+            })
+        
+        claims = {
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin_global": bool(user.is_admin_global),
+            "email_verified": bool(user.email_verified_at),
+            "memberships": memberships,
+        }
+        
+        # Update last login
+        user.last_login_at = datetime.now(timezone.utc)
+        db.add(user)
+        db.commit()
+    
+    resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
+    _create_session(resp, claims)
     return resp
     try:
         return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
@@ -1836,11 +1958,220 @@ async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dic
 @app.post("/auth/oauth/google/start")
 async def auth_google_start() -> dict:
     """Start Google OAuth flow"""
-    # In production, redirect to Google OAuth
-    # For now, return mock URL
+    import secrets
+    
+    # Generate state token for CSRF protection
+    state = secrets.token_urlsafe(32)
+    
+    # Store state in session for validation
+    # In production, store in Redis with TTL
+    
+    client_id = os.getenv("OAUTH_GOOGLE_CLIENT_ID")
+    if not client_id:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+    
+    redirect_uri = os.getenv("APP_URL", "http://localhost:5173") + "/auth/oauth/google/callback"
+    
+    auth_url = (
+        "https://accounts.google.com/oauth/authorize?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        "scope=openid%20email%20profile&"
+        "response_type=code&"
+        f"state={state}"
+    )
+    
     return {
-        "auth_url": "https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=email profile"
+        "auth_url": auth_url,
+        "state": state
     }
+
+
+@app.get("/auth/oauth/google/callback")
+async def auth_google_callback(
+    code: str = Query(...),
+    state: str = Query(...),
+    request: Request = None
+) -> Response:
+    """Handle Google OAuth callback"""
+    # In production, validate state and exchange code for tokens
+    # For now, create a mock user session
+    
+    # Mock user data from Google
+    mock_user_data = {
+        "sub": "google_123456",
+        "email": "test@example.com",
+        "email_verified": True,
+        "name": "Test User"
+    }
+    
+    with next(get_db()) as db:
+        # Check if user exists
+        user = db.query(User).filter(User.email == mock_user_data["email"]).first()
+        
+        if not user:
+            # Create new user
+            user = User(
+                id=f"u_{secrets.token_urlsafe(16)}",
+                email=mock_user_data["email"],
+                name=mock_user_data["name"],
+                email_verified_at=datetime.now(timezone.utc) if mock_user_data["email_verified"] else None
+            )
+            db.add(user)
+            
+            # Create user auth record
+            ua = UserAuth(
+                id=f"ua_{secrets.token_urlsafe(16)}",
+                user_id=user.id,
+                provider="google",
+                provider_id=mock_user_data["sub"]
+            )
+            db.add(ua)
+            
+            # Check if admin
+            admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+            if user.email.strip() in [e.strip() for e in admin_emails]:
+                user.is_admin_global = True
+            
+            db.commit()
+        
+        # Build claims
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "role": wm.role
+            })
+        
+        claims = {
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin_global": bool(user.is_admin_global),
+            "email_verified": bool(user.email_verified_at),
+            "memberships": memberships,
+        }
+        
+        # Update last login
+        user.last_login_at = datetime.now(timezone.utc)
+        db.add(user)
+        db.commit()
+    
+    # Create session and redirect to frontend
+    resp = Response(
+        content=json.dumps({"ok": True, "user": claims}),
+        media_type="application/json"
+    )
+    _create_session(resp, claims)
+    
+    # In production, redirect to frontend with session
+    return resp
+
+
+@app.post("/auth/oauth/microsoft/start")
+async def auth_microsoft_start() -> dict:
+    """Start Microsoft OAuth flow"""
+    import secrets
+    
+    # Generate state token for CSRF protection
+    state = secrets.token_urlsafe(32)
+    
+    client_id = os.getenv("OAUTH_MS_CLIENT_ID")
+    if not client_id:
+        raise HTTPException(status_code=500, detail="Microsoft OAuth not configured")
+    
+    redirect_uri = os.getenv("APP_URL", "http://localhost:5173") + "/auth/oauth/microsoft/callback"
+    
+    auth_url = (
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        "scope=openid%20email%20profile%20offline_access&"
+        "response_type=code&"
+        f"state={state}"
+    )
+    
+    return {
+        "auth_url": auth_url,
+        "state": state
+    }
+
+
+@app.get("/auth/oauth/microsoft/callback")
+async def auth_microsoft_callback(
+    code: str = Query(...),
+    state: str = Query(...),
+    request: Request = None
+) -> Response:
+    """Handle Microsoft OAuth callback"""
+    # Mock user data from Microsoft
+    mock_user_data = {
+        "sub": "ms_123456",
+        "email": "test@example.com",
+        "email_verified": True,
+        "name": "Test User"
+    }
+    
+    with next(get_db()) as db:
+        # Check if user exists
+        user = db.query(User).filter(User.email == mock_user_data["email"]).first()
+        
+        if not user:
+            # Create new user
+            user = User(
+                id=f"u_{secrets.token_urlsafe(16)}",
+                email=mock_user_data["email"],
+                name=mock_user_data["name"],
+                email_verified_at=datetime.now(timezone.utc) if mock_user_data["email_verified"] else None
+            )
+            db.add(user)
+            
+            # Create user auth record
+            ua = UserAuth(
+                id=f"ua_{secrets.token_urlsafe(16)}",
+                user_id=user.id,
+                provider="microsoft",
+                provider_id=mock_user_data["sub"]
+            )
+            db.add(ua)
+            
+            # Check if admin
+            admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+            if user.email.strip() in [e.strip() for e in admin_emails]:
+                user.is_admin_global = True
+            
+            db.commit()
+        
+        # Build claims
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "role": wm.role
+            })
+        
+        claims = {
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin_global": bool(user.is_admin_global),
+            "email_verified": bool(user.email_verified_at),
+            "memberships": memberships,
+        }
+        
+        # Update last login
+        user.last_login_at = datetime.now(timezone.utc)
+        db.add(user)
+        db.commit()
+    
+    # Create session and redirect to frontend
+    resp = Response(
+        content=json.dumps({"ok": True, "user": claims}),
+        media_type="application/json"
+    )
+    _create_session(resp, claims)
+    
+    return resp
 
 
 @app.post("/auth/totp/setup")

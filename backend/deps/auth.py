@@ -1,12 +1,13 @@
 """
 Auth dependencies - Centralized auth and tenant resolution
 """
-from fastapi import HTTPException, Header, Query, Depends
+from fastapi import HTTPException, Header, Query, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime, timezone
 
 from ..db import get_db
-from ..models import User, Workspace, WorkspaceMember
+from ..models import User, Workspace, WorkspaceMember, UserAuth
 
 
 def get_tenant_id(
@@ -22,23 +23,32 @@ def get_tenant_id(
 
 
 def get_current_user(
-    authorization: Optional[str] = Header(None),
+    request: Request,
     db: Session = Depends(get_db)
 ) -> Optional[User]:
     """
-    Get current authenticated user from authorization header
+    Get current authenticated user from session cookie
     """
-    if not authorization:
+    from ..main import _get_session
+    
+    session = _get_session(request)
+    if not session:
         return None
     
-    # For now, return a mock user
-    # In production, decode JWT token and fetch user from DB
-    return User(
-        id="user_1",
-        email="demo@example.com",
-        name="Demo User",
-        locale="en-US"
-    )
+    user_id = session.get("claims", {}).get("user_id")
+    if not user_id:
+        return None
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return None
+    
+    # Update last seen
+    user.last_login_at = datetime.now(timezone.utc)
+    db.add(user)
+    db.commit()
+    
+    return user
 
 
 def get_workspace_member(
@@ -92,3 +102,28 @@ def require_admin(
     if workspace_member.role not in ["admin", "owner"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     return workspace_member
+
+
+def require_global_admin(
+    current_user: User = Depends(require_auth)
+) -> User:
+    """
+    Require global admin access
+    """
+    if not current_user.is_admin_global:
+        raise HTTPException(status_code=403, detail="Global admin access required")
+    return current_user
+
+
+def require_email_verified(
+    current_user: User = Depends(require_auth)
+) -> User:
+    """
+    Require email verification for write operations
+    """
+    if not current_user.email_verified_at:
+        raise HTTPException(
+            status_code=403, 
+            detail="Email verification required. Please check your email and click the verification link."
+        )
+    return current_user
