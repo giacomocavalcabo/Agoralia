@@ -7,8 +7,8 @@ from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from .db import Base, engine, get_db
-from .models import (
+from db import Base, engine, get_db
+from models import (
     User, Workspace, WorkspaceMember, Campaign, Call, UserAuth,
     Notification, NotificationTarget, Number, NumberVerification, InboundRoute,
     CallOutcome, Template, CrmConnection, MagicLink, CrmFieldMapping, ExportJob,
@@ -42,7 +42,7 @@ except Exception:  # pragma: no cover
 # Chromium PDF generator
 PDF_GENERATOR_AVAILABLE = False
 try:
-    from .pdf_chromium import html_to_pdf_chromium, check_chromium_available
+    from pdf_chromium import html_to_pdf_chromium, check_chromium_available
     PDF_GENERATOR_AVAILABLE = check_chromium_available()
     if PDF_GENERATOR_AVAILABLE:
         print("✅ Chromium PDF generator available")
@@ -52,9 +52,9 @@ except Exception as e:
     print(f"Warning: Chromium PDF generator not available: {e}. Compliance attestations will use fallback.")
 
 # Knowledge Base imports
-from . import schemas
-from .ai_client import ai_client, get_kb_template, create_default_sections
-from .routers import crm
+import schemas
+from ai_client import ai_client, get_kb_template, create_default_sections
+from routers import crm
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
@@ -901,7 +901,7 @@ async def admin_attestations_generate(request: Request, payload: dict, _guard: N
         
         if PDF_GENERATOR_AVAILABLE:
             # Use Chromium PDF generator
-            from .pdf_chromium import html_to_pdf_chromium
+            from pdf_chromium import html_to_pdf_chromium
             
             # Generate HTML content (you can customize this)
             html_content = f"""
@@ -1080,7 +1080,7 @@ async def admin_notifications_send(request: Request, payload: dict, _guard: None
         db.commit()
     _ACTIVITY.append({"kind": "notify", "entity": "notification", "entity_id": notif_id, "created_at": datetime.now(timezone.utc).isoformat(), "diff_json": {"kind": kind, "subject": subject}})
     try:
-        from .worker import send_notification_job  # type: ignore
+        from worker import send_notification_job  # type: ignore
         if send_notification_job:
             send_notification_job.send(notif_id)  # type: ignore
     except Exception:
@@ -1110,7 +1110,7 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 @app.post("/auth/register")
 async def auth_register(payload: dict, request: Request) -> Response:
     """Register new user with email/password"""
-    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    from utils.rate_limiter import rate_limiter, require_rate_limit
     
     # Rate limiting
     require_rate_limit(request, "auth")
@@ -1176,7 +1176,7 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
-    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    from utils.rate_limiter import rate_limiter, require_rate_limit
     
     # Rate limiting
     require_rate_limit(request, "auth")
@@ -1984,7 +1984,7 @@ async def list_templates(request: Request):
 @app.post("/auth/magic/request")
 async def auth_magic_request(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
     """Request magic link authentication"""
-    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    from utils.rate_limiter import rate_limiter, require_rate_limit
     
     # Rate limiting for magic link requests
     require_rate_limit(request, "auth")
@@ -2904,7 +2904,7 @@ async def pdf_health():
     """Health check endpoint for Chromium PDF generator"""
     try:
         if PDF_GENERATOR_AVAILABLE:
-            from .pdf_chromium import get_chromium_version
+            from pdf_chromium import get_chromium_version
             version = get_chromium_version()
             return {
                 "ok": True,
@@ -4280,7 +4280,7 @@ def get_kb_templates(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get available KB templates"""
-    from .ai_client import KB_TEMPLATES
+    from ai_client import KB_TEMPLATES
     
     return {
         "templates": [
