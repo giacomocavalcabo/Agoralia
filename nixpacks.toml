@@ -1,0 +1,26 @@
+# nixpacks.toml - Ottimizzato per Railway
+[phases.setup]
+# Pacchetti minimi per non invalidare cache
+nixPkgs = ["python311", "gcc"]
+
+[variables]
+# Hint per pip: usa cache persistita tra build
+PIP_CACHE_DIR = "/root/.cache/pip"
+PYTHONDONTWRITEBYTECODE = "1"
+PYTHONUNBUFFERED = "1"
+
+[phases.install]
+# Importante: installa SOLO dal file di req del backend (non tutta la repo)
+cmds = [
+  "python -m venv --copies /opt/venv",
+  ". /opt/venv/bin/activate",
+  "pip install --upgrade pip",
+  "pip install -r backend/requirements.txt"
+]
+# Dì a Nixpacks di persistere la cache pip tra i build
+cacheDirectories = ["/root/.cache/pip"]
+
+[phases.start]
+# 1 worker = startup più prevedibile, meno retry a vuoto
+# Preflight check per uscire SUBITO se mancano env critiche
+cmd = "python -c 'import backend.preflight' && uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1"

@@ -1,35 +1,26 @@
 {
-  "common": {
-    "refresh": "Aggiorna",
-    "save": "Salva",
-    "clear": "Pulisci",
-    "loading": "Caricamento…",
-    "remove": "Rimuovi",
-    "cancel": "Annulla",
-    "prev": "Prec",
-    "next": "Succ",
-    "today": "Oggi",
-    "week": "Settimana",
-    "month": "Mese",
-    "range": "{from}–{to}",
-    "of_total": "di {total}",
-    "actions": { "more": "Altro" }
-    ,
-    "toasts": {
-      "updated": "Aggiornato",
-      "removed": "Rimosso",
-      "attestation_ok": "Attestazione generata",
-      "concurrency_full": "Nessuno slot libero ({used}/{limit})",
-      "quiet_hours": "Fuori dalle fasce consentite",
-      "invite_accepted": "Invito accettato"
-    }
-  },
-  "ui": {
-    "nav": { "breadcrumbs": "Dashboard / Overview" },
-    "search": { "placeholder": "Cerca…", "aria": "Cerca" },
-    "indicators": { "test_mode": "Modalità test" },
-    "actions": { "create": "+ Crea" }
+  "next": "Avanti",
+  "prev": "Precedente",
+  "cancel": "Annulla",
+  "save": "Salva",
+  "connecting": "Connessione in corso...",
+  "disconnecting": "Disconnessione in corso...",
+  "testing": "Test in corso...",
+  
+  "auth": {
+    "sign_in_title": "Accedi ad Agoralia",
+    "no_account": "Nessun account? Lo creeremo al primo login.",
+    "continue_with_google": "Accedi con Google",
+    "continue_with_microsoft": "Accedi con Microsoft",
+    "or_continue_with": "Oppure continua con",
+    "password": "Password",
+    "magic_link": "Link Magico",
+    "email_address": "Indirizzo email",
+    "enter_email": "Inserisci la tua email",
+    "enter_password": "Inserisci la tua password",
+    "forgot_password": "Password dimenticata?",
+    "sign_in": "Accedi",
+    "send_magic_link": "Invia Link Magico",
+    "need_help": "Hai problemi? Contatta il supporto"
   }
 }
-
-

@@ -58,6 +58,25 @@ from .routers import crm
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
+
+# ===================== Health check endpoint =====================
+@app.get("/health")
+def health():
+    """
+    Health check endpoint per Railway - risponde IMMEDIATAMENTE
+    NON fa chiamate a OpenAI/Redis qui per essere sempre veloce
+    """
+    return {"ok": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+# ===================== Boot logging =====================
+@app.on_event("startup")
+async def startup_event():
+    """Log quando l'app è pronta - aiuta debugging Railway"""
+    print("🚀 Agoralia API starting up...")
+    print(f"📅 Boot time: {datetime.now(timezone.utc).isoformat()}")
+    print(f"🔧 Environment: {os.getenv('RAILWAY_ENVIRONMENT', 'local')}")
+    print("✅ Boot OK - app pronta per richieste")
+
 # ===================== In-memory store (dev) =====================
 _ATTESTATIONS: dict[str, dict] = {}
 _WORKSPACE_MEMBERS = [

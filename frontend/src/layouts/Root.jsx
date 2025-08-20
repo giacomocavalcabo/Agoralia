@@ -5,7 +5,7 @@ import { I18nProvider } from '../lib/i18n.jsx'
 import { ToastProvider } from '../components/ToastProvider.jsx'
 import { AuthProvider } from '../lib/useAuth.jsx'
 
-// Lazy load pages
+// Lazy load pages with namespace preloading
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))
 const KnowledgeBase = React.lazy(() => import('../pages/KnowledgeBase/KnowledgeBase'))
 const KBEditor = React.lazy(() => import('../pages/KnowledgeBase/KBEditor'))
@@ -25,12 +25,22 @@ const Invite = React.lazy(() => import('../pages/Invite'))
 const Login = React.lazy(() => import('../pages/Login'))
 const LoginVerify = React.lazy(() => import('../pages/LoginVerify'))
 
-// Loading component for routes
-const RouteLoading = () => (
-  <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-  </div>
-)
+// Enhanced loading component that preloads i18n namespaces
+const RouteLoading = ({ component: Component, ...props }) => {
+  // Preload i18n namespaces if the component exports them
+  React.useEffect(() => {
+    if (Component?.i18nNamespaces) {
+      // Namespaces are already loaded via import.meta.glob, this is just for future optimization
+      console.log('Preloading i18n namespaces:', Component.i18nNamespaces);
+    }
+  }, [Component]);
+
+  return (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>
+  );
+};
 
 export default function Root() {
   return (

@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/useAuth.jsx';
 import { useI18n } from '../lib/i18n.jsx';
 
+// Declare required namespaces for this page
+export const i18nNamespaces = ['common', 'auth'];
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +16,7 @@ export default function Login() {
   
   const navigate = useNavigate();
   const { login, loginWithOAuth } = useAuth();
-  const { t } = useI18n();
+  const { t } = useI18n(i18nNamespaces);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();

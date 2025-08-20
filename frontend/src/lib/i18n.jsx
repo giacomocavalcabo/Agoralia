@@ -1,68 +1,64 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { getTranslation, interpolate, isRtl } from './i18n.js'
 
-const I18nCtx = createContext({ t: (k)=>k, locale: 'en-US', setLocale: ()=>{} })
-
-function deepMerge(a, b) {
-	const out = { ...a }
-	for (const k of Object.keys(b || {})) {
-		const v = b[k]
-		out[k] = v && typeof v === 'object' && !Array.isArray(v)
-			? deepMerge(a?.[k] || {}, v)
-			: v
-	}
-	return out
-}
-
-function isRtl(locale) { return locale.startsWith('ar') }
-
-async function loadJsonSafe(path) {
-	try {
-		const res = await fetch(path, { cache: 'no-store' })
-		if (!res.ok) return {}
-		return await res.json()
-	} catch { return {} }
-}
-
-async function loadMessages(locale) {
-	const baseApp = await loadJsonSafe('/locales/en-US/app.json')
-	const baseCommon = await loadJsonSafe('/locales/en-US/common.json')
-	const basePages = await loadJsonSafe('/locales/en-US/pages.json')
-	let app = {}, common = {}, pages = {}
-	if (locale !== 'en-US') {
-		app = await loadJsonSafe(`/locales/${locale}/app.json`)
-		common = await loadJsonSafe(`/locales/${locale}/common.json`)
-		pages = await loadJsonSafe(`/locales/${locale}/pages.json`)
-	}
-	return deepMerge(deepMerge(baseApp, app), deepMerge(deepMerge(baseCommon, common), deepMerge(basePages, pages)))
-}
+const I18nCtx = createContext({ 
+  t: (k, params, nsList) => k, 
+  locale: 'en-US', 
+  setLocale: () => {},
+  dir: 'ltr'
+})
 
 export function I18nProvider({ children }) {
-	const [locale, setLocale] = useState(localStorage.getItem('ui_locale') || 'en-US')
-	const [messages, setMessages] = useState({})
-	useEffect(() => {
-		let cancelled = false
-		;(async () => {
-			const data = await loadMessages(locale)
-			if (!cancelled) setMessages(data)
-		})()
-		localStorage.setItem('ui_locale', locale)
-		document.documentElement.lang = locale
-		document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
-		return () => { cancelled = true }
-	}, [locale])
-	function t(key, vars) {
-		const parts = key.split('.')
-		let cur = messages
-		for (const p of parts) cur = cur?.[p]
-		if (cur == null) return key
-		if (vars) return String(cur).replace(/\{(\w+)\}/g, (_, k)=> vars[k] ?? `{${k}}`)
-		return cur
-	}
-	return (
-		<I18nCtx.Provider value={{ t, locale, setLocale }}>
-			{children}
-		</I18nCtx.Provider>
-	)
+  const [locale, setLocale] = useState(localStorage.getItem('ui_locale') || 'en-US')
+  
+  // Set document attributes when locale changes
+  useEffect(() => {
+    localStorage.setItem('ui_locale', locale)
+    document.documentElement.lang = locale
+    document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
+  }, [locale])
+
+  function t(key, params = {}, nsList = ['common']) {
+    const translation = getTranslation(key, locale, nsList)
+    
+    if (translation === null) {
+      // Dev warning for missing keys
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`[i18n] Missing key: ${key} for locale: ${locale}`)
+      }
+      return key // Fallback to key itself
+    }
+    
+    // Apply interpolation if params provided
+    return params && Object.keys(params).length > 0 
+      ? interpolate(translation, params)
+      : translation
+  }
+
+  const value = useMemo(() => ({
+    t,
+    locale,
+    setLocale,
+    dir: isRtl(locale) ? 'rtl' : 'ltr'
+  }), [locale])
+
+  return (
+    <I18nCtx.Provider value={value}>
+      {children}
+    </I18nCtx.Provider>
+  )
 }
 
-export function useI18n() { return useContext(I18nCtx) }
+export function useI18n(requiredNs = ['common']) {
+  const { t, locale, setLocale, dir } = useContext(I18nCtx)
+  
+  // Enhanced t function that automatically includes required namespaces
+  const tWithNs = (key, params) => t(key, params, requiredNs)
+  
+  return { 
+    t: tWithNs, 
+    locale, 
+    setLocale, 
+    dir 
+  }
+}
