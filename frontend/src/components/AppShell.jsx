@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth.jsx'
+import LanguageSwitcher from './LanguageSwitcher.jsx'
 import { 
   HomeIcon, 
   ChartBarIcon, 
@@ -84,6 +85,9 @@ export default function AppShell({ children }) {
           
           {/* Right: Actions */}
           <div className="flex items-center space-x-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Test Mode Pill */}
             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
               Test Mode
