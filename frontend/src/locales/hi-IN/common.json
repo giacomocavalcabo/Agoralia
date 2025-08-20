@@ -1,0 +1,28 @@
+{
+  "common": {
+    "refresh": "रीफ़्रेश",
+    "save": "सेव",
+    "clear": "साफ़ करें",
+    "loading": "लोड हो रहा है…",
+    "remove": "हटाएँ",
+    "cancel": "रद्द करें",
+    "prev": "पिछला",
+    "next": "अगला",
+    "today": "आज",
+    "week": "सप्ताह",
+    "month": "महीना",
+    "range": "{from}–{to}",
+    "of_total": "में से {total}",
+    "actions": { "more": "अधिक" },
+    "toasts": {
+      "updated": "अद्यतन हुआ",
+      "removed": "हटा दिया गया",
+      "attestation_ok": "एटेस्टेशन बना",
+      "concurrency_full": "कोई स्लॉट नहीं ({used}/{limit})",
+      "quiet_hours": "अनुमत समय से बाहर",
+      "invite_accepted": "निमंत्रण स्वीकार किया"
+    }
+  }
+}
+
+

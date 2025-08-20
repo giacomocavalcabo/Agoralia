@@ -1,0 +1,27 @@
+{
+  "common": {
+    "refresh": "تحديث",
+    "save": "حفظ",
+    "clear": "مسح",
+    "loading": "جارٍ التحميل…",
+    "remove": "إزالة",
+    "cancel": "إلغاء",
+    "prev": "السابق",
+    "next": "التالي",
+    "today": "اليوم",
+    "week": "أسبوع",
+    "month": "شهر",
+    "range": "{from}–{to}",
+    "of_total": "من {total}",
+    "actions": { "more": "المزيد" },
+    "toasts": {
+      "updated": "تم التحديث",
+      "removed": "تمت الإزالة",
+      "attestation_ok": "تم إنشاء الشهادة",
+      "concurrency_full": "لا فتحات متاحة ({used}/{limit})",
+      "quiet_hours": "خارج الساعات المسموح بها",
+      "invite_accepted": "تم قبول الدعوة"
+    }
+  }
+}
+

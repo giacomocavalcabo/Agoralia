@@ -1,0 +1,16 @@
+{
+  "app": {
+    "Overview": "Overview",
+    "Settings": "Settings",
+    "Dashboard": "Dashboard",
+    "History": "History",
+    "Leads": "Leads",
+    "Campaigns": "Campaigns",
+    "Analytics": "Analytics",
+    "Calendar": "Calendar",
+    "Import": "Import",
+    "notices": {
+      "call_lang_not_supported": "Selected call language is not supported: {lang}."
+    }
+  }
+}

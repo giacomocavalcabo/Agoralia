@@ -1,0 +1,26 @@
+{
+  "next": "Next",
+  "prev": "Previous",
+  "cancel": "Cancel",
+  "save": "Save",
+  "connecting": "Connecting...",
+  "disconnecting": "Disconnecting...",
+  "testing": "Testing...",
+  
+  "auth": {
+    "sign_in_title": "Sign in to Agoralia",
+    "no_account": "No account? We'll create it at first login.",
+    "continue_with_google": "Continue with Google",
+    "continue_with_microsoft": "Continue with Microsoft",
+    "or_continue_with": "Or continue with",
+    "password": "Password",
+    "magic_link": "Magic Link",
+    "email_address": "Email address",
+    "enter_email": "Enter your email",
+    "enter_password": "Enter your password",
+    "forgot_password": "Forgot your password?",
+    "sign_in": "Sign in",
+    "send_magic_link": "Send Magic Link",
+    "need_help": "Having trouble? Contact support"
+  }
+}

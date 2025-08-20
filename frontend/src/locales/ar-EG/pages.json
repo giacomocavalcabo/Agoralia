@@ -1,0 +1,104 @@
+{
+  "admin": {
+    "nav": {"dashboard":"لوحة","users":"المستخدمون","workspaces":"مساحات العمل","calls":"المكالمات","campaigns":"الحملات","compliance":"الامتثال","notifications":"الإشعارات","billing":"الفوترة","logs":"السجلات","settings":"الإعدادات"},
+    "kpi": {"users_total":"{n} مستخدم","active_7d":"{n} نشط (7أيام)","mrr":"MRR {amount}","minutes_mtd":"{n} دقيقة MTD"},
+    "users": {"search_placeholder":"ابحث بالاسم أو البريد…","impersonate":"انتحال","suspend":"تعليق","unsuspend":"إلغاء التعليق"},
+    "calls": {"live_title":"مكالمات مباشرة","filters":{"iso":"الدولة","lang":"اللغة"}},
+    "compliance": {"attestations":"شهادات","generate":"إنشاء PDF","preflight":"سجلات ما قبل الفحص"},
+    "notices": {"impersonating":"أنت تنتحل {user}. العودة إلى الإدارة."}
+  },
+  "pages": {
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "health": { "title": "صحة النظام" },
+      "live": { "title": "مكالمات مباشرة" },
+      "activity": "النشاط الأخير",
+      "kpi": {
+        "minutes": "الدقائق (MTD)",
+        "calls_today": "مكالمات اليوم",
+        "success": "معدل النجاح"
+      }
+    },
+    "leads": {
+      "title": "العملاء المحتملون",
+      "actions": { "add": "إضافة عميل محتمل", "schedule": "جدولة", "import": "استيراد" },
+      "cols": { "name":"الاسم", "company":"الشركة", "phone":"الهاتف", "country":"الدولة", "lang":"اللغة", "role":"الدور", "consent":"الموافقة" },
+      "empty": { "title":"لا توجد بيانات", "desc":"ابدأ بإضافة عميل محتمل أو استيراد CSV." },
+      "add_title": "إضافة عميل محتمل",
+      "fields": { "name":"الاسم", "company":"الشركة", "phone":"الهاتف (E.164)", "country":"رمز الدولة ISO", "lang":"اللغة", "role":"الدور", "consent":"تمت الموافقة" },
+      "placeholders": { "e164":"+201234567890" },
+      "errors": { "e164":"أدخل رقماً بصيغة E.164" },
+      "toasts": { "added":"تمت الإضافة" }
+    },
+    "import": {
+      "title": "استيراد",
+      "steps": { "source": "المصدر" },
+      "paste_numbers": "ألصق أرقام الهاتف (رقم في كل سطر)",
+      "upload_csv": "رفع CSV",
+      "preview": "معاينة",
+      "no_numbers": "لا توجد أرقام",
+      "no_numbers_desc": "ألصق أسطر مثل +201234567890.",
+      "wip": "العمل جارٍ",
+      "wip_desc": "سيظهر هنا الخطوات 2–4."
+    },
+    "campaigns": {
+      "title": "الحملات",
+      "steps": { "details":"التفاصيل", "audience":"الجمهور والإيقاع", "windows":"النوافذ والامتثال", "review":"مراجعة" },
+      "fields": { "name":"الاسم", "goal":"الهدف", "role":"الدور", "lang":"لغة الاتصال (الافتراضية)", "agent":"الوكيل", "kb":"قاعدة المعرفة", "from":"هوية المتصل (من)", "pacing":"الإيقاع (في الدقيقة)", "budget":"الحد الأقصى للميزانية (سنت)", "quiet_hours":"احترام ساعات الهدوء" },
+      "actions": { "create_schedule":"إنشاء وجدولة" },
+      "toasts": { "created":"تم إنشاء الحملة {id}" }
+    },
+    "calendar": {
+      "title": "التقويم",
+      "range": "{from} → {to}",
+      "legend": { "scheduled":"مجدول", "call":"مكالمة", "blocked":"محظور", "warn":"تحذير" },
+      "quick": {
+        "title": "جدولة مكالمة",
+        "lead": "العميل المحتمل",
+        "agent": "الوكيل",
+        "kb": "قاعدة المعرفة",
+        "from": "هوية المتصل",
+        "datetime": "التاريخ والوقت",
+        "submit": "جدولة",
+        "submit_done": "تمت الجدولة"
+      },
+      "errors": {
+        "quiet_hours": "الوقت المحدد خارج الساعات المسموح بها لـ {iso}.",
+        "rpo": "الرقم محظور RPO/DNC لـ {iso}.",
+        "budget": "تم الوصول إلى حد الميزانية.",
+        "concurrency": "لا توجد فتحات متاحة الآن."
+      },
+      "badge": { "tz":"التوقيت", "lang":"اللغة" }
+    },
+    "analytics": {
+      "title": "التحليلات",
+      "kpi": { "calls": "المكالمات", "connected_rate": "متصلة", "qualified_rate": "مؤهلة" },
+      "actions": { "export_csv": "تصدير CSV", "export_json": "تصدير JSON" },
+      "charts": { "calls_over_time": "المكالمات عبر الزمن" }
+    },
+    "history": {
+      "title": "السجل",
+      "columns": { "time":"الوقت","direction":"الاتجاه","to":"إلى","from":"من","company":"الشركة","outcome":"النتيجة","duration":"المدة","cost":"التكلفة" },
+      "drawer": { "open_full": "فتح المكالمة كاملة" }
+    },
+    "settings": {
+      "workspace": {
+        "members": "الأعضاء",
+        "invite": "دعوة",
+        "audit": "التدقيق",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "remove": "إزالة",
+        "send_invite": "إرسال دعوة",
+        "pending": "الدعوات المعلقة",
+        "accept": "قبول الدعوة",
+        "confirm_change_role": "تغيير الدور؟",
+        "confirm_remove": "إزالة العضو؟"
+      },
+      "tabs2": {
+        "general": "عام",
+        "languages": "اللغات"
+      }
+    }
+  }
+}

@@ -16,7 +16,7 @@ export default function Login() {
   
   const navigate = useNavigate();
   const { login, loginWithOAuth } = useAuth();
-  const { t } = useI18n(i18nNamespaces);
+  const { t, setLocale, locale } = useI18n(i18nNamespaces);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
@@ -88,16 +88,18 @@ export default function Login() {
           {/* Language Switcher */}
           <div className="flex justify-end mb-4">
             <select
-              value={t('locale', 'en-US')}
+              value={locale}
               onChange={(e) => {
-                // For now, just log the change
-                console.log('Language changed to:', e.target.value)
+                setLocale(e.target.value)
               }}
               className="text-sm border rounded px-2 py-1 bg-white"
               aria-label="Change language"
             >
               <option value="en-US">English</option>
               <option value="it-IT">Italiano</option>
+              <option value="fr-FR">Français</option>
+              <option value="ar-EG">العربية</option>
+              <option value="hi-IN">हिन्दी</option>
             </select>
           </div>
           

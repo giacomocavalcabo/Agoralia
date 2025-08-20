@@ -1,0 +1,27 @@
+{
+  "common": {
+    "refresh": "Rafraîchir",
+    "save": "Enregistrer",
+    "clear": "Effacer",
+    "loading": "Chargement…",
+    "remove": "Retirer",
+    "cancel": "Annuler",
+    "prev": "Préc",
+    "next": "Suiv",
+    "today": "Aujourd'hui",
+    "week": "Semaine",
+    "month": "Mois",
+    "range": "{from}–{to}",
+    "of_total": "sur {total}",
+    "actions": { "more": "Plus" },
+    "toasts": {
+      "updated": "Mis à jour",
+      "removed": "Supprimé",
+      "attestation_ok": "Attestation générée",
+      "concurrency_full": "Aucun créneau ({used}/{limit})",
+      "quiet_hours": "Hors plages autorisées",
+      "invite_accepted": "Invitation acceptée"
+    }
+  }
+}
+
