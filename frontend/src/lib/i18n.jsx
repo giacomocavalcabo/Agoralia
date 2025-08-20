@@ -18,13 +18,14 @@ export function I18nProvider({ defaultLocale = 'en-US', children }) {
     (async () => {
       setReady(false)
       try {
-        await loadLocale(locale)
+        const resources = await loadLocale(locale)
         // Set document attributes
         document.documentElement.lang = locale
         document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
         localStorage.setItem('ui_locale', locale)
         setReady(true)
         console.log(`[i18n] Locale ${locale} loaded successfully`)
+        console.info('[i18n] Namespaces loaded for', locale, Object.keys(resources))
       } catch (error) {
         console.error(`[i18n] Failed to load locale ${locale}:`, error)
         // Fallback to default locale
