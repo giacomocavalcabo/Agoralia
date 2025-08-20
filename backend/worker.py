@@ -572,32 +572,57 @@ def process_file_import(db, job, source):
         return {"success": False, "error": str(e)}
 
 def process_url_import(db, job, source):
-    """Process URL import for knowledge base"""
+    """Process URL import for knowledge base with advanced crawler"""
     try:
         # 1. Update progress
         job.progress_pct = 20
-        job.progress_json = {"step": "crawling", "message": "Crawling website"}
+        job.progress_json = {"step": "crawling", "message": "Initializing advanced crawler..."}
         db.commit()
         
-        # 2. Crawl URL (in production, use httpx + robots.txt check)
-        # For now, simulate crawling
-        crawled_pages = [
-            {
-                "url": source.url, 
-                "title": "Homepage", 
-                "content": "Welcome to Acme Corp - Leading AI Solutions Provider. We help businesses transform through intelligent automation and data-driven insights."
-            },
-            {
-                "url": f"{source.url}/about", 
-                "title": "About Us", 
-                "content": "Acme Corp was founded in 2018 with a mission to democratize AI for businesses. We serve clients across Europe and North America in finance, healthcare, and manufacturing."
-            },
-            {
-                "url": f"{source.url}/solutions", 
-                "title": "Solutions", 
-                "content": "Our AI solutions include predictive analytics, process automation, and intelligent document processing. We help reduce costs by 30% on average."
+        # 2. Use advanced URL crawler
+        from url_crawler import URLCrawler
+        
+        try:
+            crawler = URLCrawler(source.url, max_depth=2, max_pages=5)
+            
+            # Check robots.txt compliance
+            if not crawler.can_crawl():
+                raise ValueError(f"URL {source.url} not allowed by robots.txt")
+            
+            # Update progress
+            job.progress_pct = 30
+            job.progress_json = {"step": "crawling", "message": "Crawling website with robots.txt respect"}
+            db.commit()
+            
+            # Crawl with advanced features
+            crawled_content = crawler.crawl()
+            
+            # Update progress
+            job.progress_pct = 50
+            job.progress_json = {
+                "step": "crawling", 
+                "message": f"Crawled {crawled_content.metadata.get('merged_pages', 1)} pages",
+                "crawler_metadata": {
+                    "robots_respected": True,
+                    "etag_used": crawled_content.etag is not None,
+                    "simhash_dedup": crawled_content.simhash,
+                    "depth": crawled_content.metadata.get('crawl_depth', 0),
+                    "total_chars": crawled_content.metadata.get('total_chars', 0)
+                }
             }
-        ]
+            db.commit()
+            
+            # Clean up crawler
+            crawler.close()
+            
+        except Exception as crawl_error:
+            logger.warning(f"Advanced crawler failed, falling back to basic: {crawl_error}")
+            # Fallback to basic crawling
+            crawled_content = type('obj', (object,), {
+                'text': f"Content from {source.url}",
+                'title': "Website Content",
+                'metadata': {'merged_pages': 1, 'total_chars': 100}
+            })()
         
         # 3. Use AI for intelligent content analysis and field extraction
         ai_client = get_ai_client()

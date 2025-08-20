@@ -22,6 +22,10 @@ simhash==2.1.2
 tiktoken>=0.7.0
 pgvector==0.2.4  # PostgreSQL vector extension support
 
+# Advanced URL Crawler dependencies
+readability-lxml==0.8.1
+httpx==0.25.2
+
 # CRM Integrations dependencies
 httpx==0.25.2
 prometheus-client==0.19.0
