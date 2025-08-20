@@ -6,18 +6,6 @@ import StripeProvider from './providers/StripeProvider'
 import Root from './layouts/Root'
 import './index.css'
 
-// Lazy load components
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
-const KnowledgeBase = React.lazy(() => import('./pages/KnowledgeBase/KnowledgeBase'))
-const KBEditor = React.lazy(() => import('./pages/KnowledgeBase/KBEditor'))
-const Assignments = React.lazy(() => import('./pages/KnowledgeBase/Assignments'))
-const Imports = React.lazy(() => import('./pages/KnowledgeBase/Imports'))
-const Leads = React.lazy(() => import('./pages/Leads'))
-const Numbers = React.lazy(() => import('./pages/Numbers'))
-const Campaigns = React.lazy(() => import('./pages/Campaigns'))
-const Settings = React.lazy(() => import('./pages/Settings'))
-const Billing = React.lazy(() => import('./pages/Billing'))
-
 // Loading component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-screen">

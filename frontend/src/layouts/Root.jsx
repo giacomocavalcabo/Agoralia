@@ -13,8 +13,14 @@ const Imports = React.lazy(() => import('../pages/KnowledgeBase/Imports'))
 const Leads = React.lazy(() => import('../pages/Leads'))
 const Numbers = React.lazy(() => import('../pages/Numbers'))
 const Campaigns = React.lazy(() => import('../pages/Campaigns'))
+const Calendar = React.lazy(() => import('../pages/Calendar'))
 const Settings = React.lazy(() => import('../pages/Settings'))
 const Billing = React.lazy(() => import('../pages/Billing'))
+const Analytics = React.lazy(() => import('../pages/Analytics'))
+const Import = React.lazy(() => import('../pages/Import'))
+const History = React.lazy(() => import('../pages/History'))
+const Admin = React.lazy(() => import('../pages/Admin'))
+const Invite = React.lazy(() => import('../pages/Invite'))
 
 // Loading component for routes
 const RouteLoading = () => (
@@ -39,8 +45,14 @@ export default function Root() {
               <Route path="leads" element={<Leads />} />
               <Route path="numbers" element={<Numbers />} />
               <Route path="campaigns" element={<Campaigns />} />
+              <Route path="calendar" element={<Calendar />} />
               <Route path="settings" element={<Settings />} />
               <Route path="billing" element={<Billing />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="import" element={<Import />} />
+              <Route path="history" element={<History />} />
+              <Route path="admin" element={<Admin />} />
+              <Route path="invite" element={<Invite />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
