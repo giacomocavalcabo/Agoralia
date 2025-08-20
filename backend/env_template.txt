@@ -1,46 +1,70 @@
-# CRM Integration Environment Variables
-# Copy this to .env and fill in your actual values
-
-# ===================== HubSpot =====================
-CRM_HUBSPOT_CLIENT_ID=your_hubspot_client_id
-CRM_HUBSPOT_CLIENT_SECRET=your_hubspot_client_secret
-CRM_HUBSPOT_REDIRECT_URI=https://your-domain.com/crm/hubspot/callback
-
-# ===================== Zoho CRM =====================
-CRM_ZOHO_CLIENT_ID=your_zoho_client_id
-CRM_ZOHO_CLIENT_SECRET=your_zoho_client_secret
-CRM_ZOHO_REDIRECT_URI=https://your-domain.com/crm/zoho/callback
-
-# ===================== Odoo CRM =====================
-ODOO_DEFAULT_URL=https://your-odoo-instance.com
-ODOO_DEFAULT_DATABASE=your_database_name
-ODOO_DEFAULT_USERNAME=your_username
-ODOO_DEFAULT_PASSWORD=your_password
-
-# Optional: API Key for Odoo (alternative to username/password)
-ODOO_API_KEY=your_api_key
-ODOO_DEFAULT_TIMEOUT=30
-
-# ===================== CRM Configuration =====================
-CRM_WEBHOOK_SECRET=your_webhook_secret_for_verification
-CRM_SYNC_PAGE_SIZE=200
-CRM_SYNC_RPS=5  # requests per second
-CRM_SYNC_TIMEOUT=30     # seconds
-
-# ===================== Security =====================
-# Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-CRM_ENCRYPTION_KEY=your_32_byte_encryption_key
+# ===================== Environment Configuration =====================
+ENV=production
+APP_BASE_URL=https://api.agoralia.app
+FRONTEND_BASE_URL=https://app.agoralia.com
+SECRET_KEY=your_secret_key_here
 
 # ===================== Database =====================
-DATABASE_URL=postgresql://user:password@localhost:5432/coldai
+DATABASE_URL=postgresql://user:pass@host:port/db
 
-# ===================== Redis (for Dramatiq) =====================
-REDIS_URL=redis://localhost:6379/0
+# ===================== Redis =====================
+REDIS_URL=rediss://user:pass@host:port
 
-# ===================== AI Services =====================
+# ===================== AI & OpenAI =====================
 OPENAI_API_KEY=your_openai_api_key
+AGORALIA_WEBHOOK_SECRET=your_agoralia_webhook_secret
 
-# ===================== Email Providers =====================
-EMAIL_PROVIDER=postmark  # postmark, sendgrid
-POSTMARK_TOKEN=your_postmark_token
-SENDGRID_API_KEY=your_sendgrid_api_key
+# ===================== Retell (Call System) =====================
+RETELL_API_KEY=your_retell_api_key
+RETELL_WEBHOOK_SECRET=your_retell_webhook_secret
+
+# ===================== CRM HubSpot =====================
+CRM_HUBSPOT_CLIENT_ID=your_hubspot_client_id
+CRM_HUBSPOT_CLIENT_SECRET=your_hubspot_client_secret
+CRM_HUBSPOT_WEBHOOK_SECRET=your_hubspot_webhook_secret
+CRM_HUBSPOT_REDIRECT_URI=https://api.agoralia.app/crm/hubspot/callback
+
+# ===================== CRM Zoho =====================
+CRM_ZOHO_CLIENT_ID=your_zoho_client_id
+CRM_ZOHO_CLIENT_SECRET=your_zoho_client_secret
+CRM_ZOHO_WEBHOOK_SECRET=your_zoho_webhook_secret
+CRM_ZOHO_DC=eu
+CRM_ZOHO_REDIRECT_URI=https://api.agoralia.app/crm/zoho/callback
+
+# ===================== CRM Odoo =====================
+ODOO_BASE_URL=https://your.odoo.tld
+ODOO_DB=your_odoo_database
+ODOO_CLIENT_ID=your_odoo_client_id
+ODOO_CLIENT_SECRET=your_odoo_client_secret
+ODOO_DEFAULT_TIMEOUT=30
+
+# ===================== Stripe =====================
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+# ===================== CORS & Security =====================
+CORS_ALLOWED_ORIGINS=https://app.agoralia.com,https://agoralia.com
+
+# ===================== CRM Rate Limiting =====================
+CRM_SYNC_PAGE=200
+CRM_SYNC_RPS=5
+CRM_RETRY_ATTEMPTS=3
+CRM_BACKOFF_BASE=2.0
+CRM_MAX_BACKOFF=300
+
+# ===================== Encryption =====================
+ENCRYPTION_KEY=your_fernet_encryption_key
+
+# ===================== Logging =====================
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+
+# ===================== Monitoring =====================
+PROMETHEUS_MULTIPROC_DIR=/tmp
+ENABLE_METRICS=true
+
+# ===================== Feature Flags =====================
+ENABLE_CRM_SYNC=true
+ENABLE_WEBHOOKS=true
+ENABLE_POLLING=true
+ENABLE_METRICS=true

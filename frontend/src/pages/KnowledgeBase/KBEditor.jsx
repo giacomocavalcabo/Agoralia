@@ -217,6 +217,9 @@ export default function KBEditor({ kind = 'company' }) {
                         placeholder="Nome della Knowledge Base"
                         disabled={!canEdit}
                       />
+                      {nameAutosave.isSaving && (
+                        <div className="text-xs text-blue-600 mt-1">Salvando...</div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -238,6 +241,9 @@ export default function KBEditor({ kind = 'company' }) {
                         <option value="manufacturing">Manufacturing</option>
                         <option value="other">Other</option>
                       </select>
+                      {typeAutosave.isSaving && (
+                        <div className="text-xs text-blue-600 mt-1">Salvando...</div>
+                      )}
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -251,6 +257,9 @@ export default function KBEditor({ kind = 'company' }) {
                         placeholder="Descrizione della Knowledge Base"
                         disabled={!canEdit}
                       />
+                      {descriptionAutosave.isSaving && (
+                        <div className="text-xs text-blue-600 mt-1">Salvando...</div>
+                      )}
                     </div>
                   </div>
                 </Card>

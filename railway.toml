@@ -2,9 +2,24 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/health"
+startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 2"
+healthcheckPath = "/crm/health?provider=hubspot"
 healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[deploy.services]
+worker = "dramatiq backend.workers.crm_jobs -p 4"
+
+[deploy.environment]
+ENV = "production"
+APP_BASE_URL = "https://api.agoralia.app"
+FRONTEND_BASE_URL = "https://app.agoralia.com"
+LOG_LEVEL = "INFO"
+ENABLE_METRICS = "true"
+ENABLE_CRM_SYNC = "true"
+ENABLE_WEBHOOKS = "true"
+ENABLE_POLLING = "true"
 
 [env]
 PYTHON_VERSION = "3.11"

@@ -110,24 +110,62 @@ def crm_backfill_job(workspace_id: str, provider: str, object_type: str, limit: 
 
 
 @dramatiq.actor(queue_name='crm_webhook')
-def crm_webhook_dispatcher_job(event_id: str, provider: str, workspace_id: str, 
-                               payload: Dict[str, Any]):
-    """Process CRM webhook events"""
+def crm_webhook_dispatcher_job(provider: str, event_id: str, payload: Dict[str, Any], timestamp: str):
+    """Process incoming webhook events from CRM providers"""
     try:
-        logger.info(f"Processing webhook event {event_id} from {provider}")
+        from services.crm_sync import CrmSyncService
         
-        # In production, this would:
-        # 1. Parse webhook payload
-        # 2. Map to internal entities
-        # 3. Update local data
-        # 4. Create sync logs
+        crm_sync_service = CrmSyncService()
+        result = asyncio.run(crm_sync_service.process_webhook(provider, event_id, payload, timestamp))
         
-        # For now, just log the event
-        logger.info(f"Webhook processed: {event_id} from {provider} for workspace {workspace_id}")
+        print(f"Webhook processed: {provider} {event_id} - {result}")
+        return result
         
     except Exception as e:
-        logger.error(f"Webhook dispatcher job failed: {e}")
-        raise dramatiq.Retry(delay=RETRY_DELAY_BASE)
+        print(f"Webhook processing failed: {e}")
+        raise
+
+
+@dramatiq.actor(queue_name='crm-polling')
+def crm_polling_job(workspace_id: str, provider: str, object_type: str, since: str):
+    """Poll CRM for changes (for providers without webhooks like Odoo)"""
+    try:
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        
+        if provider == "odoo":
+            result = asyncio.run(crm_sync_service.poll_odoo_changes(workspace_id, object_type))
+        else:
+            result = {"success": False, "error": f"Polling not supported for {provider}"}
+        
+        print(f"Polling completed: {provider} {object_type} - {result}")
+        return result
+        
+    except Exception as e:
+        print(f"Polling failed: {e}")
+        raise
+
+
+@dramatiq.actor(queue_name='crm-scheduler')
+def crm_scheduler_job(workspace_id: str, provider: str):
+    """Start/stop CRM synchronization scheduler"""
+    try:
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        
+        if provider == "odoo":
+            result = asyncio.run(crm_sync_service.start_polling_scheduler(workspace_id, provider))
+        else:
+            result = {"success": False, "error": f"Scheduler not supported for {provider}"}
+        
+        print(f"Scheduler started: {provider} - {result}")
+        return result
+        
+    except Exception as e:
+        print(f"Scheduler failed: {e}")
+        raise
 
 
 @dramatiq.actor(queue_name='crm_sync')

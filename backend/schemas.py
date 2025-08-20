@@ -339,3 +339,59 @@ class KbSearchResponse(BaseModel):
     total: int
     page: int
     per_page: int
+
+
+# Prompt bricks schemas
+class PromptBricksRequest(BaseModel):
+    kb_id: Optional[str] = Field(None, description="Explicit KB ID to use (skip resolution if provided)")
+    campaign_id: Optional[str] = None
+    number_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    lang: Optional[str] = Field(None, description="Preferred language (BCP-47)")
+
+
+class PromptBricksResponse(BaseModel):
+    kb_id: str
+    system: str
+    rules: List[str] = []
+    style: List[str] = []
+    company_facts: List[str] = []
+    disclaimers: List[str] = []
+    opening_script: Optional[str] = None
+    closing_script: Optional[str] = None
+
+
+# Usage tracking schemas
+class KbUsageTrackRequest(BaseModel):
+    kb_id: str = Field(..., description="Knowledge Base ID")
+    kind: str = Field(..., description="Usage type (resolve, prompt_bricks, etc.)")
+    context: Optional[Dict[str, Any]] = Field(None, description="Usage context")
+    success: bool = Field(..., description="Whether the usage was successful")
+    tokens_used: Optional[int] = Field(None, description="Tokens consumed")
+    cost_micros: Optional[int] = Field(None, description="Cost in microcents")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class KbUsageResponse(BaseModel):
+    id: str
+    workspace_id: str
+    kb_id: str
+    kind: str
+    context: Optional[Dict[str, Any]]
+    success: bool
+    tokens_used: int
+    cost_micros: int
+    metadata: Optional[Dict[str, Any]]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class KbAnalyticsResponse(BaseModel):
+    period: str
+    total_usage: int
+    overall_hit_rate: float
+    kb_stats: Dict[str, Dict[str, Any]]
+    period_start: str
+    period_end: str

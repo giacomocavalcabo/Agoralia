@@ -16,6 +16,7 @@ export function useAutosave(kbId, fieldKey, initialValue = '') {
     setError(null);
     
     try {
+      // Update KB field
       await updateKb.mutateAsync({
         id: kbId,
         payload: {
@@ -67,6 +68,11 @@ export function useAutosave(kbId, fieldKey, initialValue = '') {
       }
     };
   }, []);
+
+  // Update value when initialValue changes
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
 
   return {
     value,

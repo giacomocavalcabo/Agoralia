@@ -4,7 +4,7 @@ CRM Router - Consolidated routes for all CRM providers
 from fastapi import APIRouter, Depends, Query, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import secrets
 import json
 import os
@@ -15,10 +15,10 @@ from ..db import get_db
 from ..models import (
     CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog,
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus,
-    Call, CallOutcome
+    Call, CallOutcome, CrmWebhookEvent
 )
 from ..integrations import HubSpotClient, ZohoClient, OdooClient
-from ..deps.auth import get_tenant_id, require_workspace_access
+from ..deps.auth import get_tenant_id, require_workspace_access, require_admin
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
 
@@ -60,11 +60,27 @@ async def get_crm_providers(workspace_id: str = Query(default="ws_1")) -> dict:
 @router.get("/hubspot/start")
 async def hubspot_start(workspace_id: str = Query(default="ws_1")) -> dict:
     """Start HubSpot OAuth flow"""
-    # In production, redirect to HubSpot OAuth
-    # For now, return mock URL
+    
+    # Get HubSpot client ID from environment
+    client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://api.agoralia.app/crm/hubspot/callback")
+    
+    if not client_id:
+        raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
+    
+    # Build OAuth URL
+    auth_url = (
+        f"https://app.hubspot.com/oauth/authorize?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"scope=contacts%20deals%20companies&"
+        f"state={workspace_id}"
+    )
+    
     return {
-        "auth_url": "https://app.hubspot.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=contacts deals",
-        "workspace_id": workspace_id
+        "auth_url": auth_url,
+        "workspace_id": workspace_id,
+        "provider": "hubspot"
     }
 
 
@@ -103,25 +119,33 @@ async def hubspot_disconnect(
 # ===================== Zoho Routes =====================
 
 @router.get("/zoho/start")
-async def zoho_start(
-    dc: str = Query(default="com", description="Datacenter: com, eu, in, au, jp"),
-    workspace_id: str = Query(default="ws_1")
-) -> dict:
+async def zoho_start(workspace_id: str = Query(default="ws_1")) -> dict:
     """Start Zoho OAuth flow"""
-    dc_urls = {
-        "com": "https://accounts.zoho.com",
-        "eu": "https://accounts.zoho.eu", 
-        "in": "https://accounts.zoho.in",
-        "au": "https://accounts.zoho.com.au",
-        "jp": "https://accounts.zoho.jp"
-    }
     
-    base_url = dc_urls.get(dc, dc_urls["com"])
+    # Get Zoho credentials from environment
+    client_id = os.getenv("CRM_ZOHO_CLIENT_ID")
+    redirect_uri = os.getenv("CRM_ZOHO_REDIRECT_URI", "https://api.agoralia.app/crm/zoho/callback")
+    dc_region = os.getenv("CRM_ZOHO_DC", "eu")
+    
+    if not client_id:
+        raise HTTPException(status_code=500, detail="Zoho client ID not configured")
+    
+    # Build OAuth URL based on data center
+    base_url = f"https://accounts.zoho.{dc_region}"
+    auth_url = (
+        f"{base_url}/oauth/v2/auth?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"scope=ZohoCRM.modules.ALL&"
+        f"response_type=code&"
+        f"state={workspace_id}"
+    )
     
     return {
-        "auth_url": f"{base_url}/oauth/v2/auth?client_id=mock&redirect_uri=mock&scope=ZohoCRM.modules.ALL",
-        "dc": dc,
-        "workspace_id": workspace_id
+        "auth_url": auth_url,
+        "workspace_id": workspace_id,
+        "provider": "zoho",
+        "dc_region": dc_region
     }
 
 
@@ -150,6 +174,27 @@ async def zoho_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
 
 
 # ===================== Odoo Routes =====================
+
+@router.get("/odoo/start")
+async def odoo_start(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Start Odoo connection setup"""
+    
+    # Get Odoo configuration from environment
+    base_url = os.getenv("ODOO_BASE_URL")
+    database = os.getenv("ODOO_DB")
+    
+    if not base_url or not database:
+        raise HTTPException(status_code=500, detail="Odoo configuration not complete")
+    
+    return {
+        "base_url": base_url,
+        "database": database,
+        "workspace_id": workspace_id,
+        "provider": "odoo",
+        "auth_type": "api_key",
+        "setup_required": True
+    }
+
 
 @router.post("/odoo/connect")
 async def odoo_connect(
@@ -362,6 +407,386 @@ async def get_crm_health(
     return health_status
 
 
+# ===================== Health Check =====================
+
+@router.get("/health")
+async def crm_health_check(
+    provider: str = Query(..., description="CRM provider (hubspot, zoho, odoo)"),
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Check CRM connection health and get account information"""
+    
+    try:
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        client = await crm_sync_service.get_client(workspace_id, provider)
+        
+        if not client:
+            return {
+                "status": "unhealthy",
+                "provider": provider,
+                "workspace_id": workspace_id,
+                "error": "No active connection",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+        # Test connection with a light API call
+        try:
+            health_result = await client.healthcheck()
+            
+            # Get connection details
+            connection = db.query(CrmConnection).filter(
+                CrmConnection.workspace_id == workspace_id,
+                CrmConnection.provider == provider
+            ).first()
+            
+            return {
+                "status": "healthy",
+                "provider": provider,
+                "workspace_id": workspace_id,
+                "connection_status": connection.status if connection else "unknown",
+                "account_info": health_result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            return {
+                "status": "unhealthy",
+                "provider": provider,
+                "workspace_id": workspace_id,
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "provider": provider,
+            "workspace_id": workspace_id,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
+# ===================== Admin Operations =====================
+
+@router.post("/admin/replay-webhook")
+async def replay_webhook(
+    provider: str = Query(..., description="CRM provider"),
+    event_id: str = Query(..., description="Webhook event ID to replay"),
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db),
+    admin_user: bool = Depends(require_admin)
+) -> dict:
+    """Admin endpoint to replay a webhook event (safe replay)"""
+    
+    try:
+        # Check if webhook event exists
+        webhook_event = db.query(CrmWebhookEvent).filter(
+            CrmWebhookEvent.provider == provider,
+            CrmWebhookEvent.event_id == event_id
+        ).first()
+        
+        if not webhook_event:
+            raise HTTPException(status_code=404, detail="Webhook event not found")
+        
+        # Check if event was already processed successfully
+        if webhook_event.status == "processed":
+            return {
+                "success": True,
+                "message": "Event already processed successfully",
+                "event_id": event_id,
+                "provider": provider,
+                "status": "already_processed"
+            }
+        
+        # Replay the webhook event
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        result = await crm_sync_service.process_webhook(
+            provider, 
+            event_id, 
+            webhook_event.payload, 
+            webhook_event.received_at.isoformat()
+        )
+        
+        # Update webhook event status
+        webhook_event.status = "replayed"
+        webhook_event.updated_at = datetime.utcnow()
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Webhook event replayed successfully",
+            "event_id": event_id,
+            "provider": provider,
+            "result": result
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Replay failed: {str(e)}")
+
+
+@router.post("/admin/pause-sync")
+async def pause_crm_sync(
+    provider: str = Query(..., description="CRM provider"),
+    workspace_id: str = Query(default="ws_1"),
+    pause: bool = Query(True, description="True to pause, False to resume"),
+    db: Session = Depends(get_db),
+    admin_user: bool = Depends(require_admin)
+) -> dict:
+    """Admin endpoint to pause/resume CRM synchronization"""
+    
+    try:
+        # Find CRM connection
+        connection = db.query(CrmConnection).filter(
+            CrmConnection.workspace_id == workspace_id,
+            CrmConnection.provider == provider
+        ).first()
+        
+        if not connection:
+            raise HTTPException(status_code=404, detail="CRM connection not found")
+        
+        # Update kill switch
+        connection.kill_switch = pause
+        connection.updated_at = datetime.utcnow()
+        db.commit()
+        
+        action = "paused" if pause else "resumed"
+        return {
+            "success": True,
+            "message": f"CRM sync {action} for {provider}",
+            "provider": provider,
+            "workspace_id": workspace_id,
+            "kill_switch": pause
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Operation failed: {str(e)}")
+
+
+@router.get("/admin/sync-status")
+async def get_admin_sync_status(
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db),
+    admin_user: bool = Depends(require_admin)
+) -> dict:
+    """Admin endpoint to get detailed sync status for all providers"""
+    
+    try:
+        # Get all CRM connections for workspace
+        connections = db.query(CrmConnection).filter(
+            CrmConnection.workspace_id == workspace_id
+        ).all()
+        
+        # Get recent sync logs
+        recent_logs = db.query(CrmSyncLog).filter(
+            CrmSyncLog.workspace_id == workspace_id,
+            CrmSyncLog.created_at >= datetime.utcnow() - timedelta(hours=24)
+        ).order_by(CrmSyncLog.created_at.desc()).limit(50).all()
+        
+        # Get webhook events
+        webhook_events = db.query(CrmWebhookEvent).filter(
+            CrmWebhookEvent.workspace_id == workspace_id,
+            CrmWebhookEvent.received_at >= datetime.utcnow() - timedelta(hours=24)
+        ).order_by(CrmWebhookEvent.received_at.desc()).limit(20).all()
+        
+        return {
+            "success": True,
+            "workspace_id": workspace_id,
+            "connections": [
+                {
+                    "provider": conn.provider,
+                    "status": conn.status,
+                    "sync_enabled": conn.sync_enabled,
+                    "kill_switch": conn.kill_switch,
+                    "last_sync": conn.updated_at.isoformat() if conn.updated_at else None
+                }
+                for conn in connections
+            ],
+            "recent_syncs": [
+                {
+                    "provider": log.provider,
+                    "object": log.object,
+                    "direction": log.direction,
+                    "level": log.level,
+                    "message": log.message,
+                    "timestamp": log.created_at.isoformat()
+                }
+                for log in recent_logs
+            ],
+            "webhook_events": [
+                {
+                    "provider": event.provider,
+                    "event_id": event.event_id,
+                    "status": event.status,
+                    "received_at": event.received_at.isoformat()
+                }
+                for event in webhook_events
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Status retrieval failed: {str(e)}")
+
+
+# ===================== Mapping Presets =====================
+
+@router.get("/presets/{provider}")
+async def get_crm_presets(
+    provider: str,
+    workspace_id: str = Query(default="ws_1")
+) -> dict:
+    """Get default field mapping presets for a CRM provider"""
+    
+    try:
+        from config.crm_presets import get_all_presets
+        
+        presets = get_all_presets(provider)
+        
+        return {
+            "success": True,
+            "provider": provider,
+            "workspace_id": workspace_id,
+            "presets": presets
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get presets: {str(e)}")
+
+
+@router.post("/presets/{provider}/apply")
+async def apply_crm_presets(
+    provider: str,
+    object_type: str = Query(..., description="Object type (contact, company, deal)"),
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Apply default field mapping presets for a CRM provider"""
+    
+    try:
+        from config.crm_presets import get_mapping_preset
+        
+        # Get default mapping
+        default_mapping = get_mapping_preset(provider, object_type)
+        
+        # Find or create field mapping record
+        field_mapping = db.query(CrmFieldMapping).filter(
+            CrmFieldMapping.workspace_id == workspace_id,
+            CrmFieldMapping.provider == provider,
+            CrmFieldMapping.object_type == object_type
+        ).first()
+        
+        if field_mapping:
+            # Update existing mapping
+            field_mapping.field_mappings = default_mapping
+            field_mapping.updated_at = datetime.utcnow()
+        else:
+            # Create new mapping
+            field_mapping = CrmFieldMapping(
+                id=f"mapping_{secrets.token_urlsafe(8)}",
+                workspace_id=workspace_id,
+                provider=provider,
+                object_type=object_type,
+                field_mappings=default_mapping,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(field_mapping)
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Applied default mapping for {provider} {object_type}",
+            "provider": provider,
+            "object_type": object_type,
+            "workspace_id": workspace_id,
+            "field_mappings": default_mapping
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to apply presets: {str(e)}")
+
+
+# ===================== Metrics =====================
+
+@router.get("/metrics")
+async def get_crm_metrics(
+    workspace_id: str = Query(default="ws_1"),
+    provider: Optional[str] = Query(None, description="Filter by CRM provider"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get CRM synchronization metrics"""
+    
+    try:
+        # Get sync statistics
+        sync_stats = db.query(CrmSyncLog).filter(
+            CrmSyncLog.workspace_id == workspace_id
+        )
+        
+        if provider:
+            sync_stats = sync_stats.filter(CrmSyncLog.provider == provider)
+        
+        # Count by status
+        success_count = sync_stats.filter(CrmSyncLog.level == "info").count()
+        error_count = sync_stats.filter(CrmSyncLog.level == "error").count()
+        warning_count = sync_stats.filter(CrmSyncLog.level == "warning").count()
+        
+        # Count by direction
+        pull_count = sync_stats.filter(CrmSyncLog.direction == "pull").count()
+        push_count = sync_stats.filter(CrmSyncLog.direction == "push").count()
+        
+        # Count by object type
+        contact_count = sync_stats.filter(CrmSyncLog.object == "contact").count()
+        company_count = sync_stats.filter(CrmSyncLog.object == "company").count()
+        deal_count = sync_stats.filter(CrmSyncLog.object == "deal").count()
+        
+        # Get recent activity
+        recent_activity = sync_stats.order_by(CrmSyncLog.created_at.desc()).limit(20).all()
+        
+        return {
+            "success": True,
+            "workspace_id": workspace_id,
+            "provider": provider,
+            "metrics": {
+                "total_syncs": success_count + error_count + warning_count,
+                "successful_syncs": success_count,
+                "failed_syncs": error_count,
+                "warnings": warning_count,
+                "pull_operations": pull_count,
+                "push_operations": push_count,
+                "by_object_type": {
+                    "contacts": contact_count,
+                    "companies": company_count,
+                    "deals": deal_count
+                }
+            },
+            "recent_activity": [
+                {
+                    "provider": log.provider,
+                    "object": log.object,
+                    "direction": log.direction,
+                    "level": log.level,
+                    "message": log.message,
+                    "timestamp": log.created_at.isoformat()
+                }
+                for log in recent_activity
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
 # ===================== Sync Operations =====================
 
 @router.post("/sync/start")
@@ -553,6 +978,108 @@ async def zoho_webhook(request: Request) -> dict:
     except Exception as e:
         print(f"Zoho webhook processing error: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+
+# ===================== Polling Support (Odoo) =====================
+
+@router.post("/odoo/poll")
+async def start_odoo_polling(
+    workspace_id: str = Query(default="ws_1"),
+    object_type: str = Query(..., description="Object type to poll (contact, company, deal)"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Start polling Odoo for changes"""
+    
+    try:
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        result = await crm_sync_service.poll_odoo_changes(workspace_id, object_type)
+        
+        return {
+            "success": True,
+            "operation": "odoo_polling",
+            "workspace_id": workspace_id,
+            "object_type": object_type,
+            "result": result
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Polling failed: {str(e)}")
+
+
+@router.post("/odoo/scheduler/start")
+async def start_odoo_scheduler(
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Start Odoo polling scheduler"""
+    
+    try:
+        from services.crm_sync import CrmSyncService
+        
+        crm_sync_service = CrmSyncService()
+        result = await crm_sync_service.start_polling_scheduler(workspace_id, "odoo")
+        
+        return {
+            "success": True,
+            "operation": "odoo_scheduler_start",
+            "workspace_id": workspace_id,
+            "result": result
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scheduler start failed: {str(e)}")
+
+
+@router.get("/odoo/status")
+async def get_odoo_status(
+    workspace_id: str = Query(default="ws_1"),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get Odoo synchronization status"""
+    
+    try:
+        # Get sync cursors for Odoo
+        cursors = db.query(CrmSyncCursor).filter(
+            CrmSyncCursor.workspace_id == workspace_id,
+            CrmSyncCursor.provider == "odoo"
+        ).all()
+        
+        # Get recent sync logs
+        recent_logs = db.query(CrmSyncLog).filter(
+            CrmSyncLog.workspace_id == workspace_id,
+            CrmSyncLog.provider == "odoo",
+            CrmSyncLog.created_at >= datetime.utcnow() - timedelta(hours=24)
+        ).order_by(CrmSyncLog.created_at.desc()).limit(10).all()
+        
+        return {
+            "success": True,
+            "provider": "odoo",
+            "workspace_id": workspace_id,
+            "sync_cursors": [
+                {
+                    "object": cursor.object,
+                    "since_ts": cursor.since_ts.isoformat() if cursor.since_ts else None,
+                    "cursor_token": cursor.cursor_token,
+                    "updated_at": cursor.updated_at.isoformat() if cursor.updated_at else None
+                }
+                for cursor in cursors
+            ],
+            "recent_logs": [
+                {
+                    "object": log.object,
+                    "direction": log.direction,
+                    "level": log.level,
+                    "message": log.message,
+                    "created_at": log.created_at.isoformat()
+                }
+                for log in recent_logs
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Status retrieval failed: {str(e)}")
 
 
 # ===================== Test Connections =====================

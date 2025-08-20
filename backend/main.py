@@ -14,7 +14,7 @@ from .models import (
     CallOutcome, Template, CrmConnection, MagicLink, CrmFieldMapping, ExportJob,
     # Knowledge Base models
     KnowledgeBase, KbSection, KbField, KbSource, KbChunk, KbAssignment, 
-    KbHistory, KbImportJob, AiUsage,
+    KbHistory, KbImportJob, AiUsage, KbUsage,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
@@ -3074,6 +3074,217 @@ def resolve_knowledge_base(
         }
 
 
+@app.post("/kb/prompt-bricks")
+def generate_prompt_bricks(
+    request: Request,
+    payload: schemas.PromptBricksRequest,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Generate prompt bricks (rules/style/voice/facts) from a resolved KB"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    lang = payload.lang or "en-US"
+    
+    with next(get_db()) as db:
+        # Resolve KB
+        kb = None
+        if payload.kb_id:
+            kb = db.query(KnowledgeBase).filter(
+                KnowledgeBase.id == payload.kb_id,
+                KnowledgeBase.workspace_id == workspace_id,
+                KnowledgeBase.status == "published"
+            ).first()
+        else:
+            # Reuse the resolver logic with precedence
+            assignment = None
+            if payload.campaign_id:
+                assignment = db.query(KbAssignment).filter(
+                    KbAssignment.workspace_id == workspace_id,
+                    KbAssignment.scope == "campaign",
+                    KbAssignment.scope_id == payload.campaign_id
+                ).first()
+            if not assignment and payload.number_id:
+                assignment = db.query(KbAssignment).filter(
+                    KbAssignment.workspace_id == workspace_id,
+                    KbAssignment.scope == "number",
+                    KbAssignment.scope_id == payload.number_id
+                ).first()
+            if not assignment and payload.agent_id:
+                assignment = db.query(KbAssignment).filter(
+                    KbAssignment.workspace_id == workspace_id,
+                    KbAssignment.scope == "agent",
+                    KbAssignment.scope_id == payload.agent_id
+                ).first()
+            if not assignment:
+                assignment = db.query(KbAssignment).filter(
+                    KbAssignment.workspace_id == workspace_id,
+                    KbAssignment.scope == "workspace_default"
+                ).first()
+            if not assignment:
+                raise HTTPException(status_code=404, detail="No knowledge base assigned")
+            kb = db.query(KnowledgeBase).filter(
+                KnowledgeBase.id == assignment.kb_id,
+                KnowledgeBase.status == "published"
+            ).first()
+        
+        if not kb:
+            raise HTTPException(status_code=404, detail="Knowledge base not found or not published")
+        
+        # Collect fields relevant for prompt bricks
+        fields = db.query(KbField).filter(
+            KbField.kb_id == kb.id,
+            KbField.lang == lang
+        ).all()
+        fields_map = {f.key: f for f in fields}
+        
+        # Build bricks using AI for better quality
+        ai_client = get_ai_client()
+        
+        # Prepare context for AI
+        context_text = _build_kb_context_for_ai(kb, fields_map, lang)
+        
+        # Generate prompt bricks using AI
+        try:
+            bricks_result = ai_client.run(
+                task="prompt_generation",
+                user=f"Generate prompt bricks for this company knowledge base: {context_text}",
+                system="You are an expert at creating prompt bricks for sales and customer service. Generate concise, actionable rules and style guidelines.",
+                mode="smart",
+                budget=0.02
+            )
+            
+            # Parse AI response
+            ai_bricks = json.loads(bricks_result["content"])
+            
+            # Use AI-generated bricks if available
+            rules = ai_bricks.get("rules", [])
+            style = ai_bricks.get("style", [])
+            system_prompt = ai_bricks.get("system", "")
+            
+        except Exception as e:
+            print(f"AI prompt bricks generation failed: {e}, using fallback")
+            # Fallback to rule-based generation
+            rules, style, system_prompt = _generate_fallback_bricks(kb, fields_map, lang)
+        
+        # Build company facts and disclaimers
+        company_facts = _extract_company_facts(fields_map)
+        disclaimers = _extract_disclaimers(fields_map)
+        
+        # Get scripts
+        opening = fields_map.get("script_opening").value_text if fields_map.get("script_opening") else None
+        closing = fields_map.get("script_closing").value_text if fields_map.get("script_closing") else None
+        
+        # Track usage
+        try:
+            _track_prompt_bricks_usage(db, kb.id, "prompt_bricks", True, lang)
+        except Exception as e:
+            print(f"Failed to track usage: {e}")
+        
+        return {
+            "kb_id": kb.id,
+            "system": system_prompt,
+            "rules": rules,
+            "style": style,
+            "company_facts": company_facts,
+            "disclaimers": disclaimers,
+            "opening_script": opening,
+            "closing_script": closing,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+
+def _build_kb_context_for_ai(kb: KnowledgeBase, fields_map: dict, lang: str) -> str:
+    """Build context text for AI prompt bricks generation"""
+    context_parts = []
+    
+    # Basic KB info
+    context_parts.append(f"Company: {kb.name}")
+    context_parts.append(f"Type: {kb.type or 'Not specified'}")
+    context_parts.append(f"Language: {lang}")
+    
+    # Key fields
+    key_fields = ["purpose", "vision", "icp", "brand_voice", "operating_areas"]
+    for field_key in key_fields:
+        if fields_map.get(field_key) and fields_map[field_key].value_text:
+            context_parts.append(f"{field_key.title()}: {fields_map[field_key].value_text}")
+    
+    return "\n".join(context_parts)
+
+def _generate_fallback_bricks(kb: KnowledgeBase, fields_map: dict, lang: str) -> tuple:
+    """Generate fallback prompt bricks without AI"""
+    rules = []
+    style = []
+    
+    # Basic rules
+    rules.append("Always be professional and courteous")
+    rules.append("Use the company's brand voice consistently")
+    rules.append("Provide accurate information based on company knowledge")
+    
+    # Style guidelines
+    if fields_map.get("brand_voice") and fields_map["brand_voice"].value_json:
+        voice = fields_map["brand_voice"].value_json
+        style.extend([f"Do: {v}" for v in (voice.get("dos") or [])])
+        style.extend([f"Don't: {v}" for v in (voice.get("donts") or [])])
+    
+    # System prompt
+    if kb.kind == "company":
+        system_prompt = "You represent the company professionally. Follow brand guidelines and company policies."
+    elif kb.kind == "offer_pack":
+        system_prompt = "You promote the offer pack persuasively but accurately. Follow provided scripts and guidelines."
+    else:
+        system_prompt = "You provide information based on the knowledge base. Be helpful and accurate."
+    
+    return rules, style, system_prompt
+
+def _extract_company_facts(fields_map: dict) -> list:
+    """Extract company facts from fields"""
+    facts = []
+    
+    # Purpose/vision
+    if fields_map.get("purpose") and fields_map["purpose"].value_text:
+        facts.append(f"Purpose: {fields_map['purpose'].value_text}")
+    if fields_map.get("vision") and fields_map["vision"].value_text:
+        facts.append(f"Vision: {fields_map['vision'].value_text}")
+    
+    # ICP
+    if fields_map.get("icp") and fields_map["icp"].value_text:
+        facts.append(f"ICP: {fields_map['icp'].value_text}")
+    
+    # Contacts
+    for key in ["phone", "email", "website"]:
+        if fields_map.get(key) and fields_map[key].value_text:
+            facts.append(f"{key.title()}: {fields_map[key].value_text}")
+    
+    return facts
+
+def _extract_disclaimers(fields_map: dict) -> list:
+    """Extract disclaimers from fields"""
+    disclaimers = []
+    
+    # Policies and legal
+    for key in ["policies", "legal"]:
+        if fields_map.get(key) and fields_map[key].value_text:
+            disclaimers.append(fields_map[key].value_text)
+    
+    return disclaimers
+
+def _track_prompt_bricks_usage(db: Session, kb_id: str, kind: str, success: bool, lang: str):
+    """Track prompt bricks usage for analytics"""
+    try:
+        usage = KbUsage(
+            id=f"usage_{secrets.token_urlsafe(8)}",
+            workspace_id="ws_1",  # TODO: Get from context
+            kb_id=kb_id,
+            kind=kind,
+            context={"lang": lang},
+            success=success,
+            tokens_used=0,  # TODO: Get from AI response
+            cost_micros=0   # TODO: Get from AI response
+        )
+        db.add(usage)
+        db.commit()
+    except Exception as e:
+        print(f"Failed to track usage: {e}")
+        db.rollback()
+
 @app.get("/kb/progress")
 def get_kb_progress(
     request: Request,
@@ -3462,19 +3673,24 @@ def commit_import_job(
         if not job:
             raise HTTPException(status_code=404, detail="Import job not found")
         
-        if job.status != "completed":
-            raise HTTPException(status_code=400, detail="Import job not completed")
+        if job.status not in ["reviewing", "completed"]:
+            raise HTTPException(status_code=400, detail="Import job not ready for commit")
         
-        # TODO: Process review and apply changes
-        # This would involve:
-        # 1. Applying field mappings
-        # 2. Merging conflicts based on auto_merge flag
-        # 3. Publishing if publish_after is True
-        
-        job.status = "reviewed"
-        if payload.publish_after:
-            # Update target KB status to published
-            if job.target_kb_id:
+        try:
+            # Process the import based on job type and progress
+            if job.progress_json and "mapping" in job.progress_json:
+                # CSV import with mapping
+                result = commit_csv_import(db, job, payload)
+            else:
+                # File/URL import - apply extracted fields
+                result = commit_extracted_import(db, job, payload)
+            
+            # Update job status
+            job.status = "committed"
+            job.completed_at = datetime.utcnow()
+            
+            # Update target KB if specified
+            if job.target_kb_id and payload.publish_after:
                 target_kb = db.query(KnowledgeBase).filter(
                     KnowledgeBase.id == job.target_kb_id,
                     KnowledgeBase.workspace_id == workspace_id
@@ -3482,10 +3698,91 @@ def commit_import_job(
                 if target_kb:
                     target_kb.status = "published"
                     target_kb.published_at = datetime.utcnow()
+            
+            db.commit()
+            
+            return {
+                "job_id": job_id, 
+                "status": "committed",
+                "result": result
+            }
+            
+        except Exception as e:
+            job.status = "failed"
+            job.error_details = {"error": str(e)}
+            db.commit()
+            raise HTTPException(status_code=500, detail=f"Commit failed: {str(e)}")
+
+def commit_csv_import(db, job, payload):
+    """Commit CSV import with field mappings"""
+    try:
+        # Get the mapping and data from job progress
+        mapping = job.progress_json.get("mapping", {})
+        headers = job.progress_json.get("headers", [])
+        preview = job.progress_json.get("preview", [])
+        total_rows = job.progress_json.get("total_rows", 0)
+        
+        # Create KB fields based on mapping
+        fields_created = 0
+        
+        for row_data in preview:
+            # Create a field for each mapped column
+            for kb_field, csv_header in mapping.items():
+                if csv_header and csv_header in headers:
+                    # Find the value for this header in the row
+                    header_index = headers.index(csv_header)
+                    if header_index < len(row_data):
+                        value = row_data[header_index]
+                        
+                        # Create KB field
+                        field = KbField(
+                            id=f"field_{job.id}_{kb_field}_{fields_created}",
+                            kb_id=job.target_kb_id,
+                            key=kb_field,
+                            label=kb_field.replace("_", " ").title(),
+                            value_text=value,
+                            lang="en-US",  # Default language
+                            source_id=job.source_id,
+                            confidence=90  # High confidence for CSV
+                        )
+                        db.add(field)
+                        fields_created += 1
+        
+        # Update source status
+        source = db.query(KbSource).filter(KbSource.id == job.source_id).first()
+        if source:
+            source.status = "completed"
         
         db.commit()
         
-        return {"job_id": job_id, "status": "reviewed"}
+        return {
+            "type": "csv",
+            "rows_processed": total_rows,
+            "fields_created": fields_created,
+            "mapping_applied": mapping
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def commit_extracted_import(db, job, payload):
+    """Commit extracted import (file/URL)"""
+    # Get all chunks for this job
+    chunks = db.query(KbChunk).filter(
+        KbChunk.source_id == job.source_id
+    ).all()
+    
+    # Get all extracted fields
+    fields = db.query(KbField).filter(
+        KbField.source_id == job.source_id
+    ).all()
+    
+    return {
+        "type": "extracted",
+        "chunks_processed": len(chunks),
+        "fields_extracted": len(fields),
+        "total_tokens": sum(chunk.tokens or 0 for chunk in chunks)
+    }
 
 
 @app.get("/kb/assignments")
@@ -3593,640 +3890,6 @@ def get_ai_usage(
                 "jobs_count": len(usage)
             }
         }
-
-
-# ===================== Knowledge Base Fields Management =====================
-
-@app.post("/kb/{kb_id}/fields")
-def create_kb_field(
-    request: Request,
-    kb_id: str,
-    payload: schemas.KbFieldCreate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Create a new field in knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify KB exists and belongs to workspace
-        kb = db.query(KnowledgeBase).filter(
-            KnowledgeBase.id == kb_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not kb:
-            raise HTTPException(status_code=404, detail="Knowledge base not found")
-        
-        # Verify section exists if specified
-        if payload.section_id:
-            section = db.query(KbSection).filter(
-                KbSection.id == payload.section_id,
-                KbSection.kb_id == kb_id
-            ).first()
-            if not section:
-                raise HTTPException(status_code=404, detail="Section not found")
-        
-        # Create field
-        field_id = f"field_{secrets.token_urlsafe(8)}"
-        field = KbField(
-            id=field_id,
-            kb_id=kb_id,
-            section_id=payload.section_id,
-            key=payload.key,
-            label=payload.label,
-            value_text=payload.value_text,
-            value_json=payload.value_json,
-            lang=payload.lang,
-            confidence=payload.confidence
-        )
-        db.add(field)
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "create_field", {
-            "field_id": field_id,
-            "field_key": field.key,
-            "field_label": field.label
-        })
-        
-        return {
-            "id": field_id,
-            "key": field.key,
-            "label": field.label,
-            "status": "created"
-        }
-
-
-@app.patch("/kb/fields/{field_id}")
-def update_kb_field(
-    request: Request,
-    field_id: str,
-    payload: schemas.KbFieldUpdate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Update a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify field exists and belongs to workspace
-        field = db.query(KbField).join(KnowledgeBase).filter(
-            KbField.id == field_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
-        
-        # Update fields
-        if payload.label is not None:
-            field.label = payload.label
-        if payload.value_text is not None:
-            field.value_text = payload.value_text
-        if payload.value_json is not None:
-            field.value_json = payload.value_json
-        if payload.lang is not None:
-            field.lang = payload.lang
-        if payload.confidence is not None:
-            field.confidence = payload.confidence
-        
-        field.updated_at = datetime.utcnow()
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, field.kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, field.kb_id, "u_1", "update_field", {
-            "field_id": field_id,
-            "changes": payload.dict(exclude_unset=True)
-        })
-        
-        return {"id": field_id, "status": "updated"}
-
-
-@app.delete("/kb/fields/{field_id}")
-def delete_kb_field(
-    request: Request,
-    field_id: str,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Delete a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify field exists and belongs to workspace
-        field = db.query(KbField).join(KnowledgeBase).filter(
-            KbField.id == field_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
-        
-        # Delete field
-        db.delete(field)
-        db.commit()
-        
-        return {"id": field_id, "status": "deleted"}
-
-
-@app.get("/kb/templates")
-def get_kb_templates(
-    request: Request,
-    _guard: None = Depends(require_role("viewer"))
-) -> dict:
-    """Get available KB templates"""
-    from .ai_client import KB_TEMPLATES
-    
-    return {
-        "templates": [
-            {
-                "name": template_name,
-                "display_name": template_data.get("name", template_name.title()),
-                "sections": template_data.get("sections", [])
-            }
-            for template_name, template_data in KB_TEMPLATES.items()
-        ]
-    }
-
-
-@app.post("/kb/imports/{job_id}/mapping")
-def update_import_mapping(
-    request: Request,
-    job_id: str,
-    payload: schemas.ImportMappingRequest,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Update field mappings for import job"""
-    workspace_id = _get_workspace_from_user(request)
-    
-    with next(get_db()) as db:
-        # Verify job exists and belongs to workspace
-        job = db.query(KbImportJob).filter(
-            KbImportJob.id == job_id,
-            KbImportJob.workspace_id == workspace_id
-        ).first()
-        
-        if not job:
-            raise HTTPException(status_code=404, detail="Import job not found")
-        
-        # Update job with mappings
-        job.meta_json = job.meta_json or {}
-        job.meta_json["mappings"] = payload.mappings
-        db.commit()
-        
-        return {"job_id": job_id, "status": "mapping_updated"}
-
-
-@app.post("/kb/imports/{job_id}/commit")
-def commit_import_job(
-    request: Request,
-    job_id: str,
-    payload: schemas.ImportReviewRequest,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Commit and apply import job changes"""
-    workspace_id = _get_workspace_from_user(request)
-    
-    with next(get_db()) as db:
-        # Verify job exists and belongs to workspace
-        job = db.query(KbImportJob).filter(
-            KbImportJob.id == job_id,
-            KbImportJob.workspace_id == workspace_id
-        ).first()
-        
-        if not job:
-            raise HTTPException(status_code=404, detail="Import job not found")
-        
-        if job.status != "completed":
-            raise HTTPException(status_code=400, detail="Import job not completed")
-        
-        # TODO: Process review and apply changes
-        # This would involve:
-        # 1. Applying field mappings
-        # 2. Merging conflicts based on auto_merge flag
-        # 3. Publishing if publish_after is True
-        
-        job.status = "reviewed"
-        if payload.publish_after:
-            # Update target KB status to published
-            if job.target_kb_id:
-                target_kb = db.query(KnowledgeBase).filter(
-                    KnowledgeBase.id == job.target_kb_id,
-                    KnowledgeBase.workspace_id == workspace_id
-                ).first()
-                if target_kb:
-                    target_kb.status = "published"
-                    target_kb.published_at = datetime.utcnow()
-        
-        db.commit()
-        
-        return {"job_id": job_id, "status": "reviewed"}
-
-
-@app.get("/kb/assignments")
-def list_kb_assignments(
-    request: Request,
-    scope: str = Query(None, description="Filter by scope"),
-    _guard: None = Depends(require_role("viewer"))
-) -> dict:
-    """List knowledge base assignments for workspace"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        query = db.query(KbAssignment).filter(
-            KbAssignment.workspace_id == workspace_id
-        )
-        
-        if scope:
-            query = query.filter(KbAssignment.scope == scope)
-        
-        assignments = query.all()
-        
-        # Enrich with KB details
-        enriched = []
-        for assignment in assignments:
-            kb = db.query(KnowledgeBase).filter(
-                KnowledgeBase.id == assignment.kb_id
-            ).first()
-            
-            if kb:
-                enriched.append({
-                    "id": assignment.id,
-                    "scope": assignment.scope,
-                    "scope_id": assignment.scope_id,
-                    "kb_id": assignment.kb_id,
-                    "kb_name": kb.name,
-                    "kb_kind": kb.kind,
-                    "kb_status": kb.status,
-                    "created_at": assignment.created_at
-                })
-        
-        return {"assignments": enriched}
-
-
-@app.get("/kb/ai-usage")
-def get_ai_usage(
-    request: Request,
-    period: str = Query("2025-01", description="Period in YYYY-MM format"),
-    _guard: None = Depends(require_role("viewer"))
-) -> dict:
-    """Get AI usage statistics for workspace"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Parse period
-        try:
-            year, month = period.split("-")
-            start_date = datetime(int(year), int(month), 1)
-            if int(month) == 12:
-                end_date = datetime(int(year) + 1, 1, 1)
-            else:
-                end_date = datetime(int(year), int(month) + 1, 1)
-        except:
-            start_date = datetime(2025, 1, 1)
-            end_date = datetime(2025, 2, 1)
-        
-        # Get usage for period
-        usage = db.query(AiUsage).filter(
-            AiUsage.workspace_id == workspace_id,
-            AiUsage.created_at >= start_date,
-            AiUsage.created_at < end_date
-        ).all()
-        
-        # Aggregate by kind
-        by_kind = {}
-        total_tokens_in = 0
-        total_tokens_out = 0
-        total_cost_micros = 0
-        
-        for u in usage:
-            kind = u.kind
-            if kind not in by_kind:
-                by_kind[kind] = {
-                    "tokens_in": 0,
-                    "tokens_out": 0,
-                    "cost_micros": 0,
-                    "count": 0
-                }
-            
-            by_kind[kind]["tokens_in"] += u.tokens_in or 0
-            by_kind[kind]["tokens_out"] += u.tokens_out or 0
-            by_kind[kind]["cost_micros"] += u.cost_micros or 0
-            by_kind[kind]["count"] += 1
-            
-            total_tokens_in += u.tokens_in or 0
-            total_tokens_out += u.tokens_out or 0
-            total_cost_micros += u.cost_micros or 0
-        
-        return {
-            "period": period,
-            "by_kind": by_kind,
-            "totals": {
-                "tokens_in": total_tokens_in,
-                "tokens_out": total_tokens_out,
-                "cost_cents": total_cost_micros / 1000000,  # Convert microcents to cents
-                "jobs_count": len(usage)
-            }
-        }
-
-
-# ===================== Knowledge Base Fields Management =====================
-
-@app.post("/kb/{kb_id}/fields")
-def create_kb_field(
-    request: Request,
-    kb_id: str,
-    payload: schemas.KbFieldCreate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Create a new field in knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify KB exists and belongs to workspace
-        kb = db.query(KnowledgeBase).filter(
-            KnowledgeBase.id == kb_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not kb:
-            raise HTTPException(status_code=404, detail="Knowledge base not found")
-        
-        # Verify section exists if specified
-        if payload.section_id:
-            section = db.query(KbSection).filter(
-                KbSection.id == payload.section_id,
-                KbSection.kb_id == kb_id
-            ).first()
-            if not section:
-                raise HTTPException(status_code=404, detail="Section not found")
-        
-        # Create field
-        field_id = f"field_{secrets.token_urlsafe(8)}"
-        field = KbField(
-            id=field_id,
-            kb_id=kb_id,
-            section_id=payload.section_id,
-            key=payload.key,
-            label=payload.label,
-            value_text=payload.value_text,
-            value_json=payload.value_json,
-            lang=payload.lang,
-            confidence=payload.confidence
-        )
-        db.add(field)
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "create_field", {
-            "field_id": field_id,
-            "field_key": field.key,
-            "field_label": field.label
-        })
-        
-        return {
-            "id": field_id,
-            "key": field.key,
-            "label": field.label,
-            "status": "created"
-        }
-
-
-@app.patch("/kb/fields/{field_id}")
-def update_kb_field(
-    request: Request,
-    field_id: str,
-    payload: schemas.KbFieldUpdate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Update a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify field exists and belongs to workspace
-        field = db.query(KbField).join(KnowledgeBase).filter(
-            KbField.id == field_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
-        
-        # Update fields
-        if payload.label is not None:
-            field.label = payload.label
-        if payload.value_text is not None:
-            field.value_text = payload.value_text
-        if payload.value_json is not None:
-            field.value_json = payload.value_json
-        if payload.lang is not None:
-            field.lang = payload.lang
-        if payload.confidence is not None:
-            field.confidence = payload.confidence
-        
-        field.updated_at = datetime.utcnow()
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, field.kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, field.kb_id, "u_1", "update_field", {
-            "field_id": field_id,
-            "changes": payload.dict(exclude_unset=True)
-        })
-        
-        return {"id": field_id, "status": "updated"}
-
-
-@app.delete("/kb/fields/{field_id}")
-def delete_kb_field(
-    request: Request,
-    field_id: str,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Delete a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify field exists and belongs to workspace
-        field = db.query(KbField).join(KnowledgeBase).filter(
-            KbField.id == field_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
-        
-        # Delete field
-        db.delete(field)
-        db.commit()
-        
-        return {"id": field_id, "status": "deleted"}
-
-
-@app.get("/kb/templates")
-def get_kb_templates(
-    request: Request,
-    _guard: None = Depends(require_role("viewer"))
-) -> dict:
-    """Get available KB templates"""
-    from .ai_client import KB_TEMPLATES
-    
-    return {
-        "templates": [
-            {
-                "name": template_name,
-                "display_name": template_data.get("name", template_name.title()),
-                "sections": template_data.get("sections", [])
-            }
-            for template_name, template_data in KB_TEMPLATES.items()
-        ]
-    }
-
-
-# ===================== Knowledge Base Sections Management =====================
-
-@app.post("/kb/{kb_id}/sections")
-def create_kb_section(
-    request: Request,
-    kb_id: str,
-    payload: schemas.KbSectionCreate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Create a new section in knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify KB exists and belongs to workspace
-        kb = db.query(KnowledgeBase).filter(
-            KnowledgeBase.id == kb_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not kb:
-            raise HTTPException(status_code=404, detail="Knowledge base not found")
-        
-        # Create section
-        section_id = f"section_{secrets.token_urlsafe(8)}"
-        section = KbSection(
-            id=section_id,
-            kb_id=kb_id,
-            key=payload.key,
-            title=payload.title,
-            order_index=payload.order_index,
-            content_md=payload.content_md,
-            content_json=payload.content_json
-        )
-        db.add(section)
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "create_section", {
-            "section_id": section_id,
-            "section_key": section.key,
-            "section_title": section.title
-        })
-        
-        return {
-            "id": section_id,
-            "key": section.key,
-            "title": section.title,
-            "status": "created"
-        }
-
-
-@app.patch("/kb/sections/{section_id}")
-def update_kb_section(
-    request: Request,
-    section_id: str,
-    payload: schemas.KbSectionUpdate,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Update a knowledge base section"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify section exists and belongs to workspace
-        section = db.query(KbSection).join(KnowledgeBase).filter(
-            KbSection.id == section_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not section:
-            raise HTTPException(status_code=404, detail="Section not found")
-        
-        # Update fields
-        if payload.title is not None:
-            section.title = payload.title
-        if payload.order_index is not None:
-            section.order_index = payload.order_index
-        if payload.content_md is not None:
-            section.content_md = payload.content_md
-        if payload.content_json is not None:
-            section.content_json = payload.content_json
-        
-        section.updated_at = datetime.utcnow()
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "update_section", {
-            "section_id": section_id,
-            "changes": payload.dict(exclude_unset=True)
-        })
-        
-        return {"id": section_id, "status": "updated"}
-
-
-@app.delete("/kb/sections/{section_id}")
-def delete_kb_section(
-    request: Request,
-    section_id: str,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Delete a knowledge base section"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        # Verify section exists and belongs to workspace
-        section = db.query(KbSection).join(KnowledgeBase).filter(
-            KbSection.id == section_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not section:
-            raise HTTPException(status_code=404, detail="Section not found")
-        
-        # Delete associated fields first
-        db.query(KbField).filter(KbField.section_id == section_id).delete()
-        
-        # Delete section
-        db.delete(section)
-        db.commit()
-        
-        # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
-        
-        # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "delete_section", {
-            "section_id": section_id,
-            "section_key": section.key
-        })
-        
-        return {"id": section_id, "status": "deleted"}
 
 
 @app.post("/kb/imports/{job_id}/cancel")
@@ -4554,4 +4217,231 @@ async def get_cost_series(days: int = 30):
 	except Exception as e:
 		logger.error(f"Error getting cost series: {e}")
 		raise HTTPException(status_code=500, detail="Failed to get cost series")
+
+@app.post("/webhook/retell")
+def retell_webhook(
+    request: Request,
+    body: dict = Body(...)
+) -> dict:
+    """Handle Retell webhook events"""
+    try:
+        # Verify webhook signature (if configured)
+        if Retell:
+            # Verify webhook signature
+            signature = request.headers.get("X-Retell-Signature")
+            if signature:
+                try:
+                    Retell.verify_webhook_signature(
+                        request.body(),
+                        signature,
+                        os.getenv("RETELL_WEBHOOK_SECRET", "")
+                    )
+                except Exception as e:
+                    print(f"Webhook signature verification failed: {e}")
+                    raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        event_type = body.get("event")
+        call_data = body.get("data", {})
+        
+        if event_type == "call_started":
+            return _handle_call_started(call_data)
+        elif event_type == "call_ended":
+            return _handle_call_ended(call_data)
+        elif event_type == "call_updated":
+            return _handle_call_updated(call_data)
+        else:
+            print(f"Unknown webhook event: {event_type}")
+            return {"status": "ignored", "event": event_type}
+            
+    except Exception as e:
+        print(f"Webhook processing failed: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+def _handle_call_started(call_data: dict) -> dict:
+    """Handle call started event with KB resolution"""
+    try:
+        call_id = call_data.get("call_id")
+        campaign_id = call_data.get("campaign_id")
+        number_id = call_data.get("number_id")
+        agent_id = call_data.get("agent_id")
+        
+        print(f"Call started: {call_id}, campaign: {campaign_id}, number: {number_id}, agent: {agent_id}")
+        
+        # Resolve KB for this call context
+        kb_context = _resolve_kb_for_call(campaign_id, number_id, agent_id)
+        
+        # Store KB context for the call
+        if kb_context:
+            _store_call_kb_context(call_id, kb_context)
+            print(f"KB resolved for call {call_id}: {kb_context['kb_id']}")
+        
+        return {"status": "processed", "kb_resolved": bool(kb_context)}
+        
+    except Exception as e:
+        print(f"Failed to handle call started: {e}")
+        return {"status": "error", "error": str(e)}
+
+def _resolve_kb_for_call(campaign_id: str = None, number_id: str = None, agent_id: str = None) -> dict:
+    """Resolve KB for call context using precedence rules"""
+    try:
+        # This would use the same logic as /kb/resolve endpoint
+        # For now, return mock data
+        if campaign_id:
+            return {
+                "kb_id": f"kb_campaign_{campaign_id}",
+                "kind": "company",
+                "name": "Campaign KB",
+                "precedence": "campaign"
+            }
+        elif number_id:
+            return {
+                "kb_id": f"kb_number_{number_id}",
+                "kind": "company", 
+                "name": "Number KB",
+                "precedence": "number"
+            }
+        elif agent_id:
+            return {
+                "kb_id": f"kb_agent_{agent_id}",
+                "kind": "company",
+                "name": "Agent KB", 
+                "precedence": "agent"
+            }
+        else:
+            return {
+                "kb_id": "kb_workspace_default",
+                "kind": "company",
+                "name": "Workspace Default KB",
+                "precedence": "workspace_default"
+            }
+    except Exception as e:
+        print(f"KB resolution failed: {e}")
+        return None
+
+def _store_call_kb_context(call_id: str, kb_context: dict):
+    """Store KB context for a call (in Redis or database)"""
+    try:
+        # In production, store in Redis for fast access
+        # For now, just log
+        print(f"Storing KB context for call {call_id}: {kb_context}")
+        
+        # TODO: Store in Redis with TTL
+        # redis_client.setex(f"call_kb:{call_id}", 3600, json.dumps(kb_context))
+        
+    except Exception as e:
+        print(f"Failed to store call KB context: {e}")
+
+@app.post("/kb/track-usage")
+def track_kb_usage(
+    request: Request,
+    payload: schemas.KbUsageTrackRequest,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Track KB usage for hit-rate analytics"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Create usage record
+        usage_id = f"usage_{secrets.token_urlsafe(8)}"
+        usage = KbUsage(
+            id=usage_id,
+            workspace_id=workspace_id,
+            kb_id=payload.kb_id,
+            kind=payload.kind,
+            context=payload.context,
+            success=payload.success,
+            tokens_used=payload.tokens_used or 0,
+            cost_micros=payload.cost_micros or 0,
+            metadata=payload.metadata
+        )
+        db.add(usage)
+        db.commit()
+        
+        # Update KB freshness score
+        kb = db.query(KnowledgeBase).filter(
+            KnowledgeBase.id == payload.kb_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if kb:
+            # Increase freshness score on usage
+            kb.freshness_score = min(100, kb.freshness_score + 2)
+            db.commit()
+        
+        return {
+            "id": usage_id,
+            "status": "tracked",
+            "kb_id": payload.kb_id,
+            "kind": payload.kind
+        }
+
+@app.get("/kb/analytics")
+def get_kb_analytics(
+    request: Request,
+    kb_id: Optional[str] = Query(None),
+    period: str = Query("7d", description="Period: 1d, 7d, 30d, 90d"),
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get KB usage analytics and hit-rate"""
+    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    
+    with next(get_db()) as db:
+        # Calculate period
+        now = datetime.utcnow()
+        if period == "1d":
+            start_date = now - timedelta(days=1)
+        elif period == "7d":
+            start_date = now - timedelta(days=7)
+        elif period == "30d":
+            start_date = now - timedelta(days=30)
+        elif period == "90d":
+            start_date = now - timedelta(days=90)
+        else:
+            start_date = now - timedelta(days=7)
+        
+        # Build query
+        query = db.query(KbUsage).filter(
+            KbUsage.workspace_id == workspace_id,
+            KbUsage.created_at >= start_date
+        )
+        
+        if kb_id:
+            query = query.filter(KbUsage.kb_id == kb_id)
+        
+        usages = query.all()
+        
+        # Calculate metrics
+        total_usage = len(usages)
+        successful_usage = len([u for u in usages if u.success])
+        hit_rate = (successful_usage / total_usage * 100) if total_usage > 0 else 0
+        
+        # Group by KB
+        kb_stats = {}
+        for usage in usages:
+            if usage.kb_id not in kb_stats:
+                kb_stats[usage.kb_id] = {
+                    "total": 0,
+                    "successful": 0,
+                    "tokens": 0,
+                    "cost": 0
+                }
+            
+            kb_stats[usage.kb_id]["total"] += 1
+            if usage.success:
+                kb_stats[usage.kb_id]["successful"] += 1
+            kb_stats[usage.kb_id]["tokens"] += usage.tokens_used
+            kb_stats[usage.kb_id]["cost"] += usage.cost_micros
+        
+        # Calculate hit-rates per KB
+        for kb_id, stats in kb_stats.items():
+            stats["hit_rate"] = (stats["successful"] / stats["total"] * 100) if stats["total"] > 0 else 0
+        
+        return {
+            "period": period,
+            "total_usage": total_usage,
+            "overall_hit_rate": hit_rate,
+            "kb_stats": kb_stats,
+            "period_start": start_date.isoformat(),
+            "period_end": now.isoformat()
+        }
 

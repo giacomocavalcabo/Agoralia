@@ -10,6 +10,17 @@ const STEPS = [
   { id: 'review', label: 'Review & Commit', icon: CheckIcon }
 ];
 
+const COMPANY_FIELDS = [
+  { key: 'name', label: 'Nome Azienda', required: true },
+  { key: 'address', label: 'Indirizzo', required: true },
+  { key: 'phone', label: 'Telefono', required: false },
+  { key: 'email', label: 'Email', required: false },
+  { key: 'website', label: 'Sito Web', required: false },
+  { key: 'industry', label: 'Settore', required: false },
+  { key: 'description', label: 'Descrizione', required: false },
+  { key: 'notes', label: 'Note', required: false },
+];
+
 export function ImportManager({ isOpen, onClose, onSuccess }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [importData, setImportData] = useState({
@@ -147,6 +158,16 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
     setJobId(null);
     setError(null);
     setError(null);
+  };
+
+  const isMappingValid = () => {
+    return COMPANY_FIELDS.every(field => {
+      const mappedValue = importData.mapping[field.key];
+      if (field.required) {
+        return mappedValue && mappedValue.length > 0;
+      }
+      return true; // For non-required fields, any value is acceptable
+    });
   };
 
   if (!isOpen) return null;
@@ -305,16 +326,87 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Configura il mapping</h3>
             
-            <div className="text-sm text-gray-600">
-              <p>Configurazione del mapping in fase di sviluppo.</p>
-              <p>Per ora procediamo direttamente all'import.</p>
-            </div>
+            {importData.source?.type === 'csv' ? (
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  <p>Mappa i campi CSV ai campi della Knowledge Base.</p>
+                  <p>I campi obbligatori sono evidenziati in rosso.</p>
+                </div>
+                
+                {/* CSV Preview */}
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <div className="text-sm font-medium mb-2">Anteprima CSV</div>
+                  <div className="text-xs text-gray-600 mb-2">
+                    Riga 1: {importData.source.headers?.join(' | ') || 'Headers non rilevati'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Riga 2: {importData.source.preview?.[0]?.join(' | ') || 'Dati non disponibili'}
+                  </div>
+                </div>
+                
+                {/* Field Mapping */}
+                <div className="space-y-3">
+                  {COMPANY_FIELDS.map((field) => (
+                    <div key={field.key} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{field.label}</span>
+                        {field.required && (
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                            Obbligatorio
+                          </span>
+                        )}
+                      </div>
+                      
+                      <select
+                        value={importData.mapping[field.key] || ''}
+                        onChange={(e) => setImportData(prev => ({
+                          ...prev,
+                          mapping: {
+                            ...prev.mapping,
+                            [field.key]: e.target.value
+                          }
+                        }))}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Non mappare</option>
+                        {importData.source.headers?.map((header) => (
+                          <option key={header} value={header}>
+                            {header}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Mapping Summary */}
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-sm text-blue-800">
+                    <div className="font-medium mb-1">Riepilogo Mapping:</div>
+                    <div className="text-xs">
+                      Campi mappati: {Object.keys(importData.mapping).filter(k => importData.mapping[k]).length} / {COMPANY_FIELDS.length}
+                    </div>
+                    <div className="text-xs">
+                      Campi obbligatori: {COMPANY_FIELDS.filter(f => f.required && importData.mapping[f.key]).length} / {COMPANY_FIELDS.filter(f => f.required).length}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600">
+                <p>Per file e URL, il mapping viene fatto automaticamente tramite AI.</p>
+                <p>I campi verranno estratti e mappati secondo il template selezionato.</p>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCurrentStep(0)}>
                 Indietro
               </Button>
-              <Button onClick={handleStartImport} disabled={isProcessing}>
+              <Button 
+                onClick={handleStartImport} 
+                disabled={isProcessing || (importData.source?.type === 'csv' && !isMappingValid())}
+              >
                 {isProcessing ? 'Avvio...' : 'Avvia Import'}
               </Button>
             </div>
@@ -343,9 +435,43 @@ export function ImportManager({ isOpen, onClose, onSuccess }) {
                 </div>
               )}
 
+              {/* AI Information */}
+              {job.ai_confidence && (
+                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                  <div className="flex items-center gap-2 text-green-800">
+                    <span className="font-medium">🤖 AI Analysis:</span>
+                    <span>Confidence: {Math.round(job.ai_confidence * 100)}%</span>
+                    {job.ai_model && (
+                      <span className="text-xs bg-green-100 px-2 py-1 rounded">
+                        {job.ai_model}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Cost Information */}
               {job.cost_estimated_cents && (
                 <div className="mt-2 text-sm text-gray-600">
                   Costo stimato: €{(job.cost_estimated_cents / 100).toFixed(2)}
+                </div>
+              )}
+
+              {/* Progress Details */}
+              {job.progress_json && (
+                <div className="mt-3 text-xs text-gray-500">
+                  {job.progress_json.step === 'mapping_detected' && (
+                    <div>
+                      <div>📊 Rows processate: {job.progress_json.total_rows}</div>
+                      <div>🎯 Campi mappati: {Object.keys(job.progress_json.mapping || {}).length}</div>
+                    </div>
+                  )}
+                  {job.progress_json.step === 'chunking' && (
+                    <div>
+                      <div>📄 Chunks creati: {job.progress_json.chunks_count}</div>
+                      <div>🔍 Campi estratti: {Object.keys(job.progress_json.extracted_fields || {}).length}</div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

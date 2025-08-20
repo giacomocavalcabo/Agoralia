@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON, Enum
+from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .db import Base
@@ -339,21 +339,38 @@ class ImpersonationSession(Base):
 # ===================== Sprint 9: CRM Core Integrations =====================
 
 class CrmConnection(Base):
+    """CRM connection for a workspace"""
     __tablename__ = "crm_connections"
+    
     id = Column(String, primary_key=True)
-    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    workspace_id = Column(String, nullable=False)
     provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    status = Column(Enum(CrmConnectionStatus, name='crm_connection_status'), nullable=False)
-    access_token_enc = Column(Text, nullable=False)
-    refresh_token_enc = Column(Text, nullable=False)
-    expires_at = Column(DateTime, nullable=False)
+    status = Column(Enum(CrmConnectionStatus, name='crm_connection_status'), nullable=False, default=CrmConnectionStatus.DISCONNECTED)
+    
+    # Connection details
+    access_token_enc = Column(Text, nullable=True)  # Encrypted access token
+    refresh_token_enc = Column(Text, nullable=True)  # Encrypted refresh token
+    expires_at = Column(DateTime, nullable=True)
     base_url = Column(String, nullable=True)
     account_id = Column(String, nullable=True)
-    dc_region = Column(String, nullable=True)
-    scopes = Column(String, nullable=True)
-    webhook_secret_enc = Column(Text, nullable=True)
+    dc_region = Column(String, nullable=True)  # For Zoho datacenter
+    
+    # Sync control
+    sync_enabled = Column(Boolean, default=True)  # Master switch for sync
+    kill_switch = Column(Boolean, default=False)  # Emergency pause for incidents
+    
+    # Configuration
+    field_mappings = Column(JSON, default={})
+    sync_settings = Column(JSON, default={})
+    
+    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint('workspace_id', 'provider', name='uq_workspace_provider'),
+    )
 
 
 class CrmEntityLink(Base):
@@ -580,4 +597,18 @@ class AiUsage(Base):
 # Note: Legacy models removed to avoid conflicts with new CRM models
 # The new CrmConnection model replaces HubSpotConnection
 # The new CrmFieldMapping model replaces the legacy version
+
+
+class KbUsage(Base):
+    __tablename__ = "kb_usage"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    kind = Column(String, nullable=False)  # resolve, prompt_bricks, etc.
+    context = Column(JSON)  # Usage context (campaign_id, number_id, etc.)
+    success = Column(Boolean, default=True)
+    tokens_used = Column(Integer, default=0)
+    cost_micros = Column(Integer, default=0)  # Cost in microcents
+    metadata = Column(JSON)  # Additional metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
 
