@@ -1107,6 +1107,73 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 
 
 # ===================== Auth endpoints =====================
+@app.post("/auth/register")
+async def auth_register(payload: dict, request: Request) -> Response:
+    """Register new user with email/password"""
+    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    
+    # Rate limiting
+    require_rate_limit(request, "auth")
+    
+    email = (payload.get("email") or "").strip().lower()
+    password = payload.get("password", "")
+    name = (payload.get("name") or "").strip()
+    
+    if not email or not password or not name:
+        raise HTTPException(status_code=400, detail="Missing email, password, or name")
+    
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    
+    with next(get_db()) as db:
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.email.ilike(email)).first()
+        if existing_user:
+            raise HTTPException(status_code=409, detail="User already exists")
+        
+        # Hash password
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+        
+        # Create user
+        user = User(
+            id=f"u_{secrets.token_urlsafe(16)}",
+            email=email,
+            name=name,
+            email_verified_at=datetime.now(timezone.utc),  # Auto-verify for now
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+        db.add(user)
+        db.flush()  # Get the user ID
+        
+        # Create user auth record
+        ua = UserAuth(
+            user_id=user.id,
+            provider="password",
+            pass_hash=hashed.decode("utf-8"),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+        db.add(ua)
+        
+        # Auto-promote to admin if email is in allowlist
+        admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+        if user.email.strip() in [e.strip() for e in admin_emails]:
+            user.is_admin_global = True
+            print(f"✅ Auto-promoted {user.email} to global admin during registration")
+        
+        db.commit()
+        
+        return Response(
+            content=json.dumps({
+                "ok": True,
+                "message": "User created successfully",
+                "user_id": user.id
+            }),
+            media_type="application/json"
+        )
+
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
     from .utils.rate_limiter import rate_limiter, require_rate_limit
@@ -1157,6 +1224,15 @@ async def auth_login(payload: dict, request: Request) -> Response:
                 }),
                 media_type="application/json"
             )
+        
+        # Auto-promote to admin if email is in allowlist
+        admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+        if user.email.strip() in [e.strip() for e in admin_emails]:
+            if not user.is_admin_global:
+                user.is_admin_global = True
+                db.add(user)
+                db.commit()
+                print(f"✅ Auto-promoted {user.email} to global admin")
         
         # Build claims with workspace memberships
         memberships = []
