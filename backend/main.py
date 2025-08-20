@@ -1613,6 +1613,12 @@ def ws_members() -> dict:
     return {"items": _WORKSPACE_MEMBERS}
 
 
+@app.get("/workspaces/invites")
+def ws_invites() -> dict:
+    """Get all pending invites for the current workspace"""
+    return {"items": _WORKSPACE_INVITES}
+
+
 @app.post("/workspaces/members/invite")
 @audit("invite", "member")
 @require_role("admin")

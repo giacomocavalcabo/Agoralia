@@ -12,22 +12,22 @@ import {
 
 // Mock data - in production this would come from API
 const mockBillingData = {
-  balance: 125.50,
+  balance: 100000000.00, // Admin gets 100M€! 🚀
   usage: {
-    mtd: 89.30,
-    cap: 200.00,
-    minutes: 1250,
-    minutesCap: 2000
+    mtd: 1250.75, // Usage molto basso rispetto al saldo
+    cap: 1000000000.00, // Cap a 1 miliardo
+    minutes: 5000,
+    minutesCap: 1000000 // 1M di minuti
   },
   autoRecharge: {
     enabled: true,
-    threshold: 50.00,
-    topup: 200.00
+    threshold: 1000000.00, // Ricarica automatica a 1M€
+    topup: 10000000.00 // Ricarica di 10M€
   },
   usageCap: {
     type: 'soft', // 'hard' or 'soft'
-    limit: 200.00,
-    warning: 160.00
+    limit: 1000000000.00, // Limite a 1 miliardo
+    warning: 800000000.00 // Warning a 800M€
   },
   paymentMethods: [
     {
@@ -38,6 +38,15 @@ const mockBillingData = {
       expMonth: 12,
       expYear: 2025,
       isDefault: true
+    },
+    {
+      id: 'pm_2',
+      type: 'card',
+      last4: '8888',
+      brand: 'mastercard',
+      expMonth: 6,
+      expYear: 2026,
+      isDefault: false
     }
   ],
   invoices: [
@@ -45,15 +54,33 @@ const mockBillingData = {
       id: 'inv_1',
       number: 'INV-2025-001',
       period: 'January 2025',
-      amount: 89.30,
+      amount: 1250.75,
       status: 'paid',
       date: '2025-01-15'
+    },
+    {
+      id: 'inv_2',
+      number: 'INV-2024-012',
+      period: 'December 2024',
+      amount: 890.50,
+      status: 'paid',
+      date: '2024-12-15'
     }
   ]
 }
 
 function OverviewCards({ data }) {
   const { t } = useI18n()
+  
+  // Safety checks
+  if (!data) return null
+  
+  const balance = data.balance ?? 0
+  const usage = data.usage ?? {}
+  const mtd = usage.mtd ?? 0
+  const cap = usage.cap ?? 0
+  const minutes = usage.minutes ?? 0
+  const minutesCap = usage.minutesCap ?? 0
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -68,7 +95,7 @@ function OverviewCards({ data }) {
               {t('billing.overview.balance') || 'Available Balance'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
-              ${data.balance.toFixed(2)}
+              ${balance.toFixed(2)}
             </p>
           </div>
         </div>
@@ -85,10 +112,10 @@ function OverviewCards({ data }) {
               {t('billing.overview.usage_mtd') || 'Usage MTD'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
-              ${data.usage.mtd.toFixed(2)}
+              ${mtd.toFixed(2)}
             </p>
             <p className="text-sm text-gray-500">
-              of ${data.usage.cap.toFixed(2)}
+              of ${cap.toFixed(2)}
             </p>
           </div>
         </div>
@@ -105,30 +132,30 @@ function OverviewCards({ data }) {
               {t('billing.overview.minutes_mtd') || 'Minutes MTD'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
-              {data.usage.minutes}
+              {minutes.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">
-              of {data.usage.minutesCap}
+              of {minutesCap.toLocaleString()}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Status */}
+      {/* Usage Cap Status */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <CheckCircleIcon className="h-6 w-6 text-gray-600" />
+          <div className="p-2 bg-orange-100 rounded-lg">
+            <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">
-              {t('billing.overview.status') || 'Status'}
+              {t('billing.overview.cap_status') || 'Cap Status'}
             </p>
-            <p className="text-lg font-semibold text-green-600">
-              Active
+            <p className="text-2xl font-semibold text-gray-900">
+              {((mtd / cap) * 100).toFixed(0)}%
             </p>
             <p className="text-sm text-gray-500">
-              {data.usage.mtd / data.usage.cap * 100 < 80 ? 'Normal' : 'Near Limit'}
+              {mtd >= cap ? 'Over limit' : 'Under limit'}
             </p>
           </div>
         </div>
@@ -436,6 +463,9 @@ function UsageCap({ data, onUpdate }) {
 function Invoices({ data }) {
   const { t } = useI18n()
   
+  // Safety checks
+  if (!data || !Array.isArray(data.invoices)) return null
+  
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-6">
@@ -480,14 +510,43 @@ function Invoices({ data }) {
 // Main Billing component
 export default function Billing() {
   const { t } = useI18n()
-  const [billingData, setBillingData] = useState(mockBillingData)
+  const [billingData, setBillingData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  
+  useEffect(() => {
+    // Simula caricamento dati da API
+    const loadBillingData = async () => {
+      try {
+        setLoading(true)
+        // In produzione, qui faremmo una chiamata API
+        // const response = await apiFetch('/billing')
+        // setBillingData(response)
+        
+        // Per ora usiamo i mock data con un delay per simulare il caricamento
+        setTimeout(() => {
+          setBillingData(mockBillingData)
+          setLoading(false)
+        }, 500)
+      } catch (err) {
+        setError(err.message)
+        setLoading(false)
+      }
+    }
+    
+    loadBillingData()
+  }, [])
   
   const handleAutoRechargeUpdate = (newData) => {
-    setBillingData({...billingData, autoRecharge: newData})
+    if (billingData) {
+      setBillingData({...billingData, autoRecharge: newData})
+    }
   }
   
   const handleUsageCapUpdate = (newData) => {
-    setBillingData({...billingData, usageCap: newData})
+    if (billingData) {
+      setBillingData({...billingData, usageCap: newData})
+    }
   }
   
   const handleAddCard = () => {
@@ -495,15 +554,90 @@ export default function Billing() {
     alert('Stripe Elements integration coming soon!')
   }
   
+  // Loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-6 w-6 text-red-600 mr-3" />
+            <div>
+              <h3 className="text-lg font-medium text-red-800">Error Loading Billing Data</h3>
+              <p className="text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+  
+  // No data state
+  if (!billingData) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 mr-3" />
+            <div>
+              <h3 className="text-lg font-medium text-yellow-800">No Billing Data Available</h3>
+              <p className="text-yellow-700 mt-1">Please check your account settings or contact support.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          {t('billing.title') || 'Billing & Usage'}
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {t('billing.title') || 'Billing & Usage'}
+          </h1>
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+              👑 ADMIN
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              💰 Unlimited
+            </span>
+          </div>
+        </div>
         <p className="text-gray-600">
           {t('billing.subtitle') || 'Manage your payment methods, auto-recharge, and usage limits'}
+        </p>
+        <p className="text-sm text-purple-600 mt-1">
+          🚀 Welcome, Admin! You have unlimited resources and premium features.
         </p>
       </div>
 
