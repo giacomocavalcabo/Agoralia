@@ -10,13 +10,23 @@ import {
   UserGroupIcon,
   DocumentTextIcon,
   MagnifyingGlassIcon,
-  BellIcon
+  BellIcon,
+  UserIcon,
+  CalendarIcon,
+  HashtagIcon,
+  BookOpenIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Dashboard', href: '/', icon: HomeIcon },
+  { name: 'Leads', href: '/leads', icon: UserIcon },
   { name: 'Campaigns', href: '/campaigns', icon: PhoneIcon },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
+  { name: 'Numbers', href: '/numbers', icon: HashtagIcon },
+  { name: 'Knowledge Base', href: '/knowledge', icon: BookOpenIcon },
+  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'History', href: '/history', icon: ClockIcon },
   { name: 'Import', href: '/import', icon: DocumentTextIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
   { name: 'Billing', href: '/billing', icon: CreditCardIcon },
@@ -78,9 +88,10 @@ export default function AppShell({ children }) {
       
       <div className="flex">
         {/* Sidebar Compatta */}
-        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
+        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2 overflow-y-auto">
           {navigation.map((item) => {
-            const isActive = location.pathname === item.href
+            const isActive = location.pathname === item.href || 
+                           (item.href !== '/' && location.pathname.startsWith(item.href))
             return (
               <Link
                 key={item.name}
@@ -105,9 +116,7 @@ export default function AppShell({ children }) {
         
         {/* Main Content */}
         <div className="flex-1">
-          <main className="max-w-7xl mx-auto px-6 py-8">
-            {children}
-          </main>
+          {children}
         </div>
       </div>
     </div>
