@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { api } from './api';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -67,6 +68,8 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      // Redirect to login page
+      window.location.href = '/login';
     }
   };
 
