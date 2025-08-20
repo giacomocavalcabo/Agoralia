@@ -609,6 +609,6 @@ class KbUsage(Base):
     success = Column(Boolean, default=True)
     tokens_used = Column(Integer, default=0)
     cost_micros = Column(Integer, default=0)  # Cost in microcents
-    metadata = Column(JSON)  # Additional metadata
+    meta_json = Column(JSON)  # Additional metadata
     created_at = Column(DateTime, default=datetime.utcnow)
 
