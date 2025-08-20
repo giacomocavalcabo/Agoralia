@@ -1,56 +1,64 @@
-// Robust i18n loader using Vite's import.meta.glob (build-time bundling)
+// Robust i18n loader using Vite's import.meta.glob (lazy per locale)
 // No runtime fetch → no broken paths in production
 
-// Load ALL json files via Vite (build-time) without fetch
-const files = import.meta.glob('../locales/*/*.json', { eager: true });
+const loaders = import.meta.glob('../locales/*/*.json', { import: 'default' });
 
-// Build resources object: { en: {common: {...}, auth: {...}}, it: {...} }
-export const resources = {};
+const cache = {}; // { 'it-IT': { common: {...}, admin: {...} }, ... }
 
-for (const path in files) {
-  const [, locale, nsFile] = path.match(/locales\/([^/]+)\/([^/]+)\.json$/) || [];
-  if (!locale || !nsFile) continue;
-  
-  resources[locale] ||= {};
-  resources[locale][nsFile] = files[path].default;
+function pathParts(p) {
+  // ../locales/it-IT/common.json -> { locale:'it-IT', ns:'common' }
+  const segs = p.split('/');
+  const locale = segs[segs.length - 2];
+  const ns = segs[segs.length - 1].replace('.json', '');
+  return { locale, ns };
 }
 
-// Fallback chain: locale → base → en
+export async function loadLocale(locale) {
+  if (cache[locale]) return cache[locale];
+  
+  const entries = Object.entries(loaders).filter(([p]) => p.includes(`/locales/${locale}/`));
+  if (!entries.length) {
+    console.warn(`[i18n] Locale ${locale} not found, using empty dict`);
+    return (cache[locale] = {}); // locale non trovato
+  }
+
+  const pairs = await Promise.all(
+    entries.map(async ([p, importer]) => {
+      try {
+        const mod = await importer();
+        const { ns } = pathParts(p);
+        return [ns, mod];
+      } catch (error) {
+        console.error(`[i18n] Failed to load ${p}:`, error);
+        return [pathParts(p).ns, {}];
+      }
+    })
+  );
+  
+  const dict = Object.fromEntries(pairs);
+  cache[locale] = dict;
+  console.log(`[i18n] Loaded locale ${locale}:`, Object.keys(dict));
+  return dict;
+}
+
+export function getDict(locale, ns = 'common') {
+  return cache[locale]?.[ns] ?? null;
+}
+
+export function knownLocales() {
+  // deduci i locali disponibili dal glob (una volta)
+  const set = new Set();
+  Object.keys(loaders).forEach((p) => {
+    const segs = p.split('/');
+    set.add(segs[segs.length - 2]);
+  });
+  return Array.from(set);
+}
+
+// Fallback chain helper
 export function getFallbackChain(locale) {
   const base = locale.split('-')[0];
-  return [locale, base, 'en'].filter((l, i, arr) => arr.indexOf(l) === i);
-}
-
-// Get translation with fallback chain
-export function getTranslation(
-  key, 
-  locale, 
-  namespaces = ['common']
-) {
-  const fallbacks = getFallbackChain(locale);
-  
-  for (const fallbackLocale of fallbacks) {
-    if (!resources[fallbackLocale]) continue;
-    
-    for (const ns of namespaces) {
-      const nsData = resources[fallbackLocale][ns];
-      if (!nsData) continue;
-      
-      const parts = key.split('.');
-      let value = nsData;
-      
-      for (const part of parts) {
-        value = value?.[part];
-        if (value === undefined) break;
-      }
-      
-      if (value !== undefined) {
-        return value;
-      }
-    }
-  }
-  
-  return null;
+  return [locale, base, 'en-US'].filter((l, i, arr) => arr.indexOf(l) === i);
 }
 
 // Interpolation helper
@@ -60,13 +68,13 @@ export function interpolate(text, params = {}) {
 
 // RTL detection
 export function isRtl(locale) {
-  return locale.startsWith('ar') || locale.startsWith('he') || locale.startsWith('fa');
+  return /^ar|^fa|^he/.test(locale);
 }
 
 // Format helpers using Intl
 export const fmt = {
   number: (n, locale) => new Intl.NumberFormat(locale).format(n),
-  date: (d, locale) => new Intl.DateTimeFormat(locale).format(d),
+  date: (d, locale, opts) => new Intl.DateTimeFormat(locale, opts).format(d),
   currency: (amount, locale, currency = 'USD') => 
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount)
 };
