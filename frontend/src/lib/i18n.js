@@ -2,10 +2,10 @@
 // No runtime fetch → no broken paths in production
 
 // Load ALL json files via Vite (build-time) without fetch
-const files = import.meta.glob('../locales/*/*.json', { eager: true }) as Record<string, { default: any }>;
+const files = import.meta.glob('../locales/*/*.json', { eager: true });
 
 // Build resources object: { en: {common: {...}, auth: {...}}, it: {...} }
-export const resources: Record<string, Record<string, any>> = {};
+export const resources = {};
 
 for (const path in files) {
   const [, locale, nsFile] = path.match(/locales\/([^/]+)\/([^/]+)\.json$/) || [];
@@ -16,17 +16,17 @@ for (const path in files) {
 }
 
 // Fallback chain: locale → base → en
-export function getFallbackChain(locale: string): string[] {
+export function getFallbackChain(locale) {
   const base = locale.split('-')[0];
   return [locale, base, 'en'].filter((l, i, arr) => arr.indexOf(l) === i);
 }
 
 // Get translation with fallback chain
 export function getTranslation(
-  key: string, 
-  locale: string, 
-  namespaces: string[] = ['common']
-): string | null {
+  key, 
+  locale, 
+  namespaces = ['common']
+) {
   const fallbacks = getFallbackChain(locale);
   
   for (const fallbackLocale of fallbacks) {
@@ -54,19 +54,19 @@ export function getTranslation(
 }
 
 // Interpolation helper
-export function interpolate(text: string, params: Record<string, any> = {}): string {
+export function interpolate(text, params = {}) {
   return text.replace(/\{(\w+)\}/g, (_, key) => params[key] ?? `{${key}}`);
 }
 
 // RTL detection
-export function isRtl(locale: string): boolean {
+export function isRtl(locale) {
   return locale.startsWith('ar') || locale.startsWith('he') || locale.startsWith('fa');
 }
 
 // Format helpers using Intl
 export const fmt = {
-  number: (n: number, locale: string) => new Intl.NumberFormat(locale).format(n),
-  date: (d: Date, locale: string) => new Intl.DateTimeFormat(locale).format(d),
-  currency: (amount: number, locale: string, currency = 'USD') => 
+  number: (n, locale) => new Intl.NumberFormat(locale).format(n),
+  date: (d, locale) => new Intl.DateTimeFormat(locale).format(d),
+  currency: (amount, locale, currency = 'USD') => 
     new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount)
 };
