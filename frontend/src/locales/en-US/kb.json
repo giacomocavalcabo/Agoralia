@@ -64,5 +64,33 @@
     "forbidden": "Access Denied",
     "not_found": "Resource Not Found",
     "unexpected": "Unexpected Error"
+  },
+  "imports": {
+    "merge_summary": "Merge Summary",
+    "existing_fields": "Existing Fields",
+    "imported_fields": "Imported Fields",
+    "conflicts": "Conflicts",
+    "new_fields": "New Fields",
+    "merge_strategy": "Merge Strategy",
+    "strategy_manual": "Manual Review",
+    "strategy_auto_new": "Auto Accept New",
+    "strategy_auto_merge": "Auto Merge",
+    "field_changes": "Field Changes",
+    "field_update": "Field Update",
+    "field_new": "New Field",
+    "keep_existing": "Keep Existing",
+    "use_new": "Use New",
+    "merge_values": "Merge Values",
+    "add_field": "Add Field",
+    "existing_value": "Existing Value",
+    "new_value": "New Value",
+    "field_value": "Field Value",
+    "no_value": "No value",
+    "merged_preview": "Merged Preview",
+    "updated": "Updated",
+    "ready_to_merge": "Ready to apply merge decisions",
+    "merging": "Merging...",
+    "apply_merge": "Apply Merge",
+    "no_diff_available": "No diff analysis available"
   }
 }

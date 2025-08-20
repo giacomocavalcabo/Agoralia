@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
+import { PaymentsDisabledBanner } from '../providers/StripeProvider.jsx'
 import { 
   CreditCardIcon, 
   CurrencyDollarIcon,
@@ -136,8 +137,11 @@ function OverviewCards({ data }) {
   )
 }
 
-function PaymentMethods({ data, onAddCard }) {
+function PaymentMethods({ data = [], onAddCard }) {
   const { t } = useI18n()
+  
+  // Fallback difensivo
+  if (!Array.isArray(data)) data = [];
   
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
@@ -155,7 +159,14 @@ function PaymentMethods({ data, onAddCard }) {
       </div>
       
       <div className="space-y-4">
-        {data.paymentMethods.map((method) => (
+        {data.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <CreditCardIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-lg font-medium">Nessun metodo di pagamento</p>
+            <p className="text-sm">Aggiungi una carta per abilitare i pagamenti</p>
+          </div>
+        ) : (
+          data.map((method) => (
           <div key={method.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center">
               <CreditCardIcon className="h-6 w-6 text-gray-400 mr-3" />
@@ -179,7 +190,8 @@ function PaymentMethods({ data, onAddCard }) {
               </button>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )
@@ -495,20 +507,23 @@ export default function Billing() {
         </p>
       </div>
 
+      {/* Stripe Status Banner */}
+      <PaymentsDisabledBanner />
+
       {/* Overview Cards */}
       <OverviewCards data={billingData} />
       
       {/* Payment Methods */}
-      <PaymentMethods data={billingData.paymentMethods} onAddCard={handleAddCard} />
+      <PaymentMethods data={billingData?.paymentMethods ?? []} onAddCard={handleAddCard} />
       
       {/* Auto-Recharge */}
-      <AutoRecharge data={billingData.autoRecharge} onUpdate={handleAutoRechargeUpdate} />
+      <AutoRecharge data={billingData?.autoRecharge ?? {}} onUpdate={handleAutoRechargeUpdate} />
       
       {/* Usage Cap */}
-      <UsageCap data={billingData.usageCap} onUpdate={handleUsageCapUpdate} />
+      <UsageCap data={billingData?.usageCap ?? {}} onUpdate={handleUsageCapUpdate} />
       
       {/* Invoices */}
-      <Invoices data={billingData.invoices} />
+      <Invoices data={billingData?.invoices ?? []} />
     </div>
   )
 }

@@ -2905,7 +2905,7 @@ def get_import_job_status(
     job_id: str,
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
-    """Get import job status and progress"""
+    """Get import job status and progress with diff analysis"""
     workspace_id = _get_workspace_from_user(request)
     
     with next(get_db()) as db:
@@ -2917,6 +2917,11 @@ def get_import_job_status(
         if not job:
             raise HTTPException(status_code=404, detail="Import job not found")
         
+        # Get diff analysis if job is in review state
+        diff_analysis = None
+        if job.status == "review" and job.progress_json:
+            diff_analysis = _analyze_import_diff(db, job)
+        
         return {
             "id": job.id,
             "status": job.status,
@@ -2925,8 +2930,66 @@ def get_import_job_status(
             "actual_cost_cents": job.actual_cost_cents,
             "error_message": job.error_message,
             "created_at": job.created_at,
-            "completed_at": job.completed_at
+            "completed_at": job.completed_at,
+            "diff_analysis": diff_analysis
         }
+
+def _analyze_import_diff(db, job):
+    """Analyze differences between existing KB and imported data"""
+    try:
+        if not job.target_kb_id:
+            return None
+        
+        # Get existing KB data
+        existing_kb = db.query(KnowledgeBase).filter(KnowledgeBase.id == job.target_kb_id).first()
+        if not existing_kb:
+            return None
+        
+        # Get existing fields
+        existing_fields = db.query(KbField).filter(
+            KbField.kb_id == job.target_kb_id,
+            KbField.lang == "en-US"  # Default language
+        ).all()
+        
+        # Get imported data from progress_json
+        imported_data = job.progress_json.get("extracted_fields", {})
+        
+        # Analyze differences
+        field_diffs = []
+        for field_key, imported_value in imported_data.items():
+            existing_field = next((f for f in existing_fields if f.key == field_key), None)
+            
+            if existing_field:
+                if existing_field.value_text != imported_value:
+                    field_diffs.append({
+                        "field_key": field_key,
+                        "field_id": existing_field.id,
+                        "old_value": existing_field.value_text,
+                        "new_value": imported_value,
+                        "conflict_type": "update"
+                    })
+            else:
+                field_diffs.append({
+                    "field_key": field_key,
+                    "field_id": None,
+                    "old_value": None,
+                    "new_value": imported_value,
+                    "conflict_type": "new"
+                })
+        
+        return {
+            "kb_id": job.target_kb_id,
+            "kb_name": existing_kb.name,
+            "total_fields": len(existing_fields),
+            "imported_fields": len(imported_data),
+            "conflicts": len([d for d in field_diffs if d["conflict_type"] == "update"]),
+            "new_fields": len([d for d in field_diffs if d["conflict_type"] == "new"]),
+            "field_diffs": field_diffs
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to analyze import diff: {e}")
+        return None
 
 
 @app.post("/kb/assign")
@@ -2976,6 +3039,146 @@ def assign_knowledge_base(
             "kb_id": assignment.kb_id,
             "status": "assigned"
         }
+
+@app.post("/kb/imports/{job_id}/merge")
+def merge_import_changes(
+    request: Request,
+    job_id: str,
+    merge_decisions: schemas.MergeDecisions,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Merge imported changes based on user decisions"""
+    workspace_id = _get_workspace_from_user(request)
+    
+    with next(get_db()) as db:
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Import job not found")
+        
+        if job.status != "review":
+            raise HTTPException(status_code=400, detail="Import job not in review state")
+        
+        # Apply merge decisions
+        applied_changes = _apply_merge_decisions(db, job, merge_decisions)
+        
+        # Update job status
+        job.status = "completed"
+        job.progress_json = {
+            **job.progress_json,
+            "merge_completed": True,
+            "applied_changes": applied_changes,
+            "merged_at": datetime.utcnow().isoformat()
+        }
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "applied_changes": applied_changes,
+            "message": "Import changes merged successfully"
+        }
+
+def _apply_merge_decisions(db, job, merge_decisions):
+    """Apply user merge decisions to KB fields"""
+    applied_changes = []
+    
+    try:
+        for decision in merge_decisions.decisions:
+            if decision.action == "keep_old":
+                # Do nothing, keep existing value
+                applied_changes.append({
+                    "field_key": decision.field_key,
+                    "action": "kept_old",
+                    "value": "existing_value"
+                })
+                
+            elif decision.action == "use_new":
+                if decision.field_id:
+                    # Update existing field
+                    field = db.query(KbField).filter(KbField.id == decision.field_id).first()
+                    if field:
+                        old_value = field.value_text
+                        field.value_text = decision.new_value
+                        field.updated_at = datetime.utcnow()
+                        
+                        # Add to history
+                        _add_field_history(db, field, "updated", old_value, decision.new_value, job.id)
+                        
+                        applied_changes.append({
+                            "field_key": decision.field_key,
+                            "action": "updated",
+                            "old_value": old_value,
+                            "new_value": decision.new_value
+                        })
+                else:
+                    # Create new field
+                    new_field = KbField(
+                        id=f"field_{secrets.token_urlsafe(8)}",
+                        kb_id=job.target_kb_id,
+                        key=decision.field_key,
+                        label=decision.field_key.replace("_", " ").title(),
+                        value_text=decision.new_value,
+                        lang="en-US",
+                        source_id=job.source_id,
+                        confidence=80
+                    )
+                    db.add(new_field)
+                    
+                    # Add to history
+                    _add_field_history(db, new_field, "created", None, decision.new_value, job.id)
+                    
+                    applied_changes.append({
+                        "field_key": decision.field_key,
+                        "action": "created",
+                        "new_value": decision.new_value
+                    })
+                    
+            elif decision.action == "merge":
+                # Merge old and new values
+                if decision.field_id:
+                    field = db.query(KbField).filter(KbField.id == decision.field_id).first()
+                    if field:
+                        old_value = field.value_text
+                        merged_value = f"{old_value}\n\n--- Updated ---\n{decision.new_value}"
+                        field.value_text = merged_value
+                        field.updated_at = datetime.utcnow()
+                        
+                        # Add to history
+                        _add_field_history(db, field, "merged", old_value, merged_value, job.id)
+                        
+                        applied_changes.append({
+                            "field_key": decision.field_key,
+                            "action": "merged",
+                            "old_value": old_value,
+                            "new_value": merged_value
+                        })
+        
+        return applied_changes
+        
+    except Exception as e:
+        logger.error(f"Failed to apply merge decisions: {e}")
+        raise HTTPException(status_code=500, detail="Failed to apply merge decisions")
+
+def _add_field_history(db, field, action, old_value, new_value, job_id):
+    """Add field change to KB history"""
+    try:
+        history_entry = KbHistory(
+            id=f"hist_{secrets.token_urlsafe(8)}",
+            kb_id=field.kb_id,
+            field_id=field.id,
+            action=action,
+            old_value=old_value,
+            new_value=new_value,
+            source="import_merge",
+            metadata={"job_id": job_id}
+        )
+        db.add(history_entry)
+    except Exception as e:
+        logger.error(f"Failed to add field history: {e}")
 
 
 @app.get("/kb/resolve")

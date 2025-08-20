@@ -15,6 +15,9 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const failCount = useRef(0)
 	const maxFailures = 3
 	
+	// WebSocket URL configurabile con fallback
+	const wsUrl = import.meta.env.VITE_WS_URL || url
+	
 	// Queue events (max 200)
 	const addEvent = useCallback((event) => {
 		eventQueue.current = [...eventQueue.current, event].slice(-200)
@@ -63,8 +66,15 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const connect = useCallback(() => {
 		if (wsRef.current?.readyState === WebSocket.OPEN) return
 		
+		// Se non c'è URL WebSocket configurato, usa fallback
+		if (!wsUrl) {
+			console.log('WebSocket URL not configured, using fallback polling')
+			startPolling()
+			return
+		}
+		
 		try {
-			wsRef.current = new WebSocket(url)
+			wsRef.current = new WebSocket(wsUrl)
 			
 			wsRef.current.onopen = () => {
 				console.log('WebSocket connected')

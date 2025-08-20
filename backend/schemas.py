@@ -371,6 +371,18 @@ class KbUsageTrackRequest(BaseModel):
     cost_micros: Optional[int] = Field(None, description="Cost in microcents")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
+class MergeDecision(BaseModel):
+    """Individual merge decision for a field"""
+    field_key: str = Field(..., description="Field key to merge")
+    field_id: Optional[str] = Field(None, description="Existing field ID (if updating)")
+    action: Literal["keep_old", "use_new", "merge"] = Field(..., description="Merge action to take")
+    new_value: Optional[str] = Field(None, description="New value (if using or merging)")
+
+class MergeDecisions(BaseModel):
+    """Collection of merge decisions for an import job"""
+    decisions: List[MergeDecision] = Field(..., description="List of merge decisions")
+    strategy: Literal["manual", "auto_accept_new", "auto_merge"] = Field("manual", description="Merge strategy")
+
 
 class KbUsageResponse(BaseModel):
     id: str
