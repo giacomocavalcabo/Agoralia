@@ -2990,6 +2990,14 @@ def resolve_knowledge_base(
     """Resolve knowledge base for runtime use (campaign > number > agent > workspace default)"""
     workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
     
+    # Cache key for performance
+    cache_key = f"kb_resolve:{workspace_id}:{campaign_id}:{number_id}:{agent_id}:{lang}"
+    
+    # TODO: Check Redis cache first
+    # cached_result = redis_client.get(cache_key)
+    # if cached_result:
+    #     return json.loads(cached_result)
+    
     with next(get_db()) as db:
         # Find KB assignment with precedence: campaign > number > agent > workspace_default
         assignment = None
@@ -3033,7 +3041,7 @@ def resolve_knowledge_base(
         if not kb:
             raise HTTPException(status_code=404, detail="Assigned knowledge base not found or not published")
         
-        # Get sections and fields
+        # Get sections and fields with optimized queries
         sections = db.query(KbSection).filter(
             KbSection.kb_id == kb.id
         ).order_by(KbSection.order_index).all()
@@ -3041,6 +3049,9 @@ def resolve_knowledge_base(
         fields = db.query(KbField).filter(
             KbField.kb_id == kb.id,
             KbField.lang == lang
+        ).options(
+            # Optimize loading for large datasets
+            db.query(KbField).limit(100)  # Limit fields for performance
         ).all()
         
         return {

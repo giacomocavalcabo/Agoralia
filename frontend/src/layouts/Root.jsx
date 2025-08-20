@@ -1,32 +1,51 @@
-import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
-import AppHeader from '../components/AppHeader.jsx'
-import Sidebar from '../components/Sidebar.jsx'
+import React, { Suspense } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AppShell from '../components/AppShell'
+import { I18nProvider } from '../lib/i18n.jsx'
+import { ToastProvider } from '../components/ToastProvider.jsx'
+
+// Lazy load pages
+const Dashboard = React.lazy(() => import('../pages/Dashboard'))
+const KnowledgeBase = React.lazy(() => import('../pages/KnowledgeBase/KnowledgeBase'))
+const KBEditor = React.lazy(() => import('../pages/KnowledgeBase/KBEditor'))
+const Assignments = React.lazy(() => import('../pages/KnowledgeBase/Assignments'))
+const Imports = React.lazy(() => import('../pages/KnowledgeBase/Imports'))
+const Leads = React.lazy(() => import('../pages/Leads'))
+const Numbers = React.lazy(() => import('../pages/Numbers'))
+const Campaigns = React.lazy(() => import('../pages/Campaigns'))
+const Settings = React.lazy(() => import('../pages/Settings'))
+const Billing = React.lazy(() => import('../pages/Billing'))
+
+// Loading component for routes
+const RouteLoading = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+)
 
 export default function Root() {
-	const location = useLocation()
-	
-	// Apply dark theme only to Dashboard
-	useEffect(() => {
-		const isDashboard = location.pathname === '/'
-		document.body.classList.toggle('dark', isDashboard)
-		
-		return () => {
-			document.body.classList.remove('dark')
-		}
-	}, [location.pathname])
-	
-	return (
-		<div className="min-h-screen bg-bg-app">
-			<div className="grid grid-cols-[auto_1fr]">
-				<Sidebar />
-				<div className="flex flex-col">
-					<AppHeader />
-					<main className="flex-1 p-6">
-						<Outlet />
-					</main>
-				</div>
-			</div>
-		</div>
-	)
+  return (
+    <I18nProvider>
+      <ToastProvider>
+        <AppShell>
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              <Route index element={<Dashboard />} />
+              <Route path="knowledge" element={<KnowledgeBase />} />
+              <Route path="knowledge/company/:id" element={<KBEditor kind="company" />} />
+              <Route path="knowledge/offers/:id" element={<KBEditor kind="offer_pack" />} />
+              <Route path="knowledge/assignments" element={<Assignments />} />
+              <Route path="knowledge/imports" element={<Imports />} />
+              <Route path="leads" element={<Leads />} />
+              <Route path="numbers" element={<Numbers />} />
+              <Route path="campaigns" element={<Campaigns />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </AppShell>
+      </ToastProvider>
+    </I18nProvider>
+  )
 }

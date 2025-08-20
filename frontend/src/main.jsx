@@ -1,70 +1,51 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import React, { Suspense } from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import StripeProvider from './providers/StripeProvider'
+import Root from './layouts/Root'
 import './index.css'
-import { I18nProvider } from './lib/i18n.jsx'
-import { ToastProvider } from './components/ToastProvider.jsx'
-import QueryProvider from './providers/QueryProvider.jsx'
-import StripeProvider from './providers/StripeProvider.jsx'
-import Root from './layouts/Root.jsx'
 
-const modules = import.meta.glob('./pages/*.jsx', { eager: true })
-modules['./pages/Numbers.jsx'] ||= { default: (await import('./pages/Numbers.jsx')).default }
-const pages = Object.entries(modules).map(([path, mod]) => {
-	const file = path.split('/').pop() || ''
-	const name = file.replace(/\.jsx$/,'')
-	return { name, Component: mod.default }
-})
+// Lazy load components
+const Dashboard = React.lazy(() => import('./pages/Dashboard'))
+const KnowledgeBase = React.lazy(() => import('./pages/KnowledgeBase/KnowledgeBase'))
+const KBEditor = React.lazy(() => import('./pages/KnowledgeBase/KBEditor'))
+const Assignments = React.lazy(() => import('./pages/KnowledgeBase/Assignments'))
+const Imports = React.lazy(() => import('./pages/KnowledgeBase/Imports'))
+const Leads = React.lazy(() => import('./pages/Leads'))
+const Numbers = React.lazy(() => import('./pages/Numbers'))
+const Campaigns = React.lazy(() => import('./pages/Campaigns'))
+const Settings = React.lazy(() => import('./pages/Settings'))
+const Billing = React.lazy(() => import('./pages/Billing'))
 
-// Import KB routes
-import { kbRoutes } from './routes/kbRoutes.jsx'
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+  </div>
+)
 
-function slugify(name){ return name.toLowerCase() }
-function Placeholder({ name }){
-	return <div className="panel"><h1 style={{ marginTop:0 }}>{name}</h1><p className="kpi-title">This page will appear here once its component is exported.</p></div>
-}
-
-const rootEl = document.getElementById('root')
-if (rootEl) {
-	createRoot(rootEl).render(
-		<QueryProvider>
-			<StripeProvider>
-				<ToastProvider>
-					<I18nProvider>
-						<BrowserRouter>
-							<Routes>
-								<Route element={<Root />}> {/* layout */}
-									{pages.map(({ name, Component }) => (
-										name === 'Dashboard'
-											? <Route key={name} index element={Component ? <Component /> : <Placeholder name={name} />} />
-											: <Route key={name} path={slugify(name)} element={Component ? <Component /> : <Placeholder name={name} />} />
-									))}
-									
-									{/* KB Routes */}
-									{kbRoutes.map((route, index) => (
-										<Route 
-											key={`kb-${index}`} 
-											path={route.path} 
-											element={route.element} 
-										/>
-									))}
-									
-									<Route path="*" element={<Navigate to="/" replace />} />
-								</Route>
-							</Routes>
-						</BrowserRouter>
-					</I18nProvider>
-				</ToastProvider>
-			</StripeProvider>
-		</QueryProvider>
-	)
-}
-
-// Cmd/Ctrl+K focus global search
-window.addEventListener('keydown', (e)=>{
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='k'){
-        e.preventDefault()
-        const el = document.getElementById('global-search')
-        if (el) el.focus()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false
     }
+  }
 })
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <StripeProvider>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Root />
+          </Suspense>
+        </BrowserRouter>
+      </StripeProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
+)
