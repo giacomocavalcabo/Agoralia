@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../lib/useAuth';
+import { useAuth } from '../lib/useAuth.jsx';
 
 export default function LoginVerify() {
   const [code, setCode] = useState('');

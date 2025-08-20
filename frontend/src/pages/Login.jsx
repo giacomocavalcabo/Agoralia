@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../lib/useAuth';
+import { useAuth } from '../lib/useAuth.jsx';
+import { useI18n } from '../lib/i18n.jsx';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export default function Login() {
   
   const navigate = useNavigate();
   const { login, loginWithOAuth } = useAuth();
+  const { t } = useI18n();
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
@@ -82,16 +84,10 @@ export default function Login() {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
+          {t('auth.sign_in_title', 'Sign in to Agoralia')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <button
-            onClick={() => navigate('/signup')}
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            create a new account
-          </button>
+          {t('auth.no_account', 'No account? We\'ll create it at first login.')}
         </p>
       </div>
 
@@ -110,7 +106,7 @@ export default function Login() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              <span className="ml-2">Continue with Google</span>
+              <span className="ml-2">{t('auth.continue_with_google', 'Continue with Google')}</span>
             </button>
 
             <button
@@ -124,7 +120,7 @@ export default function Login() {
                 <path fill="#00a4ef" d="M1 13h10v10H1z"/>
                 <path fill="#ffb900" d="M13 13h10v10H13z"/>
               </svg>
-              <span className="ml-2">Continue with Microsoft</span>
+              <span className="ml-2">{t('auth.continue_with_microsoft', 'Continue with Microsoft')}</span>
             </button>
           </div>
 
@@ -134,7 +130,7 @@ export default function Login() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white text-gray-500">{t('auth.or_continue_with', 'Or continue with')}</span>
               </div>
             </div>
           </div>
@@ -150,7 +146,7 @@ export default function Login() {
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                Password
+                {t('auth.password', 'Password')}
               </button>
               <button
                 onClick={() => setIsMagicLink(true)}
@@ -160,7 +156,7 @@ export default function Login() {
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                Magic Link
+                {t('auth.magic_link', 'Magic Link')}
               </button>
             </div>
           </div>
@@ -169,7 +165,7 @@ export default function Login() {
           <form className="mt-6 space-y-6" onSubmit={isMagicLink ? handleMagicLinkLogin : handleEmailPasswordLogin}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                {t('auth.email_address', 'Email address')}
               </label>
               <div className="mt-1">
                 <input
@@ -181,7 +177,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.enter_email', 'Enter your email')}
                 />
               </div>
             </div>
@@ -247,7 +243,12 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>No account? We'll create it at first login.</p>
+            <p>{t('auth.no_account', 'No account? We\'ll create it at first login.')}</p>
+            <p className="mt-2">
+              <a href="mailto:support@agoralia.com" className="text-blue-600 hover:text-blue-500">
+                {t('auth.need_help', 'Having trouble? Contact support')}
+              </a>
+            </p>
           </div>
         </div>
       </div>

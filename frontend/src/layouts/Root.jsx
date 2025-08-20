@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from '../components/AppShell'
 import { I18nProvider } from '../lib/i18n.jsx'
 import { ToastProvider } from '../components/ToastProvider.jsx'
-import { AuthProvider } from '../lib/useAuth'
+import { AuthProvider } from '../lib/useAuth.jsx'
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))

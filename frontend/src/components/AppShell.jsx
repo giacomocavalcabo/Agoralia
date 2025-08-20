@@ -1,7 +1,7 @@
 import React from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 import { useLocation, Link } from 'react-router-dom'
-import { useAuth } from '../lib/useAuth'
+import { useAuth } from '../lib/useAuth.jsx'
 import { 
   HomeIcon, 
   ChartBarIcon, 

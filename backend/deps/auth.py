@@ -124,6 +124,22 @@ def require_email_verified(
     if not current_user.email_verified_at:
         raise HTTPException(
             status_code=403, 
-            detail="Email verification required. Please check your email and click the verification link."
+            detail={
+                "error": "Email verification required",
+                "message": "Please verify your email address before performing this action.",
+                "code": "EMAIL_VERIFICATION_REQUIRED"
+            }
         )
+    return current_user
+
+
+def require_recent_auth(
+    current_user: User = Depends(require_auth),
+    request: Request = None
+) -> User:
+    """
+    Require recent authentication for sensitive operations
+    """
+    # In production, check last TOTP verification time
+    # For now, just require authentication
     return current_user

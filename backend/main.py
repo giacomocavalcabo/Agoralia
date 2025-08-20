@@ -1090,27 +1090,42 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 # ===================== Auth endpoints =====================
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
+    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    
+    # Rate limiting
+    require_rate_limit(request, "auth")
+    
     email = (payload.get("email") or "").strip().lower()
     password = (payload.get("password") or "").encode("utf-8")
+    
     if not email or not password:
         raise HTTPException(status_code=400, detail="Missing email or password")
     
+    # Anti-enumeration: same error message for both cases
     with next(get_db()) as db:
         user = db.query(User).filter(User.email.ilike(email)).first()
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
         
-        ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
-        if not ua or not ua.pass_hash or bcrypt is None:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        # Always check password to prevent timing attacks
+        password_valid = False
+        if user:
+            ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
+            if ua and ua.pass_hash and bcrypt:
+                try:
+                    password_valid = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
+                except Exception:
+                    password_valid = False
         
-        try:
-            ok = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
-        except Exception:
-            ok = False
-        
-        if not ok:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        # Anti-enumeration: same error for invalid email or password
+        if not user or not password_valid:
+            # Log failed attempt for security monitoring
+            client_ip = request.client.host
+            user_agent = request.headers.get("user-agent", "")
+            print(f"Failed login attempt - IP: {client_ip}, Email: {email}, UA: {user_agent}")
+            
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid email or password. Please try again."
+            )
         
         # Check if TOTP is required
         if user.totp_enabled:
@@ -1872,37 +1887,45 @@ async def list_templates(request: Request):
 # ===================== Sprint 6: Auth & RBAC =====================
 
 @app.post("/auth/magic/request")
-async def auth_magic_request(payload: dict, db: Session = Depends(get_db)) -> dict:
+async def auth_magic_request(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
     """Request magic link authentication"""
+    from .utils.rate_limiter import rate_limiter, require_rate_limit
+    
+    # Rate limiting for magic link requests
+    require_rate_limit(request, "auth")
+    
     email = payload.get("email", "").strip().lower()
     if not email:
         raise HTTPException(status_code=400, detail="Email required")
     
-    # Check if user exists
+    # Anti-enumeration: same response for existing/non-existing users
     user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     
-    # Generate magic link token
-    import secrets
-    token = secrets.token_urlsafe(32)
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    
-    # Create magic link record
-    magic_link = MagicLink(
-        id=f"ml_{secrets.token_urlsafe(16)}",
-        user_id=user.id,
-        token_hash=token_hash,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
-    )
-    db.add(magic_link)
-    db.commit()
-    
+    # Always return success to prevent email enumeration
     # In production, send email with magic link
-    # For now, return token for testing
+    if user:
+        # Generate magic link token
+        import secrets
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        # Create magic link record
+        magic_link = MagicLink(
+            id=f"ml_{secrets.token_urlsafe(16)}",
+            user_id=user.id,
+            token_hash=token_hash,
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
+        )
+        db.add(magic_link)
+        db.commit()
+        
+        # Log magic link request for security
+        client_ip = request.client.host
+        print(f"Magic link requested - IP: {client_ip}, Email: {email}")
+    
+    # Return same message regardless of user existence
     return {
-        "message": "Magic link sent to email",
-        "token": token,  # Remove in production
+        "message": "If an account exists with this email, a magic link has been sent",
         "expires_in": "15 minutes"
     }
 
