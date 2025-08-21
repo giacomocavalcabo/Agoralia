@@ -12,17 +12,7 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
     
     <!-- Font loading script -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const fontLink = document.getElementById('font-preload');
-        if (fontLink) {
-          fontLink.onload = function() {
-            this.onload = null;
-            this.rel = 'stylesheet';
-          };
-        }
-      });
-    </script>
+    <script type="module" src="/src/font-loader.js"></script>
     
     <!-- Performance & SEO meta tags -->
     <meta name="description" content="Advanced Knowledge Base System with AI-powered content extraction and real-time provider integration">
