@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException, Depends
 from sqlalchemy.orm import Session
-from ..db import get_db
-from ..models import User, Workspace, WorkspaceMember, KnowledgeBase, KbSection, KbField, KbSource, KbImportJob
+from backend.db import get_db
+from backend.models import User, Workspace, WorkspaceMember, KnowledgeBase, KbSection, KbField, KbSource, KbImportJob
 from typing import Optional, Callable
 import logging
 

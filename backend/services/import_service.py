@@ -3,9 +3,9 @@ import time
 import logging
 from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
-from ..models import ImportJob, Lead, Workspace
-from ..utils.phone_utils import normalize_phone_number
-from ..utils.csv_utils import parse_csv_safe
+from backend.models import ImportJob, Lead, Workspace
+from backend.utils.phone_utils import normalize_phone_number
+from backend.utils.csv_utils import parse_csv_safe
 import dramatiq
 from dramatiq import actor
 
@@ -116,7 +116,7 @@ class ImportService:
 def process_import_job(job_id: str):
     """Background job processor for CSV imports"""
     
-    from ..db import SessionLocal
+    from backend.db import SessionLocal
     
     db = SessionLocal()
     try:

@@ -8,7 +8,7 @@ from datetime import datetime
 import logging
 
 from services.crm_sync import crm_sync_service
-from ..models import CrmProvider, CrmObjectType, CrmSyncDirection, CrmLogLevel
+from backend.models import CrmProvider, CrmObjectType, CrmSyncDirection, CrmLogLevel
 from config.crm import crm_config
 import os
 

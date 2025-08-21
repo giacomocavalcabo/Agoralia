@@ -8,9 +8,9 @@ from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
 
 # Import database models
-from .db import get_db
-from .models import KbImportJob, KbSource, KbChunk, KbField, KnowledgeBase
-from .ai_client import get_ai_client, schemas
+from backend.db import get_db
+from backend.models import KbImportJob, KbSource, KbChunk, KbField, KnowledgeBase
+from backend.ai_client import get_ai_client, schemas
 
 # Mock LLM client for MVP (replace with OpenAI/Anthropic in production)
 class MockLLMClient:

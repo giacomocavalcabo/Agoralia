@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime, timezone
 
-from ..db import get_db
-from ..models import User, Workspace, WorkspaceMember, UserAuth
+from backend.db import get_db
+from backend.models import User, Workspace, WorkspaceMember, UserAuth
 
 
 def get_tenant_id(
@@ -29,7 +29,7 @@ def get_current_user(
     """
     Get current authenticated user from session cookie
     """
-    from ..main import _get_session
+    from backend.main import _get_session
     
     session = _get_session(request)
     if not session:

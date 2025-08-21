@@ -11,14 +11,14 @@ import os
 import hmac
 import hashlib
 
-from ..db import get_db
-from ..models import (
+from backend.db import get_db
+from backend.models import (
     CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog,
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus,
     Call, CallOutcome, CrmWebhookEvent
 )
-from ..integrations import HubSpotClient, ZohoClient, OdooClient
-from ..deps.auth import get_tenant_id, require_workspace_access, require_admin
+from backend.integrations import HubSpotClient, ZohoClient, OdooClient
+from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
 

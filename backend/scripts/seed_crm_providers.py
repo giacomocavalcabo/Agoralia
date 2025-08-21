@@ -13,8 +13,8 @@ import secrets
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from ..db import get_db, engine
-from ..models import HubSpotConnection, CrmFieldMapping
+from backend.db import get_db, engine
+from backend.models import HubSpotConnection, CrmFieldMapping
 from sqlalchemy.orm import Session
 
 
@@ -196,7 +196,7 @@ def main():
     print("🌱 Seeding CRM providers...")
     
     # Create database tables if they don't exist
-    from ..models import Base
+    from backend.models import Base
     Base.metadata.create_all(bind=engine)
     
     # Seed data

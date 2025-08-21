@@ -1,8 +1,8 @@
 from fastapi import Request, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from ..db import get_db
-from ..models import User, Workspace, WorkspaceMember
+from backend.db import get_db
+from backend.models import User, Workspace, WorkspaceMember
 from typing import Optional, Callable
 import logging
 

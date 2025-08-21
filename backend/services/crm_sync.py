@@ -9,14 +9,14 @@ import json
 import logging
 import time
 
-from ..db import get_db
-from ..models import (
+from backend.db import get_db
+from backend.models import (
     CrmConnection, CrmEntityLink, CrmSyncCursor, CrmSyncLog,
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel,
     CrmWebhookEvent
 )
-from ..integrations import HubSpotClient, ZohoClient, OdooClient
-from ..metrics import track_crm_operation, track_entities_synced, crm_requests_total, crm_errors_total, crm_sync_duration
+from backend.integrations import HubSpotClient, ZohoClient, OdooClient
+from backend.metrics import track_crm_operation, track_entities_synced, crm_requests_total, crm_errors_total, crm_sync_duration
 
 logger = logging.getLogger(__name__)
 

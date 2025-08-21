@@ -7,8 +7,8 @@ import time
 from typing import Dict, Any
 from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.orm import Session
-from .db import get_db
-from .models import User, Workspace, BillingAccount
+from backend.db import get_db
+from backend.models import User, Workspace, BillingAccount
 import logging
 
 logger = logging.getLogger(__name__)
