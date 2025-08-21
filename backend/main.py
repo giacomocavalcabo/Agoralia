@@ -7,15 +7,8 @@ from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from db import Base, engine, get_db
-from models import (
-    User, Workspace, WorkspaceMember, Campaign, Call, UserAuth,
-    Notification, NotificationTarget, Number, NumberVerification, InboundRoute,
-    CallOutcome, Template, CrmConnection, MagicLink, CrmFieldMapping, ExportJob,
-    # Knowledge Base models
-    KnowledgeBase, KbSection, KbField, KbSource, KbChunk, KbAssignment, 
-    KbHistory, KbImportJob, AiUsage, KbUsage,
-)
+from backend.db import Base, engine, get_db
+# Models will be imported locally where needed to avoid duplication
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 from sqlalchemy import or_
@@ -42,7 +35,7 @@ except Exception:  # pragma: no cover
 # Chromium PDF generator
 PDF_GENERATOR_AVAILABLE = False
 try:
-    from pdf_chromium import html_to_pdf_chromium, check_chromium_available
+    from backend.pdf_chromium import html_to_pdf_chromium, check_chromium_available
     PDF_GENERATOR_AVAILABLE = check_chromium_available()
     if PDF_GENERATOR_AVAILABLE:
         print("✅ Chromium PDF generator available")
@@ -52,9 +45,9 @@ except Exception as e:
     print(f"Warning: Chromium PDF generator not available: {e}. Compliance attestations will use fallback.")
 
 # Knowledge Base imports
-import schemas
-from ai_client import ai_client, get_kb_template, create_default_sections
-from routers import crm
+from backend import schemas
+from backend.ai_client import ai_client, get_kb_template, create_default_sections
+from backend.routers import crm
 
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
@@ -1110,7 +1103,8 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 @app.post("/auth/register")
 async def auth_register(payload: dict, request: Request) -> Response:
     """Register new user with email/password"""
-    from utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.models import User, UserAuth
     
     # Rate limiting
     require_rate_limit(request, "auth")
@@ -1176,7 +1170,8 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
-    from utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.models import User, UserAuth
     
     # Rate limiting
     require_rate_limit(request, "auth")
@@ -1984,7 +1979,8 @@ async def list_templates(request: Request):
 @app.post("/auth/magic/request")
 async def auth_magic_request(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
     """Request magic link authentication"""
-    from utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.models import User, MagicLink
     
     # Rate limiting for magic link requests
     require_rate_limit(request, "auth")
@@ -2028,6 +2024,7 @@ async def auth_magic_request(payload: dict, request: Request, db: Session = Depe
 @app.post("/auth/magic/verify")
 async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dict:
     """Verify magic link token"""
+    from backend.models import MagicLink, User
     token = payload.get("token", "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Token required")

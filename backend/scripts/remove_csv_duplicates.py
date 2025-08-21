@@ -7,6 +7,14 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 
+def clean_row(row, fieldnames):
+    """Pulisce una riga rimuovendo campi None e extra"""
+    cleaned_row = {}
+    for field in fieldnames:
+        value = row.get(field, '')
+        cleaned_row[field] = '' if value is None else str(value)
+    return cleaned_row
+
 def remove_csv_duplicates():
     """Rimuove i duplicati dal CSV mantenendo i secondi"""
     
@@ -58,19 +66,25 @@ def remove_csv_duplicates():
     
     print(f"✅ Righe dopo pulizia: {len(rows_cleaned)}")
     
-    # Salva backup
+    # Salva backup (gestisci campi None)
     backup_file = csv_file.parent / "compliance_global_before_dedup.csv"
     print(f"💾 Backup del file originale: {backup_file}")
+    
+    # Pulisci i dati per il backup
+    rows_for_backup = [clean_row(row, fieldnames) for row in rows]
+    
     with open(backup_file, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(rows_for_backup)
     
-    # Salva file pulito
+    # Salva file pulito (gestisci anche qui i campi None)
+    rows_for_clean = [clean_row(row, fieldnames) for row in rows_cleaned]
+    
     with open(csv_file, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows_cleaned)
+        writer.writerows(rows_for_clean)
     
     print(f"✅ File CSV pulito salvato: {csv_file}")
     
