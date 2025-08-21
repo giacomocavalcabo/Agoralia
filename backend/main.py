@@ -138,6 +138,70 @@ def setup_admin():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating admin: {str(e)}")
 
+@app.post("/setup/user")
+def setup_user(payload: dict):
+    """
+    Endpoint per creare utenti normali (non admin)
+    """
+    try:
+        from backend.models import User, UserAuth
+        import bcrypt
+        
+        email = payload.get("email")
+        password = payload.get("password")
+        name = payload.get("name")
+        
+        if not email or not password or not name:
+            raise HTTPException(status_code=400, detail="Email, password and name required")
+        
+        db = next(get_db())
+        
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.email == email).first()
+        if existing_user:
+            return {
+                "message": "User already exists",
+                "email": existing_user.email
+            }
+        
+        # Create new user
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        
+        user = User(
+            id=f"u_{int(datetime.now(timezone.utc).timestamp())}",
+            email=email,
+            name=name,
+            is_admin_global=False,
+            email_verified_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        db.add(user)
+        db.flush()
+        
+        # Create user auth record
+        user_auth = UserAuth(
+            id=f"ua_{int(datetime.now(timezone.utc).timestamp())}",
+            user_id=user.id,
+            provider='password',
+            pass_hash=hashed.decode('utf-8'),
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        db.add(user_auth)
+        db.commit()
+        
+        return {
+            "message": "User created successfully!",
+            "email": user.email,
+            "name": user.name,
+            "is_admin": user.is_admin_global
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
+
 # ===================== Boot logging =====================
 @app.on_event("startup")
 async def startup_event():
@@ -1268,6 +1332,312 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
+    """
+    Enhanced login endpoint with:
+    - Rate limiting and anti-bruteforce protection
+    - Password policy validation
+    - Audit logging
+    - Clear error handling (401/403/503)
+    - Session rotation for security
+    """
+    import time
+    import traceback
+    from backend.models import User, UserAuth, WorkspaceMember
+    from backend.utils.auth_security import (
+        auth_rate_limiter, 
+        auth_audit_logger, 
+        session_manager,
+        password_policy
+    )
+    
+    start_time = time.time()
+    request_id = f"login_{int(time.time())}_{hash(str(payload)) % 1000}"
+    
+    try:
+        print(f"🚀 [{request_id}] Login attempt started")
+        print(f"📧 [{request_id}] Payload received: {payload}")
+        print(f"🌐 [{request_id}] Origin: {request.headers.get('origin', 'unknown')}")
+        print(f"🔍 [{request_id}] User-Agent: {request.headers.get('user-agent', 'unknown')}")
+        
+        # ===================== Rate Limiting =====================
+        try:
+            auth_rate_limiter.check_rate_limit(request)
+            print(f"⏱️ [{request_id}] Rate limit check passed")
+        except HTTPException as e:
+            # Log failed attempt due to rate limiting
+            auth_audit_logger.log_auth_event(
+                "login_rate_limited", 
+                None, 
+                False, 
+                request,
+                {"reason": "rate_limit_exceeded"}
+            )
+            raise e
+        
+        # ===================== Input Validation =====================
+        email = (payload.get("email") or "").strip().lower()
+        password = payload.get("password") or ""
+        
+        if not email or not password:
+            auth_audit_logger.log_auth_event(
+                "login_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "missing_credentials"}
+            )
+            raise HTTPException(status_code=400, detail="Email and password are required")
+        
+        # ===================== Password Policy Check =====================
+        is_valid, policy_message = password_policy.validate(password)
+        if not is_valid:
+            auth_audit_logger.log_auth_event(
+                "login_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "password_policy_violation", "message": policy_message}
+            )
+            raise HTTPException(status_code=400, detail=policy_message)
+        
+        print(f"📝 [{request_id}] Email: {email}, Password: valid")
+        
+        # ===================== Database Connection Test =====================
+        print(f"🗄️ [{request_id}] Testing database connection...")
+        try:
+            db = next(get_db())
+            print(f"✅ [{request_id}] Database connection successful")
+        except OperationalError as e:
+            print(f"❌ [{request_id}] Database connection failed (OperationalError): {e}")
+            auth_audit_logger.log_auth_event(
+                "login_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "database_unavailable", "error": str(e)}
+            )
+            raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+        except Exception as e:
+            print(f"❌ [{request_id}] Database connection failed (other): {e}")
+            auth_audit_logger.log_auth_event(
+                "login_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "database_error", "error": str(e)}
+            )
+            raise HTTPException(status_code=500, detail="Internal server error")
+        
+        # ===================== User Authentication =====================
+        try:
+            with db:
+                print(f"🔍 [{request_id}] Starting database queries...")
+                
+                # Query User
+                query_start = time.time()
+                try:
+                    user = db.query(User).filter(User.email.ilike(email)).first()
+                    query_time = time.time() - query_start
+                    print(f"📊 [{request_id}] Query User took {query_time:.3f}s")
+                    print(f"👤 [{request_id}] User found: {user.id if user else 'None'}")
+                except OperationalError as e:
+                    print(f"❌ [{request_id}] Query User failed (OperationalError): {e}")
+                    raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+                except Exception as e:
+                    print(f"❌ [{request_id}] Query User failed (other): {e}")
+                    raise HTTPException(status_code=500, detail="Internal server error")
+                
+                # Check if user is disabled/banned
+                if user and hasattr(user, 'is_disabled') and user.is_disabled:
+                    auth_audit_logger.log_auth_event(
+                        "login_failed", 
+                        email, 
+                        False, 
+                        request,
+                        {"reason": "account_disabled"}
+                    )
+                    raise HTTPException(status_code=403, detail="Account is disabled")
+                
+                # Password validation with timing attack protection
+                password_valid = False
+                if user:
+                    print(f"🔑 [{request_id}] User exists, checking password...")
+                    
+                    # Query UserAuth
+                    auth_start = time.time()
+                    try:
+                        ua = db.query(UserAuth).filter(
+                            UserAuth.user_id == user.id, 
+                            UserAuth.provider == "password"
+                        ).first()
+                        auth_time = time.time() - auth_start
+                        print(f"🔑 [{request_id}] Query UserAuth took {auth_time:.3f}s")
+                    except OperationalError as e:
+                        raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+                    except Exception as e:
+                        raise HTTPException(status_code=500, detail="Internal server error")
+                    
+                    if ua and ua.pass_hash and bcrypt:
+                        try:
+                            # Timing-safe password check
+                            pwd_start = time.time()
+                            password_valid = bcrypt.checkpw(
+                                password.encode("utf-8"), 
+                                ua.pass_hash.encode("utf-8")
+                            )
+                            pwd_time = time.time() - pwd_start
+                            print(f"🔒 [{request_id}] Password check took {pwd_time:.3f}s")
+                            print(f"✅ [{request_id}] Password valid: {password_valid}")
+                        except Exception as e:
+                            print(f"❌ [{request_id}] Password check error: {e}")
+                            password_valid = False
+                
+                # Anti-enumeration: same error for invalid email or password
+                if not user or not password_valid:
+                    # Record failed attempt
+                    auth_rate_limiter.record_attempt(request, False)
+                    auth_audit_logger.log_auth_event(
+                        "login_failed", 
+                        email, 
+                        False, 
+                        request,
+                        {"reason": "invalid_credentials"}
+                    )
+                    
+                    # Log failed attempt for security monitoring
+                    client_ip = request.client.host
+                    user_agent = request.headers.get("user-agent", "")
+                    print(f"❌ [{request_id}] Failed login attempt - IP: {client_ip}, Email: {email}, UA: {user_agent}")
+                    
+                    raise HTTPException(
+                        status_code=401, 
+                        detail="Invalid email or password. Please try again."
+                    )
+                
+                # ===================== Success Path =====================
+                print(f"🎯 [{request_id}] Authentication successful!")
+                
+                # Check TOTP if required
+                if user.totp_enabled:
+                    print(f"🔐 [{request_id}] TOTP required for user {user.id}")
+                    auth_audit_logger.log_auth_event(
+                        "login_totp_required", 
+                        email, 
+                        True, 
+                        request,
+                        {"user_id": user.id}
+                    )
+                    return Response(
+                        content=json.dumps({
+                            "requires_totp": True,
+                            "user_id": user.id,
+                            "message": "TOTP code required"
+                        }),
+                        media_type="application/json"
+                    )
+                
+                # Auto-promote to admin if in allowlist
+                admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+                if user.email.strip() in [e.strip() for e in admin_emails]:
+                    if not user.is_admin_global:
+                        user.is_admin_global = True
+                        db.add(user)
+                        print(f"✅ [{request_id}] Auto-promoted {user.email} to global admin")
+                
+                # Build workspace memberships
+                memberships = []
+                try:
+                    wm = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+                    if wm:
+                        memberships.append({
+                            "workspace_id": wm.workspace_id,
+                            "role": wm.role
+                        })
+                except Exception as e:
+                    print(f"⚠️ [{request_id}] WorkspaceMember query failed: {e}")
+                    memberships = []
+                
+                claims = {
+                    "user_id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "is_admin_global": bool(user.is_admin_global),
+                    "email_verified": bool(user.email_verified_at),
+                    "memberships": memberships,
+                }
+                
+                # Update last login
+                user.last_login_at = datetime.now(timezone.utc)
+                db.add(user)
+                
+                try:
+                    db.commit()
+                    print(f"💾 [{request_id}] Database commit successful")
+                except Exception as e:
+                    print(f"⚠️ [{request_id}] Failed to update last_login: {e}")
+                    # Don't fail login for this
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"❌ [{request_id}] Database operation failed: {e}")
+            auth_audit_logger.log_auth_event(
+                "login_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "database_error", "error": str(e)}
+            )
+            raise HTTPException(status_code=500, detail="Internal server error")
+        
+        # ===================== Success Response =====================
+        total_time = time.time() - start_time
+        print(f"🎉 [{request_id}] Login successful in {total_time:.3f}s for user {email}")
+        
+        # Record successful attempt
+        auth_rate_limiter.record_attempt(request, True)
+        auth_audit_logger.log_auth_event(
+            "login_success", 
+            email, 
+            True, 
+            request,
+            {"user_id": user.id, "login_time": total_time}
+        )
+        
+        # Create response with secure session
+        resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
+        
+        # Use enhanced session manager
+        session_id = session_manager.create_session(claims, request)
+        resp.set_cookie(
+            "session_id", 
+            session_id, 
+            httponly=True, 
+            secure=True, 
+            samesite="lax",
+            max_age=86400  # 24 hours
+        )
+        
+        return resp
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        # Catch all other exceptions and log them
+        total_time = time.time() - start_time
+        print(f"💥 [{request_id}] UNEXPECTED ERROR after {total_time:.3f}s: {e}")
+        print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+        
+        auth_audit_logger.log_auth_event(
+            "login_failed", 
+            email if 'email' in locals() else None, 
+            False, 
+            request,
+            {"reason": "unexpected_error", "error": str(e)}
+        )
+        
+        raise HTTPException(status_code=500, detail="Internal server error")
     import time
     import traceback
     from backend.utils.rate_limiter import rate_limiter, require_rate_limit
@@ -2319,7 +2689,7 @@ async def auth_google_start() -> dict:
     if not client_id:
         raise HTTPException(status_code=500, detail="Google OAuth not configured")
     
-    redirect_uri = os.getenv("APP_URL", "http://localhost:5173") + "/auth/oauth/google/callback"
+    redirect_uri = os.getenv("FRONTEND_BASE_URL", "https://app.agoralia.com") + "/auth/oauth/google/callback"
     
     auth_url = (
         "https://accounts.google.com/oauth/authorize?"
