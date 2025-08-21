@@ -109,8 +109,7 @@ def setup_admin():
             name='Giacomo Cavalcabo',
             is_admin_global=True,
             email_verified_at=datetime.now(timezone.utc),
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc)
         )
         
         db.add(user)
@@ -121,8 +120,7 @@ def setup_admin():
             user_id=user.id,
             provider='password',
             pass_hash=hashed.decode('utf-8'),
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc)
         )
         
         db.add(user_auth)
