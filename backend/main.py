@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 from backend.db import Base, engine, get_db
 # Models will be imported locally where needed to avoid duplication
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,6 +61,18 @@ def health():
     NON fa chiamate a OpenAI/Redis qui per essere sempre veloce
     """
     return {"ok": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+@app.get("/db/health")
+def db_health(db: Session = Depends(get_db)):
+    """
+    Health check specifico per il database - testa la connessione
+    Se fallisce, il problema è connessione DB, non la logica dell'app
+    """
+    try:
+        db.execute("SELECT 1")
+        return {"db": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database not reachable: {str(e)}")
 
 # ===================== Boot logging =====================
 @app.on_event("startup")
@@ -1223,8 +1236,13 @@ async def auth_login(payload: dict, request: Request) -> Response:
         try:
             db = next(get_db())
             print(f"✅ [{request_id}] Database connection successful")
+        except OperationalError as e:
+            print(f"❌ [{request_id}] Database connection failed (OperationalError): {e}")
+            print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+            # DB non raggiungibile o handshake fallito - errore specifico
+            raise HTTPException(status_code=503, detail="Database unavailable - connection failed")
         except Exception as e:
-            print(f"❌ [{request_id}] Database connection failed: {e}")
+            print(f"❌ [{request_id}] Database connection failed (other): {e}")
             print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
             raise HTTPException(status_code=500, detail="Database connection failed")
         
@@ -1240,8 +1258,12 @@ async def auth_login(payload: dict, request: Request) -> Response:
                     query_time = time.time() - query_start
                     print(f"📊 [{request_id}] Query User took {query_time:.3f}s")
                     print(f"👤 [{request_id}] User found: {user.id if user else 'None'}")
+                except OperationalError as e:
+                    print(f"❌ [{request_id}] Query User failed (OperationalError): {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    raise HTTPException(status_code=503, detail="Database unavailable - query failed")
                 except Exception as e:
-                    print(f"❌ [{request_id}] Query User failed: {e}")
+                    print(f"❌ [{request_id}] Query User failed (other): {e}")
                     print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
                     raise HTTPException(status_code=500, detail="User query failed")
                 
@@ -1257,8 +1279,12 @@ async def auth_login(payload: dict, request: Request) -> Response:
                         auth_time = time.time() - auth_start
                         print(f"🔑 [{request_id}] Query UserAuth took {auth_time:.3f}s")
                         print(f"🔐 [{request_id}] UserAuth found: {ua.id if ua else 'None'}")
+                    except OperationalError as e:
+                        print(f"❌ [{request_id}] Query UserAuth failed (OperationalError): {e}")
+                        print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                        raise HTTPException(status_code=503, detail="Database unavailable - query failed")
                     except Exception as e:
-                        print(f"❌ [{request_id}] Query UserAuth failed: {e}")
+                        print(f"❌ [{request_id}] Query UserAuth failed (other): {e}")
                         print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
                         raise HTTPException(status_code=500, detail="UserAuth query failed")
                     
@@ -1330,8 +1356,13 @@ async def auth_login(payload: dict, request: Request) -> Response:
                     wm_time = time.time() - wm_start
                     print(f"🏢 [{request_id}] WorkspaceMember query took {wm_time:.3f}s")
                     print(f"🏢 [{request_id}] Memberships: {memberships}")
+                except OperationalError as e:
+                    print(f"❌ [{request_id}] WorkspaceMember query failed (OperationalError): {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    # Non bloccare il login per questo errore
+                    memberships = []
                 except Exception as e:
-                    print(f"❌ [{request_id}] WorkspaceMember query failed: {e}")
+                    print(f"❌ [{request_id}] WorkspaceMember query failed (other): {e}")
                     print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
                     # Non bloccare il login per questo errore
                     memberships = []
@@ -1357,13 +1388,21 @@ async def auth_login(payload: dict, request: Request) -> Response:
                     db.commit()
                     commit_time = time.time() - commit_start
                     print(f"💾 [{request_id}] Database commit took {commit_time:.3f}s")
+                except OperationalError as e:
+                    print(f"❌ [{request_id}] Database commit failed (OperationalError): {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    raise HTTPException(status_code=503, detail="Database unavailable - commit failed")
                 except Exception as e:
-                    print(f"❌ [{request_id}] Database commit failed: {e}")
+                    print(f"❌ [{request_id}] Database commit failed (other): {e}")
                     print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
                     raise HTTPException(status_code=500, detail="Database commit failed")
                 
+        except OperationalError as e:
+            print(f"❌ [{request_id}] Database operation failed (OperationalError): {e}")
+            print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+            raise HTTPException(status_code=503, detail="Database unavailable - operation failed")
         except Exception as e:
-            print(f"❌ [{request_id}] Database operation failed: {e}")
+            print(f"❌ [{request_id}] Database operation failed (other): {e}")
             print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
             raise
         
