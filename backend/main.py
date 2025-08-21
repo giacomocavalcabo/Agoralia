@@ -2904,7 +2904,7 @@ async def pdf_health():
     """Health check endpoint for Chromium PDF generator"""
     try:
         if PDF_GENERATOR_AVAILABLE:
-            from pdf_chromium import get_chromium_version
+            from backend.pdf_chromium import get_chromium_version
             version = get_chromium_version()
             return {
                 "ok": True,
@@ -4280,7 +4280,7 @@ def get_kb_templates(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get available KB templates"""
-    from ai_client import KB_TEMPLATES
+    from backend.ai_client import KB_TEMPLATES
     
     return {
         "templates": [
