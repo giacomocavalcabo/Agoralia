@@ -74,6 +74,70 @@ def db_health(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database not reachable: {str(e)}")
 
+@app.post("/setup/admin")
+def setup_admin():
+    """
+    Endpoint temporaneo per creare l'admin user
+    Da rimuovere dopo il primo utilizzo
+    """
+    try:
+        from backend.models import User, UserAuth
+        import bcrypt
+        
+        db = next(get_db())
+        
+        # Check if admin already exists
+        existing_user = db.query(User).filter(
+            User.email == 'giacomo.cavalcabo14@gmail.com'
+        ).first()
+        
+        if existing_user:
+            return {
+                "message": "Admin user already exists",
+                "email": existing_user.email,
+                "is_admin": existing_user.is_admin_global
+            }
+        
+        # Create new admin user
+        password = "Palemone01!"
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        
+        # Create user
+        user = User(
+            email='giacomo.cavalcabo14@gmail.com',
+            name='Giacomo Cavalcabo',
+            is_admin_global=True,
+            email_verified_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+        
+        db.add(user)
+        db.flush()
+        
+        # Create user auth record
+        user_auth = UserAuth(
+            user_id=user.id,
+            provider='password',
+            pass_hash=hashed.decode('utf-8'),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+        
+        db.add(user_auth)
+        db.commit()
+        
+        return {
+            "message": "Admin user created successfully!",
+            "email": user.email,
+            "password": password,
+            "is_admin": user.is_admin_global
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating admin: {str(e)}")
+
 # ===================== Boot logging =====================
 @app.on_event("startup")
 async def startup_event():
