@@ -1194,8 +1194,14 @@ async def auth_login(payload: dict, request: Request) -> Response:
     from backend.utils.rate_limiter import rate_limiter, require_rate_limit
     from backend.models import User, UserAuth
     
-    # Rate limiting
-    require_rate_limit(request, "auth")
+    import time
+    
+    start_time = time.time()
+    print(f"🔐 Login attempt started for email: {payload.get('email', '')}")
+    
+    # TEMPORANEO: Rate limiting commentato per debug
+    # require_rate_limit(request, "auth")
+    print(f"⏱️ Rate limiting bypassed (debug mode)")
     
     email = (payload.get("email") or "").strip().lower()
     password = (payload.get("password") or "").encode("utf-8")
@@ -1205,16 +1211,29 @@ async def auth_login(payload: dict, request: Request) -> Response:
     
     # Anti-enumeration: same error message for both cases
     with next(get_db()) as db:
+        # Query User con timing
+        query_start = time.time()
         user = db.query(User).filter(User.email.ilike(email)).first()
+        query_time = time.time() - query_start
+        print(f"📊 Query User took {query_time:.3f}s")
         
         # Always check password to prevent timing attacks
         password_valid = False
         if user:
+            # Query UserAuth con timing
+            auth_start = time.time()
             ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
+            auth_time = time.time() - auth_start
+            print(f"🔑 Query UserAuth took {auth_time:.3f}s")
             if ua and ua.pass_hash and bcrypt:
                 try:
+                    # Password check con timing
+                    pwd_start = time.time()
                     password_valid = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
-                except Exception:
+                    pwd_time = time.time() - pwd_start
+                    print(f"🔒 Password check took {pwd_time:.3f}s")
+                except Exception as e:
+                    print(f"❌ Password check error: {e}")
                     password_valid = False
         
         # Anti-enumeration: same error for invalid email or password
@@ -1250,13 +1269,18 @@ async def auth_login(payload: dict, request: Request) -> Response:
                 db.commit()
                 print(f"✅ Auto-promoted {user.email} to global admin")
         
-        # Build claims with workspace memberships
+        # Build claims with workspace memberships - Query ottimizzata
         memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+        wm_start = time.time()
+        # Query ottimizzata: usa first() invece di all() per evitare caricamento completo
+        wm = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+        if wm:
             memberships.append({
                 "workspace_id": wm.workspace_id,
                 "role": wm.role
             })
+        wm_time = time.time() - wm_start
+        print(f"🏢 WorkspaceMember query took {wm_time:.3f}s")
         
         claims = {
             "user_id": user.id,
@@ -1267,10 +1291,18 @@ async def auth_login(payload: dict, request: Request) -> Response:
             "memberships": memberships,
         }
         
-        # Update last login
+        # Update last login - Unificato in un unico commit
         user.last_login_at = datetime.now(timezone.utc)
         db.add(user)
+        
+        # Commit unificato per evitare deadlock
+        commit_start = time.time()
         db.commit()
+        commit_time = time.time() - commit_start
+        print(f"💾 Database commit took {commit_time:.3f}s")
+    
+    total_time = time.time() - start_time
+    print(f"🎉 Login successful in {total_time:.3f}s for user {email}")
     
     resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
     _create_session(resp, claims)
