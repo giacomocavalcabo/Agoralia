@@ -1191,122 +1191,200 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 @app.post("/auth/login")
 async def auth_login(payload: dict, request: Request) -> Response:
-    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
-    from backend.models import User, UserAuth
-    
     import time
+    import traceback
+    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
+    from backend.models import User, UserAuth, WorkspaceMember
     
     start_time = time.time()
-    print(f"🔐 Login attempt started for email: {payload.get('email', '')}")
+    request_id = f"login_{int(time.time())}_{hash(str(payload)) % 1000}"
     
-    # TEMPORANEO: Rate limiting commentato per debug
-    # require_rate_limit(request, "auth")
-    print(f"⏱️ Rate limiting bypassed (debug mode)")
-    
-    email = (payload.get("email") or "").strip().lower()
-    password = (payload.get("password") or "").encode("utf-8")
-    
-    if not email or not password:
-        raise HTTPException(status_code=400, detail="Missing email or password")
-    
-    # Anti-enumeration: same error message for both cases
-    with next(get_db()) as db:
-        # Query User con timing
-        query_start = time.time()
-        user = db.query(User).filter(User.email.ilike(email)).first()
-        query_time = time.time() - query_start
-        print(f"📊 Query User took {query_time:.3f}s")
+    try:
+        print(f"🚀 [{request_id}] Login attempt started")
+        print(f"📧 [{request_id}] Payload received: {payload}")
+        print(f"🌐 [{request_id}] Origin: {request.headers.get('origin', 'unknown')}")
+        print(f"🔍 [{request_id}] User-Agent: {request.headers.get('user-agent', 'unknown')}")
         
-        # Always check password to prevent timing attacks
-        password_valid = False
-        if user:
-            # Query UserAuth con timing
-            auth_start = time.time()
-            ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
-            auth_time = time.time() - auth_start
-            print(f"🔑 Query UserAuth took {auth_time:.3f}s")
-            if ua and ua.pass_hash and bcrypt:
+        # TEMPORANEO: Rate limiting commentato per debug
+        # require_rate_limit(request, "auth")
+        print(f"⏱️ [{request_id}] Rate limiting bypassed (debug mode)")
+        
+        email = (payload.get("email") or "").strip().lower()
+        password = (payload.get("password") or "").encode("utf-8")
+        
+        print(f"📝 [{request_id}] Email: {email}, Password length: {len(password)}")
+        
+        if not email or not password:
+            print(f"❌ [{request_id}] Missing email or password")
+            raise HTTPException(status_code=400, detail="Missing email or password")
+        
+        # Test database connection
+        print(f"🗄️ [{request_id}] Testing database connection...")
+        try:
+            db = next(get_db())
+            print(f"✅ [{request_id}] Database connection successful")
+        except Exception as e:
+            print(f"❌ [{request_id}] Database connection failed: {e}")
+            print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+            raise HTTPException(status_code=500, detail="Database connection failed")
+        
+        # Anti-enumeration: same error message for both cases
+        try:
+            with db:
+                print(f"🔍 [{request_id}] Starting database queries...")
+                
+                # Query User con timing e error handling
+                query_start = time.time()
                 try:
-                    # Password check con timing
-                    pwd_start = time.time()
-                    password_valid = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
-                    pwd_time = time.time() - pwd_start
-                    print(f"🔒 Password check took {pwd_time:.3f}s")
+                    user = db.query(User).filter(User.email.ilike(email)).first()
+                    query_time = time.time() - query_start
+                    print(f"📊 [{request_id}] Query User took {query_time:.3f}s")
+                    print(f"👤 [{request_id}] User found: {user.id if user else 'None'}")
                 except Exception as e:
-                    print(f"❌ Password check error: {e}")
-                    password_valid = False
-        
-        # Anti-enumeration: same error for invalid email or password
-        if not user or not password_valid:
-            # Log failed attempt for security monitoring
-            client_ip = request.client.host
-            user_agent = request.headers.get("user-agent", "")
-            print(f"Failed login attempt - IP: {client_ip}, Email: {email}, UA: {user_agent}")
-            
-            raise HTTPException(
-                status_code=401, 
-                detail="Invalid email or password. Please try again."
-            )
-        
-        # Check if TOTP is required
-        if user.totp_enabled:
-            # Return TOTP challenge instead of creating session
-            return Response(
-                content=json.dumps({
-                    "requires_totp": True,
+                    print(f"❌ [{request_id}] Query User failed: {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    raise HTTPException(status_code=500, detail="User query failed")
+                
+                # Always check password to prevent timing attacks
+                password_valid = False
+                if user:
+                    print(f"🔑 [{request_id}] User exists, checking password...")
+                    
+                    # Query UserAuth con timing e error handling
+                    auth_start = time.time()
+                    try:
+                        ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
+                        auth_time = time.time() - auth_start
+                        print(f"🔑 [{request_id}] Query UserAuth took {auth_time:.3f}s")
+                        print(f"🔐 [{request_id}] UserAuth found: {ua.id if ua else 'None'}")
+                    except Exception as e:
+                        print(f"❌ [{request_id}] Query UserAuth failed: {e}")
+                        print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                        raise HTTPException(status_code=500, detail="UserAuth query failed")
+                    
+                    if ua and ua.pass_hash and bcrypt:
+                        try:
+                            # Password check con timing
+                            pwd_start = time.time()
+                            password_valid = bcrypt.checkpw(password, ua.pass_hash.encode("utf-8"))
+                            pwd_time = time.time() - pwd_start
+                            print(f"🔒 [{request_id}] Password check took {pwd_time:.3f}s")
+                            print(f"✅ [{request_id}] Password valid: {password_valid}")
+                        except Exception as e:
+                            print(f"❌ [{request_id}] Password check error: {e}")
+                            print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                            password_valid = False
+                    else:
+                        print(f"⚠️ [{request_id}] UserAuth missing: ua={ua}, pass_hash={bool(ua.pass_hash) if ua else False}, bcrypt={bool(bcrypt)}")
+                
+                # Anti-enumeration: same error for invalid email or password
+                if not user or not password_valid:
+                    # Log failed attempt for security monitoring
+                    client_ip = request.client.host
+                    user_agent = request.headers.get("user-agent", "")
+                    print(f"❌ [{request_id}] Failed login attempt - IP: {client_ip}, Email: {email}, UA: {user_agent}")
+                    
+                    raise HTTPException(
+                        status_code=401, 
+                        detail="Invalid email or password. Please try again."
+                    )
+                
+                print(f"🎯 [{request_id}] Authentication successful, checking TOTP...")
+                
+                # Check if TOTP is required
+                if user.totp_enabled:
+                    print(f"🔐 [{request_id}] TOTP required for user {user.id}")
+                    # Return TOTP challenge instead of creating session
+                    return Response(
+                        content=json.dumps({
+                            "requires_totp": True,
+                            "user_id": user.id,
+                            "message": "TOTP code required"
+                        }),
+                        media_type="application/json"
+                    )
+                
+                print(f"👑 [{request_id}] Checking admin promotion...")
+                
+                # Auto-promote to admin if email is in allowlist
+                admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+                if user.email.strip() in [e.strip() for e in admin_emails]:
+                    if not user.is_admin_global:
+                        user.is_admin_global = True
+                        db.add(user)
+                        print(f"✅ [{request_id}] Auto-promoted {user.email} to global admin")
+                
+                print(f"🏢 [{request_id}] Building workspace memberships...")
+                
+                # Build claims with workspace memberships - Query ottimizzata
+                memberships = []
+                wm_start = time.time()
+                try:
+                    # Query ottimizzata: usa first() invece di all() per evitare caricamento completo
+                    wm = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+                    if wm:
+                        memberships.append({
+                            "workspace_id": wm.workspace_id,
+                            "role": wm.role
+                        })
+                    wm_time = time.time() - wm_start
+                    print(f"🏢 [{request_id}] WorkspaceMember query took {wm_time:.3f}s")
+                    print(f"🏢 [{request_id}] Memberships: {memberships}")
+                except Exception as e:
+                    print(f"❌ [{request_id}] WorkspaceMember query failed: {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    # Non bloccare il login per questo errore
+                    memberships = []
+                
+                claims = {
                     "user_id": user.id,
-                    "message": "TOTP code required"
-                }),
-                media_type="application/json"
-            )
-        
-        # Auto-promote to admin if email is in allowlist
-        admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
-        if user.email.strip() in [e.strip() for e in admin_emails]:
-            if not user.is_admin_global:
-                user.is_admin_global = True
+                    "email": user.email,
+                    "name": user.name,
+                    "is_admin_global": bool(user.is_admin_global),
+                    "email_verified": bool(user.email_verified_at),
+                    "memberships": memberships,
+                }
+                
+                print(f"💾 [{request_id}] Updating last login...")
+                
+                # Update last login - Unificato in un unico commit
+                user.last_login_at = datetime.now(timezone.utc)
                 db.add(user)
-                db.commit()
-                print(f"✅ Auto-promoted {user.email} to global admin")
+                
+                # Commit unificato per evitare deadlock
+                commit_start = time.time()
+                try:
+                    db.commit()
+                    commit_time = time.time() - commit_start
+                    print(f"💾 [{request_id}] Database commit took {commit_time:.3f}s")
+                except Exception as e:
+                    print(f"❌ [{request_id}] Database commit failed: {e}")
+                    print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+                    raise HTTPException(status_code=500, detail="Database commit failed")
+                
+        except Exception as e:
+            print(f"❌ [{request_id}] Database operation failed: {e}")
+            print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+            raise
         
-        # Build claims with workspace memberships - Query ottimizzata
-        memberships = []
-        wm_start = time.time()
-        # Query ottimizzata: usa first() invece di all() per evitare caricamento completo
-        wm = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
-        if wm:
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "role": wm.role
-            })
-        wm_time = time.time() - wm_start
-        print(f"🏢 WorkspaceMember query took {wm_time:.3f}s")
+        total_time = time.time() - start_time
+        print(f"🎉 [{request_id}] Login successful in {total_time:.3f}s for user {email}")
         
-        claims = {
-            "user_id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin_global": bool(user.is_admin_global),
-            "email_verified": bool(user.email_verified_at),
-            "memberships": memberships,
-        }
+        resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
+        _create_session(resp, claims)
+        return resp
         
-        # Update last login - Unificato in un unico commit
-        user.last_login_at = datetime.now(timezone.utc)
-        db.add(user)
-        
-        # Commit unificato per evitare deadlock
-        commit_start = time.time()
-        db.commit()
-        commit_time = time.time() - commit_start
-        print(f"💾 Database commit took {commit_time:.3f}s")
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        # Catch all other exceptions and log them
+        total_time = time.time() - start_time
+        print(f"💥 [{request_id}] UNEXPECTED ERROR after {total_time:.3f}s: {e}")
+        print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
     
-    total_time = time.time() - start_time
-    print(f"🎉 Login successful in {total_time:.3f}s for user {email}")
-    
-    resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
-    _create_session(resp, claims)
-    return resp
+
 
 
 @app.get("/auth/me")
