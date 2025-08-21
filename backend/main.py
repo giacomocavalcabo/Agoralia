@@ -105,6 +105,7 @@ def setup_admin():
         
         # Create user
         user = User(
+            id=f"u_{int(datetime.now(timezone.utc).timestamp())}",
             email='giacomo.cavalcabo14@gmail.com',
             name='Giacomo Cavalcabo',
             is_admin_global=True,
@@ -117,6 +118,7 @@ def setup_admin():
         
         # Create user auth record
         user_auth = UserAuth(
+            id=f"ua_{int(datetime.now(timezone.utc).timestamp())}",
             user_id=user.id,
             provider='password',
             pass_hash=hashed.decode('utf-8'),
