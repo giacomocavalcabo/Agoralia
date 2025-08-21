@@ -218,25 +218,37 @@ def audit(kind: str, entity: str):
 
 
 
-# CORS configuration
-front_origin = os.getenv("FRONTEND_ORIGIN")
-origins = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
+# CORS configuration - Fix completo per sessioni cross-site
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173", 
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://agoralia.vercel.app",   # prod FE
 ]
-if front_origin:
-    origins.append(front_origin)
+# consenti anche le preview Vercel (solo domini *.vercel.app)
+ALLOWED_ORIGIN_REGEX = r"^https://.*\.vercel\.app$"
 
-# Allow Vercel preview subdomains by regex as well
+# Parametrica le origini da env
+origins_env = os.getenv("CORS_ORIGINS", "")
+if origins_env:
+    ALLOWED_ORIGINS += [o.strip() for o in origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_origin_regex=r"https://.*vercel\\.app",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
+    allow_credentials=True,  # necessario per cookie di sessione
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization", 
+        "X-CSRF-Token",
+        "X-Workspace-Id",
+        "X-Api-Key",
+        "X-Request-Id",
+    ],
+    expose_headers=["X-Request-Id"],
 )
 
 
@@ -298,8 +310,17 @@ def _create_session(resp: Response, claims: dict) -> dict:
     csrf = secrets.token_urlsafe(24)
     sess = {"sid": sid, "csrf": csrf, "claims": claims}
     _SESSIONS.set(sid, sess)
-    # HttpOnly, Lax for SPA
-    resp.set_cookie("session_id", sid, httponly=True, samesite="lax", secure=False, path="/")
+    # HttpOnly, SameSite=None per sessioni cross-site (Vercel → Railway)
+    # Secure=True obbligatorio con SameSite=None
+    resp.set_cookie(
+        "session_id", 
+        sid, 
+        httponly=True, 
+        samesite="none", 
+        secure=True,  # obbligatorio con SameSite=None
+        path="/",
+        max_age=14*24*3600  # 14 giorni
+    )
     resp.headers["x-csrf-token"] = csrf
     return sess
 
