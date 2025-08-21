@@ -3857,8 +3857,9 @@ def generate_prompt_bricks(
             "generated_at": datetime.utcnow().isoformat()
         }
 
-def _build_kb_context_for_ai(kb: KnowledgeBase, fields_map: dict, lang: str) -> str:
+def _build_kb_context_for_ai(kb, fields_map: dict, lang: str) -> str:
     """Build context text for AI prompt bricks generation"""
+    from backend.models import KnowledgeBase
     context_parts = []
     
     # Basic KB info
@@ -3874,8 +3875,9 @@ def _build_kb_context_for_ai(kb: KnowledgeBase, fields_map: dict, lang: str) -> 
     
     return "\n".join(context_parts)
 
-def _generate_fallback_bricks(kb: KnowledgeBase, fields_map: dict, lang: str) -> tuple:
+def _generate_fallback_bricks(kb, fields_map: dict, lang: str) -> tuple:
     """Generate fallback prompt bricks without AI"""
+    from backend.models import KnowledgeBase
     rules = []
     style = []
     
@@ -3934,6 +3936,7 @@ def _extract_disclaimers(fields_map: dict) -> list:
 
 def _track_prompt_bricks_usage(db: Session, kb_id: str, kind: str, success: bool, lang: str):
     """Track prompt bricks usage for analytics"""
+    from backend.models import KbUsage
     try:
         usage = KbUsage(
             id=f"usage_{secrets.token_urlsafe(8)}",

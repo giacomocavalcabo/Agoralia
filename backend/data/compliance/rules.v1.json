@@ -7157,6 +7157,252 @@
         "recording_requires_consent": false,
         "has_quiet_hours": false
       }
+    },
+    "CF": {
+      "country": "Central African Republic",
+      "iso": "CF",
+      "regime_b2c": "opt_out_de_facto_no_legal_opt_in_mandate_calls_can_be_made_until_a_consumer_objects_although_formal_mechanisms_are_absent._companies_should_honor_individual_requests_not_to_be_called.",
+      "regime_b2b": "not_regulated_b2b_telemarketing_is_not_addressed_by_current_law_allowed_by_default.",
+      "quiet_hours": null,
+      "ai_disclosure": "no.",
+      "recording_basis": "no_specific_law_assume_one_party_consent_is_acceptable_however_lack_of_legal_framework_means_caution.",
+      "callerid_rules": "None specific (basic telecom norms to not spoof likely apply).",
+      "recent_changes": "None. Telecom law 2018 is in force; no recent consumer protection additions.",
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Virtually no dedicated telemarketing laws. Electronic Communications Law 2018 governs telecom broadly, but there is no evidence of consumer telemarketing protections or a marketing opt-in requirement. Telemarketing, if any, is essentially unregulated aside from general nuisance or fraud laws.",
+      "regime_b2b_text": "None – no specific rules for business calls beyond standard commerce regulations.",
+      "notes_for_product": "No compliance infrastructure. Proceed carefully: get voluntary consent where possible, limit call frequency. Consider political instability—minimal calls to this region.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "ARCEP-Centrafrique Communications Act 2018 (no mention of telemarketing/DNC).",
+          "url": null,
+          "updated": "2018-01-17"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": true,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "CG": {
+      "country": "Republic of the Congo",
+      "iso": "CG",
+      "regime_b2c": "opt_out_consumers_have_the_right_to_object_to_direct_marketing_at_any_time._unsolicited_calls_are_permitted_unless_the_consumer_has_opted_out_or_withheld_consent_except_automated_calls_require_consent.",
+      "regime_b2b": "opt_out_no_regulation_specifically_for_b2b_good_practice_to_apply_consumer_like_opt_out_if_personal_data_are_used.",
+      "quiet_hours": "Not specified in law.",
+      "ai_disclosure": "not_specifically_no_known_rule_on_automated_call_disclosure_general_consent_for_automated_dialing_would_be_needed_if_considered_data_processing.",
+      "recording_basis": "one_party_consent_no_known_local_prohibition_on_recording_if_you_are_a_party_however_privacy_law_means_recordings_personal_data_require_a_legitimate_basis_such_as_consent_or_necessity.",
+      "callerid_rules": "No known requirements (standard practice to show a valid number is advised).",
+      "recent_changes": "Data Protection Authority being set up (law 2025-03 creating a commission); no new telemarketing law. Enforcement of marketing provisions may increase as data law is implemented.",
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Personal data legislation provides the main framework. The Republic of Congo passed a Data Protection Law in 2019, which likely requires respecting individuals' objections to marketing. No specific telemarketing or DNC law exists outside of data privacy obligations.",
+      "regime_b2b_text": "No dedicated B2B telemarketing rules. Marketing to businesses is generally allowed, though if calling an individual at a business on their personal number or using their personal data, the Data Protection Law would grant those individuals opt-out rights.",
+      "notes_for_product": "Ensure an easy opt-out on first contact. Best to obtain express consent for prospect calls given lack of clarity. Focus on compliance with data protection principles (transparency, purpose limitation).",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Data Protection Act 2019 (Loi 29-2019) (includes right to prevent direct marketing).",
+          "url": null,
+          "updated": "2019-10-10"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "CV": {
+      "country": "Cabo Verde",
+      "iso": "CV",
+      "regime_b2c": "opt_out_consumers_have_an_absolute_right_to_object_to_direct_marketing_processing_of_their_data_per_data_protection_principles._prior_explicit_consent_is_not_legally_mandated_for_calls_but_if_a_person_opts_out_or_is_in_the_\"do_not_solicit\"_directory_they_must_not_be_called.",
+      "regime_b2b": "opt_out_no_official_requirement_for_b2b_consent_businesses_can_call_unless_they_object_or_data_use_violates_privacy_principles.",
+      "quiet_hours": null,
+      "ai_disclosure": "not_specifically.",
+      "recording_basis": "likely_consent_or_legitimate_interest_with_notice_in_absence_of_specific_law_follow_gdpr_like_principles_advise_the_party_and_get_consent_if_recording_calls.",
+      "callerid_rules": "No specific rules. The telecom regulator (ARME) does not mandate a telemarketing prefix; telemarketers should display a valid number.",
+      "recent_changes": "No known recent changes. Data Protection Law was updated in 2013 to align more with international standards; no 2024+ telemarketing reforms noted.",
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing is subject to general data protection and consumer laws. Cabo Verde's Data Protection Act (Law 133/V/2001) and its amendments give individuals rights over personal data use. Unsolicited calls are not specifically regulated by a standalone law, but direct marketing falls under data privacy oversight.",
+      "regime_b2b_text": "No explicit B2B telemarketing statutes. B2B calls are generally allowed; if personal data (like employee contacts) are used, the data subject's rights under the Data Protection Act apply.",
+      "notes_for_product": "Treat Cabo Verde like an EU jurisdiction: require an easy opt-out on calls, and ideally obtain prior permission for cold calls. Maintain an internal suppression list. No centralized list to scrub, so compliance is primarily via honoring individual rights.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Constitution & Law No. 133/V/2001 (Data Protection – establishes right to stop direct marketing); National Data Protection Commission (CNPD) guidance.",
+          "url": null,
+          "updated": "2013-01-01"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": false
+      }
+    },
+    "GI": {
+      "country": "Gibraltar",
+      "iso": "GI",
+      "regime_b2c": "opt_out_unsolicited_calls_are_allowed_unless_the_consumer_is_on_an_opt_out_list_or_has_withdrawn_consent._automated_marketing_calls_require_prior_consent.",
+      "regime_b2b": "opt_out_b2b_recipients_can_be_called_unless_listed_on_ctps_or_they_object.",
+      "quiet_hours": "Not explicitly set in law (UK/Gibraltar law requires \"reasonable hours,\" generally observed as 8am to 9pm local time).",
+      "ai_disclosure": "yes_fully_automated_calls_must_have_prior_consent_and_state_the_caller's_identity_in_the_recorded_message._no_special_rule_if_a_human_is_speaking_even_if_aided_by_ai.",
+      "recording_basis": "legitimate_interest_gibraltar_like_uk_allows_one_party_consent_recording._however_gdpr_principles_require_transparency___best_practice_is_to_inform_at_the_start_of_the_call.",
+      "callerid_rules": "Yes – callers must not withhold their number. Telemarketers must display a valid caller ID number that permits a return call.",
+      "recent_changes": "No Gibraltar-specific changes noted post-2021. Gibraltar's laws mirror UK's; the UK's upcoming Data Reform (Data Protection and Digital Information Bill) may eventually affect telemarketing consent rules, but not in force yet.",
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "Telemarketing is governed by privacy and electronic communications laws derived from UK/EU frameworks. Gibraltar has implemented \"Gibraltar GDPR\" (post-Brexit data protection) and likely follows UK's Privacy and Electronic Communications rules. Consumers have the right to object to marketing use of their data, and unsolicited live marketing calls are not allowed to those who have opted out via preference services.",
+      "regime_b2b_text": "Similar to UK: Corporate numbers can register on the Corporate Telephone Preference Service. No separate Gibraltar-specific B2B law, so the UK model of allowing B2B calls with opt-out applies.",
+      "notes_for_product": "Ensure screening against TPS/CTPS for +350 numbers. Don't rely on \"existing customer\" to bypass TPS – get explicit consent if possible. Always display CLI and introduce caller/company. Provide an immediate opt-out option in every call. Treat automated dialing with extreme caution (consent required).",
+      "dnc": [
+        {
+          "name": "Telephone Preference Service (TPS) and Corporate TPS.",
+          "url": "https://www.tpsonline.org.uk",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "Information Commissioner (Gibraltar GDPR) guidance; UK ICO PECR guidance (applicable in Gibraltar).",
+          "url": null,
+          "updated": "2018-05-25"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": true,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
+    },
+    "GQ": {
+      "country": "Equatorial Guinea",
+      "iso": "GQ",
+      "regime_b2c": "opt_out_effectively_by_default_since_there's_no_law_requiring_consent_first._if_someone_were_called_the_only_recourse_is_to_ask_the_caller_to_stop.",
+      "regime_b2b": "not_regulated_no_prohibitions_on_b2b_solicitation.",
+      "quiet_hours": null,
+      "ai_disclosure": "no.",
+      "recording_basis": "no_explicit_law_one_party_likely_fine._given_lack_of_privacy_statutes_recording_is_unregulated_though_caution_is_advised.",
+      "callerid_rules": "None.",
+      "recent_changes": null,
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No specific telemarketing regime is known. There is minimal consumer protection framework. No do-not-call system or marketing consent law has been identified. Any telemarketing would fall under general law (which is very limited in scope for consumer rights).",
+      "regime_b2b_text": "None.",
+      "notes_for_product": "Extremely low volume environment. If calling, proceed on a case-by-case basis with explicit permission if possible. High risk of misunderstanding – best to avoid unsolicited contacts.",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "N/A (no official sources on telemarketing or data protection available).",
+          "url": null,
+          "updated": null
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": false,
+        "has_quiet_hours": false
+      }
+    },
+    "GW": {
+      "country": "Guinea-Bissau",
+      "iso": "GW",
+      "regime_b2c": "opt_out_effectively_by_default_since_there's_no_law_requiring_consent_marketers_may_call_but_they_should_cease_if_the_consumer_indicates_disinterest_or_refuses.",
+      "regime_b2b": "opt_out_no_formal_constraints.",
+      "quiet_hours": "Not legally specified. (Common business practice is to call during normal business/daytime hours.)",
+      "ai_disclosure": "not_specifically._no_known_rule_on_ai/automated_call_disclosure_general_principle_would_require_transparency_if_using_recorded_messages.",
+      "recording_basis": "likely_one_party_consent_allowed_bvi_law_doesn't_prohibit_a_party_to_a_call_from_recording._however_since_call_recordings_are_personal_data_a_controller_must_have_a_lawful_basis_under_dpa___e.g._legitimate_interests_balanced_with_the_individual's_rights_or_consent._safer_to_obtain_consent_for_recording_marketing_calls.",
+      "callerid_rules": "No specific telemarketing number requirements. (General telecom practice via Flow or Digicel networks is to present caller ID; no special prefix).",
+      "recent_changes": "Data Protection Act came into force July 2021. Enforcement of its marketing provisions is still ramping up (the Office of the Information Commissioner is relatively new). No new telemarketing-specific laws since then.",
+      "last_verified": "2025-08-20",
+      "confidence": "low",
+      "confidence_score": null,
+      "regime_b2c_text": "No known telemarketing or data protection laws. Guinea-Bissau has extremely limited telecommunications regulation and virtually no consumer marketing rules. Telemarketing would not be subject to any specific legal constraints apart from general harassment or fraud provisions.",
+      "regime_b2b_text": "None specifically.",
+      "notes_for_product": "Ensure a simple opt-out mechanism on all calls (and document any objections to cease future contact). Because of the stringent privacy law, it's advisable to obtain express consent from BVI prospects before marketing calls. Train agents that if a person says they don't want calls, under BVI law that must be immediately honored (and likely notified to the Data Protection supervisor if complained).",
+      "dnc": [
+        {
+          "name": "None",
+          "url": "",
+          "access": "unknown",
+          "check_required_for_er": false
+        }
+      ],
+      "sources": [
+        {
+          "title": "DPA 2021, s.21 (Right to prevent direct marketing); BVI Gazette – Data Protection Act, 2021.",
+          "url": null,
+          "updated": "2021-07-09"
+        }
+      ],
+      "exceptions": [],
+      "flags": {
+        "requires_consent_b2c": false,
+        "requires_consent_b2b": false,
+        "requires_dnc_scrub": false,
+        "allows_automated": true,
+        "recording_requires_consent": true,
+        "has_quiet_hours": true
+      }
     }
   },
   "countries": [
@@ -7954,6 +8200,131 @@
       "iso": "TM",
       "confidence": "medium",
       "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "CF",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "CG",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "CV",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "GI",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "GQ",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "GW",
+      "confidence": "low",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "AF",
+      "confidence": "low",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "AI",
+      "confidence": "apply basic courtesy rules; treat any anguilla calling as opt-out (stop if consumer objects). consider consumer quiet hours as a precaution.",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "BI",
+      "confidence": "arct (burundi):{index=1} (fr)",
+      "last_verified": ""
+    },
+    {
+      "iso": "BM",
+      "confidence": "ensure an opt-out mechanism on all calls. no dnc list to scrub, but honor any request to stop. consider mirroring typical calling hours. automated dialers should not be used without consent. record calls only with notice or consent.",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "BN",
+      "confidence": "high",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "BS",
+      "confidence": "no dnc list – maintain an internal opt-out list. obtain express consent for automated calls. adhere to typical calling hours (e.g., 8am–9pm) as a best practice. provide identification and honor any ‘do not call’ immediately. enforcement of rules is limited, but reputational risk remains.",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "CU",
+      "confidence": "official denial of any call-recording regulation:{index=37}:{index=38} (supreme court statement, 2025).",
+      "last_verified": "Cuba adopted a Social Communication Law in 2023, but it addresses media and propaganda, not telemarketing specifically. No indication of future telemarketing provisions."
+    },
+    {
+      "iso": "GF",
+      "confidence": "full french compliance: must integrate bloctel scrubbing before dialing any french guiana numbers. only call within permitted hours. configure caller id to an approved range. starting 2026, require prior consent for essentially all cold calls – plan to switch to opt-in outreach. recording requires verbal two-party consent on the call.",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "GP",
+      "confidence": "fully align with france’s regime. use bloctel suppression for any call list. only call during allowed hours. use french-approved caller ids. prepare to implement an opt-in-only strategy ahead of 2026.",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "GU",
+      "confidence": "guam phone numbers are part of nanp, so include them in u.s. compliance processes. always check scrubbed lists against the national dnc. implement time-of-day call blocks outside 8am-9pm. ensure your dialing system accounts for guam’s time zone. obtain express written consent for any autodialed or prerecorded marketing calls (especially to mobile numbers).",
+      "last_verified": "2025-08-20"
+    },
+    {
+      "iso": "KG",
+      "confidence": "high",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "KM",
+      "confidence": "medium",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "LS",
+      "confidence": "low",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "MO",
+      "confidence": "high",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "PS",
+      "confidence": "low",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "TK",
+      "confidence": "",
+      "last_verified": ""
+    },
+    {
+      "iso": "TL",
+      "confidence": "",
+      "last_verified": ""
+    },
+    {
+      "iso": "UA",
+      "confidence": "high",
+      "last_verified": "2025-09-24"
+    },
+    {
+      "iso": "VI",
+      "confidence": "usvi is treated like any us state under the law: ensure scrub against dnc, call only 8am-9pm atlantic time, and implement opt-out and consent requirements for automated calls. include usvi numbers in us compliance (they share +1 country code and are in the national dnc registry area list:{index=127}).",
+      "last_verified": "2025-08-20"
     }
   ]
 }
