@@ -1,217 +1,249 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { apiFetch } from '../lib/api.js'
-import { useToast } from '../components/ToastProvider.jsx'
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import FormField from '../components/ui/FormField';
+import AsyncSelect from '../components/ui/AsyncSelect';
+import CallerIdInput from '../components/CallerIdInput';
+import { fetchTemplates } from '../lib/hooks/useCampaignTemplates';
+import { fetchKB } from '../lib/hooks/useKnowledgeBases';
+import { fetchAgents } from '../lib/hooks/useAgents';
+import { fetchNumbers } from '../lib/hooks/useNumbers';
+import { apiFetch } from '../lib/api';
+import { useDemoData } from '../lib/useDemoData';
+import { useToast } from '../components/ToastProvider.jsx';
 
-const GOALS = ['rfq','demo','reorder','survey']
-const ROLES = ['supplier','supplied']
+export default function Campaigns() {
+  const { t, i18n } = useTranslation('pages');
+  const { toast } = useToast();
+  const isDemo = useDemoData();
+  const [saving, setSaving] = useState(false);
+  const [validCaller, setValidCaller] = useState(false);
+  const [errors, setErrors] = useState({});
 
-export default function Campaigns(){
-  const { t } = useTranslation('pages')
-  const { toast } = useToast()
-  const [step, setStep] = useState(1)
-  const [locales, setLocales] = useState({ call_supported: [], call_default: 'en-US' })
-  const [templates, setTemplates] = useState([])
   const [form, setForm] = useState({
-    name:'', goal:'rfq', role:'supplier', lang_default:'en-US', agent_id:'', kb_id:'', from_number:'',
-    template_id: '', // Add template selection
-    pacing_npm: 10, budget_cap_cents: '', window:{ dow:[1,2,3,4,5], quiet_hours:true, tz: 'UTC' },
-    audience: { lead_ids: [] }
-  })
-  const [scripts, setScripts] = useState(null)
-  const [attestOk, setAttestOk] = useState(false)
+    name: '',
+    goal: 'rfq',
+    role: 'supplier',
+    language: i18n.language || 'en-US',
+    agentId: '',
+    callerId: '',
+    kbId: '',
+    templateId: ''
+  });
 
-  useEffect(()=>{ (async()=>{
-    try { 
-      const res = await apiFetch('/i18n/locales'); 
-      setLocales(res) 
-    } catch(e){}
-  })() },[])
+  const workspaceId = useMemo(() => localStorage.getItem('workspace_id') || '', []);
+  const set = (key, value) => setForm(state => ({ ...state, [key]: value }));
 
-  useEffect(()=>{ (async()=>{
-    try { 
-      const res = await apiFetch('/templates'); 
-      setTemplates(res.templates || []) 
-    } catch(e){}
-  })() },[])
+  const validate = () => {
+    const newErrors = {};
+    if (!form.name?.trim()) newErrors.name = t('campaigns.validation.required');
+    if (!form.goal) newErrors.goal = t('campaigns.validation.required');
+    if (!form.role) newErrors.role = t('campaigns.validation.required');
+    if (!form.language) newErrors.language = t('campaigns.validation.required');
+    if (!form.kbId) newErrors.kbId = t('campaigns.validation.required');
+    if (!form.templateId) newErrors.templateId = t('campaigns.validation.required');
+    if (!validCaller && form.callerId) newErrors.callerId = t('campaigns.validation.caller_id');
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const callUnsupported = useMemo(()=> locales.call_supported && !locales.call_supported.includes(form.lang_default), [locales, form.lang_default])
-
-  async function submit(){
-    if (callUnsupported){ toast(t('app.notices.call_lang_not_supported', { lang: form.lang_default })); return }
-    if (!attestOk){ toast(t('compliance.attest') || 'Please confirm compliance attestation'); return }
-    try{
-      // create attestation (demo)
-      await apiFetch('/attestations', { method:'POST', body: { campaign_preview: { name: form.name, lang_default: form.lang_default } } })
+  const onSave = async () => {
+    if (!validate()) return;
+    setSaving(true);
+    
+    try {
       const payload = {
-        name: form.name, goal: form.goal, role: form.role, lang_default: form.lang_default,
-        agent_id: form.agent_id, kb_id: form.kb_id, from_number: form.from_number,
-        pacing_npm: Number(form.pacing_npm)||0, budget_cap_cents: form.budget_cap_cents? Number(form.budget_cap_cents): undefined,
-        window: form.window, audience: form.audience
+        name: form.name,
+        goal: form.goal,
+        role: form.role,
+        lang_default: form.language,
+        agent_id: form.agentId || null,
+        from_number: form.callerId,
+        kb_id: form.kbId,
+        template_id: form.templateId
+      };
+      
+      if (!isDemo) {
+        await apiFetch('/campaigns', { method: 'POST', body: payload });
       }
-      const res = await apiFetch('/campaigns', { method:'POST', body: payload })
-      toast(t('pages.campaigns.toasts.created', { id: res.id || '' }))
-      setStep(4)
-    } catch(err){ toast(String(err?.message || err)) }
-  }
+      
+      toast(t('campaigns.toasts.created', { id: 'new_campaign' }));
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Campaign save error:', error);
+      }
+      toast(t('campaigns.states.error'));
+    } finally { 
+      setSaving(false); 
+    }
+  };
+
+  const canProceed = validate() && !saving;
 
   return (
-    <div className="grid gap-3">
-      <div className="flex items-center gap-2">
-        {[1,2,3,4].map((s)=> (
+    <div className="p-4 md:p-6">
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">
+            {t('campaigns.title')}
+          </h1>
+          <p className="text-sm text-gray-600">
+            {t('campaigns.description')}
+          </p>
+        </div>
+        <div className="flex gap-2">
           <button
-            key={s}
-            onClick={()=> setStep(s)}
-            aria-current={step===s? 'page': undefined}
-            className={`h-2.5 w-2.5 rounded-full border ${s<step? 'bg-brand-600 border-brand-600' : s===step? 'bg-brand-500 border-brand-500' : 'bg-bg-app border-line'}`}
-            aria-label={t('pages.campaigns.step', { s }) || `Step ${s}`}
-          />
-        ))}
-        <div className="kpi-title ml-auto">{t('pages.campaigns.title')}</div>
+            type="button"
+            className="rounded-md bg-white border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            onClick={onSave}
+            aria-label={t('campaigns.actions.save')}
+            disabled={saving}
+          >
+            {saving ? t('campaigns.states.loading') : t('campaigns.actions.save')}
+          </button>
+          <button
+            type="button"
+            className="rounded-md bg-primary-500 text-white px-3 py-2 text-sm font-medium hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={onSave}
+            aria-label={t('campaigns.actions.next')}
+            disabled={!canProceed}
+            title={!canProceed ? t('campaigns.validation.required') : undefined}
+          >
+            {t('campaigns.actions.next')}
+          </button>
+        </div>
       </div>
 
-      {step===1 && (
-        <div className="panel grid gap-2.5">
-          <div className="font-semibold">{t('pages.campaigns.steps.details')}</div>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.name')}</div>
-            <input value={form.name} onChange={e=> setForm({ ...form, name:e.target.value })} className="input" />
-          </label>
-          <div className="grid grid-cols-2 gap-2.5">
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.goal')}</div>
-              <select value={form.goal} onChange={e=> setForm({ ...form, goal:e.target.value })} className="input">
-                {GOALS.map(g=> (<option key={g} value={g}>{g}</option>))}
-              </select>
-            </label>
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.role')}</div>
-              <select value={form.role} onChange={e=> setForm({ ...form, role:e.target.value })} className="input">
-                {ROLES.map(r=> (<option key={r} value={r}>{r}</option>))}
-              </select>
-            </label>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.lang')}</div>
-              <select value={form.lang_default} onChange={e=> setForm({ ...form, lang_default:e.target.value })} className="input">
-                {(locales.call_supported || []).map(l=> (<option key={l} value={l}>{l}</option>))}
-              </select>
-            </label>
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.from')}</div>
-              <input value={form.from_number} onChange={e=> setForm({ ...form, from_number:e.target.value })} placeholder={'+12025550123'} className="input" />
-            </label>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.agent')}</div>
-              <input value={form.agent_id} onChange={e=> setForm({ ...form, agent_id:e.target.value })} className="input" />
-            </label>
-            <label>
-              <div className="kpi-title">{t('pages.campaigns.fields.kb')}</div>
-              <input value={form.kb_id} onChange={e=> setForm({ ...form, kb_id:e.target.value })} className="input" />
-            </label>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField 
+          htmlFor="campaign-name" 
+          label={t('campaigns.fields.name.label')} 
+          error={errors.name}
+        >
+          <input 
+            id="campaign-name" 
+            type="text" 
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            placeholder={t('campaigns.fields.name.placeholder')}
+            value={form.name} 
+            onChange={(e) => set('name', e.target.value)}
+            aria-describedby={errors.name ? 'campaign-name-err' : undefined} 
+          />
+        </FormField>
 
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.template') || 'Outcome Template'}</div>
-            <select value={form.template_id} onChange={e=> setForm({ ...form, template_id:e.target.value })} className="input">
-              <option value="">{t('pages.campaigns.fields.template_select') || 'Select template...'}</option>
-              {templates.map(template => (
-                <option key={template.id} value={template.id}>
-                  {template.name} {template.is_preset && '(Preset)'}
-                </option>
-              ))}
+        <FormField 
+          htmlFor="campaign-role" 
+          label={t('campaigns.fields.role.label')} 
+          error={errors.role}
+        >
+          <select 
+            id="campaign-role" 
+            className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            value={form.role} 
+            onChange={(e) => set('role', e.target.value)}
+            aria-describedby={errors.role ? 'campaign-role-err' : undefined}
+          >
+            <option value="supplier">{t('campaigns.fields.role.options.supplier')}</option>
+            <option value="customer">{t('campaigns.fields.role.options.customer')}</option>
+              </select>
+        </FormField>
+
+        <FormField 
+          htmlFor="campaign-goal" 
+          label={t('campaigns.fields.goal.label')} 
+          error={errors.goal}
+        >
+          <select 
+            id="campaign-goal" 
+            className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            value={form.goal} 
+            onChange={(e) => set('goal', e.target.value)}
+            aria-describedby={errors.goal ? 'campaign-goal-err' : undefined}
+          >
+            <option value="rfq">{t('campaigns.fields.goal.options.rfq')}</option>
+            <option value="survey">{t('campaigns.fields.goal.options.survey')}</option>
+            <option value="nps">{t('campaigns.fields.goal.options.nps')}</option>
+            <option value="custom">{t('campaigns.fields.goal.options.custom')}</option>
+              </select>
+        </FormField>
+
+        <FormField 
+          htmlFor="campaign-language" 
+          label={t('campaigns.fields.language.label')} 
+          error={errors.language}
+        >
+          <select 
+            id="campaign-language" 
+            className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            value={form.language} 
+            onChange={(e) => set('language', e.target.value)}
+            aria-describedby={errors.language ? 'campaign-language-err' : undefined}
+          >
+            <option value="en-US">English (US)</option>
+            <option value="it-IT">Italiano</option>
+            <option value="fr-FR">Français</option>
+            <option value="es-ES">Español</option>
+            <option value="de-DE">Deutsch</option>
             </select>
-            {form.template_id && (
-              <div className="text-sm text-ink-600 mt-1">
-                {templates.find(t => t.id === form.template_id)?.description}
-              </div>
-            )}
-          </label>
+        </FormField>
 
-          {callUnsupported && (
-            <div role="alert" className="rounded-xl border border-warn bg-warn/10 text-ink-900 px-3 py-2">
-              <div className="text-sm">{t('app.notices.call_lang_not_supported', { lang: form.lang_default })}</div>
-            </div>
-          )}
+        <FormField 
+          htmlFor="campaign-agent" 
+          label={t('campaigns.fields.agent.label')}
+        >
+          <AsyncSelect
+            fetcher={fetchAgents}
+            value={form.agentId}
+            onChange={(v) => set('agentId', v)}
+            placeholder={t('campaigns.fields.agent.placeholder')}
+            ariaLabel={t('campaigns.fields.agent.label')}
+          />
+        </FormField>
 
-          <div className="flex justify-end gap-2">
-            <button onClick={()=> setStep(2)} className="btn">{t('common.next')}</button>
-          </div>
+        <FormField 
+          htmlFor="campaign-caller-id" 
+          label={t('campaigns.fields.caller_id.label')} 
+          error={errors.callerId}
+        >
+          <CallerIdInput
+            value={form.callerId}
+            onChange={(v) => set('callerId', v)}
+            onValidChange={setValidCaller}
+            placeholder={t('campaigns.fields.caller_id.placeholder')}
+            ariaLabel={t('campaigns.fields.caller_id.label')}
+          />
+        </FormField>
+
+        <FormField 
+          htmlFor="campaign-kb" 
+          label={t('campaigns.fields.knowledge_base.label')} 
+          error={errors.kbId}
+        >
+          <AsyncSelect
+            fetcher={(q, p, signal) => fetchKB(q, p, signal, workspaceId)}
+            value={form.kbId}
+            onChange={(v) => set('kbId', v)}
+            placeholder={t('campaigns.fields.knowledge_base.placeholder')}
+            ariaLabel={t('campaigns.fields.knowledge_base.label')}
+          />
+        </FormField>
+
+        <FormField 
+          htmlFor="campaign-template" 
+          label={t('campaigns.fields.template.label')} 
+          error={errors.templateId}
+        >
+          <AsyncSelect
+            fetcher={fetchTemplates}
+            value={form.templateId}
+            onChange={(v) => set('templateId', v)}
+            placeholder={t('campaigns.fields.template.placeholder')}
+            ariaLabel={t('campaigns.fields.template.label')}
+          />
+        </FormField>
         </div>
-      )}
-
-      {step===2 && (
-        <div className="panel grid gap-2.5">
-          <div className="font-semibold">{t('pages.campaigns.steps.audience')}</div>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience (lead ids comma-separated)'}</div>
-            <input value={form.audience.lead_ids?.join(',')||''} onChange={e=> setForm({ ...form, audience:{ lead_ids: e.target.value.split(',').map(s=> s.trim()).filter(Boolean) } })} className="input" />
-          </label>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.pacing')}</div>
-            <input type="number" min="1" value={form.pacing_npm} onChange={e=> setForm({ ...form, pacing_npm:e.target.value })} className="input w-[200px]" />
-          </label>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.budget')}</div>
-            <input type="number" min="0" value={form.budget_cap_cents} onChange={e=> setForm({ ...form, budget_cap_cents:e.target.value })} className="input w-[200px]" />
-          </label>
-          <div className="flex justify-between gap-2">
-            <button onClick={()=> setStep(1)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
-            <button onClick={()=> setStep(3)} className="btn">{t('common.next')}</button>
-          </div>
-        </div>
-      )}
-
-      {step===3 && (
-        <div className="panel grid gap-2.5">
-          <div className="font-semibold">{t('pages.campaigns.steps.windows')}</div>
-          {/* Compliance scripts preview */}
-          <div className="panel border border-line">
-            <div className="kpi-title mb-1.5">{t('pages.campaigns.compliance') || 'Compliance'}</div>
-            <div className="kpi-title">{scripts?.disclosure || t('pages.campaigns.compliance_disclosure') || 'Disclosure text…'}</div>
-            <div className="kpi-title">{scripts?.record_consent || t('pages.campaigns.compliance_record') || 'Recording consent…'}</div>
-          </div>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.dow')||'Days of week (1=Mon...7=Sun)'}</div>
-            <input value={(form.window.dow||[]).join(',')} onChange={e=> setForm({ ...form, window:{ ...form.window, dow: e.target.value.split(',').map(s=> parseInt(s)).filter(n=> !isNaN(n)) } })} className="input" />
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="checkbox" checked={form.window.quiet_hours} onChange={e=> setForm({ ...form, window:{ ...form.window, quiet_hours:e.target.checked } })} />
-            <span className="kpi-title">{t('pages.campaigns.fields.quiet_hours')}</span>
-          </label>
-          <label>
-            <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start date/time'}</div>
-            <input type="datetime-local" value={form.window.start_at || ''} onChange={e=> setForm({ ...form, window:{ ...form.window, start_at: e.target.value } })} className="input w-[260px]" />
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="checkbox" checked={attestOk} onChange={e=> setAttestOk(e.target.checked)} />
-            <span className="kpi-title">{t('compliance.attest') || 'I confirm compliance responsibilities and local rules were verified.'}</span>
-          </label>
-          <div className="flex justify-between gap-2">
-            <button onClick={()=> setStep(2)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
-            <button onClick={()=> setStep(4)} className="btn">{t('common.next')}</button>
-          </div>
-        </div>
-      )}
-
-      {step===4 && (
-        <div className="panel grid gap-2.5">
-          <div className="font-semibold">{t('pages.campaigns.steps.review')}</div>
-          <div className="kpi-title">{form.name} • {form.goal} • {form.role} • {form.lang_default}</div>
-          <div className="kpi-title">{t('pages.campaigns.fields.audience')||'Audience'}: {(form.audience.lead_ids||[]).length} {t('pages.leads.title')||'leads'}</div>
-          <div className="kpi-title">{t('pages.campaigns.fields.pacing')}: {form.pacing_npm}/min • {t('pages.campaigns.fields.budget')}: {form.budget_cap_cents||'-'}</div>
-          <div className="kpi-title">{t('pages.campaigns.fields.start_at')||'Start'}: {form.window.start_at||'-'}; DoW: {(form.window.dow||[]).join(',')}</div>
-          <div className="flex justify-between gap-2">
-            <button onClick={()=> setStep(3)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('common.prev')}</button>
-            <button onClick={submit} className="btn">{t('pages.campaigns.actions.create_schedule')}</button>
-          </div>
-        </div>
-      )}
     </div>
-  )
+  );
 }
 
 

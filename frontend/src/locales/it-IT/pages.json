@@ -297,9 +297,34 @@
     },
     "campaigns": {
       "title": "Campagne",
+      "description": "Crea e gestisci campagne di chiamate in uscita.",
+      "fields": {
+        "name": { "label": "Nome", "placeholder": "Fornitori RFQ estivi" },
+        "goal": { "label": "Obiettivo",
+          "options": { "rfq": "RFQ", "survey": "Sondaggio", "nps": "NPS", "custom": "Personalizzato" } },
+        "role": { "label": "Ruolo",
+          "options": { "supplier": "Fornitore", "customer": "Cliente" } },
+        "language": { "label": "Lingua chiamata (predefinita)" },
+        "agent": { "label": "Agente", "placeholder": "Cerca agente..." },
+        "caller_id": { "label": "Caller ID (da)", "placeholder": "+390212345678" },
+        "knowledge_base": { "label": "Knowledge base", "placeholder": "Cerca knowledge base..." },
+        "template": { "label": "Template", "placeholder": "Seleziona un template" }
+      },
+      "actions": { 
+        "save": "Salva", 
+        "next": "Avanti",
+        "create_schedule": "Crea e pianifica" 
+      },
+      "states": { 
+        "loading": "Caricamento…", 
+        "empty": "Nessun risultato", 
+        "error": "Qualcosa è andato storto" 
+      },
+      "validation": {
+        "required": "Questo campo è obbligatorio",
+        "caller_id": "Inserisci un numero valido in formato E.164"
+      },
       "steps": { "details":"Dettagli", "audience":"Audience & Pacing", "windows":"Finestre & Compliance", "review":"Riepilogo" },
-      "fields": { "name":"Nome", "goal":"Obiettivo", "role":"Ruolo", "lang":"Lingua chiamata (default)", "agent":"Agente", "kb":"Knowledge base", "from":"Caller ID (da)", "pacing":"Pacing (al minuto)", "budget":"Budget cap (centesimi)", "quiet_hours":"Rispetta quiet hours" },
-      "actions": { "create_schedule":"Crea e pianifica" },
       "toasts": { "created":"Campagna creata {id}" }
     },
     "calendar": {

@@ -20,29 +20,37 @@
     "title": "[Title]"
   },
   "campaigns": {
-    "actions": {
-      "create_schedule": "Create & Schedule"
+    "title": "Campaigns",
+    "description": "Create and manage outbound calling campaigns.",
+    "fields": {
+      "name": { "label": "Name", "placeholder": "Summer RFQ suppliers" },
+      "goal": { "label": "Objective",
+        "options": { "rfq": "RFQ", "survey": "Survey", "nps": "NPS", "custom": "Custom" } },
+      "role": { "label": "Role",
+        "options": { "supplier": "Supplier", "customer": "Customer" } },
+      "language": { "label": "Call language (default)" },
+      "agent": { "label": "Agent", "placeholder": "Search agent..." },
+      "caller_id": { "label": "Caller ID (from)", "placeholder": "+12025550123" },
+      "knowledge_base": { "label": "Knowledge base", "placeholder": "Search knowledge base..." },
+      "template": { "label": "Template", "placeholder": "Select a template" }
+    },
+    "actions": { 
+      "save": "Save", 
+      "next": "Next",
+      "create_schedule": "Create & Schedule" 
+    },
+    "states": { 
+      "loading": "Loading…", 
+      "empty": "No results", 
+      "error": "Something went wrong" 
+    },
+    "validation": {
+      "required": "This field is required",
+      "caller_id": "Enter a valid phone number in E.164 format"
     },
     "compliance": "Compliance",
     "compliance_disclosure": "Disclosure text…",
     "compliance_record": "Recording consent…",
-    "fields": {
-      "agent": "Agent ID",
-      "audience": "Audience (lead ids comma-separated)",
-      "budget": "Budget Cap (cents)",
-      "dow": "Days of week (1=Mon...7=Sun)",
-      "from": "From Number",
-      "goal": "Goal",
-      "kb": "Knowledge Base ID",
-      "lang": "Default Language",
-      "name": "Campaign Name",
-      "pacing": "Pacing (calls per minute)",
-      "quiet_hours": "Respect quiet hours",
-      "role": "Role",
-      "start_at": "Start date/time",
-      "template": "Outcome Template",
-      "template_select": "Select template..."
-    },
     "step": "Step {s}",
     "steps": {
       "audience": "Audience & Pacing",
@@ -50,7 +58,6 @@
       "review": "Review & Create",
       "windows": "Windows & Compliance"
     },
-    "title": "Campaigns",
     "toasts": {
       "created": "Campaign {id} created successfully"
     }

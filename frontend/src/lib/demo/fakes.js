@@ -97,6 +97,42 @@ export const generateDemoTrends = (days = 7) => {
   };
 };
 
+// Demo generators for new campaign form components
+export const demo = {
+  templates(count = 6) {
+    const names = ['Sales Qualification', 'Customer Support', 'Appointment Booking', 'NPS Survey', 'RFQ Process', 'Follow-up Call'];
+    return Array.from({ length: count }, (_, i) => ({
+      id: `tpl_${i+1}`, 
+      name: names[i % names.length],
+      label: names[i % names.length] // for AsyncSelect compatibility
+    }));
+  },
+  agents(count = 8) {
+    const names = ['Alice Johnson', 'Marco Rossi', 'Sarah Chen', 'David Miller', 'Elena Bianchi', 'Jean Dupont', 'Hans Mueller', 'Maria Garcia'];
+    return Array.from({ length: count }, (_, i) => ({ 
+      id: `ag_${i+1}`, 
+      name: names[i % names.length],
+      label: names[i % names.length] // for AsyncSelect compatibility
+    }));
+  },
+  numbers(count = 5) {
+    return Array.from({ length: count }, (_, i) => ({ 
+      id: `num_${i+1}`, 
+      e164: `+12025550${100+i}`,
+      name: `+12025550${100+i}`, // for AsyncSelect compatibility
+      label: `+12025550${100+i}` // for AsyncSelect compatibility
+    }));
+  },
+  knowledgeBases(count = 6) {
+    const names = ['Company Policy', 'Product Catalog', 'Sales Scripts', 'Support FAQ', 'Compliance Rules', 'Training Material'];
+    return Array.from({ length: count }, (_, i) => ({ 
+      id: `kb_${i+1}`, 
+      name: names[i % names.length] + ` ${i+1}`,
+      label: names[i % names.length] + ` ${i+1}` // for AsyncSelect compatibility
+    }));
+  }
+};
+
 // Additional demo generators needed by demoGate.js
 export const makeLeads = generateDemoLeads;
 export const makeDashboardSummary = generateDemoMetrics;
