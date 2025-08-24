@@ -1,9 +1,14 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useI18n } from '../lib/i18n.jsx'
 import { normalizePhoneNumber } from '../lib/phoneUtils.js'
-import { parseCSV, validateCSVData, detectFieldTypes } from '../lib/csvUtils.js'
+import { parseCsvAsync, validateCSVData, detectFieldTypes } from '../lib/csvUtils.js'
 import { CheckCircleIcon, DocumentArrowUpIcon, ClipboardDocumentIcon, TableCellsIcon } from '@heroicons/react/24/outline'
+
+// Import new step components
+import SubsetStep from '../components/import/SubsetStep'
+import AttributesStep from '../components/import/AttributesStep'
+import LegalReviewStep from '../components/import/LegalReviewStep'
 
 // Step components
 function UploadStep({ onDataDetected, onNext }) {
@@ -161,10 +166,10 @@ function UploadStep({ onDataDetected, onNext }) {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          {t('pages.import.upload.title') || 'Import Contacts'}
+          {t('import.upload.title') || 'Import Contacts'}
         </h2>
         <p className="text-gray-600">
-          {t('pages.import.upload.subtitle') || 'Upload a CSV file or paste data to import contacts'}
+          {t('import.upload.subtitle') || 'Upload a CSV file or paste data to import contacts'}
         </p>
       </div>
 
@@ -209,14 +214,14 @@ function UploadStep({ onDataDetected, onNext }) {
                 <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p className="text-lg font-medium text-gray-900 mb-2">
                   {isDragActive
-                    ? t('pages.import.upload.drop_here') || 'Drop the file here'
-                    : t('pages.import.upload.drag_drop') || 'Drag & drop a CSV file here'}
+                    ? t('import.upload.drop_here') || 'Drop the file here'
+                    : t('import.upload.drag_drop') || 'Drag & drop a CSV file here'}
                 </p>
                 <p className="text-gray-500">
-                  {t('pages.import.upload.or_click') || 'or click to browse'}
+                  {t('import.upload.or_click') || 'or click to browse'}
                 </p>
                 <p className="text-sm text-gray-400 mt-2">
-                  {t('pages.import.upload.supported_formats') || 'Supports CSV, XLS, XLSX (max 50MB)'}
+                  {t('import.upload.supported_formats') || 'Supports CSV, XLS, XLSX (max 50MB)'}
                 </p>
               </div>
             </div>
@@ -227,12 +232,12 @@ function UploadStep({ onDataDetected, onNext }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('pages.import.paste.label') || 'Paste CSV data'}
+                  {t('import.paste.label') || 'Paste CSV data'}
                 </label>
                 <textarea
                   value={pasteData}
                   onChange={(e) => setPasteData(e.target.value)}
-                  placeholder={t('pages.import.paste.placeholder') || 'Paste your CSV data here (with headers)...'}
+                  placeholder={t('import.paste.placeholder') || 'Paste your CSV data here (with headers)...'}
                   rows={10}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
@@ -245,10 +250,10 @@ function UploadStep({ onDataDetected, onNext }) {
                 {isProcessing ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    {t('pages.import.paste.processing') || 'Processing...'}
+                    {t('import.paste.processing') || 'Processing...'}
                   </div>
                 ) : (
-                  t('pages.import.paste.process') || 'Process Data'
+                  t('import.paste.process') || 'Process Data'
                 )}
               </button>
             </div>
@@ -259,16 +264,16 @@ function UploadStep({ onDataDetected, onNext }) {
             <div className="text-center py-12">
               <TableCellsIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t('pages.import.sheet.title') || 'Google Sheets Integration'}
+                {t('import.sheet.title') || 'Google Sheets Integration'}
               </h3>
               <p className="text-gray-500 mb-4">
-                {t('pages.import.sheet.subtitle') || 'Coming soon! You can export your Google Sheet as CSV and upload it here.'}
+                {t('import.sheet.subtitle') || 'Coming soon! You can export your Google Sheet as CSV and upload it here.'}
               </p>
               <button
                 onClick={() => setUploadMethod('csv')}
                 className="px-6 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
               >
-                {t('pages.import.sheet.upload_csv') || 'Upload CSV Instead'}
+                {t('import.sheet.upload_csv') || 'Upload CSV Instead'}
               </button>
             </div>
           )}
@@ -287,7 +292,7 @@ function UploadStep({ onDataDetected, onNext }) {
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {t('pages.import.processing') || 'Processing your data...'}
+            {t('import.processing') || 'Processing your data...'}
           </p>
         </div>
       )}
@@ -296,14 +301,14 @@ function UploadStep({ onDataDetected, onNext }) {
       {csvData && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {t('pages.import.preview.title') || 'Data Preview'}
+            {t('import.preview.title') || 'Data Preview'}
           </h3>
           
           <div className="mb-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              {t('pages.import.preview.rows') || 'Rows'}: {csvData.meta.totalRows} | 
-              {t('pages.import.preview.fields') || 'Fields'}: {csvData.meta.fields.length} |
-              {t('pages.import.preview.delimiter') || 'Delimiter'}: {csvData.meta.delimiter}
+              {t('import.preview.rows') || 'Rows'}: {csvData.meta.totalRows} | 
+              {t('import.preview.fields') || 'Fields'}: {csvData.meta.fields.length} |
+              {t('import.preview.delimiter') || 'Delimiter'}: {csvData.meta.delimiter}
               {csvData.meta.hasBOM && ' (BOM detected)'}
             </div>
             
@@ -311,7 +316,7 @@ function UploadStep({ onDataDetected, onNext }) {
               onClick={() => onNext()}
               className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
             >
-              {t('pages.import.preview.continue') || 'Continue to Mapping'} →
+              {t('import.preview.continue') || 'Continue to Mapping'} →
             </button>
           </div>
 
@@ -366,7 +371,7 @@ function UploadStep({ onDataDetected, onNext }) {
           
           {csvData.meta.totalRows > 5 && (
             <p className="text-sm text-gray-500 mt-3 text-center">
-              {t('pages.import.preview.showing') || 'Showing first 5 rows of'} {csvData.meta.totalRows} {t('pages.import.preview.total') || 'total rows'}
+              {t('import.preview.showing') || 'Showing first 5 rows of'} {csvData.meta.totalRows} {t('import.preview.total') || 'total rows'}
             </p>
           )}
         </div>
@@ -456,17 +461,17 @@ function FieldMappingStep({ data, onNext, onBack }) {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          {t('pages.import.mapping.title') || 'Field Mapping & Rules'}
+          {t('import.mapping.title') || 'Field Mapping & Rules'}
         </h2>
         <p className="text-gray-600">
-          {t('pages.import.mapping.subtitle') || 'Map CSV columns to contact fields and configure import rules'}
+          {t('import.mapping.subtitle') || 'Map CSV columns to contact fields and configure import rules'}
         </p>
       </div>
 
       {/* Field Mapping */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.mapping.fields') || 'Field Mapping'}
+          {t('import.mapping.fields') || 'Field Mapping'}
         </h3>
         
         <div className="overflow-x-auto">
@@ -533,29 +538,29 @@ function FieldMappingStep({ data, onNext, onBack }) {
       {/* Prefix Configuration */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.prefix.title') || 'Phone Number Prefix Configuration'}
+          {t('import.prefix.title') || 'Phone Number Prefix Configuration'}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('pages.import.prefix.strategy') || 'Prefix Strategy'}
+              {t('import.prefix.strategy') || 'Prefix Strategy'}
             </label>
             <select
               value={prefixConfig.strategy}
               onChange={(e) => setPrefixConfig(prev => ({...prev, strategy: e.target.value}))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="auto">{t('pages.import.prefix.auto') || 'Auto-detect (+39, 0039, none)'}</option>
-              <option value="+39">{t('pages.import.prefix.force_39') || 'Force +39 prefix'}</option>
-              <option value="0039">{t('pages.import.prefix.force_0039') || 'Force 0039 prefix'}</option>
-              <option value="none">{t('pages.import.prefix.no_prefix') || 'No prefix (keep as-is)'}</option>
+              <option value="auto">{t('import.prefix.auto') || 'Auto-detect (+39, 0039, none)'}</option>
+              <option value="+39">{t('import.prefix.force_39') || 'Force +39 prefix'}</option>
+              <option value="0039">{t('import.prefix.force_0039') || 'Force 0039 prefix'}</option>
+              <option value="none">{t('import.prefix.no_prefix') || 'No prefix (keep as-is)'}</option>
             </select>
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('pages.import.prefix.default_country') || 'Default Country'}
+              {t('import.prefix.default_country') || 'Default Country'}
             </label>
             <select
               value={prefixConfig.defaultCountry}
@@ -580,7 +585,7 @@ function FieldMappingStep({ data, onNext, onBack }) {
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />
             <span className="ml-2 text-sm text-gray-700">
-              {t('pages.import.prefix.apply_to_all') || 'Apply prefix rules to all phone numbers'}
+              {t('import.prefix.apply_to_all') || 'Apply prefix rules to all phone numbers'}
             </span>
           </label>
         </div>
@@ -589,13 +594,13 @@ function FieldMappingStep({ data, onNext, onBack }) {
       {/* Deduplication Rules */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.dedupe.title') || 'Deduplication Rules'}
+          {t('import.dedupe.title') || 'Deduplication Rules'}
         </h3>
         
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('pages.import.dedupe.check_on') || 'Check for duplicates on:'}
+              {t('import.dedupe.check_on') || 'Check for duplicates on:'}
             </label>
             <div className="space-y-2">
               <label className="flex items-center">
@@ -621,15 +626,15 @@ function FieldMappingStep({ data, onNext, onBack }) {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('pages.import.dedupe.resolve_strategy') || 'When duplicates found:'}
+              {t('import.dedupe.resolve_strategy') || 'When duplicates found:'}
             </label>
             <select
               value={dedupeConfig.resolveStrategy}
               onChange={(e) => setDedupeConfig(prev => ({...prev, resolveStrategy: e.target.value}))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="skip">{t('pages.import.dedupe.skip') || 'Skip duplicates'}</option>
-              <option value="merge">{t('pages.import.dedupe.merge') || 'Merge and update existing'}</option>
+              <option value="skip">{t('import.dedupe.skip') || 'Skip duplicates'}</option>
+              <option value="merge">{t('import.dedupe.merge') || 'Merge and update existing'}</option>
             </select>
           </div>
         </div>
@@ -705,10 +710,10 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
         <div className="bg-green-50 border border-green-200 rounded-xl p-8">
           <CheckCircleIcon className="mx-auto h-16 w-16 text-green-600 mb-4" />
           <h2 className="text-2xl font-semibold text-green-900 mb-2">
-            {t('pages.import.launch.success') || 'Import Job Launched!'}
+            {t('import.launch.success') || 'Import Job Launched!'}
           </h2>
           <p className="text-green-700 mb-4">
-            {t('pages.import.launch.success_desc') || 'Your import job has been queued and will start processing shortly.'}
+            {t('import.launch.success_desc') || 'Your import job has been queued and will start processing shortly.'}
           </p>
           <div className="bg-white rounded-lg p-4 inline-block">
             <p className="text-sm text-gray-600 mb-1">Job ID:</p>
@@ -721,14 +726,14 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
             onClick={() => window.location.href = `/import/jobs/${jobId}`}
             className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
           >
-            {t('pages.import.launch.view_job') || 'View Job Status'}
+            {t('import.launch.view_job') || 'View Job Status'}
           </button>
           
           <button
             onClick={() => window.location.href = '/import'}
             className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
           >
-            {t('pages.import.launch.new_import') || 'Start New Import'}
+            {t('import.launch.new_import') || 'Start New Import'}
           </button>
         </div>
       </div>
@@ -740,17 +745,17 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          {t('pages.import.review.title') || 'Review & Launch'}
+          {t('import.review.title') || 'Review & Launch'}
         </h2>
         <p className="text-gray-600">
-          {t('pages.import.review.subtitle') || 'Review your import configuration and launch the job'}
+          {t('import.review.subtitle') || 'Review your import configuration and launch the job'}
         </p>
       </div>
 
       {/* Import Summary */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.review.summary') || 'Import Summary'}
+          {t('import.review.summary') || 'Import Summary'}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -788,7 +793,7 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
       {/* Configuration Review */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.review.config') || 'Configuration Review'}
+          {t('import.review.config') || 'Configuration Review'}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -815,16 +820,16 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
       {/* Estimated Cost */}
       <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('pages.import.review.cost') || 'Estimated Cost'}
+          {t('import.review.cost') || 'Estimated Cost'}
         </h3>
         
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-600">
-              {t('pages.import.review.cost_desc') || 'Based on your current plan and estimated new contacts'}
+              {t('import.review.cost_desc') || 'Based on your current plan and estimated new contacts'}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              {t('pages.import.review.cost_note') || 'Actual cost may vary based on final processing results'}
+              {t('import.review.cost_note') || 'Actual cost may vary based on final processing results'}
             </p>
           </div>
           
@@ -852,11 +857,11 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
           {isLaunching ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {t('pages.import.launch.launching') || 'Launching...'}
+              {t('import.launch.launching') || 'Launching...'}
             </div>
           ) : (
             <>
-              🚀 {t('pages.import.launch.launch') || 'Launch Import'}
+              🚀 {t('import.launch.launch') || 'Launch Import'}
             </>
           )}
         </button>
@@ -871,6 +876,9 @@ export default function Import() {
   const [currentStep, setCurrentStep] = useState(1)
   const [importData, setImportData] = useState(null)
   const [mappingData, setMappingData] = useState(null)
+  const [selectedRows, setSelectedRows] = useState(new Set())
+  const [enrichedRows, setEnrichedRows] = useState([])
+  const [abortController, setAbortController] = useState(null)
 
   const handleDataDetected = (data) => {
     setImportData(data)
@@ -898,9 +906,16 @@ export default function Import() {
   return (
     <div className="space-y-6">
       {/* Progress Steps */}
-      <div className="flex items-center justify-center space-x-8">
-        {[1, 2, 3].map((step) => (
-          <div key={step} className="flex items-center">
+      <div className="flex items-center justify-center space-x-4 overflow-x-auto pb-4">
+        {[
+          { step: 1, key: 'upload', label: t('import.steps.raw') },
+          { step: 2, key: 'mapping', label: t('import.steps.mapping') },
+          { step: 3, key: 'subset', label: t('import.steps.subset') },
+          { step: 4, key: 'attributes', label: t('import.steps.attributes') },
+          { step: 5, key: 'review', label: t('import.steps.review') },
+          { step: 6, key: 'commit', label: t('import.steps.commit') }
+        ].map(({ step, key, label }, index) => (
+          <div key={step} className="flex items-center flex-shrink-0">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
               step <= currentStep
                 ? 'bg-green-600 border-green-600 text-white'
@@ -915,12 +930,10 @@ export default function Import() {
             <span className={`ml-2 text-sm font-medium ${
               step <= currentStep ? 'text-gray-900' : 'text-gray-500'
             }`}>
-              {step === 1 && (t('pages.import.steps.upload') || 'Upload & Detect')}
-              {step === 2 && (t('pages.import.steps.mapping') || 'Mapping & Rules')}
-              {step === 3 && (t('pages.import.steps.review') || 'Review & Launch')}
+              {label}
             </span>
-            {step < 3 && (
-              <div className={`ml-8 w-16 h-0.5 ${
+            {index < 5 && (
+              <div className={`ml-4 w-12 h-0.5 ${
                 step < currentStep ? 'bg-green-600' : 'bg-gray-300'
               }`} />
             )}
@@ -939,12 +952,54 @@ export default function Import() {
       {currentStep === 2 && importData && (
         <FieldMappingStep 
           data={importData}
-          onNext={handleMappingComplete}
+          onNext={(mapping) => {
+            handleMappingComplete(mapping)
+            // Prepare rows for subset selection
+            const rows = importData.data.map((row, index) => ({
+              ...row,
+              index,
+              country_iso: row.phone_country || 'IT'
+            }))
+            setEnrichedRows(rows)
+            setSelectedRows(new Set(rows.map((_, i) => i))) // Select all by default
+          }}
           onBack={handleBack}
         />
       )}
 
       {currentStep === 3 && importData && mappingData && (
+        <SubsetStep
+          rows={enrichedRows}
+          selectedIds={selectedRows}
+          onSelectionChange={setSelectedRows}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      )}
+
+      {currentStep === 4 && importData && mappingData && (
+        <AttributesStep
+          rows={enrichedRows.filter((_, index) => selectedRows.has(index))}
+          selectedIds={selectedRows}
+          onRowChange={(index, updatedRow) => {
+            const newRows = [...enrichedRows]
+            newRows[index] = updatedRow
+            setEnrichedRows(newRows)
+          }}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      )}
+
+      {currentStep === 5 && importData && mappingData && (
+        <LegalReviewStep
+          rows={enrichedRows.filter((_, index) => selectedRows.has(index))}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      )}
+
+      {currentStep === 6 && importData && mappingData && (
         <ReviewLaunchStep 
           data={importData}
           mappingData={mappingData}

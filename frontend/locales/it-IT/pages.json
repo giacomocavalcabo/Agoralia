@@ -46,6 +46,78 @@
     "range": "Da {fromStr} a {toStr}",
     "title": "[Titolo]"
   },
+  "import": {
+    "title": "Importa",
+    "steps": {
+      "source": "Sorgente",
+      "raw": "Dati grezzi",
+      "mapping": "Mappatura campi",
+      "subset": "Selezione righe",
+      "attributes": "Attributi Agoralia",
+      "review": "Revisione legale",
+      "commit": "Conferma e importa"
+    },
+    "tabs": {
+      "csv": "Carica CSV",
+      "paste": "Incolla dati",
+      "sheet": "Google Sheet",
+      "hubspot": "HubSpot",
+      "zoho": "Zoho (presto)"
+    },
+    "upload": {
+      "title": "Carica i tuoi dati",
+      "subtitle": "CSV fino a 50 MB. Rileviamo automaticamente separatore e codifica.",
+      "drag_drop": "Trascina qui il tuo CSV",
+      "or_click": "oppure clicca per selezionare un file",
+      "supported_formats": "Supportati: .csv, .xls, .xlsx",
+      "paste_placeholder": "Incolla qui le righe (CSV o TSV)"
+    },
+    "mapping": {
+      "title": "Mappa i campi",
+      "subtitle": "Abbiamo pre-mappato le intestazioni quando possibile. Telefono e Nome sono obbligatori.",
+      "required": "Obbligatorio",
+      "columns": { "name": "Nome", "phone": "Telefono", "email": "Email", "company": "Azienda" },
+      "actions": { "auto": "Auto-mappa", "reset": "Reset" }
+    },
+    "subset": {
+      "title": "Seleziona le righe da importare",
+      "selected": "{{count}} selezionate",
+      "filters": "Filtri",
+      "select_all": "Seleziona tutto"
+    },
+    "attributes": {
+      "title": "Attributi Agoralia",
+      "columns": { "class": "Classe", "existing": "Relazione esistente", "opt_in": "Opt-in", "dnc": "Registro opposizioni", "notes": "Note" },
+      "class": { "b2b": "B2B", "b2c": "B2C", "unknown": "Sconosciuta" },
+      "existing": { "yes": "Sì", "no": "No", "unknown": "Sconosciuta" },
+      "optin": { "yes": "Sì", "no": "No", "unknown": "Sconosciuto" },
+      "dnc": { "in": "Iscritto", "not_in": "Non iscritto", "unknown": "Sconosciuto" },
+      "bulk": { "apply_to": "Applica alla selezione", "set": "Imposta", "clear": "Pulisci" },
+      "hints": {
+        "b2c_optin_only": "L'opt-in è richiesto solo nei Paesi opt-in (B2C).",
+        "dnc_only": "Il Registro opposizioni vale solo dove esiste."
+      }
+    },
+    "review": {
+      "title": "Revisione legale",
+      "legend": "Legenda: 🟢 Consentito • 🟡 Condizionato • 🔴 Vietato",
+      "columns": { "category": "Categoria", "why": "Motivo" },
+      "category": { "allowed": "Consentito", "conditional": "Condizionato", "blocked": "Vietato" }
+    },
+    "commit": {
+      "title": "Conferma e importa",
+      "start": "Avvia import",
+      "progress": "Import in corso…",
+      "done": "Import completato",
+      "errors_csv": "Scarica errori CSV"
+    },
+    "toast": {
+      "file_too_big": "Il file supera 50 MB.",
+      "missing_required": "Telefono e Nome sono obbligatori.",
+      "nothing_selected": "Seleziona almeno una riga."
+    },
+    "nav": { "back": "Indietro", "next": "Continua" }
+  },
   "campaigns": {
     "title": "Campagne",
     "description": "Gestisci campagne, pacing e performance",

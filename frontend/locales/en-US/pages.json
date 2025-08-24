@@ -46,6 +46,93 @@
     "range": "From {fromStr} to {toStr}",
     "title": "[Title]"
   },
+  "import": {
+    "title": "Import",
+    "steps": {
+      "source": "Source",
+      "raw": "Raw data",
+      "mapping": "Field mapping",
+      "subset": "Select rows",
+      "attributes": "Agoralia attributes",
+      "review": "Legal review",
+      "commit": "Confirm & import"
+    },
+    "tabs": {
+      "csv": "Upload CSV",
+      "paste": "Paste Data",
+      "sheet": "Google Sheet",
+      "hubspot": "HubSpot",
+      "zoho": "Zoho (coming soon)"
+    },
+    "upload": {
+      "title": "Upload your data",
+      "subtitle": "CSV up to 50 MB. We auto-detect delimiter and encoding.",
+      "drag_drop": "Drag & drop your CSV here",
+      "or_click": "or click to select a file",
+      "supported_formats": "Supported: .csv, .xls, .xlsx",
+      "paste_placeholder": "Paste rows here (CSV or TSV)"
+    },
+    "mapping": {
+      "title": "Map fields",
+      "subtitle": "We pre-mapped headers when possible. Phone and Name are required.",
+      "required": "Required",
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "company": "Company"
+      },
+      "actions": { "auto": "Auto-map", "reset": "Reset" }
+    },
+    "subset": {
+      "title": "Select rows to import",
+      "selected": "{{count}} selected",
+      "filters": "Filters",
+      "select_all": "Select all"
+    },
+    "attributes": {
+      "title": "Agoralia attributes",
+      "columns": {
+        "class": "Class",
+        "existing": "Existing relationship",
+        "opt_in": "Opt-in",
+        "dnc": "National DNC",
+        "notes": "Notes"
+      },
+      "class": { "b2b": "B2B", "b2c": "B2C", "unknown": "Unknown" },
+      "existing": { "yes": "Yes", "no": "No", "unknown": "Unknown" },
+      "optin": { "yes": "Yes", "no": "No", "unknown": "Unknown" },
+      "dnc": { "in": "In registry", "not_in": "Not in registry", "unknown": "Unknown" },
+      "bulk": {
+        "apply_to": "Apply to selection",
+        "set": "Set",
+        "clear": "Clear"
+      },
+      "hints": {
+        "b2c_optin_only": "Opt-in is required only in opt-in countries (B2C).",
+        "dnc_only": "National DNC applies only where a registry exists."
+      }
+    },
+    "review": {
+      "title": "Legal review",
+      "legend": "Legend: 🟢 Allowed • 🟡 Conditional • 🔴 Blocked",
+      "columns": { "category": "Category", "why": "Why" },
+      "category": { "allowed": "Allowed", "conditional": "Conditional", "blocked": "Blocked" }
+    },
+    "commit": {
+      "title": "Confirm & import",
+      "start": "Start import",
+      "progress": "Importing…",
+      "done": "Import completed",
+      "errors_csv": "Download errors CSV"
+    },
+    "toast": {
+      "file_too_big": "The file exceeds 50 MB.",
+      "missing_required": "Phone and Name are required.",
+      "nothing_selected": "Select at least one row."
+    },
+    "nav": { "back": "Back", "next": "Continue" }
+  },
   "campaigns": {
     "title": "Campaigns",
     "description": "Manage campaigns, pacing and performance",

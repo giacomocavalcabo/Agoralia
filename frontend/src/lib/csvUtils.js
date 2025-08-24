@@ -315,3 +315,85 @@ export function validateExportData(data, fields) {
     warnings
   }
 }
+
+/**
+ * Parse CSV asynchronously with AbortController support
+ * @param {string|File} fileOrText - CSV content or File object
+ * @param {object} options - Parsing options including signal
+ * @returns {Promise} Promise that resolves with parsed data
+ */
+export function parseCsvAsync(fileOrText, { signal, sampleRows = 100 } = {}) {
+  return new Promise((resolve, reject) => {
+    // Check if already aborted
+    if (signal?.aborted) {
+      return reject(new DOMException('Aborted', 'AbortError'))
+    }
+
+    const abort = () => reject(new DOMException('Aborted', 'AbortError'))
+    signal?.addEventListener('abort', abort, { once: true })
+
+    try {
+      let content = fileOrText
+      
+      // Handle File objects
+      if (fileOrText instanceof File) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          try {
+            const csvContent = e.target.result
+            Papa.parse(csvContent, {
+              header: true,
+              skipEmptyLines: true,
+              complete: (results) => {
+                const { data, meta, errors } = results
+                
+                // Limit sample size for performance
+                const sample = data.slice(0, sampleRows)
+                
+                resolve({
+                  headers: meta.fields || [],
+                  rows: data,
+                  sample,
+                  totalRows: data.length,
+                  errors: errors || []
+                })
+              },
+              error: (error) => reject(error)
+            })
+          } catch (e) {
+            reject(e)
+          } finally {
+            signal?.removeEventListener('abort', abort)
+          }
+        }
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsText(fileOrText)
+      } else {
+        // Handle string content
+        Papa.parse(fileOrText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const { data, meta, errors } = results
+            
+            // Limit sample size for performance
+            const sample = data.slice(0, sampleRows)
+            
+            resolve({
+              headers: meta.fields || [],
+              rows: data,
+              sample,
+              totalRows: data.length,
+              errors: errors || []
+            })
+          },
+          error: (error) => reject(error)
+        })
+      }
+    } catch (e) {
+      reject(e)
+    } finally {
+      signal?.removeEventListener('abort', abort)
+    }
+  })
+}
