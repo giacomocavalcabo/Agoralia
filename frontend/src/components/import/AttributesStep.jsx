@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable } from '../ui/DataTable'
+import ImportDataTable from './ImportDataTable'
 import { getCountryRules } from '../../lib/compliance/classifyContact'
 
 export default function AttributesStep({ rows, selectedIds, onRowChange, onNext, onBack }) {
@@ -231,7 +231,7 @@ export default function AttributesStep({ rows, selectedIds, onRowChange, onNext,
 
       {/* Data Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <DataTable
+        <ImportDataTable
           data={enrichedRows}
           columns={columns}
           className="max-h-96"

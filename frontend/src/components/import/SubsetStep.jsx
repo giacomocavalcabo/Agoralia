@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable } from '../ui/DataTable'
+import ImportDataTable from './ImportDataTable'
 
 export default function SubsetStep({ rows, selectedIds, onSelectionChange, onNext, onBack }) {
   const { t } = useTranslation('pages')
@@ -31,27 +31,6 @@ export default function SubsetStep({ rows, selectedIds, onSelectionChange, onNex
   }
 
   const columns = [
-    {
-      key: 'select',
-      label: '',
-      width: 'w-12',
-      render: (_, row, index) => (
-        <input
-          type="checkbox"
-          checked={selectedIds.has(index)}
-          onChange={(e) => {
-            const newSelection = new Set(selectedIds)
-            if (e.target.checked) {
-              newSelection.add(index)
-            } else {
-              newSelection.delete(index)
-            }
-            onSelectionChange(newSelection)
-          }}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        />
-      )
-    },
     { key: 'name', label: t('import.mapping.columns.name'), width: 'w-1/3' },
     { key: 'phone', label: t('import.mapping.columns.phone'), width: 'w-1/3' },
     { key: 'email', label: t('import.mapping.columns.email'), width: 'w-1/4' }
@@ -119,10 +98,13 @@ export default function SubsetStep({ rows, selectedIds, onSelectionChange, onNex
 
       {/* Data Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <DataTable
+        <ImportDataTable
           data={filteredRows}
           columns={columns}
           className="max-h-96"
+          selectable
+          selectedRowIds={selectedIds}
+          onSelectionChange={onSelectionChange}
         />
       </div>
 

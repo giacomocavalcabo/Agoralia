@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable } from '../ui/DataTable'
+import ImportDataTable from './ImportDataTable'
 import { classifyContacts, getComplianceStats } from '../../lib/compliance/classifyContact'
 
 // Chip colorata per la categoria compliance
@@ -173,7 +173,7 @@ export default function LegalReviewStep({ rows, onNext, onBack }) {
 
       {/* Data Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <DataTable
+        <ImportDataTable
           data={classifiedRows}
           columns={columns}
           className="max-h-96"
