@@ -68,7 +68,9 @@ export default function Root() {
             {/* Protected routes */}
             <Route path="/*" element={
               <AppShell>
-                <Suspense fallback={<RouteLoading />}>
+                <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">
+                  Loading…
+                </div>}>
                   <Routes>
                     <Route index element={<Dashboard />} />
                     <Route path="knowledge" element={<KnowledgeBase />} />

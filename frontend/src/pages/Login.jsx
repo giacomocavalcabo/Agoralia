@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/useAuth.jsx';
-import { useI18n } from '../lib/i18n.jsx';
+import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 // Declare required namespaces for this page
@@ -16,7 +16,7 @@ export default function Login() {
   
   const navigate = useNavigate();
   const { login, loginWithOAuth } = useAuth();
-  const { t, setLocale, locale } = useI18n(i18nNamespaces);
+  const { t } = useTranslation(['pages','common']);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
@@ -80,10 +80,10 @@ export default function Login() {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {t('auth.sign_in_title')}
+          {t('auth.title', { ns: 'pages' })}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          {t('auth.subtitle')}
+          {t('auth.description', { ns: 'pages' })}
         </p>
       </div>
 

@@ -41,7 +41,8 @@ class AppErrorBoundaryInner extends React.Component {
 }
 
 function ErrorFallback({ error, onRetry }) {
-  const { t } = useTranslation('pages')
+  // usa sia 'common' sia 'pages' per massima resilienza
+  const { t } = useTranslation(['common','pages'])
   
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -53,11 +54,11 @@ function ErrorFallback({ error, onRetry }) {
         </div>
         
         <h1 className="text-xl font-semibold text-gray-900 mb-2">
-          {t('error.boundary.title') || 'Something went wrong'}
+          {t('error.boundary.title', { ns: 'common' })}
         </h1>
         
         <p className="text-gray-600 mb-6">
-          {t('error.boundary.description') || 'An unexpected error occurred. Please try refreshing the page.'}
+          {t('error.boundary.description', { ns: 'common' })}
         </p>
         
         {import.meta.env.DEV && error && (
@@ -71,7 +72,7 @@ function ErrorFallback({ error, onRetry }) {
           onClick={onRetry}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          {t('error.boundary.retry') || 'Reload Page'}
+          {t('error.boundary.retry', { ns: 'common' })}
         </button>
       </div>
     </div>

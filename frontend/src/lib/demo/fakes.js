@@ -40,12 +40,15 @@ export const generateDemoMetrics = () => ({
   concurrency_limit: 15
 });
 
-export const generateDemoFunnelData = () => ({
-  reached: 1250,
-  connected: 425,
-  qualified: 76,
-  booked: 23
-});
+export const generateDemoFunnelData = () => {
+  // Generate realistic funnel percentages (relative to previous stage)
+  const reached = 100  // Always 100% reached
+  const connected = Math.floor(Math.random() * 15 + 25)  // 25-40% of reached
+  const qualified = Math.floor(Math.random() * 10 + 15)  // 15-25% of reached  
+  const booked = Math.floor(Math.random() * 8 + 5)       // 5-13% of reached
+  
+  return { reached, connected, qualified, booked }
+};
 
 export const generateDemoAgents = () => [
   { id: 1, name: 'Alice Johnson', calls: 45, conversion: 0.22 },

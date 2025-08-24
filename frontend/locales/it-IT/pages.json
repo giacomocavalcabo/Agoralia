@@ -1,4 +1,8 @@
 {
+  "auth": {
+    "title": "Accedi",
+    "description": "Accedi al tuo workspace per gestire chiamate, lead e campagne"
+  },
   "calendar": {
     "errors": {
       "budget": "[Bilancio]",
@@ -21,7 +25,33 @@
   },
   "campaigns": {
     "title": "Campagne",
-    "description": "Crea e gestisci campagne di chiamate in uscita.",
+    "description": "Gestisci campagne, pacing e performance",
+    "status": {
+      "active": "Attiva",
+      "paused": "In pausa",
+      "completed": "Completata",
+      "draft": "Bozza"
+    },
+    "table": {
+      "columns": {
+        "name": "Nome",
+        "status": "Stato",
+        "pacing": "Pacing",
+        "budget": "Budget",
+        "created_at": "Creata"
+      },
+      "empty": {
+        "title": "Nessuna campagna",
+        "description": "Crea una campagna per iniziare"
+      },
+      "error": {
+        "title": "Errore di caricamento",
+        "description": "Impossibile caricare le campagne. Riprova."
+      },
+      "pagination": {
+        "page_size": "Righe per pagina"
+      }
+    },
     "fields": {
       "name": { "label": "Nome", "placeholder": "Fornitori RFQ estivi" },
       "goal": { "label": "Obiettivo",
@@ -227,6 +257,91 @@
       "subtitle": "Carica un file CSV o incolla dati per importare contatti",
       "supported_formats": "Supporta CSV, XLS, XLSX (max 50MB)",
       "title": "Importa Contatti"
+    }
+  },
+  "kb": {
+    "auth": {
+      "title": "Accesso richiesto",
+      "description": "Accedi per visualizzare la knowledge base e lo stato di ingestione"
+    },
+    "empty": {
+      "workspace_blocked": "Workspace non disponibile in modalità demo"
+    },
+    "error": {
+      "title": "Errore di caricamento",
+      "description": "Impossibile caricare i dati della knowledge base. Riprova.",
+      "retry": "Riprova"
+    },
+    "overview": {
+      "title": "Knowledge Base",
+      "description": "Gestisci il contenuto e le assegnazioni della knowledge base",
+      "table": {
+        "empty": {
+          "title": "Nessun elemento knowledge base",
+          "description": "Crea il tuo primo elemento per iniziare",
+          "cta_new": "Crea Knowledge Base"
+        },
+        "error": {
+          "title": "Errore di caricamento",
+          "description": "Impossibile caricare i dati della knowledge base",
+          "retry": "Riprova"
+        },
+        "columns": {
+          "title": "Titolo",
+          "category": "Categoria", 
+          "status": "Stato",
+          "updated_at": "Aggiornato",
+          "owner": "Proprietario"
+        }
+      },
+      "toolbar": {
+        "bulk": {
+          "import": "Importa",
+          "new_offer_pack": "Nuovo Pacchetto Offerta"
+        },
+        "search_placeholder": "Cerca nella knowledge base...",
+        "filter": {
+          "all": "Tutti",
+          "published": "Pubblicati"
+        }
+      }
+    },
+    "editor": {
+      "actions": {
+        "save": "Salva",
+        "saving": "Salvataggio...",
+        "publish": "Pubblica",
+        "unpublish": "Rimuovi pubblicazione"
+      },
+      "fields": {
+        "title": "Titolo",
+        "category": "Categoria",
+        "description": "Descrizione"
+      },
+      "messages": {
+        "unsaved_guard": "Hai modifiche non salvate. Sei sicuro di voler uscire?"
+      }
+    },
+    "imports": {
+      "title": "Importazioni Knowledge Base",
+      "description": "Importa e gestisci contenuti della knowledge base da fonti esterne",
+      "actions": {
+        "new_import": "Nuova Importazione"
+      },
+      "empty": {
+        "title": "Nessuna importazione",
+        "description": "Avvia la tua prima importazione knowledge base"
+      }
+    },
+    "assignments": {
+      "title": "Assegnazioni Knowledge Base",
+      "description": "Assegna elementi knowledge base ad agenti e campagne",
+      "confirm": {
+        "assign_title": "Assegna Knowledge Base",
+        "assign_desc": "Sei sicuro di voler assegnare questo elemento knowledge base?",
+        "confirm": "Conferma",
+        "cancel": "Annulla"
+      }
     }
   },
   "integrations": {

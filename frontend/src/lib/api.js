@@ -23,11 +23,19 @@ export async function apiFetch(path, options = {}) {
 		}
 		
 		// Non reindirizzare per richieste OPTIONS o endpoint /auth/*
-		const isOptionsRequest = options.method === 'OPTIONS';
-		const isAuthEndpoint = path.startsWith('/auth/');
+		const method = options.method || 'GET';
+		const isPreflight = method.toUpperCase() === 'OPTIONS';
+		const rawUrl = resp.url || '';
+		const base = import.meta.env.VITE_API_URL || window.location.origin;
+		let apiPath = '';
+		try { 
+			apiPath = new URL(rawUrl, base).pathname; 
+		} catch {}
+		const isAuthEndpoint = apiPath.startsWith('/auth/');
+		const alreadyOnLogin = window.location.pathname === '/login';
 		
-		// Redirect automatico a /login se non siamo già lì e non è una richiesta speciale
-		if (!isOptionsRequest && !isAuthEndpoint && window.location.pathname !== '/login') {
+		// Redirect automatico a /login se non è una richiesta speciale
+		if (!isPreflight && !isAuthEndpoint && !alreadyOnLogin) {
 			window.location.replace('/login');
 		}
 		throw new Error('unauthenticated');

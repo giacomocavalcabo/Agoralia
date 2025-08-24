@@ -94,14 +94,27 @@ export default function KnowledgeBase() {
         <div className="text-center py-12">
           <div className="text-4xl mb-4">🔒</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {t('kb.auth.title') || 'Authentication Required'}
+            {t('kb.auth.title')}
           </h3>
           <p className="text-gray-500 mb-4">
-            {t('kb.auth.description') || 'Please log in to access the Knowledge Base.'}
+            {t('kb.auth.description')}
           </p>
           <Button onClick={() => navigate('/login')}>
-            {t('common.login') || 'Login'}
+            {t('common.login', { ns: 'pages' })}
           </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Check demo mode
+  if (isDemoMode) {
+    return (
+      <div className="px-6 lg:px-8 py-6">
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {t('kb.empty.workspace_blocked')}
+          </h3>
         </div>
       </div>
     )
@@ -112,13 +125,13 @@ export default function KnowledgeBase() {
       <div className="px-6 lg:px-8 py-6">
         <div className="text-center py-12">
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {t('kb.overview.table.error.title')}
+            {t('kb.error.title')}
           </h3>
           <p className="text-gray-500 mb-4">
-            {t('kb.overview.table.error.description')}
+            {t('kb.error.description')}
           </p>
           <Button onClick={() => window.location.reload()}>
-            {t('kb.overview.table.error.retry')}
+            {t('kb.error.retry')}
           </Button>
         </div>
       </div>

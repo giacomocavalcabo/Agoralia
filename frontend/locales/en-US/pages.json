@@ -1,4 +1,8 @@
 {
+  "auth": {
+    "title": "Sign in",
+    "description": "Access your workspace to manage calls, leads and campaigns"
+  },
   "calendar": {
     "errors": {
       "budget": "[Budget]",
@@ -21,7 +25,33 @@
   },
   "campaigns": {
     "title": "Campaigns",
-    "description": "Create and manage outbound calling campaigns.",
+    "description": "Manage campaigns, pacing and performance",
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "draft": "Draft"
+    },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "pacing": "Pacing",
+        "budget": "Budget",
+        "created_at": "Created"
+      },
+      "empty": {
+        "title": "No campaigns",
+        "description": "Create a campaign to get started"
+      },
+      "error": {
+        "title": "Loading error",
+        "description": "We couldn't load campaigns. Please retry."
+      },
+      "pagination": {
+        "page_size": "Rows per page"
+      }
+    },
     "fields": {
       "name": { "label": "Name", "placeholder": "Summer RFQ suppliers" },
       "goal": { "label": "Objective",
@@ -226,6 +256,91 @@
       "subtitle": "[Subtitle]",
       "supported_formats": "[Supported Formats]",
       "title": "[Title]"
+    }
+  },
+  "kb": {
+    "auth": {
+      "title": "Sign in required",
+      "description": "Sign in to view your knowledge base and ingestion progress"
+    },
+    "empty": {
+      "workspace_blocked": "Workspace not available in demo mode"
+    },
+    "error": {
+      "title": "Loading error",
+      "description": "We couldn't load knowledge base data. Please retry.",
+      "retry": "Retry"
+    },
+    "overview": {
+      "title": "Knowledge Base",
+      "description": "Manage your knowledge base content and assignments",
+      "table": {
+        "empty": {
+          "title": "No knowledge base items",
+          "description": "Create your first knowledge base item to get started",
+          "cta_new": "Create Knowledge Base"
+        },
+        "error": {
+          "title": "Loading error",
+          "description": "We couldn't load knowledge base data",
+          "retry": "Retry"
+        },
+        "columns": {
+          "title": "Title",
+          "category": "Category", 
+          "status": "Status",
+          "updated_at": "Updated",
+          "owner": "Owner"
+        }
+      },
+      "toolbar": {
+        "bulk": {
+          "import": "Import",
+          "new_offer_pack": "New Offer Pack"
+        },
+        "search_placeholder": "Search knowledge base...",
+        "filter": {
+          "all": "All",
+          "published": "Published"
+        }
+      }
+    },
+    "editor": {
+      "actions": {
+        "save": "Save",
+        "saving": "Saving...",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+      },
+      "fields": {
+        "title": "Title",
+        "category": "Category",
+        "description": "Description"
+      },
+      "messages": {
+        "unsaved_guard": "You have unsaved changes. Are you sure you want to leave?"
+      }
+    },
+    "imports": {
+      "title": "Knowledge Base Imports",
+      "description": "Import and manage knowledge base content from external sources",
+      "actions": {
+        "new_import": "New Import"
+      },
+      "empty": {
+        "title": "No imports",
+        "description": "Start your first knowledge base import"
+      }
+    },
+    "assignments": {
+      "title": "Knowledge Base Assignments",
+      "description": "Assign knowledge base items to agents and campaigns",
+      "confirm": {
+        "assign_title": "Assign Knowledge Base",
+        "assign_desc": "Are you sure you want to assign this knowledge base item?",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      }
     }
   },
   "integrations": {
