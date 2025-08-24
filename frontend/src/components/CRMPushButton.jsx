@@ -5,7 +5,7 @@ import { useToast } from './ToastProvider';
 import { useTranslation } from '../lib/i18n';
 
 const CRMPushButton = ({ callId, workspaceId, className = '' }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pages');
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);

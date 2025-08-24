@@ -20,7 +20,9 @@ export function trackKbEvent(event, data = {}) {
   };
 
   // Log locale per debugging
-  console.log('KB Telemetry:', eventData);
+  if (import.meta.env.DEV) {
+    console.log('KB Telemetry:', eventData);
+  }
 
   // Invia a sistema di analytics se disponibile
   if (window.gtag) {

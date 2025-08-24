@@ -20,29 +20,37 @@
     "title": "[Titolo]"
   },
   "campaigns": {
-    "actions": {
-      "create_schedule": "Crea e Pianifica"
+    "title": "Campagne",
+    "description": "Crea e gestisci campagne di chiamate in uscita.",
+    "fields": {
+      "name": { "label": "Nome", "placeholder": "Fornitori RFQ estivi" },
+      "goal": { "label": "Obiettivo",
+        "options": { "rfq": "RFQ", "survey": "Sondaggio", "nps": "NPS", "custom": "Personalizzato" } },
+      "role": { "label": "Ruolo",
+        "options": { "supplier": "Fornitore", "customer": "Cliente" } },
+      "language": { "label": "Lingua chiamata (predefinita)" },
+      "agent": { "label": "Agente", "placeholder": "Cerca agente..." },
+      "caller_id": { "label": "ID chiamante (da)", "placeholder": "+12025550123" },
+      "knowledge_base": { "label": "Base conoscenza", "placeholder": "Cerca base conoscenza..." },
+      "template": { "label": "Template", "placeholder": "Seleziona un template" }
+    },
+    "actions": { 
+      "save": "Salva", 
+      "next": "Successivo",
+      "create_schedule": "Crea e Pianifica" 
+    },
+    "states": { 
+      "loading": "Caricamento…", 
+      "empty": "Nessun risultato", 
+      "error": "Qualcosa è andato storto" 
+    },
+    "validation": {
+      "required": "Questo campo è obbligatorio",
+      "caller_id": "Inserisci un numero di telefono valido in formato E.164"
     },
     "compliance": "Compliance",
     "compliance_disclosure": "Testo disclosure…",
     "compliance_record": "Consenso registrazione…",
-    "fields": {
-      "agent": "ID Agente",
-      "audience": "Pubblico (ID lead separati da virgola)",
-      "budget": "Limite Budget (centesimi)",
-      "dow": "Giorni settimana (1=Lun...7=Dom)",
-      "from": "Numero Mittente",
-      "goal": "Obiettivo",
-      "kb": "ID Base Conoscenza",
-      "lang": "Lingua Predefinita",
-      "name": "Nome Campagna",
-      "pacing": "Ritmo (chiamate al minuto)",
-      "quiet_hours": "Rispetta orari silenzio",
-      "role": "Ruolo",
-      "start_at": "Data/ora inizio",
-      "template": "Template Risultati",
-      "template_select": "Seleziona template..."
-    },
     "step": "Passo {s}",
     "steps": {
       "audience": "Pubblico e Ritmo",
@@ -50,9 +58,8 @@
       "review": "Revisione e Creazione",
       "windows": "Finestre e Compliance"
     },
-    "title": "Campagne",
     "toasts": {
-      "created": "Campagna creata con ID: {id}"
+      "created": "Campagna {id} creata con successo"
     }
   },
   "dashboard": {
@@ -123,80 +130,80 @@
   },
   "import": {
     "dedupe": {
-      "check_on": "[Controlla]",
-      "merge": "[Unisci]",
-      "resolve_strategy": "[Risolvi la strategia]",
-      "skip": "[Skip]",
-      "title": "[Titolo]"
+      "check_on": "Controllo duplicati su:",
+      "merge": "Unisci e aggiorna esistenti",
+      "resolve_strategy": "Quando trova duplicati:",
+      "skip": "Salta duplicati",
+      "title": "Regole Deduplicazione"
     },
     "launch": {
-      "launch": "[Lancio]",
-      "launching": "[lancio]",
-      "new_import": "[Nuova importazione]",
-      "success": "[Successo]",
-      "success_desc": "[Success Desc]",
-      "view_job": "[Visualizza lavoro]"
+      "launch": "Avvia Importazione",
+      "launching": "Avvio in corso...",
+      "new_import": "Nuova Importazione",
+      "success": "Lavoro di Importazione Avviato!",
+      "success_desc": "Il tuo lavoro di importazione è stato messo in coda e inizierà l'elaborazione a breve.",
+      "view_job": "Visualizza Stato Lavoro"
     },
     "legal": {
-      "disclosure": "[Divulgazione]"
+      "disclosure": "Informativa"
     },
     "mapping": {
-      "fields": "[Campi]",
-      "subtitle": "[Sottotitolo]",
-      "title": "[Titolo]"
+      "fields": "Mappatura Campi",
+      "subtitle": "Mappa le colonne CSV ai campi contatto e configura le regole di importazione",
+      "title": "Mappatura Campi e Regole"
     },
     "paste": {
-      "label": "[Etichetta]",
-      "placeholder": "[Segnaposto]",
-      "process": "[Processo]",
-      "processing": "[Elaborazione]"
+      "label": "Incolla dati CSV",
+      "placeholder": "Incolla qui i tuoi dati CSV (con intestazioni)...",
+      "process": "Elabora Dati",
+      "processing": "Elaborazione..."
     },
     "prefix": {
-      "apply_to_all": "[Applicare a tutti]",
-      "auto": "[Auto]",
-      "default_country": "[Paese predefinito]",
-      "force_0039": "[Forza 0039]",
-      "force_39": "[Forza 39]",
-      "no_prefix": "[Nessun prefisso]",
-      "strategy": "[Strategia]",
-      "title": "[Titolo]"
+      "apply_to_all": "Applica regole prefisso a tutti i numeri di telefono",
+      "auto": "Rileva automaticamente (+39, 0039, nessuno)",
+      "default_country": "Paese Predefinito",
+      "force_0039": "Forza prefisso 0039",
+      "force_39": "Forza prefisso +39",
+      "no_prefix": "Nessun prefisso (mantieni così)",
+      "strategy": "Strategia Prefisso",
+      "title": "Configurazione Prefisso Numero di Telefono"
     },
     "preview": {
-      "continue": "[Continua]",
-      "delimiter": "[Delimitatore]",
-      "fields": "[Campi]",
-      "rows": "[Righe]",
-      "showing": "[Mostra]",
-      "title": "[Titolo]",
-      "total": "[Totale]"
+      "continue": "Continua alla Mappatura",
+      "delimiter": "Delimitatore",
+      "fields": "Campi",
+      "rows": "Righe",
+      "showing": "Mostra le prime 5 righe di",
+      "title": "Anteprima Dati",
+      "total": "righe totali"
     },
-    "processing": "[Elaborazione]",
+    "processing": "Elaborazione dei tuoi dati...",
     "review": {
-      "config": "[Config]",
-      "cost": "[Costo]",
-      "cost_desc": "[Costo Desc]",
-      "cost_note": "[Nota di costo]",
-      "subtitle": "[Sottotitolo]",
-      "summary": "[Sommario]",
-      "title": "[Titolo]"
+      "config": "Revisione Configurazione",
+      "cost": "Costo Stimato",
+      "cost_desc": "Basato sul tuo piano attuale e i nuovi contatti stimati",
+      "cost_note": "Il costo effettivo può variare in base ai risultati finali dell'elaborazione",
+      "subtitle": "Rivedi la configurazione di importazione e avvia il lavoro",
+      "summary": "Riepilogo Importazione",
+      "title": "Rivedi e Avvia"
     },
     "sheet": {
-      "subtitle": "[Sottotitolo]",
-      "title": "[Titolo]",
-      "upload_csv": "[Carica Csv]"
+      "subtitle": "Prossimamente! Puoi esportare il tuo Google Sheet come CSV e caricarlo qui.",
+      "title": "Integrazione Google Sheets",
+      "upload_csv": "Carica CSV Invece"
     },
     "steps": {
-      "mapping": "[Mappatura]",
-      "review": "[Recensione]",
-      "upload": "[Upload]"
+      "mapping": "Mappatura e Regole",
+      "review": "Rivedi e Avvia",
+      "upload": "Carica e Rileva"
     },
     "upload": {
-      "drag_drop": "[Drag Drop]",
-      "drop_here": "[Lascia qui]",
-      "or_click": "[Oppure cliccare]",
-      "subtitle": "[Sottotitolo]",
-      "supported_formats": "[Formati supportati]",
-      "title": "[Titolo]"
+      "drag_drop": "Trascina e rilascia un file CSV qui",
+      "drop_here": "Rilascia il file qui",
+      "or_click": "o clicca per sfogliare",
+      "subtitle": "Carica un file CSV o incolla dati per importare contatti",
+      "supported_formats": "Supporta CSV, XLS, XLSX (max 50MB)",
+      "title": "Importa Contatti"
     }
   },
   "integrations": {
@@ -262,45 +269,81 @@
     }
   },
   "leads": {
+    "title": "Contatti",
     "actions": {
-      "add": "[Aggiungi]",
-      "import": "[Importazione]",
-      "schedule": "[Programma]"
+      "add": "Aggiungi",
+      "import": "Importa",
+      "schedule": "Programma"
     },
-    "add_title": "[Aggiungi titolo]",
+    "add_title": "Aggiungi Contatto",
     "cols": {
-      "class": "[Classe]",
-      "company": "[Azienda]",
-      "compliance": "[Compliance]",
-      "consent": "[Consenso]",
-      "country": "[Paese]",
-      "lang": "[Lang]",
-      "name": "[Nome]",
-      "phone": "[Telefono]",
-      "role": "[Role]"
+      "class": "Classe",
+      "company": "Azienda",
+      "compliance": "Compliance",
+      "consent": "Consenso",
+      "country": "Paese",
+      "lang": "Lingua",
+      "name": "Nome",
+      "phone": "Telefono",
+      "role": "Ruolo"
     },
     "empty": {
-      "desc": "[Desc]",
-      "title": "[Titolo]"
+      "title": "Nessun contatto",
+      "description": "Inizia importando i tuoi contatti",
+      "cta_import": "Importa Contatti",
+      "cta_add": "Aggiungi Manualmente"
+    },
+    "error": {
+      "title": "Errore nel caricamento",
+      "description": "Si è verificato un errore nel caricamento dei contatti",
+      "retry": "Riprova"
+    },
+    "table": {
+      "columns": {
+        "name": "Nome",
+        "company": "Azienda",
+        "phone": "Telefono",
+        "country": "Paese",
+        "status": "Stato",
+        "actions": "Azioni"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Elimina contatti",
+        "description": "Sei sicuro di voler eliminare i contatti selezionati?",
+        "success": "Contatti eliminati con successo"
+      },
+      "assign": {
+        "title": "Assegna contatti",
+        "success": "Contatti assegnati con successo"
+      }
+    },
+    "export": {
+      "starting": "Esportazione in corso..."
+    },
+    "new": {
+      "title": "Nuovo Contatto",
+      "description": "Crea un nuovo contatto manualmente",
+      "coming_soon": "Prossimamente"
     },
     "errors": {
-      "e164": "[E164]"
+      "e164": "Formato E164 richiesto"
     },
     "fields": {
-      "company": "[Azienda]",
-      "consent": "[Consenso]",
-      "country": "[Paese]",
-      "lang": "[Lang]",
-      "name": "[Nome]",
-      "phone": "[Telefono]",
-      "role": "[Role]"
+      "company": "Azienda",
+      "consent": "Consenso",
+      "country": "Paese",
+      "lang": "Lingua",
+      "name": "Nome",
+      "phone": "Telefono",
+      "role": "Ruolo"
     },
     "placeholders": {
-      "e164": "[E164]"
+      "e164": "+39..."
     },
-    "title": "[Titolo]",
     "toasts": {
-      "added": "[Aggiunto]"
+      "added": "Contatto aggiunto"
     }
   },
   "numbers": {
@@ -323,6 +366,61 @@
     "profile": "Profilo",
     "team": "Team",
     "title": "Impostazioni",
-    "unsaved": "[Non salvato]"
+    "unsaved": "[Non salvato]",
+    "nav": {
+      "title": "Impostazioni",
+      "subtitle": "Gestisci il tuo account e le preferenze",
+      "profile": "Profilo",
+      "profile_desc": "Aggiorna le tue informazioni personali",
+      "company": "Azienda",
+      "company_desc": "Gestisci le impostazioni aziendali",
+      "integrations": "Integrazioni",
+      "integrations_desc": "Connetti servizi esterni",
+      "billing": "Fatturazione",
+      "billing_desc": "Gestisci fatturazione e abbonamenti"
+    }
+  },
+  "error": {
+    "boundary": {
+      "title": "Qualcosa è andato storto",
+      "description": "Si è verificato un errore imprevisto. Prova ad aggiornare la pagina.",
+      "retry": "Ricarica Pagina"
+    }
+  },
+  "common": {
+    "back": "Indietro",
+    "next": "Successivo",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "add": "Aggiungi",
+    "remove": "Rimuovi",
+    "clear": "Pulisci",
+    "saving": "Salvataggio...",
+    "connecting": "Connessione...",
+    "testing": "Test in corso...",
+    "disconnecting": "Disconnessione...",
+    "error": "Errore",
+    "retry": "Riprova",
+    "search": "Cerca...",
+    "unknown": "Sconosciuto",
+    "live": "Live",
+    "polling": "Polling",
+    "active": "attivi",
+    "lead": "Contatto",
+    "agent": "Agente",
+    "status": "Stato",
+    "started": "Iniziato",
+    "duration": "Durata",
+    "login": "Accedi",
+    "open": "Apri",
+    "manage": "Gestisci",
+    "on": "Attivo",
+    "off": "Disattivo",
+    "back_to_leads": "Torna ai Contatti",
+    "toasts": {
+      "invite_accepted": "Invito accettato"
+    }
   }
 }

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import KPI from '../components/ui/KPI.jsx'
 import { apiFetch } from '../lib/api.js'
 import 'chart.js/auto'
 import { Line, Bar, Doughnut } from 'react-chartjs-2'
 
 export default function Analytics(){
-  const { t, locale } = useI18n()
+  const { t, i18n } = useTranslation('pages')
+  const locale = i18n.language
   const [data, setData] = useState(null)
   const [filters, setFilters] = useState({ range:'30d', scope:'all', lang:[], agent:[], country:[], outcome:[], direction:[] })
   useEffect(()=>{ (async()=>{ try{

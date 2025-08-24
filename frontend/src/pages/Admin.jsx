@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { useToast } from '../components/ToastProvider.jsx'
 import Modal from '../components/Modal.jsx'
 import Drawer from '../components/Drawer.jsx'
 import KpiTile from '../components/ui/KpiTile.jsx'
 
 export default function Admin() {
-	const { t } = useI18n()
+	const { t } = useTranslation('pages')
 	const { toast } = useToast()
 	const [tab, setTab] = useState('dashboard')
 	const [services, setServices] = useState([])

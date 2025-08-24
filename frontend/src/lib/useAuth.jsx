@@ -26,7 +26,9 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.log('Not authenticated');
+      if (import.meta.env.DEV) {
+        console.log('Not authenticated');
+      }
       setUser(null);
       setIsAuthenticated(false);
     } finally {

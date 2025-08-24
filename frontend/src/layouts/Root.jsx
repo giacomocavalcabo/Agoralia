@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from '../components/AppShell'
+import AppErrorBoundary from '../components/AppErrorBoundary'
 import { ToastProvider } from '../components/ToastProvider.jsx'
 import { AuthProvider } from '../lib/useAuth.jsx'
 import { I18nextProvider } from 'react-i18next'
@@ -39,7 +40,9 @@ const RouteLoading = ({ component: Component, ...props }) => {
   React.useEffect(() => {
     if (Component?.i18nNamespaces) {
       // Namespaces are already loaded via import.meta.glob, this is just for future optimization
-      console.log('Preloading i18n namespaces:', Component.i18nNamespaces);
+      if (import.meta.env.DEV) {
+        console.log('Preloading i18n namespaces:', Component.i18nNamespaces);
+      }
     }
   }, [Component]);
 
@@ -53,8 +56,9 @@ const RouteLoading = ({ component: Component, ...props }) => {
 export default function Root() {
   return (
     <I18nextProvider i18n={i18n}>
-      <AuthProvider>
-        <ToastProvider>
+      <AppErrorBoundary>
+        <AuthProvider>
+          <ToastProvider>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
@@ -100,8 +104,9 @@ export default function Root() {
               </AppShell>
             } />
           </Routes>
-        </ToastProvider>
-      </AuthProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </AppErrorBoundary>
     </I18nextProvider>
   )
 }

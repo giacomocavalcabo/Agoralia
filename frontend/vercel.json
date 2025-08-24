@@ -10,7 +10,10 @@
   "headers": [
     {
       "source": "/index.html",
-      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' api.agoralia.app service-1-production.up.railway.app; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';" }
+      ]
     },
     {
       "source": "/assets/(.*)",

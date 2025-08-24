@@ -15,7 +15,7 @@ const ImportLegalReview = ({
     onNext, 
     onBack 
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation('pages');
     const [selectedContacts, setSelectedContacts] = useState(new Set());
     const [bulkAction, setBulkAction] = useState('');
     const [bulkValue, setBulkValue] = useState('');

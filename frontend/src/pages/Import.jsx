@@ -890,7 +890,9 @@ export default function Import() {
 
   const handleLaunch = (jobId) => {
     // In production, this would redirect to job status page
-    console.log('Import job launched:', jobId)
+    if (import.meta.env.DEV) {
+      console.log('Import job launched:', jobId)
+    }
   }
 
   return (

@@ -21,8 +21,13 @@ export async function apiFetch(path, options = {}) {
 		if (import.meta.env.DEV) {
 			console.info('[API] 401 Not authenticated');
 		}
-		// Redirect automatico a /login se non siamo già lì
-		if (window.location.pathname !== '/login') {
+		
+		// Non reindirizzare per richieste OPTIONS o endpoint /auth/*
+		const isOptionsRequest = options.method === 'OPTIONS';
+		const isAuthEndpoint = path.startsWith('/auth/');
+		
+		// Redirect automatico a /login se non siamo già lì e non è una richiesta speciale
+		if (!isOptionsRequest && !isAuthEndpoint && window.location.pathname !== '/login') {
 			window.location.replace('/login');
 		}
 		throw new Error('unauthenticated');

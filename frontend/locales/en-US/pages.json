@@ -329,6 +329,61 @@
     "profile": "Profile",
     "team": "Team",
     "title": "Settings",
-    "unsaved": "[Unsaved]"
+    "unsaved": "[Unsaved]",
+    "nav": {
+      "title": "Settings",
+      "subtitle": "Manage your account and preferences",
+      "profile": "Profile",
+      "profile_desc": "Update your personal information",
+      "company": "Company",
+      "company_desc": "Manage company settings",
+      "integrations": "Integrations",
+      "integrations_desc": "Connect external services",
+      "billing": "Billing",
+      "billing_desc": "Manage billing and subscriptions"
+    }
+  },
+  "error": {
+    "boundary": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred. Please try refreshing the page.",
+      "retry": "Reload Page"
+    }
+  },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "clear": "Clear",
+    "saving": "Saving...",
+    "connecting": "Connecting...",
+    "testing": "Testing...",
+    "disconnecting": "Disconnecting...",
+    "error": "Error",
+    "retry": "Retry",
+    "search": "Search...",
+    "unknown": "Unknown",
+    "live": "Live",
+    "polling": "Polling",
+    "active": "active",
+    "lead": "Lead",
+    "agent": "Agent",
+    "status": "Status",
+    "started": "Started",
+    "duration": "Duration",
+    "login": "Login",
+    "open": "Open",
+    "manage": "Manage",
+    "on": "On",
+    "off": "Off",
+    "back_to_leads": "Back to Leads",
+    "toasts": {
+      "invite_accepted": "Invite accepted"
+    }
   }
 }

@@ -26,7 +26,9 @@ export default function KnowledgeBase() {
 
   const handleCreateCompany = () => {
     // TODO: Implement create company KB
-    console.log('Create company KB');
+    if (import.meta.env.DEV) {
+      console.log('Create company KB');
+    }
   };
 
   const handleCreateOfferPack = () => {

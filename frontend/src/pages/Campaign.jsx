@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../lib/api.js'
 import KPI from '../components/ui/KPI.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
@@ -8,7 +8,7 @@ import { useToast } from '../components/ToastProvider.jsx'
 export default function Campaign(){
   const location = useLocation()
   const id = useMemo(()=> new URLSearchParams(location.search).get('id') || '', [location.search])
-  const { t } = useI18n()
+  const { t } = useTranslation('pages')
   const [tab, setTab] = useState('overview')
   const [info, setInfo] = useState(null)
   const [kpi, setKpi] = useState(null)

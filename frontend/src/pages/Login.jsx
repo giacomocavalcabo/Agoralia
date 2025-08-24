@@ -23,11 +23,15 @@ export default function Login() {
     setIsLoading(true);
     setError('');
     
-    console.log('Attempting login with:', { email, password: '***' });
+    if (import.meta.env.DEV) {
+      console.log('Attempting login with:', { email, password: '***' });
+    }
     
     try {
       const result = await login(email, password);
-      console.log('Login result:', result);
+      if (import.meta.env.DEV) {
+        console.log('Login result:', result);
+      }
       
       if (result.requires_totp) {
         // Redirect to TOTP verification

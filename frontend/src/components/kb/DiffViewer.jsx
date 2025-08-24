@@ -3,7 +3,7 @@ import { useTranslation } from '../../lib/i18n.jsx'
 import { CheckIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 const DiffViewer = ({ diffAnalysis, onMergeDecisions, isProcessing = false }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('pages')
   const [decisions, setDecisions] = useState({})
   const [strategy, setStrategy] = useState('manual')
 

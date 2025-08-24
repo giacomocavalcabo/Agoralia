@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { apiFetch, API_BASE_URL } from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
@@ -11,7 +11,7 @@ function fmt(d){
 }
 
 export default function Calendar(){
-  const { t } = useI18n()
+  const { t } = useTranslation('pages')
   const [view, setView] = useState('week')
   const [cursor, setCursor] = useState(new Date())
   const [events, setEvents] = useState([])

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation, Navigate } from 'react-router-dom'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../lib/api.js'
 import { useToast } from '../components/ToastProvider.jsx'
 
 export default function Invite(){
-  const { t } = useI18n()
+  const { t } = useTranslation('pages')
   const { toast } = useToast()
   const loc = useLocation()
   const [done, setDone] = useState(false)
