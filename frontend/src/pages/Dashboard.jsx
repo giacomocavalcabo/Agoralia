@@ -294,51 +294,59 @@ export default function Dashboard() {
 				)}
 				
 				{/* 12-Column Grid Layout - righe auto, niente overlap */}
-				<div className="grid grid-cols-12 auto-rows-auto items-start gap-4 md:gap-6">
+				<div className="grid grid-cols-12 auto-rows-auto items-stretch gap-4 md:gap-6">
 				
 					{/* Row 1: KPI Cards (3×4) - tutte size="sm" per riga compatta */}
 					<div className="col-span-12 md:col-span-3" data-card="true">
-						<KpiCard 
-							label={t('dashboard.kpi.calls_today')} 
-							value={summary?.calls_today || 0}
-							delta={showDemoData ? 12 : undefined}
-							state={summary?.calls_today > 50 ? 'warn' : 'normal'}
-							trendData={showDemoData ? [12, 15, 18, 22, 19, 24, 28] : undefined}
-							className="min-h-[120px]"
-						/>
+						<div className="h-full">
+							<KpiCard 
+								label={t('dashboard.kpi.calls_today')} 
+								value={summary?.calls_today || 0}
+								delta={showDemoData ? 12 : undefined}
+								state={summary?.calls_today > 50 ? 'warn' : 'normal'}
+								trendData={showDemoData ? [12, 15, 18, 22, 19, 24, 28] : undefined}
+								className="h-full min-h-[120px]"
+							/>
+						</div>
 					</div>
 					<div className="col-span-12 md:col-span-3" data-card="true">
-						<KpiCard 
-							label={t('dashboard.kpi.minutes_month')} 
-							value={summary?.minutes_month || 0}
-							delta={showDemoData ? -5 : undefined}
-							trendData={showDemoData ? [120, 135, 142, 138, 156, 148, 162] : undefined}
-							className="min-h-[120px]"
-						/>
+						<div className="h-full">
+							<KpiCard 
+								label={t('dashboard.kpi.minutes_month')} 
+								value={summary?.minutes_month || 0}
+								delta={showDemoData ? -5 : undefined}
+								trendData={showDemoData ? [120, 135, 142, 138, 156, 148, 162] : undefined}
+								className="h-full min-h-[120px]"
+							/>
+						</div>
 					</div>
 					<div className="col-span-12 md:col-span-3" data-card="true">
-						<KpiCard 
-							label={t('dashboard.kpi.avg_duration')} 
-							value={fmtMMSS(summary?.avg_duration_sec || 0)}
-							delta={showDemoData ? 8 : undefined}
-							trendData={showDemoData ? [120, 125, 118, 132, 128, 135, 142] : undefined}
-							className="min-h-[120px]"
-						/>
+						<div className="h-full">
+							<KpiCard 
+								label={t('dashboard.kpi.avg_duration')} 
+								value={fmtMMSS(summary?.avg_duration_sec || 0)}
+								delta={showDemoData ? 8 : undefined}
+								trendData={showDemoData ? [120, 125, 118, 132, 128, 135, 142] : undefined}
+								className="h-full min-h-[120px]"
+							/>
+						</div>
 					</div>
 					<div className="col-span-12 md:col-span-3" data-card="true">
-						<KpiCard 
-							label={t('dashboard.kpi.contact_rate')} 
-							value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
-							delta={showDemoData ? 12 : undefined}
-							state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
-							trendData={showDemoData ? [25, 28, 22, 26, 24, 21, 23] : undefined}
-							className="min-h-[120px]"
-						/>
+						<div className="h-full">
+							<KpiCard 
+								label={t('dashboard.kpi.contact_rate')} 
+								value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
+								delta={showDemoData ? 12 : undefined}
+								state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
+								trendData={showDemoData ? [25, 28, 22, 26, 24, 21, 23] : undefined}
+								className="h-full min-h-[120px]"
+							/>
+						</div>
 					</div>
 				
 					{/* Row 2: CallsHistogram + GaugeBudget - size="lg" e "md" */}
 					<div className="col-span-12 xl:col-span-8" data-card="true">
-						<div className="rounded-2xl border bg-white overflow-hidden">
+						<div className="h-full rounded-2xl border bg-white overflow-hidden">
 							<div className="flex items-center justify-between p-4">
 								<h3 className="text-sm font-medium">{t('dashboard.widgets.calls_histogram')}</h3>
 								<div className="flex items-center gap-2">
@@ -365,33 +373,35 @@ export default function Dashboard() {
 						</div>
 					</div>
 					<div className="col-span-12 xl:col-span-4" data-card="true">
-						<GaugeBudget 
-							spent={summary?.budget_spent_month_cents || 0}
-							cap={summary?.budget_monthly_cents || 0}
-							warnPercent={80}
-							labelPosition="outside"
-							className="min-h-[320px]"
-						/>
+						<div className="h-full">
+							<GaugeBudget 
+								spent={summary?.budget_spent_month_cents || 0}
+								cap={summary?.budget_monthly_cents || 0}
+								warnPercent={80}
+								labelPosition="outside"
+								className="h-full"
+							/>
+						</div>
 					</div>
 				
 					{/* Row 3: Event Feed + TopAgents + Geo — tutte alte uguali (320px) e non scrollano */}
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
+						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.events', 'Event Feed')}</h3>
-							<EventFeed events={events} className="min-h-[320px]" />
+							<EventFeed events={events} className="h-full" />
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
+						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
 							<TopAgentsBar 
 								agents={showDemoData ? topAgents : []}
 								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
-								className="min-h-[320px] overflow-hidden"
+								className="h-full"
 							/>
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
+						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
 							<MiniMap 
 								data={showDemoData ? geoData : []}
 								onDrillDown={(country) => handleDrillDown('country', country)}
@@ -399,7 +409,7 @@ export default function Dashboard() {
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[360px] overflow-hidden">
+						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
@@ -408,9 +418,9 @@ export default function Dashboard() {
 						</div>
 					</div>
 				
-					{/* Row 4: LiveTable + EventFeed - size="lg" e "md" con scroll interno */}
-					<div className="col-span-12 xl:col-span-8" data-card="true">
-						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px] overflow-hidden">
+					{/* Row 4: Live Calls - size="lg" */}
+					<div className="col-span-12 xl:col-span-12" data-card="true">
+						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 overflow-hidden">
 							<div className="flex items-center justify-between mb-4">
 								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
 								<div className="flex items-center gap-2">
@@ -440,9 +450,6 @@ export default function Dashboard() {
 								</div>
 							)}
 						</div>
-					</div>
-					<div className="col-span-12 xl:col-span-4" data-card="true">
-						<EventFeed events={events} className="min-h-[360px] max-h-56 overflow-y-auto" />
 					</div>
 				</div>
 			</div>

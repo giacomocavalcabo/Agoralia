@@ -91,6 +91,10 @@
 	"campaigns": {
 		"title": "Campaigns",
 		"description": "Manage your outbound campaigns",
+		"error": {
+			"title": "Error loading campaigns",
+			"description": "Unable to load campaign data. Please try again."
+		},
 		"status": {
 			"active": "Active",
 			"paused": "Paused",
@@ -136,6 +140,13 @@
 			"no_data": "No knowledge base yet",
 			"how_to_start": "Import documents or connect a source to populate your knowledge base.",
 			"import": "Import documents"
+		},
+		"imports": {
+			"empty": {
+				"title": "No knowledge imported yet",
+				"description": "Start by importing company data, offers or documents.",
+				"cta": "Open Knowledge"
+			}
 		},
 		"error": { 
 			"title": "Loading error", 

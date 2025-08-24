@@ -31,7 +31,7 @@ export default function ServerDataTable({
   selectAllLabel = 'Select all'
 }) {
   // Safety checks - prevent crash on undefined data
-  const safeData = Array.isArray(rows) ? rows : [];
+  const safeData = (Array.isArray(rows) ? rows : []).filter(Boolean);
   const safeColumns = Array.isArray(columns) ? columns : [];
   const safeTotal = typeof total === 'number' ? total : 0;
   const safePage = typeof page === 'number' ? page : 1;
@@ -106,19 +106,19 @@ export default function ServerDataTable({
             {isLoading ? (
               <tr><td colSpan={safeColumns.length + 1} className="px-3 py-6 text-center text-gray-500">{loadingLabel}</td></tr>
             ) : (
-              safeData.map((row) => (
-                <tr key={row.id} data-testid="leads-row" className="border-t">
+              safeData.map((row, rIdx) => (
+                <tr key={row?.id ?? rIdx} data-testid="leads-row" className="border-t">
                   <td className="px-3 py-2">
                     <input
                       data-testid="select-checkbox"
                       type="checkbox"
-                      checked={!!selection[row.id]}
-                      onChange={(e) => onToggleRow?.(row.id, e.target.checked)}
+                      checked={!!selection[row?.id]}
+                      onChange={(e) => onToggleRow?.(row?.id, e.target.checked)}
                     />
                   </td>
-                  {safeColumns.map((col) => (
-                    <td key={col.id} className="px-3 py-2">
-                      {getCellValue(row, col) || '-'}
+                  {safeColumns.map((col, cIdx) => (
+                    <td key={cIdx} className="px-3 py-2">
+                      {row ? (getCellValue(row, col) ?? '-') : '-'}
                     </td>
                   ))}
                 </tr>

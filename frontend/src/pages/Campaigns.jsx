@@ -1,5 +1,5 @@
 import React from 'react';
-import AppShell from '../components/AppShell';
+// ⚠️ Non usare AppShell/GlobalSearch qui: già provvede il layout.
 import { PageHeader } from '../components/ui/FormPrimitives';
 import ServerDataTable from '../components/ServerDataTable';
 import { useI18n } from '../lib/i18n.jsx';
@@ -50,47 +50,45 @@ export default function Campaigns() {
   ]), [t]);
 
   return (
-    <AppShell>
-      <div className="px-6 lg:px-8 py-6">
-        <PageHeader
-          title={t('campaigns.title')}
-          description={t('campaigns.description')}
-        />
-        <ServerDataTable
-          columns={columns}
-          rows={data}
-          total={total}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          sort={sort}
-          dir={dir}
-          onSort={(column) => {
-            if (sort !== column) {
-              setSort(column);
-              setDir('asc');
+    <div className="px-6 lg:px-8 py-6">
+      <PageHeader
+        title={t('campaigns.title')}
+        description={t('campaigns.description')}
+      />
+      <ServerDataTable
+        columns={columns}
+        rows={data}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        sort={sort}
+        dir={dir}
+        onSort={(column) => {
+          if (sort !== column) {
+            setSort(column);
+            setDir('asc');
             } else {
-              setDir(dir === 'asc' ? 'desc' : 'asc');
-            }
-          }}
-          isLoading={loading}
-          isError={error}
-          onRetry={refetch}
-          // i18n props
-          errorTitle={t('campaigns.table.error.title')}
-          errorDescription={t('campaigns.table.error.description')}
-          retryLabel={t('campaigns.table.error.retry')}
-          emptyTitle={t('campaigns.table.empty.title')}
-          emptyDescription={t('campaigns.table.empty.description')}
-          emptyCtaImport={t('campaigns.table.empty.cta_import')}
-          emptyCtaAdd={t('campaigns.table.empty.cta_new')}
-          loadingLabel={t('campaigns.table.loading')}
-          sortAscLabel={t('campaigns.table.sorting.asc')}
-          sortDescLabel={t('campaigns.table.sorting.desc')}
-          selectAllLabel={t('campaigns.table.select_all')}
-        />
-      </div>
-    </AppShell>
+            setDir(dir === 'asc' ? 'desc' : 'asc');
+          }
+        }}
+        isLoading={loading}
+        isError={error}
+        onRetry={refetch}
+        // i18n props
+        errorTitle={t('campaigns.table.error.title')}
+        errorDescription={t('campaigns.table.error.description')}
+        retryLabel={t('campaigns.table.error.retry')}
+        emptyTitle={t('campaigns.table.empty.title')}
+        emptyDescription={t('campaigns.table.empty.description')}
+        emptyCtaImport={t('campaigns.table.empty.cta_import')}
+        emptyCtaAdd={t('campaigns.table.empty.cta_new')}
+        loadingLabel={t('campaigns.table.loading')}
+        sortAscLabel={t('campaigns.table.sorting.asc')}
+        sortDescLabel={t('campaigns.table.sorting.desc')}
+        selectAllLabel={t('campaigns.table.select_all')}
+      />
+    </div>
   );
 }

@@ -11,6 +11,10 @@ import { getKBErrorMessage, isRetryableError } from '../../lib/errorHandler'
 import { trackKbEvent, KB_EVENTS } from '../../lib/telemetry'
 import { CogIcon, DocumentTextIcon, GlobeAltIcon, CheckIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useDemoData } from '../../lib/useDemoData'
+import { useKbProgress } from '../../lib/useKbProgress'
+import EmptyState from '../../components/ui/EmptyState'
+import Spinner from '../../components/ui/Spinner'
+import ErrorBlock from '../../components/ui/ErrorBlock'
 
 // Mock data per demo - in produzione verrà da API
 const mockJobs = [
@@ -53,9 +57,28 @@ export default function Imports() {
   const canEdit = useCanEdit()
   const { isDemoMode } = useDemoData()
   
+  // Hook robusto per KB progress
+  const { data: kbData, isLoading: kbLoading, isError: kbError, refetch: kbRefetch } = useKbProgress();
+  
   const startImport = useStartImport()
   const commitImport = useCommitImport()
   const cancelImport = useCancelImport()
+
+  // Gestisci stati KB
+  if (kbLoading) return <Spinner />;
+  if (kbError) return <ErrorBlock onRetry={kbRefetch} />;
+  
+  // Se non ci sono items, mostra empty state
+  const items = kbData?.items || [];
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        title={t('kb.imports.empty.title')}
+        description={t('kb.imports.empty.description')}
+        action={{ label: t('kb.imports.empty.cta'), to: '/knowledge' }}
+      />
+    );
+  }
 
   // Simula polling per job in processing
   useEffect(() => {
@@ -224,11 +247,11 @@ export default function Imports() {
           
           <Card title={t('kb.imports.title')}>
             {jobs.length === 0 ? (
-              <div className="text-center py-12">
-                <CogIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500">{t('kb.imports.empty.title')}</p>
-                <p className="text-sm text-gray-400 mt-1">{t('kb.imports.empty.description')}</p>
-              </div>
+              <EmptyState
+                title={t('kb.imports.empty.title')}
+                description={t('kb.imports.empty.description')}
+                icon={<CogIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

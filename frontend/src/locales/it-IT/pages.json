@@ -20,6 +20,13 @@
       "how_to_start": "Importa documenti o collega una sorgente per popolare la knowledge base.",
       "import": "Importa documenti"
     },
+    "imports": {
+      "empty": {
+        "title": "Nessuna knowledge importata",
+        "description": "Inizia importando dati aziendali, offerte o documenti.",
+        "cta": "Apri Knowledge"
+      }
+    },
     "error": { 
       "title": "Errore di caricamento", 
       "description": "Impossibile caricare i dati della knowledge base. Riprova.", 
@@ -317,6 +324,10 @@
     "campaigns": {
       "title": "Campagne",
       "description": "Crea e gestisci campagne di chiamate in uscita.",
+      "error": {
+        "title": "Errore caricamento campagne",
+        "description": "Impossibile caricare i dati delle campagne. Riprova."
+      },
       "status": {
         "active": "Attiva",
         "paused": "In pausa",

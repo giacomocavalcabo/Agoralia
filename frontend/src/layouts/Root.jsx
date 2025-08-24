@@ -77,7 +77,11 @@ export default function Root() {
                     <Route path="knowledge/company/:id" element={<KBEditor kind="company" />} />
                     <Route path="knowledge/offers/:id" element={<KBEditor kind="offer_pack" />} />
                     <Route path="knowledge/assignments" element={<Assignments />} />
-                    <Route path="knowledge/imports" element={<Imports />} />
+                    <Route path="knowledge/imports" element={
+                      <AppErrorBoundary>
+                        <Imports />
+                      </AppErrorBoundary>
+                    } />
                     <Route path="leads" element={<Leads />} />
                     <Route path="leads/:id" element={<LeadDetails />} />
                     <Route path="leads/import" element={<LeadsImport />} />
