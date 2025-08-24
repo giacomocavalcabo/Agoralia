@@ -14,6 +14,9 @@ import EventFeed from '../components/ui/EventFeed.jsx'
 import DataTable from '../components/DataTable.jsx'
 import useLiveWS from '../lib/useLiveWS.js'
 import { useDemoData } from '../lib/useDemoData.js'
+import CallsHistogram from '../components/ui/CallsHistogram.jsx'
+import ConversionFunnel from '../components/ui/ConversionFunnel.jsx'
+import SlaSparkline from '../components/ui/SlaSparkline.jsx'
 import { 
 	generateDemoMetrics, 
 	generateDemoFunnelData, 
@@ -326,33 +329,54 @@ export default function Dashboard() {
 						/>
 					</div>
 				
-					{/* Row 2: TimeSeries + GaugeBudget */}
+					{/* Row 2: CallsHistogram + GaugeBudget */}
 					<div className="col-span-12 xl:col-span-8">
-						<TimeSeries 
-							data={trends}
-							labels={trends.labels}
-							days={trendDays}
-							onDaysChange={setTrendDays}
-							className="min-h-[320px]"
-						/>
+						<div className="rounded-2xl border bg-white">
+							<div className="flex items-center justify-between p-4">
+								<h3 className="text-sm font-medium">{t('dashboard.trends.title')}</h3>
+								<div className="flex items-center gap-2">
+									<button 
+										onClick={() => setTrendDays(7)} 
+										className={`px-3 py-1 text-xs rounded-lg ${trendDays === 7 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}`}
+									>
+										{t('dashboard.buttons.7d')}
+									</button>
+									<button 
+										onClick={() => setTrendDays(30)} 
+										className={`px-3 py-1 text-xs rounded-lg ${trendDays === 30 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}`}
+									>
+										{t('dashboard.buttons.30d')}
+									</button>
+								</div>
+							</div>
+							<div className="px-4 pb-4">
+								<CallsHistogram 
+									buckets={trends.created?.map((value, i) => ({ label: `Day ${i+1}`, count: value })) || []}
+									label={t('dashboard.metrics.calls_created')}
+								/>
+							</div>
+						</div>
 					</div>
 					<div className="col-span-12 xl:col-span-4">
 						<GaugeBudget 
 							spent={summary?.budget_spent_month_cents || 0}
-							cap={summary?.budget_monthly_cents || 100000}
+							cap={summary?.budget_monthly_cents || 0}
 							warnPercent={80}
-							costSeries={costSeries}
 							className="min-h-[320px]"
 						/>
 					</div>
 				
-					{/* Row 3: Funnel + TopAgents + MiniMap */}
+					{/* Row 3: ConversionFunnel + TopAgents + MiniMap */}
 					<div className="col-span-12 lg:col-span-4">
-						<FunnelSteps 
-							data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} 
-							onDrillDown={(step) => handleDrillDown('funnel-qualified', step)}
-							className="min-h-[320px]"
-						/>
+						<div className="rounded-2xl border bg-white p-4">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.funnel.title')}</h3>
+							<ConversionFunnel steps={[
+								{ label: t('dashboard.funnel.reached'), value: (showDemoData ? funnelData.reached : 0) || 0, colorClass: 'bg-primary-300' },
+								{ label: t('dashboard.funnel.connected'), value: (showDemoData ? funnelData.connected : 0) || 0, colorClass: 'bg-primary-400' },
+								{ label: t('dashboard.funnel.qualified'), value: (showDemoData ? funnelData.qualified : 0) || 0, colorClass: 'bg-primary-500' },
+								{ label: t('dashboard.funnel.booked'), value: (showDemoData ? funnelData.booked : 0) || 0, colorClass: 'bg-primary-600' }
+							]} />
+						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4">
 						<TopAgentsBar 
@@ -367,6 +391,15 @@ export default function Dashboard() {
 							onDrillDown={(country) => handleDrillDown('country', country)}
 							className="min-h-[320px]"
 						/>
+					</div>
+					<div className="col-span-12 lg:col-span-4">
+						<div className="rounded-2xl border bg-white p-4">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.metrics.response_time') || 'Response Time (SLA)'}</h3>
+							<SlaSparkline 
+								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
+								thresholdMs={5000} 
+							/>
+						</div>
 					</div>
 				
 					{/* Row 4: LiveTable + EventFeed */}
