@@ -1,7 +1,22 @@
 {
   "auth": {
     "title": "Sign in",
-    "description": "Access your workspace to manage calls, leads and campaigns"
+    "description": "Access your workspace to manage calls, leads and campaigns",
+    "login": {
+      "title": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "cta": "Sign in",
+      "forgot": "Forgot password?"
+    },
+    "register": {
+      "title": "Create account",
+      "name": "Full name",
+      "company": "Company",
+      "email": "Work email",
+      "password": "Password",
+      "cta": "Create account"
+    }
   },
   "calendar": {
     "errors": {

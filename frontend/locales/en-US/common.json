@@ -7,5 +7,10 @@
     }
   },
   "loading": "Loading…",
-  "not_available": "N/A"
+  "not_available": "N/A",
+  "live": "live",
+  "polling": "polling",
+  "active": "active",
+  "live_status": "{{count}} active • live",
+  "polling_status": "{{count}} active • polling"
 }

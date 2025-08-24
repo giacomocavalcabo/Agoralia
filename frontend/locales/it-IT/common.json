@@ -7,5 +7,10 @@
     }
   },
   "loading": "Caricamento…",
-  "not_available": "N/D"
+  "not_available": "N/D",
+  "live": "in diretta",
+  "polling": "polling",
+  "active": "attive",
+  "live_status": "{{count}} attive • in diretta",
+  "polling_status": "{{count}} attive • polling"
 }

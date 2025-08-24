@@ -375,21 +375,24 @@ export default function Dashboard() {
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<TopAgentsBar 
-							agents={showDemoData ? topAgents : []}
-							onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
-							className="min-h-[320px] max-h-56 overflow-y-auto"
-						/>
-					</div>
-					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<MiniMap 
-							data={showDemoData ? geoData : []}
-							onDrillDown={(country) => handleDrillDown('country', country)}
-							className="min-h-[320px]"
-						/>
+						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
+							<TopAgentsBar 
+								agents={showDemoData ? topAgents : []}
+								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
+								className="max-h-56 overflow-y-auto"
+							/>
+						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
+							<MiniMap 
+								data={showDemoData ? geoData : []}
+								onDrillDown={(country) => handleDrillDown('country', country)}
+							/>
+						</div>
+					</div>
+					<div className="col-span-12 lg:col-span-4" data-card="true">
+						<div className="rounded-2xl border bg-white p-4 min-h-[360px] overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
@@ -405,8 +408,10 @@ export default function Dashboard() {
 								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
 								<div className="flex items-center gap-2">
 									<div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-									<span className="text-xs text-gray-600">
-										{isConnected ? t('common.live') : t('common.polling')} • {liveCalls.length} {t('common.active')}
+									<span className="text-xs text-gray-600 tabular-nums">
+										{isConnected
+											? t('common.live_status', { count: liveCalls.length })
+											: t('common.polling_status', { count: liveCalls.length })}
 									</span>
 								</div>
 							</div>

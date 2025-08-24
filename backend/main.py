@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime, timezone, timedelta
 import secrets
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends
@@ -30,11 +30,43 @@ from backend.schemas import (
 from backend import schemas
 
 # Models will be imported locally where needed to avoid duplication
-from typing import Callable, Any
+from typing import Callable, Any, List, Dict
 from sqlalchemy import or_
 import hashlib
 import pyotp
 import random
+
+# ===================== Utility comuni: workspace & response adapter =====================
+DEMO_MODE: bool = bool(int(os.getenv("DEMO_MODE", "0")))  # 1 abilita demo BE
+
+def get_workspace_id(request: Request, fallback: Optional[str] = "ws_1") -> Optional[str]:
+    """
+    Estrae il workspace_id da (ordine):
+    - header 'X-Workspace-Id'
+    - request.state.workspace_id (se middleware a monte lo popola)
+    - fallback (default 'ws_1')
+    Non lancia eccezioni: se non c'è, ritorna fallback (anche None se fallback=None).
+    """
+    hdr = request.headers.get("X-Workspace-Id")
+    if hdr:
+        return hdr.strip()
+    ws = getattr(request.state, "workspace_id", None)
+    if ws:
+        return ws
+    return fallback
+
+def adapt_list_response(items: List[Dict[str, Any]], total: Optional[int] = None) -> Dict[str, Any]:
+    """
+    Uniforma lo shape a {data, total} mantenendo retro-compat con {items}.
+    """
+    total_count = len(items) if total is None else int(total)
+    return {
+        "data": items,
+        "total": total_count,
+        "items": items,  # retro-compat per client legacy
+    }
+
+# ===================== Fine utility comuni =====================
 
 try:
     # retell-sdk is optional during local dev, but required in prod for webhook verification
@@ -522,14 +554,26 @@ def me_inbox(limit: int = 20) -> dict:
 
 # ===================== Numbers Endpoints =====================
 @app.get("/numbers")
-def numbers_list(workspace_id: str | None = Query(default="ws_1"), db: Session = Depends(get_db)) -> dict:
-    rows = db.query(Number).filter(Number.workspace_id == (workspace_id or "ws_1")).limit(100).all()
+def numbers_list(
+    request: Request,
+    workspace_id: Optional[str] = Query(None),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    q: Optional[str] = None,
+    db: Session = Depends(get_db)
+) -> dict:
+    wsid = workspace_id or get_workspace_id(request, fallback="ws_1")
+    
+    # logica attuale → recupera `items` (lista dict)
+    rows = db.query(Number).filter(Number.workspace_id == wsid).limit(limit).offset(offset).all()
     items = [{
         "id": n.id, "e164": n.e164, "country_iso": n.country_iso, "source": n.source,
         "capabilities": n.capabilities or [], "verified": bool(n.verified), "provider": n.provider,
         "can_inbound": bool(n.can_inbound),
     } for n in rows]
-    return {"items": items}
+    
+    # UNIFICAZIONE SHAPE (retro-compat: includi anche `items`)
+    return adapt_list_response(items, len(items))
 
 
 @app.post("/numbers/byo")
@@ -2454,6 +2498,54 @@ async def create_campaign(payload: dict) -> dict:
     }
     retell_metadata = {"kb": {"rules": rules, "lang": lang}}
     return {"id": "c_new", "retell_metadata": retell_metadata}
+
+
+@app.get("/campaigns")
+def list_campaigns(
+    request: Request,
+    workspace_id: Optional[str] = Query(None),
+    limit: int = Query(25, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    q: Optional[str] = None
+) -> dict:
+    wsid = workspace_id or get_workspace_id(request, fallback="ws_1")
+
+    # logica dati (riusa le tue repo/ORM) - per ora stub
+    # TODO: sostituire con repo_campaigns_list e repo_campaigns_count reali
+    demo_campaigns = [
+        {
+            "id": "c_demo_1",
+            "name": "Q4 Sales Campaign",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc)
+        },
+        {
+            "id": "c_demo_2", 
+            "name": "Product Launch IT",
+            "status": "paused",
+            "created_at": datetime.now(timezone.utc) - timedelta(days=7)
+        },
+        {
+            "id": "c_demo_3",
+            "name": "Customer Retention",
+            "status": "draft",
+            "created_at": datetime.now(timezone.utc) - timedelta(days=14)
+        }
+    ]
+    
+    # mappatura a schema (garantisci ISO date)
+    def to_campaign(r) -> dict:
+        return {
+            "id": str(r["id"]),
+            "name": r["name"],
+            "status": r.get("status", "draft"),
+            "created_at": (r["created_at"].isoformat() if hasattr(r["created_at"], "isoformat") else str(r["created_at"])),
+        }
+
+    items = [to_campaign(r) for r in demo_campaigns]
+    payload = adapt_list_response(items, len(items))
+    # Adatta a response_model (Pydantic) mantenendo retro-compat
+    return payload
 
 
 @app.get("/campaigns/{campaign_id}")
@@ -4774,8 +4866,50 @@ def get_kb_progress(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get progress overview for all KBs in workspace"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
+    # 1) workspace_id tollerante
+    workspace_id = get_workspace_id(request, fallback="ws_1")
+
+    # 2) DEMO: risposte sintetiche ma consistenti
+    if DEMO_MODE:
+        demo_items = [
+            {
+                "kb_id": "kb_demo_company", 
+                "name": "Company Profile", 
+                "kind": "company",
+                "completeness_pct": 0.82, 
+                "freshness_score": 0.74,
+                "sections_count": 5,
+                "fields_count": 12,
+                "last_updated": datetime.now(timezone.utc)
+            },
+            {
+                "kb_id": "kb_demo_offers", 
+                "name": "Offer Packs", 
+                "kind": "offers",
+                "completeness_pct": 0.67, 
+                "freshness_score": 0.59,
+                "sections_count": 3,
+                "fields_count": 8,
+                "last_updated": datetime.now(timezone.utc)
+            },
+            {
+                "kb_id": "kb_demo_docs", 
+                "name": "Documents", 
+                "kind": "documents",
+                "completeness_pct": 0.41, 
+                "freshness_score": 0.36,
+                "sections_count": 2,
+                "fields_count": 6,
+                "last_updated": datetime.now(timezone.utc)
+            },
+        ]
+        return {"items": demo_items}
+
+    # 3) PRODUZIONE: se manca workspace_id ma non vogliamo bloccare, ritorna empty, non 422
+    if not workspace_id:
+        return {"items": []}
+
+    # 4) logica reale (mantieni la tua esistente)
     with next(get_db()) as db:
         kbs = db.query(KnowledgeBase).filter(
             KnowledgeBase.workspace_id == workspace_id
@@ -4803,7 +4937,7 @@ def get_kb_progress(
                 "last_updated": kb.updated_at
             })
         
-        return {"progress": progress}
+        return {"items": progress}
 
 
 # ===================== Knowledge Base Sections & Fields =====================

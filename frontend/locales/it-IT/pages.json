@@ -1,7 +1,22 @@
 {
   "auth": {
     "title": "Accedi",
-    "description": "Accedi al tuo workspace per gestire chiamate, lead e campagne"
+    "description": "Accedi al tuo workspace per gestire chiamate, lead e campagne",
+    "login": {
+      "title": "Accedi",
+      "email": "Email",
+      "password": "Password",
+      "cta": "Accedi",
+      "forgot": "Password dimenticata?"
+    },
+    "register": {
+      "title": "Crea account",
+      "name": "Nome e cognome",
+      "company": "Azienda",
+      "email": "Email di lavoro",
+      "password": "Password",
+      "cta": "Crea account"
+    }
   },
   "calendar": {
     "errors": {
