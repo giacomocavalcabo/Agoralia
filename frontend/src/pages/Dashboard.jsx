@@ -286,8 +286,8 @@ export default function Dashboard() {
 					</div>
 				)}
 				
-				{/* 12-Column Grid Layout - MOSAICO con auto-rows e dense flow */}
-				<div className="grid grid-cols-12 grid-flow-dense auto-rows-[8rem] gap-4 md:gap-6">
+				{/* 12-Column Grid Layout - righe auto, niente overlap */}
+				<div className="grid grid-cols-12 auto-rows-auto items-start gap-4 md:gap-6">
 				
 					{/* Row 1: KPI Cards (3×4) - tutte size="sm" per riga compatta */}
 					<div className="col-span-12 md:col-span-3" data-card="true">
@@ -331,7 +331,7 @@ export default function Dashboard() {
 				
 					{/* Row 2: CallsHistogram + GaugeBudget - size="lg" e "md" */}
 					<div className="col-span-12 xl:col-span-8" data-card="true">
-						<div className="rounded-2xl border bg-white">
+						<div className="rounded-2xl border bg-white overflow-hidden">
 							<div className="flex items-center justify-between p-4">
 								<h3 className="text-sm font-medium">{t('dashboard.widgets.calls_histogram')}</h3>
 								<div className="flex items-center gap-2">
@@ -369,7 +369,7 @@ export default function Dashboard() {
 				
 					{/* Row 3: ConversionFunnel + TopAgents + MiniMap - MOSAICO: 2 "sm" + 1 "md" */}
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
+						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.funnel')}</h3>
 							<ConversionFunnel data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} />
 						</div>
@@ -389,7 +389,7 @@ export default function Dashboard() {
 						/>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
+						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
@@ -400,7 +400,7 @@ export default function Dashboard() {
 				
 					{/* Row 4: LiveTable + EventFeed - size="lg" e "md" con scroll interno */}
 					<div className="col-span-12 xl:col-span-8" data-card="true">
-						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px]">
+						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px] overflow-hidden">
 							<div className="flex items-center justify-between mb-4">
 								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
 								<div className="flex items-center gap-2">
