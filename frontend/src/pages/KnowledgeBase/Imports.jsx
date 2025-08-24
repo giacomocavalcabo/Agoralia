@@ -12,7 +12,7 @@ import { trackKbEvent, KB_EVENTS } from '../../lib/telemetry'
 import { CogIcon, DocumentTextIcon, GlobeAltIcon, CheckIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useDemoData } from '../../lib/useDemoData'
 import { useKbProgress } from '../../lib/useKbProgress'
-import EmptyState from '../../components/ui/EmptyState'
+import EmptyState from '../../components/EmptyState'
 import Spinner from '../../components/ui/Spinner'
 import ErrorBlock from '../../components/ui/ErrorBlock'
 
