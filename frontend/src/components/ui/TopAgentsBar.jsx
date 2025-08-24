@@ -18,7 +18,7 @@ export default function TopAgentsBar({
 			{agents.length === 0 ? (
 				<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.agents.empty', 'No agent data available')}</div>
 			) : (
-				<div className="space-y-3">
+				<div className="space-y-3 max-h-48 overflow-y-auto pr-2">
 					{sortedAgents.slice(0, 10).map((agent, index) => {
 						const qualifiedRate = agent.qualified_rate || 0
 						const barWidth = maxQualifiedRate > 0 ? (qualifiedRate / maxQualifiedRate) * 100 : 0
@@ -41,7 +41,7 @@ export default function TopAgentsBar({
 											{agent.name || `Agent ${agent.id}`}
 										</span>
 									</div>
-									<div className="text-sm text-ink-600">
+									<div className="text-sm text-ink-600 tabular-nums">
 										{Math.round(qualifiedRate * 100)}%
 									</div>
 								</div>

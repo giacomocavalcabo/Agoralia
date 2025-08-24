@@ -2,12 +2,20 @@ import React from 'react';
 
 const cn = (...cls) => cls.filter(Boolean).join(' ');
 
+// Sistema dimensioni per layout a mosaico
+const sizeMap = {
+  sm: 'col-span-12 md:col-span-6 row-span-1',
+  md: 'col-span-12 md:col-span-6 row-span-2', 
+  lg: 'col-span-12 row-span-2'
+};
+
 /** Nuovi primitivi (named exports) */
-export function Card({ className = '', title, footer, children, ...props }) {
+export function Card({ className = '', title, footer, children, size = 'md', ...props }) {
   return (
     <div
       className={cn(
         'bg-white rounded-2xl border border-gray-200 shadow-sm',
+        sizeMap[size],
         className
       )}
       {...props}

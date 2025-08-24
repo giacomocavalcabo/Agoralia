@@ -70,6 +70,12 @@
       "title": "Live Calls",
       "empty": "No active calls"
     },
+    "kpi": {
+      "calls_today": "Calls Today",
+      "minutes_month": "Minutes Month",
+      "avg_duration": "Avg Duration",
+      "contact_rate": "Contact Rate"
+    },
     "metrics": {
       "calls_today": "Calls Today",
       "minutes_month": "Minutes Month",
@@ -98,12 +104,29 @@
       "avg": "avg",
       "top_performer": "Top performer"
     },
+    "widgets": {
+      "budget": "Budget Usage",
+      "funnel": "Conversion Funnel",
+      "calls_histogram": "Calls Histogram",
+      "live_calls": "Live Calls",
+      "sla": "SLA Performance"
+    },
+    "budget": {
+      "spent": "Spent",
+      "cap": "Cap",
+      "remaining": "Remaining",
+      "projected": "Projected EOM: {{pct}}%"
+    },
     "geo": {
       "title": "Geographic Distribution",
       "coming_soon": "Map visualization coming soon",
       "calls": "calls",
       "qualified": "qualified",
       "top_country": "Top country"
+    },
+    "states": {
+      "not_configured": "Not configured",
+      "no_calls": "No active calls"
     },
     "stats": {
       "total_created": "Total Created",

@@ -12,7 +12,7 @@ export default function GaugeBudget({
 	if (!cap || cap <= 0) {
 		return (
 			<div className={`panel text-center ${className}`}>
-				<div className="text-sm text-ink-600 mb-3">Budget Usage</div>
+				<div className="text-sm text-ink-600 mb-3">{t('dashboard.widgets.budget')}</div>
 				<div className="h-32 flex items-center justify-center">
 					<div className="text-center">
 						<div className="text-2xl font-semibold text-gray-400 mb-2">—</div>
@@ -80,45 +80,36 @@ export default function GaugeBudget({
 					/>
 				</svg>
 				
-				{/* Center text */}
-				<div className="absolute inset-0 flex items-center justify-center text-sm font-medium leading-none">
-					<div className={`text-2xl font-semibold ${getColor()}`}>
+				{/* Center text - PERFETTAMENTE CENTRATO con absolute + translate */}
+				<div className="absolute inset-0 flex items-center justify-center">
+					<div className={`text-2xl font-semibold tabular-nums ${getColor()}`}>
 						{Math.round(percentage)}%
 					</div>
 				</div>
-				{!Number.isFinite(cap) && (
-					<p className="mt-1 text-center text-sm text-slate-500">{t('dashboard.states.not_configured')}</p>
-				)}
 			</div>
 			
-			{/* Values */}
-			<div className="space-y-2">
-				<div className="text-sm">
-					<span className="text-ink-600">Spent:</span>
-					<span className="ml-2 font-semibold">€{(spent / 100).toFixed(2)}</span>
+			{/* Values - GRIGLIA 2 COLONNE con allineamento numeri */}
+			<dl className="grid grid-cols-2 gap-y-2">
+				<dt className="text-sm text-ink-600">{t('dashboard.budget.spent', 'Spent')}</dt>
+				<dd className="text-sm font-semibold text-ink-900 text-right tabular-nums whitespace-nowrap">€{(spent / 100).toFixed(2)}</dd>
+				<dt className="text-sm text-ink-600">{t('dashboard.budget.cap', 'Cap')}</dt>
+				<dd className="text-sm font-semibold text-ink-900 text-right tabular-nums whitespace-nowrap">€{(cap / 100).toFixed(2)}</dd>
+				<dt className="text-sm text-ink-600">{t('dashboard.budget.remaining', 'Remaining')}</dt>
+				<dd className="text-sm font-semibold text-ink-900 text-right tabular-nums whitespace-nowrap">€{((cap - spent) / 100).toFixed(2)}</dd>
+			</dl>
+			
+			{/* Projected EOM */}
+			{projectedEOM > 0 && (
+				<div className={`text-xs mt-3 p-2 rounded-lg tabular-nums ${
+					projectedEOM >= 100 ? 'text-danger bg-danger/5 border border-danger/20' :
+					projectedEOM >= warnPercent ? 'text-warn bg-warn/5 border border-warn/20' :
+					'text-ink-500 bg-bg-app border border-line'
+				}`}>
+					{t('dashboard.budget.projected', 'Projected EOM: {{pct}}%', { pct: Math.round(projectedEOM) })}
+					{projectedEOM >= 100 && <span className="ml-1">⚠️ Over budget</span>}
+					{projectedEOM >= warnPercent && projectedEOM < 100 && <span className="ml-1">⚠️ Near limit</span>}
 				</div>
-				<div className="text-sm">
-					<span className="text-ink-600">Cap:</span>
-					<span className="ml-2 font-semibold">€{(cap / 100).toFixed(2)}</span>
-				</div>
-				<div className="text-sm">
-					<span className="text-ink-600">Remaining:</span>
-					<span className="ml-2 font-semibold">€{((cap - spent) / 100).toFixed(2)}</span>
-				</div>
-				
-				{/* Projected EOM */}
-				{projectedEOM > 0 && (
-					<div className={`text-xs mt-3 p-2 rounded-lg ${
-						projectedEOM >= 100 ? 'text-danger bg-danger/5 border border-danger/20' :
-						projectedEOM >= warnPercent ? 'text-warn bg-warn/5 border border-warn/20' :
-						'text-ink-500 bg-bg-app border border-line'
-					}`}>
-						Projected EOM: {Math.round(projectedEOM)}%
-						{projectedEOM >= 100 && <span className="ml-1">⚠️ Over budget</span>}
-						{projectedEOM >= warnPercent && projectedEOM < 100 && <span className="ml-1">⚠️ Near limit</span>}
-					</div>
-				)}
-			</div>
+			)}
 		</div>
 	)
 }

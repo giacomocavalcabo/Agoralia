@@ -70,6 +70,12 @@
       "title": "Chiamate Live",
       "empty": "Nessuna chiamata attiva"
     },
+    "kpi": {
+      "calls_today": "Chiamate Oggi",
+      "minutes_month": "Minuti Mese",
+      "avg_duration": "Durata Media",
+      "contact_rate": "Tasso Contatto"
+    },
     "metrics": {
       "calls_today": "Chiamate Oggi",
       "minutes_month": "Minuti Mese",
@@ -98,6 +104,19 @@
       "avg": "media",
       "top_performer": "Miglior performer"
     },
+    "widgets": {
+      "budget": "Utilizzo Budget",
+      "funnel": "Imbuto Conversione",
+      "calls_histogram": "Istogramma Chiamate",
+      "live_calls": "Chiamate Live",
+      "sla": "SLA Performance"
+    },
+    "budget": {
+      "spent": "Speso",
+      "cap": "Limite",
+      "remaining": "Rimanente",
+      "projected": "Proiezione FME: {{pct}}%"
+    },
     "geo": {
       "title": "Distribuzione Geografica",
       "coming_soon": "Visualizzazione mappa in arrivo",
@@ -105,6 +124,10 @@
       "qualified": "qualificate",
       "top_country": "Paese top",
       "empty": "Nessun dato geografico disponibile"
+    },
+    "states": {
+      "not_configured": "Non configurato",
+      "no_calls": "Nessuna chiamata attiva"
     },
     "stats": {
       "total_created": "Totale Create",
