@@ -1,0 +1,138 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - heading "A" [level=1] [ref=e8]
+    - navigation [ref=e9]:
+      - link "nav.dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /
+        - img [ref=e11] [cursor=pointer]
+        - generic [ref=e13] [cursor=pointer]: Dashboard
+      - link "nav.leads" [ref=e14] [cursor=pointer]:
+        - /url: /leads
+        - img [ref=e15] [cursor=pointer]
+        - generic [ref=e17] [cursor=pointer]: Leads
+      - link "nav.campaigns" [ref=e18] [cursor=pointer]:
+        - /url: /campaigns
+        - img [ref=e19] [cursor=pointer]
+        - generic [ref=e21] [cursor=pointer]: Campaigns
+      - link "nav.calendar" [ref=e22] [cursor=pointer]:
+        - /url: /calendar
+        - img [ref=e23] [cursor=pointer]
+        - generic [ref=e25] [cursor=pointer]: Calendar
+      - link "nav.numbers" [ref=e26] [cursor=pointer]:
+        - /url: /numbers
+        - img [ref=e27] [cursor=pointer]
+        - generic [ref=e29] [cursor=pointer]: Numbers
+      - link "nav.knowledge base" [ref=e30] [cursor=pointer]:
+        - /url: /knowledge
+        - img [ref=e31] [cursor=pointer]
+        - generic [ref=e33] [cursor=pointer]: Knowledge Base
+      - link "nav.analytics" [ref=e34] [cursor=pointer]:
+        - /url: /analytics
+        - img [ref=e35] [cursor=pointer]
+        - generic [ref=e37] [cursor=pointer]: Analytics
+      - link "nav.history" [ref=e38] [cursor=pointer]:
+        - /url: /history
+        - img [ref=e39] [cursor=pointer]
+        - generic [ref=e41] [cursor=pointer]: History
+      - link "nav.import" [ref=e42] [cursor=pointer]:
+        - /url: /import
+        - img [ref=e43] [cursor=pointer]
+        - generic [ref=e45] [cursor=pointer]: Import
+      - link "nav.settings" [ref=e46] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e47] [cursor=pointer]
+        - generic [ref=e49] [cursor=pointer]: Settings
+      - link "nav.billing" [ref=e50] [cursor=pointer]:
+        - /url: /settings/billing
+        - img [ref=e51] [cursor=pointer]
+        - generic [ref=e53] [cursor=pointer]: Billing
+      - link "nav.members" [ref=e54] [cursor=pointer]:
+        - /url: /invite
+        - img [ref=e55] [cursor=pointer]
+        - generic [ref=e57] [cursor=pointer]: Members
+  - generic [ref=e58]:
+    - generic [ref=e60]:
+      - generic [ref=e62]:
+        - img [ref=e63]
+        - textbox "common.search" [ref=e65]
+      - generic [ref=e66]:
+        - button "🇺🇸 English" [expanded] [ref=e69] [cursor=pointer]:
+          - generic [ref=e70] [cursor=pointer]: 🇺🇸
+          - generic [ref=e71] [cursor=pointer]: English
+          - img [ref=e72] [cursor=pointer]
+        - button [ref=e74] [cursor=pointer]:
+          - img [ref=e75] [cursor=pointer]
+        - generic [ref=e77]:
+          - button "U User" [active] [ref=e78] [cursor=pointer]:
+            - generic [ref=e80] [cursor=pointer]: U
+            - generic [ref=e81] [cursor=pointer]: User
+            - img [ref=e82] [cursor=pointer]
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - paragraph [ref=e86]: User
+              - paragraph
+            - button "Sign out" [ref=e87] [cursor=pointer]
+    - generic [ref=e90]:
+      - generic [ref=e93]:
+        - heading "Dashboard" [level=1] [ref=e94]
+        - paragraph [ref=e95]: Overview of your campaigns and performance
+      - generic [ref=e96]:
+        - generic [ref=e100]:
+          - generic [ref=e101]: Calls Today
+          - generic [ref=e102]: "0"
+        - generic [ref=e106]:
+          - generic [ref=e107]: Minutes Month
+          - generic [ref=e108]: "0"
+        - generic [ref=e112]:
+          - generic [ref=e113]: Avg Duration
+          - generic [ref=e114]: 00:00
+        - generic [ref=e118]:
+          - generic [ref=e119]: Contact Rate
+          - generic [ref=e120]: 0%
+        - generic [ref=e123]:
+          - heading "Call Trends" [level=3] [ref=e124]
+          - generic [ref=e125]:
+            - button "7d" [ref=e126] [cursor=pointer]
+            - button "30d" [ref=e127] [cursor=pointer]
+        - generic [ref=e132]:
+          - generic [ref=e133]: Budget Usage
+          - generic [ref=e135]:
+            - generic [ref=e136]: —
+            - generic [ref=e137]: Not configured
+        - generic [ref=e139]:
+          - heading "Conversion Funnel" [level=3] [ref=e140]
+          - generic [ref=e141]:
+            - generic [ref=e144]: 0%
+            - generic [ref=e147]: 0%
+            - generic [ref=e150]: 0%
+            - generic [ref=e153]: 0%
+        - generic [ref=e155]:
+          - generic [ref=e156]: Top Agents
+          - generic [ref=e157]: No agent data available
+        - generic [ref=e159]:
+          - generic [ref=e160]: Geographic Distribution
+          - generic [ref=e161]:
+            - generic [ref=e162]: 🗺️
+            - generic [ref=e163]: Map visualization coming soon
+            - generic [ref=e164]: No geographic data available
+          - generic [ref=e166]: "Top country: ( calls)"
+        - heading "Response Time" [level=3] [ref=e169]
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - generic [ref=e175]: Live Calls
+            - generic [ref=e178]: common.polling • 0 common.active
+          - generic [ref=e179]: No active calls
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - generic [ref=e183]: Event Feed
+            - generic [ref=e184]: 0 events
+          - generic [ref=e185]:
+            - button "All" [ref=e186] [cursor=pointer]
+            - button "Errors" [ref=e187] [cursor=pointer]
+            - button "Webhooks" [ref=e188] [cursor=pointer]
+            - button "Budget" [ref=e189] [cursor=pointer]
+          - generic [ref=e191]: No events to show
+```

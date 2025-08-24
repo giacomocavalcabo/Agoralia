@@ -14,7 +14,7 @@ const CRMFieldMappingEditor = ({
   onMappingUpdate,
   initialMapping = null 
 }) => {
-  const { t } = useI18n();
+  const { t } = useI18n('pages');
   const { toast } = useToast();
   
   const [mapping, setMapping] = useState({});

@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next'
 export default function GaugeBudget({ 
 	spent, 
 	cap, 
+	projectedEom,
 	warnPercent = 80,
+	labelPosition = 'outside',
 	className = ''
 }) {
 	const { t } = useTranslation('pages')
@@ -23,70 +25,76 @@ export default function GaugeBudget({
 		)
 	}
 	
-	const percentage = Math.min(100, (spent / cap) * 100)
+	const pctRaw = cap ? (spent / cap) * 100 : 0;
+	const pct = Math.max(0, Math.min(100, Math.round(pctRaw)));
 	
 	// Dynamic colors based on spending percentage
 	const getColor = () => {
-		if (percentage >= 100) return 'text-danger'
-		if (percentage >= warnPercent) return 'text-warn'
+		if (pct >= 100) return 'text-danger'
+		if (pct >= warnPercent) return 'text-warn'
 		return 'text-success'
 	}
 	
 	const getGaugeColor = () => {
-		if (percentage >= 100) return 'stroke-danger'
-		if (percentage >= warnPercent) return 'stroke-warn'
+		if (pct >= 100) return 'stroke-danger'
+		if (pct >= warnPercent) return 'stroke-warn'
 		return 'stroke-success'
 	}
-	
-	// End-of-month projection (simple linear regression from last 7 days)
-	const projectedEOM = cap > 0 ? Math.min(100, (spent / cap) * 100 * 1.2) : 0
 	
 	// SVG gauge (semicircle)
 	const radius = 40
 	const circumference = Math.PI * radius
 	const strokeDasharray = circumference
-	const strokeDashoffset = circumference - (percentage / 100) * circumference
+	const strokeDashoffset = circumference - (pct / 100) * circumference
 	
+	const Gauge = (
+		<div className="relative h-24 w-28 shrink-0" role="img" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+			<svg width="100" height="60" viewBox="0 0 100 60">
+				{/* Background circle */}
+				<circle
+					cx="50"
+					cy="50"
+					r={radius}
+					fill="none"
+					stroke="var(--line)"
+					strokeWidth="8"
+					transform="rotate(-90 50 50)"
+				/>
+				{/* Progress circle */}
+				<circle
+					cx="50"
+					cy="50"
+					r={radius}
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="8"
+					strokeLinecap="round"
+					transform="rotate(-90 50 50)"
+					strokeDasharray={strokeDasharray}
+					strokeDashoffset={strokeDashoffset}
+					className={getGaugeColor()}
+				/>
+			</svg>
+			{labelPosition === 'inside' && (
+				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl font-semibold tabular-nums leading-none whitespace-nowrap">
+					{pct}%
+				</span>
+			)}
+		</div>
+	);
+
 	return (
 		<div className={`panel text-center ${className}`} data-testid="budget-gauge">
 			<div className="text-sm text-ink-600 mb-3">{t('dashboard.widgets.budget')}</div>
 			
-			{/* SVG Gauge */}
-			<div className="relative inline-block mb-4">
-				<svg width="100" height="60" viewBox="0 0 100 60">
-					{/* Background circle */}
-					<circle
-						cx="50"
-						cy="50"
-						r={radius}
-						fill="none"
-						stroke="var(--line)"
-						strokeWidth="8"
-						transform="rotate(-90 50 50)"
-					/>
-					{/* Progress circle */}
-					<circle
-						cx="50"
-						cy="50"
-						r={radius}
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="8"
-						strokeLinecap="round"
-						transform="rotate(-90 50 50)"
-						strokeDasharray={strokeDasharray}
-						strokeDashoffset={strokeDashoffset}
-						className={getGaugeColor()}
-					/>
-				</svg>
-				
-				{/* Center text - PERFETTAMENTE CENTRATO con absolute + translate */}
-				<div className="absolute inset-0 flex items-center justify-center">
-					<div className={`text-2xl font-semibold tabular-nums ${getColor()}`}>
-						{Math.round(percentage)}%
-					</div>
+			{labelPosition === 'outside' ? (
+				<div className="flex items-center gap-3 justify-center mb-4">
+					{Gauge}
+					<div className="text-3xl font-semibold tabular-nums leading-none whitespace-nowrap">{pct}%</div>
 				</div>
-			</div>
+			) : (
+				<div className="mb-4">{Gauge}</div>
+			)}
 			
 			{/* Values - GRIGLIA 2 COLONNE con allineamento numeri */}
 			<dl className="grid grid-cols-2 gap-y-2">
@@ -99,15 +107,9 @@ export default function GaugeBudget({
 			</dl>
 			
 			{/* Projected EOM */}
-			{projectedEOM > 0 && (
-				<div className={`text-xs mt-3 p-2 rounded-lg tabular-nums ${
-					projectedEOM >= 100 ? 'text-danger bg-danger/5 border border-danger/20' :
-					projectedEOM >= warnPercent ? 'text-warn bg-warn/5 border border-warn/20' :
-					'text-ink-500 bg-bg-app border border-line'
-				}`}>
-					{t('dashboard.budget.projected', 'Projected EOM: {{pct}}%', { pct: Math.round(projectedEOM) })}
-					{projectedEOM >= 100 && <span className="ml-1">⚠️ Over budget</span>}
-					{projectedEOM >= warnPercent && projectedEOM < 100 && <span className="ml-1">⚠️ Near limit</span>}
+			{cap && (
+				<div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-center text-sm tabular-nums">
+					{t('dashboard.budget.projected', 'Projected EOM: {{pct}}%', { pct: projectedEom ?? pct })}
 				</div>
 			)}
 		</div>

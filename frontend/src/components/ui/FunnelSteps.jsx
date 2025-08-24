@@ -5,7 +5,7 @@ export default function FunnelSteps({
 	data = { reached: 0, connected: 0, qualified: 0, booked: 0 },
 	className = ''
 }) {
-	const { t } = useI18n()
+	const { t } = useI18n('pages')
 	const steps = [
 		{ key: 'reached', label: t('dashboard.funnel.reached', 'Reached'), color: 'bg-blue-500' },
 		{ key: 'connected', label: t('dashboard.funnel.connected', 'Connected'), color: 'bg-teal-500' },
@@ -56,7 +56,7 @@ export default function FunnelSteps({
 							
 							{/* Drop-off indicator */}
 							{index > 0 && dropOff > 0 && (
-								<div className="absolute -top-1 right-0 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full border border-gray-200">
+								<div className="mt-1 text-right text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full border border-gray-200 inline-block">
 									-{Math.round(dropOff)}%
 								</div>
 							)}

@@ -88,7 +88,56 @@
 			"30d": "30d"
 		}
 	},
-	"campaigns": {"title":"Campaigns","description":"Manage your outbound campaigns"},
+	"campaigns": {
+		"title": "Campaigns",
+		"description": "Manage your outbound campaigns",
+		"status": {
+			"active": "Active",
+			"paused": "Paused",
+			"completed": "Completed",
+			"draft": "Draft"
+		},
+		"table": {
+			"columns": {
+				"name": "Name",
+				"status": "Status",
+				"pacing": "Pacing",
+				"budget": "Budget",
+				"created_at": "Created"
+			},
+			"empty": {
+				"title": "No campaigns yet",
+				"description": "Create your first campaign to start reaching prospects",
+				"cta_import": "Import",
+				"cta_new": "New Campaign"
+			},
+			"error": {
+				"title": "Error loading campaigns",
+				"description": "Unable to load campaign data. Please try again.",
+				"retry": "Retry"
+			},
+			"loading": "Loading campaigns...",
+			"sorting": {
+				"asc": "Sort ascending",
+				"desc": "Sort descending"
+			},
+			"select_all": "Select all campaigns"
+		}
+	},
+	"kb": {
+		"auth": { 
+			"title": "Sign in required", 
+			"description": "Sign in to view your knowledge base and ingestion progress" 
+		},
+		"empty": { 
+			"workspace_blocked": "Workspace not available in demo mode" 
+		},
+		"error": { 
+			"title": "Loading error", 
+			"description": "We couldn't load knowledge base data. Please retry.", 
+			"retry": "Retry" 
+		}
+	},
 	"calls": {
 		"title": "Calls",
 		"description": "Monitor live calls and recent activity",

@@ -1,5 +1,5 @@
-import { KBProgressBar } from './ProgressBar';
-import { KBBadge } from './Badge';
+import { ProgressBar } from '../ui/ProgressBar';
+import { Badge } from '../ui/Badge';
 
 export function CompletenessMeter({ 
   completeness, 
@@ -42,7 +42,7 @@ export function CompletenessMeter({
           <span className="text-sm font-medium text-gray-700">Completeness</span>
           <span className="text-lg font-semibold text-gray-900">{completeness}%</span>
         </div>
-        <KBProgressBar 
+        <ProgressBar 
           value={completeness} 
           size="lg"
           color={completeness >= 80 ? 'green' : completeness >= 60 ? 'yellow' : 'red'}
@@ -54,11 +54,11 @@ export function CompletenessMeter({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">Freshness</span>
-              <KBBadge status={getFreshnessLabel(freshness).toLowerCase()}>
+              <Badge status={getFreshnessLabel(freshness).toLowerCase()}>
                 {freshness}/100
-              </KBBadge>
+              </Badge>
             </div>
-            <KBProgressBar 
+            <ProgressBar 
               value={freshness} 
               size="sm"
               color={freshness >= 80 ? 'green' : freshness >= 60 ? 'yellow' : 'red'}

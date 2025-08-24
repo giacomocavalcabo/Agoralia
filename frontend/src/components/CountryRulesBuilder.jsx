@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 
 export default function CountryRulesBuilder({ value, onChange }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const [rows, setRows] = useState(() => Array.isArray(value) ? value : [])
   useEffect(() => { onChange?.(rows) }, [rows, onChange])
   function add() { setRows([...rows, { iso: '', disclosure: '', quiet_hours: '21:00-08:00', dnc: false }]) }

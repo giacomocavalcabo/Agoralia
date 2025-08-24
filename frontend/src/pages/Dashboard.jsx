@@ -362,6 +362,7 @@ export default function Dashboard() {
 							spent={summary?.budget_spent_month_cents || 0}
 							cap={summary?.budget_monthly_cents || 0}
 							warnPercent={80}
+							labelPosition="outside"
 							className="min-h-[320px]"
 						/>
 					</div>
@@ -370,12 +371,7 @@ export default function Dashboard() {
 					<div className="col-span-12 lg:col-span-4">
 						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.funnel')}</h3>
-							<ConversionFunnel steps={[
-								{ label: t('dashboard.funnel.reached'), value: (showDemoData ? funnelData.reached : 0) || 0, colorClass: 'bg-primary-300' },
-								{ label: t('dashboard.funnel.connected'), value: (showDemoData ? funnelData.connected : 0) || 0, colorClass: 'bg-primary-400' },
-								{ label: t('dashboard.funnel.qualified'), value: (showDemoData ? funnelData.qualified : 0) || 0, colorClass: 'bg-primary-500' },
-								{ label: t('dashboard.funnel.booked'), value: (showDemoData ? funnelData.booked : 0) || 0, colorClass: 'bg-primary-600' }
-							]} />
+							<ConversionFunnel data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} />
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4">

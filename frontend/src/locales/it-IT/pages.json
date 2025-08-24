@@ -7,6 +7,20 @@
     "compliance": {"attestations":"Attestazioni","generate":"Genera PDF","preflight":"Pre‑flight log"},
     "notices": {"impersonating":"Stai impersonando {user}. Torna all'admin."}
   },
+  "kb": {
+    "auth": { 
+      "title": "Accesso richiesto", 
+      "description": "Accedi per visualizzare la knowledge base e lo stato di ingestione" 
+    },
+    "empty": { 
+      "workspace_blocked": "Workspace non disponibile in modalità demo" 
+    },
+    "error": { 
+      "title": "Errore di caricamento", 
+      "description": "Impossibile caricare i dati della knowledge base. Riprova.", 
+      "retry": "Riprova" 
+    }
+  },
   "dashboard": {
     "title": "Dashboard",
     "description": "Panoramica delle campagne e performance",
@@ -298,6 +312,38 @@
     "campaigns": {
       "title": "Campagne",
       "description": "Crea e gestisci campagne di chiamate in uscita.",
+      "status": {
+        "active": "Attiva",
+        "paused": "In pausa",
+        "completed": "Completata",
+        "draft": "Bozza"
+      },
+      "table": {
+        "columns": {
+          "name": "Nome",
+          "status": "Stato",
+          "pacing": "Ritmo",
+          "budget": "Budget",
+          "created_at": "Creata"
+        },
+        "empty": {
+          "title": "Nessuna campagna",
+          "description": "Crea la tua prima campagna per iniziare a raggiungere i prospect",
+          "cta_import": "Importa",
+          "cta_new": "Nuova Campagna"
+        },
+        "error": {
+          "title": "Errore caricamento campagne",
+          "description": "Impossibile caricare i dati delle campagne. Riprova.",
+          "retry": "Riprova"
+        },
+        "loading": "Caricamento campagne...",
+        "sorting": {
+          "asc": "Ordina crescente",
+          "desc": "Ordina decrescente"
+        },
+        "select_all": "Seleziona tutte le campagne"
+      },
       "fields": {
         "name": { "label": "Nome", "placeholder": "Fornitori RFQ estivi" },
         "goal": { "label": "Obiettivo",

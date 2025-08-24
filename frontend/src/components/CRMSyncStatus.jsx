@@ -7,7 +7,7 @@ import { useToast } from './ToastProvider';
 import { useI18n } from '../lib/i18n.jsx';
 
 const CRMSyncStatus = ({ workspaceId, provider }) => {
-  const { t } = useI18n();
+  const { t } = useI18n('pages');
   const { toast } = useToast();
   
   const [syncStatus, setSyncStatus] = useState({

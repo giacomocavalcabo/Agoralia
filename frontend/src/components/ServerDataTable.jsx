@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 export default function ServerDataTable({
   columns,
@@ -18,32 +17,50 @@ export default function ServerDataTable({
   isLoading,
   isError,
   onRetry,
+  // i18n props for labels
+  errorTitle = 'Error loading data',
+  errorDescription = 'An error occurred while loading the data. Please try again.',
+  retryLabel = 'Retry',
+  emptyTitle = 'No data available',
+  emptyDescription = 'There are no items to display.',
+  emptyCtaImport = 'Import',
+  emptyCtaAdd = 'Add New',
+  loadingLabel = 'Loading...',
+  sortAscLabel = 'Sort ascending',
+  sortDescLabel = 'Sort descending',
+  selectAllLabel = 'Select all'
 }) {
-  const { t } = useTranslation('pages');
-  const from = (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
-  const pages = Math.max(1, Math.ceil(total / pageSize));
+  // Safety checks - prevent crash on undefined data
+  const safeData = Array.isArray(rows) ? rows : [];
+  const safeColumns = Array.isArray(columns) ? columns : [];
+  const safeTotal = typeof total === 'number' ? total : 0;
+  const safePage = typeof page === 'number' ? page : 1;
+  const safePageSize = typeof pageSize === 'number' ? pageSize : 25;
+  
+  const from = (safePage - 1) * safePageSize + 1;
+  const to = Math.min(safePage * safePageSize, safeTotal);
+  const pages = Math.max(1, Math.ceil(safeTotal / safePageSize));
 
   if (isError) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm">
-        <div className="font-semibold">{t('leads.error.title')}</div>
-        <div className="mt-1 text-gray-700">{t('leads.error.description')}</div>
+        <div className="font-semibold">{errorTitle}</div>
+        <div className="mt-1 text-gray-700">{errorDescription}</div>
         <button onClick={onRetry} className="mt-3 rounded-lg bg-red-600 px-3 py-2 text-white">
-          {t('leads.error.retry')}
+          {retryLabel}
         </button>
       </div>
     );
   }
 
-  if (!isLoading && total === 0) {
+  if (!isLoading && safeTotal === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-        <div className="text-lg font-semibold">{t('leads.empty.title')}</div>
-        <p className="mt-1 text-gray-600">{t('leads.empty.description')}</p>
+        <div className="font-semibold">{emptyTitle}</div>
+        <p className="mt-1 text-gray-600">{emptyDescription}</p>
         <div className="mt-4 flex justify-center gap-2">
-          <button className="rounded-lg border px-3 py-2 text-sm">{t('leads.empty.cta_import')}</button>
-          <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white">{t('leads.empty.cta_add')}</button>
+          <button className="rounded-lg border px-3 py-2 text-sm">{emptyCtaImport}</button>
+          <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white">{emptyCtaAdd}</button>
         </div>
       </div>
     );
@@ -57,18 +74,18 @@ export default function ServerDataTable({
             <tr>
               <th className="w-10 px-3 py-3">
                 <input
-                  aria-label="select all"
+                  aria-label={selectAllLabel}
                   type="checkbox"
                   onChange={(e) => onToggleAll?.(e.target.checked)}
                 />
               </th>
-              {columns.map((col) => (
+              {safeColumns.map((col) => (
                 <th key={col.id} className="px-3 py-3">
                   <button
                     type="button"
                     className="inline-flex items-center gap-1 font-medium"
                     onClick={() => onSort?.(col.id)}
-                    aria-label={dir === 'asc' ? t('leads.table.sorting.asc') : t('leads.table.sorting.desc')}
+                    aria-label={dir === 'asc' ? sortAscLabel : sortDescLabel}
                   >
                     {col.header}
                     {sort === col.id ? <span>{dir === 'asc' ? '↑' : '↓'}</span> : null}
@@ -79,9 +96,9 @@ export default function ServerDataTable({
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={columns.length + 1} className="px-3 py-6 text-center text-gray-500">Loading…</td></tr>
+              <tr><td colSpan={safeColumns.length + 1} className="px-3 py-6 text-center text-gray-500">{loadingLabel}</td></tr>
             ) : (
-              rows.map((row) => (
+              safeData.map((row) => (
                 <tr key={row.id} data-testid="leads-row" className="border-t">
                   <td className="px-3 py-2">
                     <input
@@ -91,7 +108,7 @@ export default function ServerDataTable({
                       onChange={(e) => onToggleRow?.(row.id, e.target.checked)}
                     />
                   </td>
-                  {columns.map((col) => (
+                  {safeColumns.map((col) => (
                     <td key={col.id} className="px-3 py-2">
                       {col.cell ? col.cell(row) : row[col.id]}
                     </td>
@@ -105,20 +122,20 @@ export default function ServerDataTable({
       {/* Footer */}
       <div className="flex items-center justify-between border-t bg-gray-50 px-3 py-2 text-sm">
         <div>
-          {t('leads.table.pagination.showing', { from, to, total })}
+          Showing {from} to {to} of {safeTotal} results
         </div>
         <div className="flex items-center gap-2">
           <select
             data-testid="page-size"
             className="rounded-lg border border-gray-300 bg-white px-2 py-1"
-            value={String(pageSize)}
+            value={String(safePageSize)}
             onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
           >
-            {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{t('leads.table.pagination.page_size')} {n}</option>)}
+            {[10, 25, 50, 100].map((n) => <option key={n} value={n}>Show {n}</option>)}
           </select>
-          <button disabled={page <= 1} onClick={() => onPageChange?.(page - 1)} className="rounded border px-2 py-1 disabled:opacity-50">Prev</button>
-          <span>{page} / {pages}</span>
-          <button disabled={page >= pages} onClick={() => onPageChange?.(page + 1)} className="rounded border px-2 py-1 disabled:opacity-50">Next</button>
+          <button disabled={safePage <= 1} onClick={() => onPageChange?.(safePage - 1)} className="rounded border px-2 py-1 disabled:opacity-50">Prev</button>
+          <span>{safePage} / {pages}</span>
+          <button disabled={safePage >= pages} onClick={() => onPageChange?.(safePage + 1)} className="rounded border px-2 py-1 disabled:opacity-50">Next</button>
         </div>
       </div>
     </div>

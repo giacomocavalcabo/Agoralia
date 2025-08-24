@@ -1,6 +1,6 @@
 export const API_BASE_URL = import.meta.env.DEV 
   ? '/api'  // Usa proxy in dev
-  : (import.meta.env.VITE_API_BASE_URL || 'https://service-1-production.up.railway.app');
+  : '/api';  // Usa proxy anche in produzione (vercel.json)
 
 export async function apiFetch(path, options = {}) {
 	const url = `${API_BASE_URL}${path}`;

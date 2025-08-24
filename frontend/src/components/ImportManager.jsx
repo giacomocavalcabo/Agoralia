@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { UploadIcon, DocumentTextIcon, GlobeAltIcon, XIcon } from '@heroicons/react/24/outline'
+import { ArrowUpTrayIcon, DocumentTextIcon, GlobeAltIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { api } from '../lib/api'
 import { Button } from './ui/button'
 import { Card } from './ui/Card'
@@ -136,7 +136,7 @@ export function ImportManager({ onImportComplete }) {
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <UploadIcon className="h-8 w-8 mx-auto mb-2 text-gray-600" />
+              <ArrowUpTrayIcon className="h-8 w-8 mx-auto mb-2 text-gray-600" />
               <div className="font-medium">File Upload</div>
               <div className="text-sm text-gray-500">PDF, DOC, TXT</div>
             </button>
@@ -199,7 +199,7 @@ export function ImportManager({ onImportComplete }) {
                       onClick={() => setFile(null)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <XIcon className="h-4 w-4" />
+                      <XMarkIcon className="h-4 w-4" />
                     </button>
                   </div>
                 )}

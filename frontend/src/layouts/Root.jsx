@@ -9,7 +9,7 @@ import i18n from '../lib/i18n.jsx'
 
 // Lazy load pages with namespace preloading
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))
-const KnowledgeBase = React.lazy(() => import('../pages/KnowledgeBase/KnowledgeBase'))
+const KnowledgeBase = React.lazy(() => import('../pages/KnowledgeBase'))
 const KBEditor = React.lazy(() => import('../pages/KnowledgeBase/KBEditor'))
 const Assignments = React.lazy(() => import('../pages/KnowledgeBase/Assignments'))
 const Imports = React.lazy(() => import('../pages/KnowledgeBase/Imports'))

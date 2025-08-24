@@ -89,6 +89,7 @@ export default function Sidebar(){
 										key={n.to} 
 										to={n.to} 
 										aria-label={n.label} 
+										title={n.label}
 										className={`relative rounded-lg ${collapsed ? 'px-2 py-1.5 text-center' : 'px-2 py-1.5'} border text-xs ${
 											active ? 'bg-bg-app border-line font-semibold' : 'border-transparent hover:bg-bg-app'
 										}`}

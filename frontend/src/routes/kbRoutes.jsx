@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 
 // Lazy imports
-const KnowledgeBase = lazy(() => import('../pages/KnowledgeBase/KnowledgeBase'));
+const KnowledgeBase = lazy(() => import('../pages/KnowledgeBase'));
 const KBEditor = lazy(() => import('../pages/KnowledgeBase/KBEditor'));
 const OfferPacks = lazy(() => import('../pages/KnowledgeBase/OfferPacks'));
 const OfferPackDetail = lazy(() => import('../pages/KnowledgeBase/OfferPackDetail'));

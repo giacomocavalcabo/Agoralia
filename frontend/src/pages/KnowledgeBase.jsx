@@ -6,19 +6,29 @@ import { Button } from '../components/ui/button'
 import { useKbList } from '../lib/kbApi'
 import { CompletenessMeter } from '../components/kb/CompletenessMeter'
 import { useNavigate } from 'react-router-dom'
+import { useI18n } from '../lib/i18n.jsx'
+import { useAuth } from '../lib/useAuth'
+import { useIsDemo } from '../lib/useDemoData'
 
 export default function KnowledgeBase() {
   const navigate = useNavigate();
+  const { t } = useI18n('pages');
+  const { user } = useAuth();
+  const isDemo = useIsDemo();
   
-  // Fetch KB overview data
-  const { data: kbData, isLoading } = useQuery({
+  // Check if KB should be enabled
+  const enabled = user?.id && !isDemo;
+  
+  // Fetch KB overview data only if enabled
+  const { data: kbData, isLoading, isError } = useQuery({
     queryKey: ['kb-overview'],
     queryFn: () => api.get('/kb/progress'),
-    staleTime: 30000
+    staleTime: 30000,
+    enabled: enabled
   })
   
-  // Fetch KB list using new hook
-  const { data: kbList } = useKbList({});
+  // Fetch KB list using new hook only if enabled
+  const { data: kbList } = useKbList({ enabled });
   const items = kbList?.items ?? [];
   
   const company = items.find(i => i.kind === 'company');
@@ -42,6 +52,61 @@ export default function KnowledgeBase() {
   const handleAssignments = () => {
     navigate('/knowledge/assignments');
   };
+
+  // Handle different states
+  if (!user?.id) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">{t('kb.auth.title')}</h1>
+        </div>
+        <Card>
+          <div className="text-center py-8">
+            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.auth.title')}</h3>
+            <p className="text-gray-600">{t('kb.auth.description')}</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isDemo) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Knowledge</h1>
+        </div>
+        <Card>
+          <div className="text-center py-8">
+            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Demo Mode</h3>
+            <p className="text-gray-600">{t('kb.empty.workspace_blocked')}</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Knowledge</h1>
+        </div>
+        <Card>
+          <div className="text-center py-8">
+            <DocumentTextIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.error.title')}</h3>
+            <p className="text-gray-600 mb-4">{t('kb.error.description')}</p>
+            <Button onClick={() => window.location.reload()}>
+              {t('kb.error.retry')}
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

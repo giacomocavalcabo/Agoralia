@@ -5,7 +5,7 @@ export default function TopAgentsBar({
 	agents = [],
 	className = ''
 }) {
-	const { t } = useI18n()
+	const { t } = useI18n('pages')
 	// Sort agents by qualified rate
 	const sortedAgents = [...agents].sort((a, b) => (b.qualified_rate || 0) - (a.qualified_rate || 0))
 	

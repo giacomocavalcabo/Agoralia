@@ -18,7 +18,7 @@ const CARD_ELEMENT_OPTIONS = {
 }
 
 export default function PaymentMethodForm({ onSuccess, onCancel }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const stripe = useStripe()
   const elements = useElements()
   const [isProcessing, setIsProcessing] = useState(false)

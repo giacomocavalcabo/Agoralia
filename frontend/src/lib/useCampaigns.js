@@ -1,48 +1,59 @@
-import { useQuery } from '@tanstack/react-query';
-import { useApiWithDemo } from './demoGate';
-import { useAuth } from './useAuth';
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useApiWithDemo } from './demoGate'
+import { useIsDemo } from './useDemoData'
 
-export function useCampaigns({ page = 1, pageSize = 25, q = '', sort = 'created_at', dir = 'desc' }) {
-  const { get, isDemo } = useApiWithDemo();
-  const { user } = useAuth();
+const DEFAULT_PAGE = 1
+const DEFAULT_SIZE = 25
 
-  const enabled = !!user?.id && !isDemo;
+function mapResponseShape(res) {
+  if (!res) return { data: [], total: 0 }
+  if (Array.isArray(res)) return { data: res, total: res.length }
+  if ('data' in res && Array.isArray(res.data)) return { data: res.data, total: Number(res.total ?? res.data.length) }
+  if ('items' in res && Array.isArray(res.items)) return { data: res.items, total: Number(res.total ?? res.items.length) }
+  return { data: [], total: 0 }
+}
+
+export function useCampaigns(params = {}) {
+  const isDemo = useIsDemo()
+  const { get } = useApiWithDemo()
+
+  const {
+    page = DEFAULT_PAGE,
+    pageSize = DEFAULT_SIZE,
+    q = '',
+    sortBy = 'created_at',
+    sortDir = 'desc',
+    filters = {}
+  } = params
+
+  const queryKey = useMemo(() => ([
+    'campaigns', { page, pageSize, q, sortBy, sortDir, filters, isDemo }
+  ]), [page, pageSize, q, sortBy, sortDir, filters, isDemo])
 
   const query = useQuery({
-    queryKey: ['campaigns', { page, pageSize, q, sort, dir }],
-    enabled,
-    queryFn: async () => {
-      const params = { 
-        limit: pageSize, 
-        offset: (page - 1) * pageSize, 
-        q, 
-        sort, 
-        dir 
-      };
-      const res = await get('/campaigns', { params });
-      // support both shapes
-      const data = res?.data?.data || res?.data?.items || res?.data || [];
-      const total = res?.data?.total ?? data.length;
-      return { rows: data, total };
+    queryKey,
+    queryFn: async ({ signal }) => {
+      const search = {
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        q,
+        sort: sortBy,
+        dir: sortDir,
+        ...filters
+      }
+      const res = await get('/campaigns', search, { signal })
+      return mapResponseShape(res)
     },
-    staleTime: 15_000
-  });
+    staleTime: 60_000,
+    retry: 1
+  })
 
-  if (!enabled) {
-    return { 
-      rows: [], 
-      total: 0, 
-      isLoading: false, 
-      isError: false, 
-      refetch: () => {} 
-    };
-  }
-  
   return {
-    rows: query.data?.rows || [],
-    total: query.data?.total || 0,
-    isLoading: query.isLoading,
-    isError: query.isError,
+    data: query.data?.data ?? [],
+    total: query.data?.total ?? 0,
+    loading: query.isLoading,
+    error: query.error,
     refetch: query.refetch
-  };
+  }
 }

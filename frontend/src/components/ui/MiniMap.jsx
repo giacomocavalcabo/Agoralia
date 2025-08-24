@@ -5,7 +5,7 @@ export default function MiniMap({
 	data = [],
 	className = ''
 }) {
-	const { t } = useI18n()
+	const { t } = useI18n('pages')
 	// Only show real data, no placeholder data
 	const displayData = data
 	

@@ -1,28 +1,59 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function ConversionFunnel({ steps = [] }) {
+const clampPct = (n) => Math.max(0, Math.min(100, Math.round(n)));
+
+function toStagePercents(data) {
+  // Se arriva già in % (<=100), usa e clamp
+  const looksLikePct =
+    [data.reached, data.connected, data.qualified, data.booked]
+      .every(v => typeof v === 'number' && v <= 100);
+  if (looksLikePct) {
+    return {
+      reached: clampPct(data.reached),
+      connected: clampPct(data.connected),
+      qualified: clampPct(data.qualified),
+      booked: clampPct(data.booked)
+    };
+  }
+  // DEMO con CONTEGGI → percentuali relative per stadio
+  const reached = Math.max(1, data.reached || 0); // evita div/0
+  const connected = data.connected || 0;
+  const qualified = data.qualified || 0;
+  const booked = data.booked || 0;
+  return {
+    reached: 100,
+    connected: clampPct((connected / reached) * 100),
+    qualified: clampPct(reached ? (qualified / Math.max(1, connected)) * 100 : 0),
+    booked: clampPct(qualified ? (booked / Math.max(1, qualified)) * 100 : 0),
+  };
+}
+
+export default function ConversionFunnel({ data }) {
   const { t } = useTranslation('pages')
-  // steps: [{label, value, colorClass}]
+  const p = toStagePercents(data);
+  const items = [
+    { label: 'Reached',   percent: p.reached },
+    { label: 'Connected', percent: p.connected },
+    { label: 'Qualified', percent: p.qualified },
+    { label: 'Booked',    percent: p.booked }
+  ];
+
   return (
     <div className="space-y-2">
-      {steps.map((s,i) => {
-        // CLAMP: larghezza barra <=100% per evitare overflow
-        const barWidth = Math.min(100, s.value || 0)
+      {items.map((it) => {
+        const width = `${Math.min(100, it.percent)}%`; // clamp visivo
         return (
-          <div key={i} className="grid grid-cols-12 gap-3 items-center">
-            <div className="col-span-3 text-sm text-slate-600">{s.label}</div>
-            <div className="col-span-7">
-              {/* Track con overflow-hidden per prevenire spill-over */}
-              <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-                <div className={`h-3 rounded-full ${s.colorClass}`} style={{width:`${barWidth}%`}} />
-              </div>
+          <div key={it.label} className="flex items-center gap-2">
+            <div className="relative w-full overflow-hidden rounded bg-gray-100">
+              <div className="h-2 bg-primary-500" style={{ width }} />
             </div>
-            {/* Label mostra valore reale (anche >100%) ma barra è clampata */}
-            <div className="col-span-2 text-right text-sm font-medium tabular-nums">{(s.value ?? 0).toFixed(0)}%</div>
+            <span className="w-12 text-right text-xs tabular-nums whitespace-nowrap">
+              {it.percent}%
+            </span>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

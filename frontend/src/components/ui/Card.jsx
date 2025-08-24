@@ -13,8 +13,9 @@ const sizeMap = {
 export function Card({ className = '', title, footer, children, size = 'md', ...props }) {
   return (
     <div
+      data-card="true"
       className={cn(
-        'bg-white rounded-2xl border border-gray-200 shadow-sm',
+        'relative isolate z-0 overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm',
         sizeMap[size],
         className
       )}

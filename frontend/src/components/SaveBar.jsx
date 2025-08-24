@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
 
 export default function SaveBar({ dirty, saving, onSave, onReset, description }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   useEffect(() => {
     const onBeforeUnload = (e) => {
       if (dirty) { e.preventDefault(); e.returnValue = '' }
