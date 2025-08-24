@@ -78,7 +78,7 @@ export default function SettingsNav({ className }) {
               to={item.href}
               className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                 active
-                  ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
+                  ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function GaugeBudget({ 
 	spent, 
@@ -6,6 +7,7 @@ export default function GaugeBudget({
 	warnPercent = 80,
 	className = ''
 }) {
+	const { t } = useTranslation('pages')
 	// Se non c'è cap configurato, mostra stato "Not configured"
 	if (!cap || cap <= 0) {
 		return (
@@ -14,7 +16,7 @@ export default function GaugeBudget({
 				<div className="h-32 flex items-center justify-center">
 					<div className="text-center">
 						<div className="text-2xl font-semibold text-gray-400 mb-2">—</div>
-						<div className="text-sm text-gray-500">Not configured</div>
+						<div className="text-sm text-gray-500">{t('dashboard.states.not_configured')}</div>
 					</div>
 				</div>
 			</div>
@@ -47,7 +49,7 @@ export default function GaugeBudget({
 	
 	return (
 		<div className={`panel text-center ${className}`}>
-			<div className="text-sm text-ink-600 mb-3">Budget Usage</div>
+			<div className="text-sm text-ink-600 mb-3">{t('dashboard.widgets.budget')}</div>
 			
 			{/* SVG Gauge */}
 			<div className="relative inline-block mb-4">
@@ -85,7 +87,7 @@ export default function GaugeBudget({
 					</div>
 				</div>
 				{!Number.isFinite(cap) && (
-					<p className="mt-1 text-center text-sm text-slate-500">Not configured</p>
+					<p className="mt-1 text-center text-sm text-slate-500">{t('dashboard.states.not_configured')}</p>
 				)}
 			</div>
 			

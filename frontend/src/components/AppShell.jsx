@@ -47,6 +47,7 @@ export default function AppShell({ children }) {
   const location = useLocation()
   const { user, logout } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const isDemo = useIsDemo()
   
   // Close user menu when clicking outside
@@ -62,21 +63,107 @@ export default function AppShell({ children }) {
   }, [userMenuOpen])
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Topbar */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="flex h-16 items-center justify-between px-6">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div 
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
+          sidebarExpanded ? 'w-64' : 'w-16'
+        } group hover:w-64`}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center h-16 px-4 border-b border-gray-200">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-semibold text-gray-900">Agoralia</h1>
+              <h1 className={`font-semibold text-gray-900 transition-all duration-300 ${
+                sidebarExpanded ? 'text-xl' : 'text-lg'
+              }`}>
+                {sidebarExpanded ? 'Agoralia' : 'A'}
+              </h1>
             </div>
-            {isDemo && (
-              <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium">
-                Demo
-              </span>
-            )}
           </div>
+          
+          {/* Navigation */}
+          <nav className="flex-1 px-2 py-4 space-y-1">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-primary-100 text-primary-700 border-r-2 border-primary-500'
+                      : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
+                  }`}
+                  title={t(`nav.${item.name.toLowerCase()}`) || item.name}
+                  aria-label={t(`nav.${item.name.toLowerCase()}`) || item.name}
+                >
+                  <item.icon className={`flex-shrink-0 h-5 w-5 transition-all duration-300 ${
+                    sidebarExpanded ? 'mr-3' : 'mr-0'
+                  }`} />
+                  <span className={`transition-all duration-300 ${
+                    sidebarExpanded ? 'opacity-100' : 'opacity-0'
+                  }`}>
+                    {item.name}
+                  </span>
+                </Link>
+              )
+            })}
+          </nav>
+          
+          {/* Admin Navigation */}
+          {user?.is_admin && (
+            <div className="px-2 py-4 border-t border-gray-200">
+              <div className="text-xs font-medium text-gray-500 px-3 mb-2">
+                {sidebarExpanded ? 'Admin' : ''}
+              </div>
+              {adminNavigation.map((item) => {
+                const isActive = location.pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                      isActive
+                        ? 'bg-red-100 text-red-700 border-r-2 border-red-500'
+                        : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
+                    }`}
+                    title={t(`nav.${item.name.toLowerCase()}`) || item.name}
+                    aria-label={t(`nav.${item.name.toLowerCase()}`) || item.name}
+                  >
+                    <item.icon className={`flex-shrink-0 h-5 w-5 transition-all duration-300 ${
+                      sidebarExpanded ? 'mr-3' : 'mr-0'
+                    }`} />
+                    <span className={`transition-all duration-300 ${
+                      sidebarExpanded ? 'opacity-100' : 'opacity-0'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${
+        sidebarExpanded ? 'ml-64' : 'ml-16'
+      }`}>
+        {/* Topbar */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="flex h-16 items-center justify-between px-6">
+            {/* Left: Demo Badge */}
+            <div className="flex items-center gap-2">
+              {isDemo && (
+                <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium">
+                  Demo
+                </span>
+              )}
+            </div>
           
           {/* Center: Global Search */}
           <div className="flex-1 max-w-lg mx-8">
@@ -85,7 +172,7 @@ export default function AppShell({ children }) {
               <input
                 type="text"
                 placeholder={t('common.search') || 'Search...'}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-transparent"
               />
             </div>
           </div>
@@ -160,71 +247,10 @@ export default function AppShell({ children }) {
         </div>
       </div>
       
-      <div className="flex">
-        {/* Sidebar Compatta */}
-        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2 overflow-y-auto">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href || 
-                           (item.href !== '/' && location.pathname.startsWith(item.href))
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group relative p-3 rounded-lg transition-colors ${
-                  isActive 
-                    ? 'bg-green-50 text-green-600' 
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }`}
-                title={item.name}
-                aria-label={item.name}
-              >
-                <item.icon className="h-6 w-6" />
-                
-                {/* Label on hover */}
-                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                  {item.name}
-                </div>
-              </Link>
-            )
-          })}
-          
-          {/* Admin Navigation Separator */}
-          {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
-            <>
-              <div className="w-8 h-px bg-gray-200 my-2"></div>
-              {adminNavigation.map((item) => {
-                const isActive = location.pathname === item.href || 
-                               (item.href !== '/' && location.pathname.startsWith(item.href))
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`group relative p-3 rounded-lg transition-colors ${
-                      isActive 
-                        ? 'bg-red-50 text-red-600' 
-                        : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                    }`}
-                    title={item.name}
-                    aria-label={item.name}
-                  >
-                    <item.icon className="h-6 w-6" />
-                    
-                    {/* Label on hover */}
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-red-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                      {item.name}
-                    </div>
-                  </Link>
-                )
-              })}
-            </>
-          )}
-        </div>
-        
         {/* Main Content */}
-        <div className="flex-1">
+        <div className="flex-1 p-6">
           {children}
         </div>
-      </div>
     </div>
   )
 }

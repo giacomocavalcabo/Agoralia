@@ -10,11 +10,30 @@
   "dashboard": {
     "title": "Dashboard",
     "description": "Panoramica delle campagne e performance",
-    "metrics": {
+    "kpi": {
       "calls_today": "Chiamate Oggi",
       "minutes_month": "Minuti Mese",
       "avg_duration": "Durata Media",
       "contact_rate": "Tasso Contatto"
+    },
+    "widgets": {
+      "calls_histogram": "Andamento chiamate",
+      "budget": "Budget",
+      "funnel": "Imbuto di conversione",
+      "agents": "Agenti top",
+      "geo": "Distribuzione geografica",
+      "sla": "Tempo di risposta",
+      "live_calls": "Chiamate live",
+      "events": "Event feed"
+    },
+    "states": {
+      "not_configured": "Non configurato",
+      "no_data": "Nessun dato",
+      "no_calls": "Nessuna chiamata attiva"
+    },
+    "metrics": {
+      "calls_created": "Chiamate Create",
+      "response_time": "Tempo di Risposta (SLA)"
     },
     "trends": {
       "title": "Trend Chiamate"
@@ -740,6 +759,11 @@
           "description": "Inizia creando il tuo primo import"
         }
       }
+    },
+    "auth": {
+      "title": "Accedi",
+      "subtitle": "Entra nel tuo workspace Agoralia",
+      "cta": "Continua"
     },
     "common": {
       "save": "Salva",

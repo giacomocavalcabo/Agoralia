@@ -17,7 +17,7 @@ export default function KpiCard({
 			case 'warn':
 				return 'border-amber-200 bg-amber-50'
 			case 'success':
-				return 'border-green-200 bg-green-50'
+				return 'border-primary-200 bg-primary-50'
 			default:
 				return 'border-gray-200 bg-white'
 		}

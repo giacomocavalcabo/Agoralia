@@ -3,11 +3,30 @@
 	"dashboard": {
 		"title": "Dashboard",
 		"description": "Overview of your campaigns and performance",
-		"metrics": {
+		"kpi": {
 			"calls_today": "Calls Today",
 			"minutes_month": "Minutes Month",
 			"avg_duration": "Avg Duration",
 			"contact_rate": "Contact Rate"
+		},
+		"widgets": {
+			"calls_histogram": "Call Trends",
+			"budget": "Budget Usage",
+			"funnel": "Conversion Funnel",
+			"agents": "Top Agents",
+			"geo": "Geographic Distribution",
+			"sla": "Response Time",
+			"live_calls": "Live Calls",
+			"events": "Event Feed"
+		},
+		"states": {
+			"not_configured": "Not configured",
+			"no_data": "No data available",
+			"no_calls": "No active calls"
+		},
+		"metrics": {
+			"calls_created": "Calls Created",
+			"response_time": "Response Time (SLA)"
 		},
 		"trends": {
 			"title": "Call Trends"
@@ -695,6 +714,11 @@
 				"description": "Start by creating your first import"
 			}
 		}
+	},
+	"auth": {
+		"title": "Sign in",
+		"subtitle": "Access your Agoralia workspace",
+		"cta": "Continue"
 	},
 	"common": {
 		"save": "Save",

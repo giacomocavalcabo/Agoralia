@@ -292,7 +292,7 @@ export default function Dashboard() {
 					{/* Row 1: KPI Cards (3×4) */}
 					<div className="col-span-12 md:col-span-3">
 						<KpiCard 
-							label={t('dashboard.metrics.calls_today')} 
+							label={t('dashboard.kpi.calls_today')} 
 							value={summary?.calls_today || 0}
 							delta={showDemoData ? 12 : undefined}
 							state={summary?.calls_today > 50 ? 'warn' : 'normal'}
@@ -302,7 +302,7 @@ export default function Dashboard() {
 					</div>
 					<div className="col-span-12 md:col-span-3">
 						<KpiCard 
-							label={t('dashboard.metrics.minutes_month')} 
+							label={t('dashboard.kpi.minutes_month')} 
 							value={summary?.minutes_month || 0}
 							delta={showDemoData ? -5 : undefined}
 							trendData={showDemoData ? [120, 135, 142, 138, 156, 148, 162] : undefined}
@@ -311,7 +311,7 @@ export default function Dashboard() {
 					</div>
 					<div className="col-span-12 md:col-span-3">
 						<KpiCard 
-							label={t('dashboard.metrics.avg_duration')} 
+							label={t('dashboard.kpi.avg_duration')} 
 							value={fmtMMSS(summary?.avg_duration_sec || 0)}
 							delta={showDemoData ? 8 : undefined}
 							trendData={showDemoData ? [120, 125, 118, 132, 128, 135, 142] : undefined}
@@ -320,7 +320,7 @@ export default function Dashboard() {
 					</div>
 					<div className="col-span-12 md:col-span-3">
 						<KpiCard 
-							label={t('dashboard.metrics.contact_rate')} 
+							label={t('dashboard.kpi.contact_rate')} 
 							value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
 							delta={showDemoData ? -3 : undefined}
 							state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
@@ -333,7 +333,7 @@ export default function Dashboard() {
 					<div className="col-span-12 xl:col-span-8">
 						<div className="rounded-2xl border bg-white">
 							<div className="flex items-center justify-between p-4">
-								<h3 className="text-sm font-medium">{t('dashboard.trends.title')}</h3>
+								<h3 className="text-sm font-medium">{t('dashboard.widgets.calls_histogram')}</h3>
 								<div className="flex items-center gap-2">
 									<button 
 										onClick={() => setTrendDays(7)} 
@@ -368,8 +368,8 @@ export default function Dashboard() {
 				
 					{/* Row 3: ConversionFunnel + TopAgents + MiniMap */}
 					<div className="col-span-12 lg:col-span-4">
-						<div className="rounded-2xl border bg-white p-4">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.funnel.title')}</h3>
+						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.funnel')}</h3>
 							<ConversionFunnel steps={[
 								{ label: t('dashboard.funnel.reached'), value: (showDemoData ? funnelData.reached : 0) || 0, colorClass: 'bg-primary-300' },
 								{ label: t('dashboard.funnel.connected'), value: (showDemoData ? funnelData.connected : 0) || 0, colorClass: 'bg-primary-400' },
@@ -393,8 +393,8 @@ export default function Dashboard() {
 						/>
 					</div>
 					<div className="col-span-12 lg:col-span-4">
-						<div className="rounded-2xl border bg-white p-4">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.metrics.response_time') || 'Response Time (SLA)'}</h3>
+						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
 								thresholdMs={5000} 
@@ -406,7 +406,7 @@ export default function Dashboard() {
 					<div className="col-span-12 xl:col-span-8">
 						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px]">
 							<div className="flex items-center justify-between mb-4">
-								<div className="text-sm font-semibold text-gray-900">{t('dashboard.live_calls.title')}</div>
+								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
 								<div className="flex items-center gap-2">
 									<div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
 									<span className="text-xs text-gray-600">
@@ -416,7 +416,7 @@ export default function Dashboard() {
 							</div>
 							
 							{liveCalls.length === 0 ? (
-								<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.live_calls.empty')}</div>
+								<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.states.no_calls')}</div>
 							) : (
 								<div className="max-h-[280px] overflow-y-auto pr-2">
 									<DataTable
