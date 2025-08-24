@@ -72,23 +72,117 @@ export default function KnowledgeBase() {
   }
 
   if (isDemo) {
+    const demo = makeDemoKnowledgeBase();
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Knowledge</h1>
-        </div>
-        <Card>
-          <div className="text-center py-8">
-            <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Demo Mode</h3>
-            <p className="text-gray-600">{t('kb.empty.workspace_blocked')}</p>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+              {t('kb.demo')}
+            </span>
+            <Button onClick={handleImport} variant="outline">
+              <CogIcon className="h-4 w-4 mr-2" />
+              Importa
+            </Button>
+            <Button onClick={handleCreateOfferPack} variant="secondary">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nuovo Offer Pack
+            </Button>
           </div>
-        </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card title={
+            <div className="flex items-center gap-2">
+              <DocumentTextIcon className="h-5 w-5" />
+              Company
+            </div>
+          }>
+            <CompletenessMeter 
+              completeness={demo.company.completeness_pct}
+              freshness={demo.company.freshness_score}
+              lastUpdated={demo.company.updated_at}
+              showDetails={false}
+            />
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" variant="outline">
+                Apri
+              </Button>
+            </div>
+          </Card>
+
+          <Card title={
+            <div className="flex items-center gap-2">
+              <ChartBarIcon className="h-5 w-5" />
+              Offer Packs
+            </div>
+          }>
+            <CompletenessMeter 
+              completeness={demo.offers[0].completeness_pct}
+              freshness={demo.offers[0].freshness_score}
+              lastUpdated={demo.offers[0].updated_at}
+              showDetails={false}
+            />
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" variant="outline">
+                Apri
+              </Button>
+            </div>
+          </Card>
+
+          <Card title={
+            <div className="flex items-center gap-2">
+              <CogIcon className="h-5 w-5" />
+              Documents
+            </div>
+          }>
+            <div className="text-center py-4">
+              <div className="text-2xl font-bold text-blue-600">{demo.progress}%</div>
+              <div className="text-sm text-gray-600">Complete</div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Button onClick={handleImport} size="sm">
+                Import
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (isError) {
+    // Se l'errore precedente era 422 (normalizzato in getKbProgress) torniamo data vuota
+    if (!kbData || (Array.isArray(kbData?.items) && kbData.items.length === 0)) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold">Knowledge</h1>
+            <div className="flex gap-2">
+              <Button onClick={handleImport} variant="outline">
+                <CogIcon className="h-4 w-4 mr-2" />
+                Importa
+              </Button>
+              <Button onClick={handleCreateOfferPack} variant="secondary">
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Nuovo Offer Pack
+              </Button>
+            </div>
+          </div>
+          <Card>
+            <div className="text-center py-8">
+              <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.empty.no_data')}</h3>
+              <p className="text-gray-600 mb-4">{t('kb.empty.how_to_start')}</p>
+              <Button onClick={handleImport}>
+                {t('kb.empty.import')}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">

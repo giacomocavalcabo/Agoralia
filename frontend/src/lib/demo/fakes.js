@@ -100,6 +100,54 @@ export const generateDemoTrends = (days = 7) => {
   };
 };
 
+export const makeDemoKnowledgeBase = () => {
+  return {
+    progress: 73,
+    items: [
+      { 
+        id: 'kb-1', 
+        title: 'Product FAQs', 
+        docs: 24, 
+        lastUpdated: Date.now() - 86400000,
+        completeness_pct: 85,
+        freshness_score: 92
+      },
+      { 
+        id: 'kb-2', 
+        title: 'Pricing & Plans', 
+        docs: 12, 
+        lastUpdated: Date.now() - 3600000,
+        completeness_pct: 67,
+        freshness_score: 78
+      },
+      { 
+        id: 'kb-3', 
+        title: 'Integration Guide', 
+        docs: 18, 
+        lastUpdated: Date.now() - 172800000,
+        completeness_pct: 91,
+        freshness_score: 88
+      }
+    ],
+    company: {
+      id: 'company-demo',
+      kind: 'company',
+      completeness_pct: 73,
+      freshness_score: 85,
+      updated_at: new Date().toISOString()
+    },
+    offers: [
+      {
+        id: 'offers-demo',
+        kind: 'offer_pack',
+        completeness_pct: 68,
+        freshness_score: 79,
+        updated_at: new Date(Date.now() - 86400000).toISOString()
+      }
+    ]
+  };
+};
+
 // Demo generators for new campaign form components
 export const demo = {
   templates(count = 6) {

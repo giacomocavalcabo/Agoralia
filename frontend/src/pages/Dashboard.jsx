@@ -290,7 +290,7 @@ export default function Dashboard() {
 				<div className="grid grid-cols-12 grid-flow-dense auto-rows-[8rem] gap-4 md:gap-6">
 				
 					{/* Row 1: KPI Cards (3×4) - tutte size="sm" per riga compatta */}
-					<div className="col-span-12 md:col-span-3">
+					<div className="col-span-12 md:col-span-3" data-card="true">
 						<KpiCard 
 							label={t('dashboard.kpi.calls_today')} 
 							value={summary?.calls_today || 0}
@@ -300,7 +300,7 @@ export default function Dashboard() {
 							className="min-h-[120px]"
 						/>
 					</div>
-					<div className="col-span-12 md:col-span-3">
+					<div className="col-span-12 md:col-span-3" data-card="true">
 						<KpiCard 
 							label={t('dashboard.kpi.minutes_month')} 
 							value={summary?.minutes_month || 0}
@@ -309,7 +309,7 @@ export default function Dashboard() {
 							className="min-h-[120px]"
 						/>
 					</div>
-					<div className="col-span-12 md:col-span-3">
+					<div className="col-span-12 md:col-span-3" data-card="true">
 						<KpiCard 
 							label={t('dashboard.kpi.avg_duration')} 
 							value={fmtMMSS(summary?.avg_duration_sec || 0)}
@@ -318,7 +318,7 @@ export default function Dashboard() {
 							className="min-h-[120px]"
 						/>
 					</div>
-					<div className="col-span-12 md:col-span-3">
+					<div className="col-span-12 md:col-span-3" data-card="true">
 						<KpiCard 
 							label={t('dashboard.kpi.contact_rate')} 
 							value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
@@ -330,7 +330,7 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 2: CallsHistogram + GaugeBudget - size="lg" e "md" */}
-					<div className="col-span-12 xl:col-span-8">
+					<div className="col-span-12 xl:col-span-8" data-card="true">
 						<div className="rounded-2xl border bg-white">
 							<div className="flex items-center justify-between p-4">
 								<h3 className="text-sm font-medium">{t('dashboard.widgets.calls_histogram')}</h3>
@@ -357,7 +357,7 @@ export default function Dashboard() {
 							</div>
 						</div>
 					</div>
-					<div className="col-span-12 xl:col-span-4">
+					<div className="col-span-12 xl:col-span-4" data-card="true">
 						<GaugeBudget 
 							spent={summary?.budget_spent_month_cents || 0}
 							cap={summary?.budget_monthly_cents || 0}
@@ -368,27 +368,27 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 3: ConversionFunnel + TopAgents + MiniMap - MOSAICO: 2 "sm" + 1 "md" */}
-					<div className="col-span-12 lg:col-span-4">
+					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.funnel')}</h3>
 							<ConversionFunnel data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} />
 						</div>
 					</div>
-					<div className="col-span-12 lg:col-span-4">
+					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<TopAgentsBar 
 							agents={showDemoData ? topAgents : []}
 							onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
 							className="min-h-[320px] max-h-56 overflow-y-auto"
 						/>
 					</div>
-					<div className="col-span-12 lg:col-span-4">
+					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<MiniMap 
 							data={showDemoData ? geoData : []}
 							onDrillDown={(country) => handleDrillDown('country', country)}
 							className="min-h-[320px]"
 						/>
 					</div>
-					<div className="col-span-12 lg:col-span-4">
+					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="rounded-2xl border bg-white p-4 min-h-[320px]">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
@@ -399,7 +399,7 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 4: LiveTable + EventFeed - size="lg" e "md" con scroll interno */}
-					<div className="col-span-12 xl:col-span-8">
+					<div className="col-span-12 xl:col-span-8" data-card="true">
 						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px]">
 							<div className="flex items-center justify-between mb-4">
 								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
@@ -429,7 +429,7 @@ export default function Dashboard() {
 							)}
 						</div>
 					</div>
-					<div className="col-span-12 xl:col-span-4">
+					<div className="col-span-12 xl:col-span-4" data-card="true">
 						<EventFeed events={events} className="min-h-[360px] max-h-56 overflow-y-auto" />
 					</div>
 				</div>

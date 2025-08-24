@@ -26,7 +26,7 @@ export async function apiFetch(path, options = {}) {
 		const method = options.method || 'GET';
 		const isPreflight = method.toUpperCase() === 'OPTIONS';
 		const rawUrl = resp.url || '';
-		const base = import.meta.env.VITE_API_URL || window.location.origin;
+		const base = import.meta.env.VITE_API_URL || '/api';
 		let apiPath = '';
 		try { 
 			apiPath = new URL(rawUrl, base).pathname; 

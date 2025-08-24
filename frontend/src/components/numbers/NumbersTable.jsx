@@ -12,6 +12,12 @@ export default function NumbersTable({
 }) {
   const { i18n, t } = useI18n('pages')
 
+  // Generate status options from actual data
+  const statusOptions = useMemo(() => {
+    const statuses = Array.from(new Set(data.map(r => r.status).filter(Boolean)));
+    return statuses.length > 0 ? statuses : [];
+  }, [data]);
+
   const columns = useMemo(() => [
     {
       id: 'e164',

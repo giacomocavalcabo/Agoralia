@@ -41,6 +41,14 @@ export default function ServerDataTable({
   const to = Math.min(safePage * safePageSize, safeTotal);
   const pages = Math.max(1, Math.ceil(safeTotal / safePageSize));
 
+  // Safe cell value extractor
+  const getCellValue = (row, col) => {
+    if (typeof col.cell === 'function') return col.cell(row);
+    if (col.accessorKey && row?.[col.accessorKey] !== undefined) return row[col.accessorKey];
+    if (col.accessor && typeof col.accessor === 'function') return col.accessor(row);
+    return undefined;
+  };
+
   if (isError) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm">
@@ -110,7 +118,7 @@ export default function ServerDataTable({
                   </td>
                   {safeColumns.map((col) => (
                     <td key={col.id} className="px-3 py-2">
-                      {col.cell ? col.cell(row) : row[col.id]}
+                      {getCellValue(row, col) || '-'}
                     </td>
                   ))}
                 </tr>

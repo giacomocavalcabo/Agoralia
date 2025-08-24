@@ -125,12 +125,17 @@
 		}
 	},
 	"kb": {
+		"title": "Knowledge",
+		"demo": "Demo Mode",
 		"auth": { 
 			"title": "Sign in required", 
 			"description": "Sign in to view your knowledge base and ingestion progress" 
 		},
 		"empty": { 
-			"workspace_blocked": "Workspace not available in demo mode" 
+			"workspace_blocked": "Workspace not available in demo mode",
+			"no_data": "No knowledge base yet",
+			"how_to_start": "Import documents or connect a source to populate your knowledge base.",
+			"import": "Import documents"
 		},
 		"error": { 
 			"title": "Loading error", 

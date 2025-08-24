@@ -8,12 +8,17 @@
     "notices": {"impersonating":"Stai impersonando {user}. Torna all'admin."}
   },
   "kb": {
+    "title": "Knowledge",
+    "demo": "Modalità demo",
     "auth": { 
       "title": "Accesso richiesto", 
       "description": "Accedi per visualizzare la knowledge base e lo stato di ingestione" 
     },
     "empty": { 
-      "workspace_blocked": "Workspace non disponibile in modalità demo" 
+      "workspace_blocked": "Workspace non disponibile in modalità demo",
+      "no_data": "Nessuna knowledge base",
+      "how_to_start": "Importa documenti o collega una sorgente per popolare la knowledge base.",
+      "import": "Importa documenti"
     },
     "error": { 
       "title": "Errore di caricamento", 

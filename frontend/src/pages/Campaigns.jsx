@@ -21,26 +21,30 @@ export default function Campaigns() {
     { 
       id: 'name', 
       header: t('campaigns.table.columns.name'), 
-      cell: (r) => r.name || '-'
+      accessorKey: 'name'
     },
     { 
       id: 'status', 
       header: t('campaigns.table.columns.status'), 
+      accessorKey: 'status',
       cell: (r) => t(`campaigns.status.${r.status || 'draft'}`)
     },
     { 
       id: 'pacing', 
       header: t('campaigns.table.columns.pacing'), 
+      accessorKey: 'pacing',
       cell: (r) => formatNumberSafe(r.pacing) || '-'
     },
     { 
       id: 'budget', 
       header: t('campaigns.table.columns.budget'), 
+      accessorKey: 'budget',
       cell: (r) => formatNumberSafe(r.budget) || '-'
     },
     { 
       id: 'created_at', 
       header: t('campaigns.table.columns.created_at'), 
+      accessorKey: 'created_at',
       cell: (r) => formatDateSafe(r.created_at) || '-'
     }
   ]), [t]);

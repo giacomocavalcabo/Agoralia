@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useI18n } from '../lib/i18n.jsx';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
 
 export default function Register() {
   const { t } = useI18n(['auth']);
@@ -29,26 +30,13 @@ export default function Register() {
     setMessage('');
 
     try {
-      const response = await fetch('https://api.agoralia.app/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include'
-      });
+      const data = await api.post('/auth/register', formData);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(t('auth.register_success') || 'Account created successfully! You are now logged in.');
-        // Redirect to dashboard after successful registration
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
-      } else {
-        setError(data.detail || t('auth.register_error') || 'Registration failed. Please try again.');
-      }
+      setMessage(t('auth.register_success') || 'Account created successfully! You are now logged in.');
+      // Redirect to dashboard after successful registration
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     } catch (err) {
       setError(t('auth.network_error') || 'Network error. Please check your connection.');
     } finally {
