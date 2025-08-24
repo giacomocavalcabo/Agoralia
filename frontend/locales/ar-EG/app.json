@@ -1,0 +1,5 @@
+{
+  "notices": {
+    "call_lang_not_supported": "لغة النداء _PH_0___ غير مدعومة ل {} {form.lang_default} {lang}"
+  }
+}

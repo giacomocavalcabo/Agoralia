@@ -1,0 +1,47 @@
+{
+  "auto_recharge": {
+    "description": "Automatisches Aufladen von {threshold}, wenn der Kontostand unter {topup} fällt",
+    "disabled": "Automatische Wiederaufladung deaktiviert",
+    "enable": "[Freigeben]",
+    "enabled": "Automatische Wiederaufladung aktiviert",
+    "threshold": "[Schwellenwert]",
+    "title": "[Titel]",
+    "topup": "[Nachfüllen]"
+  },
+  "invoices": {
+    "download": "[Download]",
+    "title": "[Titel]",
+    "view_all": "[Alle anzeigen]"
+  },
+  "overview": {
+    "balance": "[Balance]",
+    "cap_status": "[Cap Status]",
+    "minutes_mtd": "[Minutes Mtd]",
+    "usage_mtd": "[Usage Mtd]"
+  },
+  "payment_methods": {
+    "add": "[Hinzufügen]",
+    "add_card": "[Karte hinzufügen]",
+    "adding": "[Hinzufügen]",
+    "card_details": "[Kartendetails]",
+    "default": "[Standard]",
+    "title": "[Titel]",
+    "unavailable": "[Nicht verfügbar]",
+    "unavailable_desc": "[Nicht verfügbar Desc]"
+  },
+  "subtitle": "[Subtitle]",
+  "title": "[Titel]",
+  "usage_cap": {
+    "current": "Aktuelle Verwendung",
+    "description": "Monatliche Nutzungsobergrenze auf {type} mit Warnmeldungen bei {limit} festgelegt",
+    "hard": "Hard Cap (Stoppaufrufe)",
+    "hard_cap": "Harte Kappe",
+    "limit": "Monatliches Limit ($)",
+    "soft": "Soft Cap (nur Warnungen)",
+    "soft_cap": "Weiche Kappe",
+    "stop_calls": "Anrufe am Limit stoppen",
+    "title": "Verwendungszweck Kappe",
+    "type": "Kappen-Typ",
+    "warnings_only": "Nur Warnungen"
+  }
+}

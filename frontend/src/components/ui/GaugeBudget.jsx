@@ -6,7 +6,22 @@ export default function GaugeBudget({
 	warnPercent = 80,
 	className = ''
 }) {
-	const percentage = cap > 0 ? Math.min(100, (spent / cap) * 100) : 0
+	// Se non c'è cap configurato, mostra stato "Not configured"
+	if (!cap || cap <= 0) {
+		return (
+			<div className={`panel text-center ${className}`}>
+				<div className="text-sm text-ink-600 mb-3">Budget Usage</div>
+				<div className="h-32 flex items-center justify-center">
+					<div className="text-center">
+						<div className="text-2xl font-semibold text-gray-400 mb-2">—</div>
+						<div className="text-sm text-gray-500">Not configured</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+	
+	const percentage = Math.min(100, (spent / cap) * 100)
 	
 	// Dynamic colors based on spending percentage
 	const getColor = () => {
@@ -64,13 +79,14 @@ export default function GaugeBudget({
 				</svg>
 				
 				{/* Center text */}
-				<div className="absolute inset-0 flex items-center justify-center">
-					<div className="text-center">
-						<div className={`text-xl font-bold ${getColor()}`}>
-							{Math.round(percentage)}%
-						</div>
+				<div className="absolute inset-0 flex items-center justify-center text-sm font-medium leading-none">
+					<div className={`text-2xl font-semibold ${getColor()}`}>
+						{Math.round(percentage)}%
 					</div>
 				</div>
+				{!Number.isFinite(cap) && (
+					<p className="mt-1 text-center text-sm text-slate-500">Not configured</p>
+				)}
 			</div>
 			
 			{/* Values */}

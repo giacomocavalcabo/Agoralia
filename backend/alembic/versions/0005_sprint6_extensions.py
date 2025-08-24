@@ -1,7 +1,7 @@
 """Sprint 6 Extensions - Additive migrations for Numbers, Outcomes, Auth
 
 Revision ID: 0005
-Revises: 0004_search_indexes
+Revises: 0003_numbers_outcomes
 Create Date: 2025-01-18 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '0005'
-down_revision = '0004_search_indexes'
+down_revision = '0003_numbers_outcomes'
 branch_labels = None
 depends_on = None
 

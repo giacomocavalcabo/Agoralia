@@ -1,0 +1,32 @@
+{
+  "/": "قاعدة المعرفة {params}",
+  "imports": {
+    "add_field": "[إضافة حقل]",
+    "apply_merge": "[تطبيق الدمج]",
+    "conflicts": "[التعارضات]",
+    "existing_fields": "[الحقول الموجودة]",
+    "existing_value": "[القيمة الحالية]",
+    "field_changes": "[التغييرات الميدانية]",
+    "field_new": "[حقل جديد]",
+    "field_update": "[تحديث ميداني]",
+    "field_value": "[قيمة الحقل]",
+    "imported_fields": "[الحقول المستوردة]",
+    "keep_existing": "[الاحتفاظ بالموجود]",
+    "merge_strategy": "[استراتيجية الدمج]",
+    "merge_summary": "[ملخص الدمج]",
+    "merge_values": "[دمج القيم]",
+    "merged_preview": "[معاينة مدمجة]",
+    "merging": "[دمج]",
+    "new_fields": "[حقول جديدة]",
+    "new_value": "[قيمة جديدة]",
+    "no_diff_available": "[لا توجد بيانات متاحة]",
+    "no_value": "[لا قيمة]",
+    "ready_to_merge": "[جاهز للدمج]",
+    "strategy_auto_merge": "[الدمج التلقائي للاستراتيجية]",
+    "strategy_auto_new": "[إستراتيجية تلقائية جديدة]",
+    "strategy_manual": "[دليل الإستراتيجية]",
+    "updated": "[محدثة]",
+    "use_new": "[استخدام جديد]"
+  },
+  "index": "قاعدة المعرفة"
+}

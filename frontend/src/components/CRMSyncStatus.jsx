@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/button';
 import { Badge } from './ui/Badge';
 import { ProgressBar } from './ui/ProgressBar';
 import { useToast } from './ToastProvider';
-import { useTranslation } from '../lib/i18n';
+import { useI18n } from '../lib/i18n.jsx';
 
 const CRMSyncStatus = ({ workspaceId, provider }) => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
   const { toast } = useToast();
   
   const [syncStatus, setSyncStatus] = useState({

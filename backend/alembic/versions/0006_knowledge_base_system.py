@@ -1,7 +1,7 @@
 """Sprint 8: Knowledge Base System
 
 Revision ID: 0006
-Revises: 0005_sprint6_extensions
+Revises: 0003_numbers_outcomes
 Create Date: 2025-01-20 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '0006'
-down_revision = '0005_sprint6_extensions'
+down_revision = '0003_numbers_outcomes'
 branch_labels = None
 depends_on = None
 

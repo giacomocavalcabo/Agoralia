@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { apiFetch } from '../lib/api.js'
 import { useToast } from '../components/ToastProvider.jsx'
 
@@ -7,7 +7,7 @@ const GOALS = ['rfq','demo','reorder','survey']
 const ROLES = ['supplier','supplied']
 
 export default function Campaigns(){
-  const { t } = useI18n()
+  const { t } = useTranslation('pages')
   const { toast } = useToast()
   const [step, setStep] = useState(1)
   const [locales, setLocales] = useState({ call_supported: [], call_default: 'en-US' })

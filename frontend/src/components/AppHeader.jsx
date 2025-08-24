@@ -1,11 +1,11 @@
 import LanguageSwitcher from './LanguageSwitcher.jsx'
 import UsageBar from './UsageBar.jsx'
 import AvatarMenu from './AvatarMenu.jsx'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { Bell, HelpCircle } from 'lucide-react'
 
 export default function AppHeader(){
-	const { t } = useI18n()
+	  const { t } = useTranslation('common')
 	function onKeyDown(e){
 		if (e.key === 'Enter'){
 			const q = e.currentTarget.value.trim()

@@ -1,0 +1,40 @@
+{
+  "coming_soon": "[قريباً]",
+  "personal": {
+    "dual_time": "عرض الوقت المزدوج",
+    "email": "admin@example.com",
+    "language": "اللغة الإنجليزية",
+    "name": "مستخدم إداري",
+    "timezone": "يو تي سي",
+    "title": "المعلومات الشخصية"
+  },
+  "save": "الحفظ",
+  "subtitle": "إدارة حسابك وتفضيلات مساحة العمل الخاصة بك",
+  "tabs": {
+    "audit": "التدقيق",
+    "billing": "الفواتير",
+    "compliance": "_GL_3___",
+    "integrations": "عمليات الدمج",
+    "members": "الأعضاء",
+    "personal": "شخصي",
+    "telephony": "الاتصالات الهاتفية",
+    "workspace": "_GL_1____"
+  },
+  "telephony": {
+    "buy_number": "[رقم الشراء]",
+    "numbers": "[بالأرقام]"
+  },
+  "title": "الإعدادات",
+  "workspace": {
+    "accepting": "[قبول]",
+    "domain": "[المجال]",
+    "invite": "[دعوة]",
+    "invite_email": "[دعوة بالبريد الإلكتروني]",
+    "logo": "[الشعار]",
+    "members": "[الأعضاء]",
+    "name": "[الاسم]",
+    "remove": "[إزالة]",
+    "title": "[العنوان]",
+    "upload_logo": "[تحميل الشعار]"
+  }
+}

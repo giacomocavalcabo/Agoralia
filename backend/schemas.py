@@ -4,6 +4,41 @@ from datetime import datetime
 from enum import Enum
 
 
+# ===================== Authentication Schemas =====================
+
+class LoginRequest(BaseModel):
+    """Schema for login requests - minimal validation"""
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="User password")
+
+class RegisterRequest(BaseModel):
+    """Schema for user registration - full validation"""
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="User password (must meet policy)")
+    name: str = Field(..., description="User full name")
+    
+    @validator('password')
+    def validate_password(cls, v):
+        """Password policy validation for registration only"""
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.islower() for c in v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one digit")
+        if not any(c in "!@#$%^&*(),.?\":{}|<>" for c in v):
+            raise ValueError("Password must contain at least one special character")
+        return v
+
+class AuthResponse(BaseModel):
+    """Schema for authentication responses"""
+    ok: bool = Field(..., description="Authentication success status")
+    user: Optional[Dict[str, Any]] = Field(None, description="User data if successful")
+    message: Optional[str] = Field(None, description="Response message")
+    requires_totp: Optional[bool] = Field(False, description="TOTP required flag")
+
 # ===================== Knowledge Base Schemas =====================
 
 class KbKind(str, Enum):

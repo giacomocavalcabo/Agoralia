@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
 import { useToast } from '../../components/ToastProvider';
-import { useTranslation } from '../../lib/i18n';
+import { useTranslation } from 'react-i18next';
+import { PageHeader } from '../../components/ui/FormPrimitives';
 import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
 import CRMSyncStatus from '../../components/CRMSyncStatus';
 
 const Integrations = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pages');
   const { toast } = useToast();
   
   const [integrations, setIntegrations] = useState({
@@ -29,14 +30,25 @@ const Integrations = () => {
   const loadIntegrationStatus = async () => {
     try {
       // In production, fetch from API
-      const mockStatus = {
-        hubspot: { connected: true, status: 'connected', portal_id: '12345' },
-        zoho: { connected: false, status: 'disconnected' },
-        odoo: { connected: false, status: 'disconnected' }
-      };
-      setIntegrations(mockStatus);
+      if (process.env.NODE_ENV === 'production') {
+        const response = await fetch('/api/integrations/status');
+        const data = await response.json();
+        setIntegrations(data);
+      } else {
+        // Demo data only in development
+        const mockStatus = {
+          hubspot: { connected: true, status: 'connected', portal_id: '12345' },
+          zoho: { connected: false, status: 'disconnected' },
+          odoo: { connected: false, status: 'disconnected' }
+        };
+        setIntegrations(mockStatus);
+      }
     } catch (error) {
-      console.error('Failed to load integration status:', error);
+      toast({
+        title: t('integrations.errors.load_failed', { ns: 'pages' }),
+        description: error.message,
+        type: 'error'
+      });
     }
   };
 
@@ -45,7 +57,12 @@ const Integrations = () => {
     
     try {
       // In production, this would start OAuth flow
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (process.env.NODE_ENV === 'production') {
+        await fetch(`/api/integrations/${provider}/connect`, { method: 'POST' });
+      } else {
+        // Simulate API call in development
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       setIntegrations(prev => ({
         ...prev,
@@ -57,15 +74,18 @@ const Integrations = () => {
       }));
       
       toast({
-        title: t('integrations.connected.title'),
-        description: t('integrations.connected.description', { provider: provider.toUpperCase() }),
+        title: t('integrations.messages.connected', { ns: 'pages' }),
+        description: t('integrations.messages.connected_desc', { 
+          ns: 'pages', 
+          provider: provider.toUpperCase() 
+        }),
         type: 'success'
       });
       
     } catch (error) {
       toast({
-        title: t('integrations.error.title'),
-        description: t('integrations.error.description'),
+        title: t('integrations.errors.connection_failed', { ns: 'pages' }),
+        description: error.message,
         type: 'error'
       });
     } finally {
@@ -78,7 +98,12 @@ const Integrations = () => {
     
     try {
       // In production, this would revoke tokens
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (process.env.NODE_ENV === 'production') {
+        await fetch(`/api/integrations/${provider}/disconnect`, { method: 'POST' });
+      } else {
+        // Simulate API call in development
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       setIntegrations(prev => ({
         ...prev,
@@ -86,15 +111,18 @@ const Integrations = () => {
       }));
       
       toast({
-        title: t('integrations.disconnected.title'),
-        description: t('integrations.disconnected.description', { provider: provider.toUpperCase() }),
+        title: t('integrations.messages.disconnected', { ns: 'pages' }),
+        description: t('integrations.messages.disconnected_desc', { 
+          ns: 'pages', 
+          provider: provider.toUpperCase() 
+        }),
         type: 'success'
       });
       
     } catch (error) {
       toast({
-        title: t('integrations.error.title'),
-        description: t('integrations.error.description'),
+        title: t('integrations.errors.disconnection_failed', { ns: 'pages' }),
+        description: error.message,
         type: 'error'
       });
     } finally {
@@ -107,18 +135,29 @@ const Integrations = () => {
     
     try {
       // In production, this would test the connection
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (process.env.NODE_ENV === 'production') {
+        await fetch(`/api/integrations/${provider}/test`, { method: 'POST' });
+      } else {
+        // Simulate API call in development
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       toast({
-        title: t('integrations.test.success.title'),
-        description: t('integrations.test.success.description', { provider: provider.toUpperCase() }),
+        title: t('integrations.messages.test_success', { ns: 'pages' }),
+        description: t('integrations.messages.test_success_desc', { 
+          ns: 'pages', 
+          provider: provider.toUpperCase() 
+        }),
         type: 'success'
       });
       
     } catch (error) {
       toast({
-        title: t('integrations.test.error.title'),
-        description: t('integrations.test.error.description', { provider: provider.toUpperCase() }),
+        title: t('integrations.messages.test_failed', { ns: 'pages' }),
+        description: t('integrations.messages.test_failed_desc', { 
+          ns: 'pages', 
+          provider: provider.toUpperCase() 
+        }),
         type: 'error'
       });
     } finally {
@@ -127,8 +166,14 @@ const Integrations = () => {
   };
 
   const handleMappingUpdate = (objectType, mapping, picklists) => {
-    console.log('Mapping updated:', { objectType, mapping, picklists });
     // In production, this would update the mapping in the backend
+    if (process.env.NODE_ENV === 'production') {
+      fetch('/api/integrations/mapping', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectType, mapping, picklists })
+      });
+    }
   };
 
   const getStatusColor = (status) => {
@@ -142,10 +187,10 @@ const Integrations = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'connected': return t('integrations.status.connected');
-      case 'connecting': return t('integrations.status.connecting');
-      case 'error': return t('integrations.status.error');
-      default: return t('integrations.status.disconnected');
+      case 'connected': return t('integrations.status.connected', { ns: 'pages' });
+      case 'connecting': return t('integrations.status.connecting', { ns: 'pages' });
+      case 'error': return t('integrations.status.error', { ns: 'pages' });
+      default: return t('integrations.status.disconnected', { ns: 'pages' });
     }
   };
 
@@ -160,22 +205,18 @@ const Integrations = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {t('integrations.title')}
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {t('integrations.subtitle')}
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('integrations.title', { ns: 'pages' })}
+        description={t('integrations.description', { ns: 'pages' })}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="crm">{t('integrations.tabs.crm')}</TabsTrigger>
-          <TabsTrigger value="mapping">Field Mapping</TabsTrigger>
-          <TabsTrigger value="sync">Sync Status</TabsTrigger>
-          <TabsTrigger value="other">{t('integrations.tabs.other')}</TabsTrigger>
+          <TabsTrigger value="crm">{t('integrations.tabs.crm', { ns: 'pages' })}</TabsTrigger>
+          <TabsTrigger value="mapping">{t('integrations.tabs.mapping', { ns: 'pages' })}</TabsTrigger>
+          <TabsTrigger value="sync">{t('integrations.tabs.sync', { ns: 'pages' })}</TabsTrigger>
+          <TabsTrigger value="other">{t('integrations.tabs.other', { ns: 'pages' })}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="crm" className="space-y-6">
@@ -195,12 +236,12 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.hubspot.description')}
+                  {t('integrations.hubspot.description', { ns: 'pages' })}
                 </p>
                 
                 {integrations.hubspot.connected && (
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <p><strong>{t('integrations.portal_id')}:</strong> {integrations.hubspot.portal_id}</p>
+                    <p><strong>{t('integrations.portal_id', { ns: 'pages' })}:</strong> {integrations.hubspot.portal_id}</p>
                   </div>
                 )}
                 
@@ -211,7 +252,7 @@ const Integrations = () => {
                       disabled={loading.hubspot}
                       className="flex-1"
                     >
-                      {loading.hubspot ? t('common.connecting') : t('integrations.connect')}
+                      {loading.hubspot ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
                     </Button>
                   ) : (
                     <>
@@ -221,7 +262,7 @@ const Integrations = () => {
                         disabled={loading.hubspot_test}
                         className="flex-1"
                       >
-                        {loading.hubspot_test ? t('common.testing') : t('integrations.test')}
+                        {loading.hubspot_test ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -229,7 +270,7 @@ const Integrations = () => {
                         disabled={loading.hubspot}
                         className="flex-1"
                       >
-                        {loading.hubspot ? t('common.disconnecting') : t('integrations.disconnect')}
+                        {loading.hubspot ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
                       </Button>
                     </>
                   )}
@@ -242,14 +283,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('hubspot')}
                       className="w-full"
                     >
-                      Field Mapping
+                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('hubspot')}
                       className="w-full"
                     >
-                      Sync Status
+                      {t('integrations.actions.sync_status', { ns: 'pages' })}
                     </Button>
                   </div>
                 )}
@@ -271,7 +312,7 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.zoho.description')}
+                  {t('integrations.zoho.description', { ns: 'pages' })}
                 </p>
                 
                 <div className="flex gap-2">
@@ -281,7 +322,7 @@ const Integrations = () => {
                       disabled={loading.zoho}
                       className="flex-1"
                     >
-                      {loading.zoho ? t('common.connecting') : t('integrations.connect')}
+                      {loading.zoho ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
                     </Button>
                   ) : (
                     <>
@@ -291,7 +332,7 @@ const Integrations = () => {
                         disabled={loading.zoho_test}
                         className="flex-1"
                       >
-                        {loading.zoho_test ? t('common.testing') : t('integrations.test')}
+                        {loading.zoho_test ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -299,7 +340,7 @@ const Integrations = () => {
                         disabled={loading.zoho}
                         className="flex-1"
                       >
-                        {loading.zoho_test ? t('common.disconnecting') : t('integrations.disconnect')}
+                        {loading.zoho_test ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
                       </Button>
                     </>
                   )}
@@ -312,14 +353,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('zoho')}
                       className="w-full"
                     >
-                      Field Mapping
+                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('zoho')}
                       className="w-full"
                     >
-                      Sync Status
+                      {t('integrations.actions.sync_status', { ns: 'pages' })}
                     </Button>
                   </div>
                 )}
@@ -341,7 +382,7 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.odoo.description')}
+                  {t('integrations.odoo.description', { ns: 'pages' })}
                 </p>
                 
                 <div className="flex gap-2">
@@ -351,17 +392,17 @@ const Integrations = () => {
                       disabled={loading.odoo}
                       className="flex-1"
                     >
-                      {loading.odoo ? t('common.connecting') : t('integrations.connect')}
+                      {loading.odoo ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
                     </Button>
                   ) : (
                     <>
                       <Button 
                         variant="outline"
                         onClick={() => handleTest('odoo')}
-                        disabled={loading.odoo_test}
+                        disabled={loading.odoo}
                         className="flex-1"
                       >
-                        {loading.odoo_test ? t('common.testing') : t('integrations.test')}
+                        {loading.odoo ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -369,7 +410,7 @@ const Integrations = () => {
                         disabled={loading.odoo}
                         className="flex-1"
                       >
-                        {loading.odoo_test ? t('common.disconnecting') : t('integrations.disconnect')}
+                        {loading.odoo_test ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
                       </Button>
                     </>
                   )}
@@ -382,14 +423,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('odoo')}
                       className="w-full"
                     >
-                      Field Mapping
+                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('odoo')}
                       className="w-full"
                     >
-                      Sync Status
+                      {t('integrations.actions.sync_status', { ns: 'pages' })}
                     </Button>
                   </div>
                 )}
@@ -403,13 +444,13 @@ const Integrations = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Field Mapping - {selectedProvider.toUpperCase()}
+                  {t('integrations.mapping.title', { ns: 'pages' })} - {selectedProvider.toUpperCase()}
                 </h2>
                 <Button 
                   variant="outline"
                   onClick={() => setActiveTab('crm')}
                 >
-                  Back to Integrations
+                  {t('integrations.actions.back_to_integrations', { ns: 'pages' })}
                 </Button>
               </div>
               
@@ -422,13 +463,13 @@ const Integrations = () => {
           ) : (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Select a CRM Provider
+                {t('integrations.mapping.select_provider', { ns: 'pages' })}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Choose a connected CRM provider to configure field mapping
+                {t('integrations.mapping.select_provider_desc', { ns: 'pages' })}
               </p>
               <Button onClick={() => setActiveTab('crm')}>
-                Go to Integrations
+                {t('integrations.actions.go_to_integrations', { ns: 'pages' })}
               </Button>
             </div>
           )}
@@ -439,13 +480,13 @@ const Integrations = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Sync Status - {selectedProvider.toUpperCase()}
+                  {t('integrations.sync.title', { ns: 'pages' })} - {selectedProvider.toUpperCase()}
                 </h2>
                 <Button 
                   variant="outline"
                   onClick={() => setActiveTab('crm')}
                 >
-                  Back to Integrations
+                  {t('integrations.actions.back_to_integrations', { ns: 'pages' })}
                 </Button>
               </div>
               
@@ -457,13 +498,13 @@ const Integrations = () => {
           ) : (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Select a CRM Provider
+                {t('integrations.sync.select_provider', { ns: 'pages' })}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Choose a connected CRM provider to view sync status
+                {t('integrations.sync.select_provider_desc', { ns: 'pages' })}
               </p>
               <Button onClick={() => setActiveTab('crm')}>
-                Go to Integrations
+                {t('integrations.actions.go_to_integrations', { ns: 'pages' })}
               </Button>
             </div>
           )}
@@ -472,11 +513,11 @@ const Integrations = () => {
         <TabsContent value="other" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Coming Soon</CardTitle>
+              <CardTitle>{t('integrations.other.coming_soon', { ns: 'pages' })}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 dark:text-gray-400">
-                More integrations will be available in future updates.
+                {t('integrations.other.coming_soon_desc', { ns: 'pages' })}
               </p>
             </CardContent>
           </Card>

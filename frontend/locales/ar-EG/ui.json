@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "create": "إنشاء"
+  },
+  "indicators": {
+    "test_mode": "وضع الاختبار"
+  },
+  "nav": {
+    "breadcrumbs": "فتات الخبز"
+  },
+  "open-create-drawer": "فتح درج الإنشاء",
+  "search": {
+    "aria": "بحث",
+    "placeholder": "بحث..."
+  }
+}

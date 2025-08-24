@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
+import ChartCard, { EmptyChart, chartDefaults } from './ChartCard.jsx'
+import { useTranslation } from 'react-i18next'
 
 export default function TimeSeries({ 
 	data = { created: [], finished: [], qualified: [], contact_rate: [] },
@@ -8,6 +10,7 @@ export default function TimeSeries({
 	onDaysChange,
 	className = ''
 }) {
+	const { t } = useTranslation('pages')
 	const [selectedDays, setSelectedDays] = useState(days)
 	const chartRef = useRef(null)
 	
@@ -29,43 +32,43 @@ export default function TimeSeries({
 		labels: labels.slice(-selectedDays),
 		datasets: [
 			{
-				label: 'Created',
+				label: t('dashboard.metrics.calls_created'),
 				data: data.created?.slice(-selectedDays) || [],
-				borderColor: 'var(--brand-600)',
-				backgroundColor: 'rgba(15, 169, 88, 0.1)',
+				borderColor: chartDefaults.colors.primary,
+				backgroundColor: 'rgba(20, 184, 166, 0.1)',
 				borderWidth: 2,
 				fill: true,
-				tension: 0.4,
+				tension: 0.35,
 				yAxisID: 'y'
 			},
 			{
-				label: 'Finished',
+				label: t('dashboard.metrics.calls_finished'),
 				data: data.finished?.slice(-selectedDays) || [],
-				borderColor: 'var(--success)',
-				backgroundColor: 'rgba(16, 185, 129, 0.1)',
+				borderColor: chartDefaults.colors.success,
+				backgroundColor: 'rgba(22, 163, 74, 0.1)',
 				borderWidth: 2,
 				fill: true,
-				tension: 0.4,
+				tension: 0.35,
 				yAxisID: 'y'
 			},
 			{
-				label: 'Qualified',
+				label: t('dashboard.metrics.calls_qualified'),
 				data: data.qualified?.slice(-selectedDays) || [],
-				borderColor: 'var(--warn)',
-				backgroundColor: 'rgba(245, 158, 11, 0.1)',
+				borderColor: chartDefaults.colors.warning,
+				backgroundColor: 'rgba(217, 119, 6, 0.1)',
 				borderWidth: 2,
 				fill: true,
-				tension: 0.4,
+				tension: 0.35,
 				yAxisID: 'y'
 			},
 			{
-				label: 'Contact Rate',
+				label: t('dashboard.metrics.contact_rate'),
 				data: data.contact_rate?.slice(-selectedDays) || [],
-				borderColor: 'var(--info)',
+				borderColor: chartDefaults.colors.info,
 				backgroundColor: 'transparent',
 				borderWidth: 2,
 				fill: false,
-				tension: 0.4,
+				tension: 0.35,
 				yAxisID: 'y2',
 				borderDash: [5, 5]
 			}
@@ -98,6 +101,8 @@ export default function TimeSeries({
 				borderWidth: 1,
 				cornerRadius: 8,
 				displayColors: true,
+				intersect: false,
+				mode: 'index',
 				callbacks: {
 					label: function(context) {
 						const label = context.dataset.label || ''
@@ -166,7 +171,8 @@ export default function TimeSeries({
 				},
 				ticks: {
 					color: 'var(--ink-600)',
-					font: { size: 11 }
+					font: { size: 11 },
+					precision: 0
 				}
 			},
 			y2: {
@@ -189,54 +195,70 @@ export default function TimeSeries({
 		}
 	}
 	
-	return (
-		<div className={`panel ${className}`}>
-			<div className="flex items-center justify-between mb-4">
-				<div className="text-sm font-semibold text-ink-900">Call Trends</div>
-				
-				{/* Days selector */}
-				<div className="flex gap-1">
-					{[7, 30].map(d => (
-						<button
-							key={d}
-							onClick={() => handleDaysChange(d)}
-							className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
-								selectedDays === d 
-									? 'bg-brand-600 text-white border-transparent' 
-									: 'border-line bg-bg-app text-ink-600 hover:bg-bg-app/80'
-							}`}
-						>
-							{d}d
-						</button>
-					))}
-				</div>
-			</div>
-			
-			{/* Chart */}
-			<div className="h-64">
-				<Line 
-					ref={chartRef}
-					data={chartData} 
-					options={options} 
-				/>
-			</div>
-			
-			{/* Summary stats */}
-			<div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-line">
-				{[
-					{ label: 'Total Created', value: data.created?.reduce((a, b) => a + b, 0) || 0, color: 'text-brand-600' },
-					{ label: 'Total Finished', value: data.finished?.reduce((a, b) => a + b, 0) || 0, color: 'text-success' },
-					{ label: 'Total Qualified', value: data.qualified?.reduce((a, b) => a + b, 0) || 0, color: 'text-warn' },
-					{ label: 'Avg Contact Rate', value: data.contact_rate?.length > 0 ? (data.contact_rate.reduce((a, b) => a + b, 0) / data.contact_rate.length).toFixed(1) : 0, color: 'text-info', suffix: '%' }
-				].map((stat, index) => (
-					<div key={index} className="text-center">
-						<div className={`text-lg font-semibold ${stat.color}`}>
-							{stat.value}{stat.suffix || ''}
-						</div>
-						<div className="text-xs text-ink-600">{stat.label}</div>
-					</div>
-				))}
-			</div>
+	// Check if chart has data
+	const hasData = labels.length > 0 && (
+		(data.created?.length > 0) || 
+		(data.finished?.length > 0) || 
+		(data.qualified?.length > 0) || 
+		(data.contact_rate?.length > 0)
+	)
+
+	// Days selector component
+	const daysSelector = (
+		<div className="flex gap-1">
+			{[7, 30].map(d => (
+				<button
+					key={d}
+					onClick={() => handleDaysChange(d)}
+					className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+						selectedDays === d 
+							? 'bg-green-600 text-white border-transparent' 
+							: 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
+					}`}
+				>
+					{t(`dashboard.buttons.${d}d`, `${d}d`)}
+				</button>
+			))}
 		</div>
+	)
+
+	return (
+		<ChartCard
+			title={t('dashboard.trends.title', 'Call Trends')}
+			action={daysSelector}
+			isEmpty={!hasData}
+			emptyMessage={t('dashboard.trends.empty', 'No trend data available')}
+			className={className}
+		>
+			{hasData && (
+				<>
+					{/* Chart */}
+					<div className="h-64 mb-4">
+						<Line 
+							ref={chartRef}
+							data={chartData} 
+							options={options} 
+						/>
+					</div>
+					
+					{/* Summary stats */}
+					<div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+						{[
+							{ label: t('dashboard.stats.total_created', 'Total Created'), value: data.created?.reduce((a, b) => a + b, 0) || 0, color: 'text-teal-600' },
+							{ label: t('dashboard.stats.total_finished', 'Total Finished'), value: data.finished?.reduce((a, b) => a + b, 0) || 0, color: 'text-green-600' },
+							{ label: t('dashboard.stats.total_qualified', 'Total Qualified'), value: data.qualified?.reduce((a, b) => a + b, 0) || 0, color: 'text-amber-600' },
+							{ label: t('dashboard.stats.avg_contact_rate', 'Avg Contact Rate'), value: data.contact_rate?.length > 0 ? (data.contact_rate.reduce((a, b) => a + b, 0) / data.contact_rate.length).toFixed(1) : 0, color: 'text-blue-600', suffix: '%' }
+						].map((stat, index) => (
+							<div key={index} className="text-center">
+								<div className={`text-lg font-semibold ${stat.color}`}>
+									{stat.value}{stat.suffix || ''}
+								</div>
+								<div className="text-xs text-gray-600">{stat.label}</div>
+							</div>
+						))}
+					</div>
+				</>
+			)}
+		</ChartCard>
 	)
 }

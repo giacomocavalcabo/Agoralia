@@ -1,5 +1,6 @@
-import { Link, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useLocation, Link } from 'react-router-dom'
+import { useAuth } from '../lib/useAuth'
 
 const baseGroups = [
 	{ label: 'Home', items:[{ label:'Dashboard', to:'/' }]},
@@ -28,20 +29,30 @@ const baseGroups = [
 
 export default function Sidebar(){
 	const { pathname } = useLocation()
+	const { user } = useAuth()
 	const [collapsed, setCollapsed] = useState(false)
-	const [isAdmin, setIsAdmin] = useState(false)
+	const [mounted, setMounted] = useState(false)
 	
 	useEffect(()=> {
-		setCollapsed(localStorage.getItem('sidebar_collapsed') === '1')
-		try{ setIsAdmin(!!localStorage.getItem('admin_email') || !!localStorage.getItem('impersonate_token')) } catch {}
+		setMounted(true)
 	}, [])
+	
+	useEffect(()=> {
+		if (!mounted) return
+		
+		setCollapsed(localStorage.getItem('sidebar_collapsed') === '1')
+	}, [mounted])
 	
 	function toggle(){ 
 		const next = !collapsed; 
 		setCollapsed(next); 
-		localStorage.setItem('sidebar_collapsed', next ? '1' : '0') 
+		if (mounted) {
+			localStorage.setItem('sidebar_collapsed', next ? '1' : '0') 
+		}
 	}
 	
+	// Solo giacomo.cavalcabo14@gmail.com può vedere la sezione Admin
+	const isAdmin = user?.email === 'giacomo.cavalcabo14@gmail.com'
 	const groups = [...baseGroups, ...(isAdmin ? [{ label: 'Admin', items:[{ label:'Admin', to:'/admin' }]}] : [])]
 	
 	return (

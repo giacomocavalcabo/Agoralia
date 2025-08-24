@@ -1,0 +1,58 @@
+{
+  "connect": "[توصيل]",
+  "connected": {
+    "description": "تم توصيل التكامل بنجاح",
+    "title": "[العنوان]"
+  },
+  "disconnect": "[قطع الاتصال]",
+  "disconnected": {
+    "description": "فصل التكامل عن التكامل",
+    "title": "[العنوان]"
+  },
+  "error": {
+    "description": "[الوصف]",
+    "title": "[العنوان]"
+  },
+  "hubspot": {
+    "description": "[الوصف]"
+  },
+  "mapping": {
+    "error": {
+      "description": "[الوصف]",
+      "title": "[العنوان]"
+    },
+    "saved": {
+      "description": "[الوصف]",
+      "title": "[العنوان]"
+    }
+  },
+  "odoo": {
+    "description": "[الوصف]"
+  },
+  "portal_id": "[معرّف البوابة]",
+  "status": {
+    "connected": "[متصل]",
+    "connecting": "[توصيل]",
+    "disconnected": "[مفصول]",
+    "error": "[خطأ]"
+  },
+  "subtitle": "[العنوان الفرعي]",
+  "tabs": {
+    "crm": "[إدارة علاقات العملاء]",
+    "other": "[أخرى]"
+  },
+  "test": {
+    "error": {
+      "description": "فشل اختبار الاتصال",
+      "title": "[العنوان]"
+    },
+    "success": {
+      "description": "تم اختبار الاتصال بنجاح",
+      "title": "[العنوان]"
+    }
+  },
+  "title": "[العنوان]",
+  "zoho": {
+    "description": "[الوصف]"
+  }
+}

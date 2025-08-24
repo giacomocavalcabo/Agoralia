@@ -297,28 +297,8 @@ def load_raw_records(raw_dir: str) -> list[dict]:
                 records.append(row)
         return records
     
-    # Fallback: check if continents directory exists, otherwise use raw directory
-    continents_dir = os.path.join(raw_dir, "continents")
-    if os.path.exists(continents_dir):
-        raw_dir = continents_dir
-    
-    # Prefer JSON files if present, then CSV
-    for fname in sorted(os.listdir(raw_dir)):
-        path = os.path.join(raw_dir, fname)
-        if not os.path.isfile(path):
-            continue
-        if fname.lower().endswith(".json"):
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    records.extend(data)
-                elif isinstance(data, dict) and data.get("items"):
-                    records.extend(data["items"]) 
-        elif fname.lower().endswith(".csv"):
-            with open(path, newline="", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    records.append(row)
+    # If global CSV not found, return empty records
+    print(f"Warning: {global_csv} not found")
     return records
 
 

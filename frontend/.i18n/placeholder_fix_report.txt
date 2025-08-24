@@ -1,0 +1,13 @@
+[ar-EG] app.notices.call_lang_not_supported: removed extra ['region']
+[ar-EG] app.notices.call_lang_not_supported: added missing ['form.lang_default', 'lang']
+[it-IT] app.notices.call_lang_not_supported: rename {'language': 'form.lang_default', 'region': 'lang'} | 'Lingua di chiamata {language} non supportata per {region}'
+[fr-FR] admin.notices.impersonating: rename {'user_name': 'id'} | 'Vous vous faites passer pour {user_name}'
+[de-DE] admin.notices.impersonating: rename {'user_name': 'id'} | 'Sie geben sich als {user_name} aus'
+[es-ES] admin.notices.impersonating: rename {'user_name': 'id'} | 'Estás suplantando a {user_name}'
+[ar-EG] admin.notices.impersonating: added missing ['id']
+[it-IT] admin.notices.impersonating: rename {'user_name': 'id'} | 'Stai impersonando {user_name}'
+[fr-FR] kb./: added missing ['params']
+[de-DE] kb./: added missing ['params']
+[es-ES] kb./: added missing ['params']
+[ar-EG] kb./: added missing ['params']
+[it-IT] kb./: added missing ['params']

@@ -1,7 +1,7 @@
 """Complete auth system for Sprint 11
 
 Revision ID: 0009_auth_complete_sprint11
-Revises: 0008_crm_integrations_sprint9
+Revises: 0003_numbers_outcomes
 Create Date: 2025-01-19 10:00:00
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '0009_auth_complete_sprint11'
-down_revision = '0008_crm_integrations_sprint9'
+down_revision = '0003_numbers_outcomes'
 branch_labels = None
 depends_on = None
 

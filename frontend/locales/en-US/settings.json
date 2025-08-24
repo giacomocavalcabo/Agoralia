@@ -1,0 +1,40 @@
+{
+  "coming_soon": "[Coming Soon]",
+  "personal": {
+    "dual_time": "Dual Time Display",
+    "email": "admin@example.com",
+    "language": "English",
+    "name": "Admin User",
+    "timezone": "UTC",
+    "title": "Personal Information"
+  },
+  "save": "Save",
+  "subtitle": "Manage your account and workspace preferences",
+  "tabs": {
+    "audit": "Audit",
+    "billing": "Billing",
+    "compliance": "Compliance",
+    "integrations": "Integrations",
+    "members": "Members",
+    "personal": "Personal",
+    "telephony": "Telephony",
+    "workspace": "Workspace"
+  },
+  "telephony": {
+    "buy_number": "[Buy Number]",
+    "numbers": "[Numbers]"
+  },
+  "title": "Settings",
+  "workspace": {
+    "accepting": "[Accepting]",
+    "domain": "[Domain]",
+    "invite": "[Invite]",
+    "invite_email": "[Invite Email]",
+    "logo": "[Logo]",
+    "members": "[Members]",
+    "name": "[Name]",
+    "remove": "[Remove]",
+    "title": "[Title]",
+    "upload_logo": "[Upload Logo]"
+  }
+}

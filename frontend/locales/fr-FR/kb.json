@@ -1,0 +1,32 @@
+{
+  "/": "Base de connaissances {params}",
+  "imports": {
+    "add_field": "[Ajouter un champ]",
+    "apply_merge": "[Appliquer la fusion]",
+    "conflicts": "[Conflits]",
+    "existing_fields": "[Champs existants]",
+    "existing_value": "[Valeur existante]",
+    "field_changes": "[Changements dans les champs]",
+    "field_new": "[Champ Nouveau]",
+    "field_update": "[Mise à jour sur le terrain]",
+    "field_value": "[Valeur du champ]",
+    "imported_fields": "[Champs importés]",
+    "keep_existing": "[Continuer à exister]",
+    "merge_strategy": "[Stratégie de fusion]",
+    "merge_summary": "[Résumé de la fusion]",
+    "merge_values": "[Fusionner les valeurs]",
+    "merged_preview": "[Aperçu fusionné]",
+    "merging": "[Fusionner]",
+    "new_fields": "[Nouveaux champs]",
+    "new_value": "[Nouvelle valeur]",
+    "no_diff_available": "[Pas de diffusion disponible]",
+    "no_value": "[Pas de valeur]",
+    "ready_to_merge": "[Prêt à fusionner]",
+    "strategy_auto_merge": "[Fusion automatique des stratégies]",
+    "strategy_auto_new": "[Stratégie Auto New]",
+    "strategy_manual": "[Manuel de stratégie]",
+    "updated": "[Mis à jour]",
+    "use_new": "[Utiliser nouveau]"
+  },
+  "index": "Base de connaissances"
+}

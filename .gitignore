@@ -76,6 +76,9 @@ pids
 *.seed
 *.pid.lock
 
+# i18n usage tracking (privacy-sensitive)
+frontend/.i18n/usage.json
+
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
@@ -144,3 +147,4 @@ temp/
 
 # Allow committing public locales
 !frontend/public/locales/
+.vercel

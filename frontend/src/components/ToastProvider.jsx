@@ -6,7 +6,18 @@ export function ToastProvider({ children }) {
 	const [items, setItems] = useState([])
 	const toast = useCallback((msg, opts = {}) => {
 		const id = Math.random().toString(36).slice(2)
-		setItems((arr) => [...arr, { id, msg }])
+		
+		// Gestisce sia stringhe che oggetti
+		let displayMsg = msg
+		if (typeof msg === 'object' && msg !== null) {
+			// Se è un oggetto, prova a estrarre il messaggio
+			displayMsg = msg.message || msg.title || msg.description || msg.text || JSON.stringify(msg)
+		} else if (typeof msg !== 'string') {
+			// Se non è una stringa, converti in stringa
+			displayMsg = String(msg)
+		}
+		
+		setItems((arr) => [...arr, { id, msg: displayMsg }])
 		setTimeout(() => setItems((arr) => arr.filter((t) => t.id !== id)), opts.duration || 2500)
 	}, [])
 	return (

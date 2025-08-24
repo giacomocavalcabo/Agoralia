@@ -14,7 +14,7 @@ worker = "dramatiq backend.workers.crm_jobs -p 4"
 [deploy.environment]
 ENV = "production"
 APP_BASE_URL = "https://api.agoralia.app"
-FRONTEND_BASE_URL = "https://app.agoralia.com"
+FRONTEND_BASE_URL = "https://app.agoralia.app"
 LOG_LEVEL = "INFO"
 ENABLE_METRICS = "true"
 ENABLE_CRM_SYNC = "true"

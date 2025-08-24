@@ -10,7 +10,6 @@ export const i18nNamespaces = ['auth'];
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isMagicLink, setIsMagicLink] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -51,25 +50,7 @@ export default function Login() {
     }
   };
 
-  const handleMagicLinkLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    setMessage('');
-    
-    try {
-      // In production, this would send an email
-      setMessage('Magic link sent! Check your email.');
-      // For demo, simulate success
-      setTimeout(() => {
-        setMessage('Magic link sent! Check your email.');
-      }, 1000);
-    } catch (err) {
-      setError(err.message || 'Failed to send magic link');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   const handleOAuthLogin = async (provider) => {
     setIsLoading(true);
@@ -92,7 +73,7 @@ export default function Login() {
           </div>
           
           <div className="flex justify-center">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-xl font-bold">A</span>
             </div>
           </div>
@@ -148,34 +129,10 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Magic Link / Password Toggle */}
-          <div className="mt-6">
-            <div className="flex rounded-md shadow-sm">
-              <button
-                onClick={() => setIsMagicLink(false)}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
-                  !isMagicLink
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('auth.password')}
-              </button>
-              <button
-                onClick={() => setIsMagicLink(true)}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
-                  isMagicLink
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {t('auth.magic_link')}
-              </button>
-            </div>
-          </div>
+
 
           {/* Form */}
-          <form className="mt-6 space-y-6" onSubmit={isMagicLink ? handleMagicLinkLogin : handleEmailPasswordLogin}>
+          <form className="mt-6 space-y-6" onSubmit={handleEmailPasswordLogin}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 {t('auth.email_address')}
@@ -189,42 +146,32 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                   placeholder={t('auth.enter_email')}
                 />
               </div>
             </div>
 
-            {!isMagicLink && (
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  {t('auth.password')}
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder={t('auth.enter_password')}
-                  />
-                </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                {t('auth.password')}
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-blue-500 sm:text-sm"
+                  placeholder={t('auth.enter_password')}
+                />
               </div>
-            )}
+            </div>
 
-            {!isMagicLink && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                    {t('auth.forgot_password')}
-                  </a>
-                </div>
-              </div>
-            )}
+
 
             {error && (
               <div className="rounded-md bg-red-50 p-4">
@@ -242,7 +189,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
               >
                 {isLoading ? (
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -250,13 +197,18 @@ export default function Login() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : null}
-                {isMagicLink ? t('auth.send_magic_link') : t('auth.sign_in')}
+                {t('auth.sign_in')}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>{t('auth.subtitle')}</p>
+            <p className="mt-2">
+              <a href="/auth/register" className="text-blue-600 hover:text-blue-500 font-medium">
+                {t('auth.register')}
+              </a>
+            </p>
             <p className="mt-2">
               <a href="mailto:support@agoralia.com" className="text-blue-600 hover:text-blue-500">
                 {t('auth.need_help')}

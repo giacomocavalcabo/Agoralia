@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useAuth } from './useAuth.jsx'
+import { useIsDemo } from './useDemoData.js'
 
 export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const [isConnected, setIsConnected] = useState(false)
@@ -15,8 +17,11 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const failCount = useRef(0)
 	const maxFailures = 3
 	
-	// WebSocket URL configurabile con fallback
-	const wsUrl = import.meta.env.VITE_WS_URL || url
+	// Guardie ferree: non aprire mai WS se non ho utente o URL valido
+	const { user } = useAuth?.() ?? {}
+	const isDemo = useIsDemo?.() ?? false
+	const wsUrl = import.meta.env.VITE_WS_URL
+	const canOpen = !!wsUrl && wsUrl.startsWith('wss://') && !!user?.id && !isDemo
 	
 	// Queue events (max 200)
 	const addEvent = useCallback((event) => {
@@ -26,6 +31,14 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	
 	// Fallback polling function
 	const fallbackPoll = useCallback(async () => {
+		// Non fare fetch se non autenticato o in demo
+		if (!user?.id || isDemo) {
+			if (import.meta.env.DEV) {
+				console.log('[WS] fallback polling skipped: no user or demo mode')
+			}
+			return
+		}
+		
 		try {
 			const [liveResponse, eventsResponse] = await Promise.all([
 				fetch('/calls/live', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] })),
@@ -57,7 +70,9 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const startPolling = useCallback(() => {
 		if (fallbackTimerRef.current) return
 		
-		console.log('Starting fallback polling')
+		if (import.meta.env.DEV) {
+			console.log('Starting fallback polling')
+		}
 		fallbackPoll() // Immediate poll
 		fallbackTimerRef.current = setInterval(fallbackPoll, fallbackInterval)
 	}, [fallbackPoll, fallbackInterval])
@@ -66,18 +81,31 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const connect = useCallback(() => {
 		if (wsRef.current?.readyState === WebSocket.OPEN) return
 		
-		// Se non c'è URL WebSocket configurato, usa fallback
-		if (!wsUrl) {
-			console.log('WebSocket URL not configured, using fallback polling')
+		// Guardie ferree: non aprire mai WS se non posso
+		if (!canOpen) {
+			if (import.meta.env.DEV) {
+				console.log('[WS] skipped: missing URL, user, or in demo mode')
+			}
 			startPolling()
 			return
 		}
+		
+			// Se non c'è URL WebSocket configurato o non è wss://, usa fallback
+	if (!wsUrl || !wsUrl.startsWith('wss://')) {
+		if (import.meta.env.DEV) {
+			console.log('WebSocket URL not configured or invalid (must be wss://), using fallback polling')
+		}
+		startPolling()
+		return
+	}
 		
 		try {
 			wsRef.current = new WebSocket(wsUrl)
 			
 			wsRef.current.onopen = () => {
-				console.log('WebSocket connected')
+				if (import.meta.env.DEV) {
+					console.log('WebSocket connected')
+				}
 				setIsConnected(true)
 				failCount.current = 0 // Reset failure count
 				
@@ -146,36 +174,48 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 					
 					setLastUpdate(new Date())
 				} catch (error) {
-					console.warn('Failed to parse WebSocket message:', error)
+					if (import.meta.env.DEV) {
+						console.warn('Failed to parse WebSocket message:', error)
+					}
 				}
 			}
 			
 			wsRef.current.onclose = () => {
-				console.log('WebSocket disconnected')
+				if (import.meta.env.DEV) {
+					console.log('WebSocket disconnected')
+				}
 				setIsConnected(false)
 				
 				failCount.current++
 				
 				// Start fallback polling after 3 failures
 				if (failCount.current >= maxFailures) {
-					console.log('Max failures reached, starting fallback polling')
+					if (import.meta.env.DEV) {
+						console.log('Max failures reached, starting fallback polling')
+					}
 					startPolling()
 				} else {
 					// Exponential backoff: 1s, 2s, 4s, 8s, 15s max
 					const backoffDelay = Math.min(15000, 1000 * Math.pow(2, failCount.current - 1))
-					console.log(`Reconnecting in ${backoffDelay}ms (attempt ${failCount.current})`)
+					if (import.meta.env.DEV) {
+						console.log(`Reconnecting in ${backoffDelay}ms (attempt ${failCount.current})`)
+					}
 					
 					reconnectTimeoutRef.current = setTimeout(connect, backoffDelay)
 				}
 			}
 			
 			wsRef.current.onerror = (error) => {
-				console.error('WebSocket error:', error)
+				if (import.meta.env.DEV) {
+					console.error('WebSocket error:', error)
+				}
 				setIsConnected(false)
 			}
 			
 		} catch (error) {
-			console.error('Failed to create WebSocket:', error)
+			if (import.meta.env.DEV) {
+				console.error('Failed to create WebSocket:', error)
+			}
 			failCount.current++
 			
 			// Fallback to polling immediately on creation failure

@@ -1,0 +1,9 @@
+{
+  "notices": {
+    "impersonating": "أنت تنتحل شخصية _PH_0____ {id}"
+  },
+  "users": {
+    "impersonate": "[انتحال شخصية]",
+    "search_placeholder": "[عنصر نائب البحث]"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "notices": {
+    "impersonating": "Sie geben sich als {id} aus"
+  },
+  "users": {
+    "impersonate": "[Impersonate]",
+    "search_placeholder": "[Suchplatzhalter]"
+  }
+}

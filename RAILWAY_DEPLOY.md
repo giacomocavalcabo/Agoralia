@@ -63,6 +63,12 @@ DATABASE_URL=postgresql://user:pass@host:port/db
 
 # Redis (per Dramatiq)
 REDIS_URL=redis://user:pass@host:port
+
+# Email Service
+EMAIL_PROVIDER=postmark  # or sendgrid or mailersend
+POSTMARK_TOKEN=your_postmark_token
+SENDGRID_API_KEY=your_sendgrid_api_key
+MAILERSEND_API_KEY=your_mailersend_api_key
 ```
 
 ### **Builder Configuration**

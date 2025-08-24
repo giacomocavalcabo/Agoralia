@@ -1,0 +1,20 @@
+iso,field,issue,severity
+STATS,confidence,low: 26 paesi,INFO
+STATS,confidence,medium: 176 paesi,INFO
+STATS,confidence,high: 3 paesi,INFO
+STATS,regime_b2c,opt_in: 85 paesi,INFO
+STATS,regime_b2c,opt_out: 81 paesi,INFO
+STATS,regime_b2c,depends: 12 paesi,INFO
+STATS,regime_b2c,unknown: 27 paesi,INFO
+STATS,regime_b2b,opt_in: 10 paesi,INFO
+STATS,regime_b2b,opt_out: 56 paesi,INFO
+STATS,regime_b2b,none: 11 paesi,INFO
+STATS,regime_b2b,depends: 18 paesi,INFO
+STATS,regime_b2b,unknown: 110 paesi,INFO
+STATS,ai_disclosure,required: 39 paesi,INFO
+STATS,ai_disclosure,not_required: 83 paesi,INFO
+STATS,ai_disclosure,unknown: 83 paesi,INFO
+STATS,recording_basis,consent: 146 paesi,INFO
+STATS,recording_basis,legitimate_interest: 4 paesi,INFO
+STATS,recording_basis,mixed: 33 paesi,INFO
+STATS,recording_basis,unknown: 22 paesi,INFO

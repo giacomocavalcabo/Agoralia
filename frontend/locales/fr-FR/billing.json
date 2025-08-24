@@ -1,0 +1,47 @@
+{
+  "auto_recharge": {
+    "description": "Recharge automatiquement {threshold} lorsque le solde tombe en dessous de {topup}",
+    "disabled": "Recharge automatique désactivée",
+    "enable": "[Activer]",
+    "enabled": "Recharge automatique activée",
+    "threshold": "[Seuil]",
+    "title": "[Titre]",
+    "topup": "[Topup]"
+  },
+  "invoices": {
+    "download": "[Télécharger]",
+    "title": "[Titre]",
+    "view_all": "[Voir tout]"
+  },
+  "overview": {
+    "balance": "[Balance]",
+    "cap_status": "[Statut du plafond]",
+    "minutes_mtd": "[Minutes Mtd]",
+    "usage_mtd": "[Usage Mtd]"
+  },
+  "payment_methods": {
+    "add": "[Ajouter]",
+    "add_card": "[Ajouter une carte]",
+    "adding": "[Ajouter]",
+    "card_details": "[Détails de la carte]",
+    "default": "[Par défaut]",
+    "title": "[Titre]",
+    "unavailable": "[Indisponible]",
+    "unavailable_desc": "[Desc. indisponible]"
+  },
+  "subtitle": "[Sous-titre]",
+  "title": "[Titre]",
+  "usage_cap": {
+    "current": "Utilisation actuelle",
+    "description": "Plafond d'utilisation mensuel fixé à {type} avec alertes à {limit}",
+    "hard": "Hard Cap (arrêt des appels)",
+    "hard_cap": "Casquette rigide",
+    "limit": "Limite mensuelle ($)",
+    "soft": "Capuchon souple (avertissements uniquement)",
+    "soft_cap": "Capuchon souple",
+    "stop_calls": "Arrêter les appels à la limite",
+    "title": "Capuchon d'utilisation",
+    "type": "Type de bouchon",
+    "warnings_only": "Avertissements uniquement"
+  }
+}

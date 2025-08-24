@@ -1,0 +1,5 @@
+{
+  "notices": {
+    "call_lang_not_supported": "Lenguaje de llamada {form.lang_default} no soportado para {lang}"
+  }
+}

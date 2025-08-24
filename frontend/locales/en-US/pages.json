@@ -1,132 +1,327 @@
 {
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome back",
-    "overview": "Overview",
-    "recent_activity": "Recent Activity",
-    "quick_actions": "Quick Actions"
+  "calendar": {
+    "errors": {
+      "budget": "[Budget]",
+      "concurrency": "[Concurrency]",
+      "quiet_hours": "Cannot schedule during quiet hours for {iso}",
+      "rpo": "Recovery point objective not met for {iso}"
+    },
+    "legend": {
+      "blocked": "[Blocked]",
+      "scheduled": "[Scheduled]",
+      "warn_budget": "[Warn Budget]",
+      "warn_concurrency": "[Warn Concurrency]"
+    },
+    "quick": {
+      "submit_done": "[Submit Done]",
+      "title": "[Title]"
+    },
+    "range": "From {fromStr} to {toStr}",
+    "title": "[Title]"
   },
-  "settings": {
-    "title": "Settings",
-    "profile": "Profile",
-    "account": "Account",
-    "billing": "Billing",
-    "team": "Team",
-    "integrations": "Integrations"
+  "campaigns": {
+    "actions": {
+      "create_schedule": "Create & Schedule"
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Disclosure text…",
+    "compliance_record": "Recording consent…",
+    "fields": {
+      "agent": "Agent ID",
+      "audience": "Audience (lead ids comma-separated)",
+      "budget": "Budget Cap (cents)",
+      "dow": "Days of week (1=Mon...7=Sun)",
+      "from": "From Number",
+      "goal": "Goal",
+      "kb": "Knowledge Base ID",
+      "lang": "Default Language",
+      "name": "Campaign Name",
+      "pacing": "Pacing (calls per minute)",
+      "quiet_hours": "Respect quiet hours",
+      "role": "Role",
+      "start_at": "Start date/time",
+      "template": "Outcome Template",
+      "template_select": "Select template..."
+    },
+    "step": "Step {s}",
+    "steps": {
+      "audience": "Audience & Pacing",
+      "details": "Campaign Details",
+      "review": "Review & Create",
+      "windows": "Windows & Compliance"
+    },
+    "title": "Campaigns",
+    "toasts": {
+      "created": "Campaign {id} created successfully"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[Title]"
+    },
+    "live_calls": {
+      "title": "Live Calls",
+      "empty": "No active calls"
+    },
+    "metrics": {
+      "calls_today": "Calls Today",
+      "minutes_month": "Minutes Month",
+      "avg_duration": "Avg Duration",
+      "contact_rate": "Contact Rate",
+      "calls_created": "Created",
+      "calls_finished": "Finished", 
+      "calls_qualified": "Qualified"
+    },
+    "trends": {
+      "title": "Call Trends",
+      "empty": "No trend data available"
+    },
+    "funnel": {
+      "title": "Conversion Funnel",
+      "reached": "Reached",
+      "connected": "Connected",
+      "qualified": "Qualified",
+      "booked": "Booked",
+      "overall_conversion": "Overall conversion"
+    },
+    "agents": {
+      "title": "Top Agents",
+      "empty": "No agent data available",
+      "calls": "calls",
+      "avg": "avg",
+      "top_performer": "Top performer"
+    },
+    "geo": {
+      "title": "Geographic Distribution",
+      "coming_soon": "Map visualization coming soon",
+      "calls": "calls",
+      "qualified": "qualified",
+      "top_country": "Top country"
+    },
+    "stats": {
+      "total_created": "Total Created",
+      "total_finished": "Total Finished", 
+      "total_qualified": "Total Qualified",
+      "avg_contact_rate": "Avg Contact Rate"
+    },
+    "buttons": {
+      "today": "Today",
+      "7d": "7d",
+      "30d": "30d",
+      "import": "Import",
+      "schedule": "Schedule"
+    },
+    "overview": "Overview",
+    "quick_actions": "Quick Actions",
+    "recent_activity": "Recent Activity",
+    "title": "Dashboard",
+    "welcome": "Welcome back"
+  },
+  "history": {
+    "title": "Call History & Outcomes"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[Check On]",
+      "merge": "[Merge]",
+      "resolve_strategy": "[Resolve Strategy]",
+      "skip": "[Skip]",
+      "title": "[Title]"
+    },
+    "launch": {
+      "launch": "[Launch]",
+      "launching": "[Launching]",
+      "new_import": "[New Import]",
+      "success": "[Success]",
+      "success_desc": "[Success Desc]",
+      "view_job": "[View Job]"
+    },
+    "legal": {
+      "disclosure": "[Disclosure]"
+    },
+    "mapping": {
+      "fields": "[Fields]",
+      "subtitle": "[Subtitle]",
+      "title": "[Title]"
+    },
+    "paste": {
+      "label": "[Label]",
+      "placeholder": "[Placeholder]",
+      "process": "[Process]",
+      "processing": "[Processing]"
+    },
+    "prefix": {
+      "apply_to_all": "[Apply To All]",
+      "auto": "[Auto]",
+      "default_country": "[Default Country]",
+      "force_0039": "[Force 0039]",
+      "force_39": "[Force 39]",
+      "no_prefix": "[No Prefix]",
+      "strategy": "[Strategy]",
+      "title": "[Title]"
+    },
+    "preview": {
+      "continue": "[Continue]",
+      "delimiter": "[Delimiter]",
+      "fields": "[Fields]",
+      "rows": "[Rows]",
+      "showing": "[Showing]",
+      "title": "[Title]",
+      "total": "[Total]"
+    },
+    "processing": "[Processing]",
+    "review": {
+      "config": "[Config]",
+      "cost": "[Cost]",
+      "cost_desc": "[Cost Desc]",
+      "cost_note": "[Cost Note]",
+      "subtitle": "[Subtitle]",
+      "summary": "[Summary]",
+      "title": "[Title]"
+    },
+    "sheet": {
+      "subtitle": "[Subtitle]",
+      "title": "[Title]",
+      "upload_csv": "[Upload Csv]"
+    },
+    "steps": {
+      "mapping": "[Mapping]",
+      "review": "[Review]",
+      "upload": "[Upload]"
+    },
+    "upload": {
+      "drag_drop": "[Drag Drop]",
+      "drop_here": "[Drop Here]",
+      "or_click": "[Or Click]",
+      "subtitle": "[Subtitle]",
+      "supported_formats": "[Supported Formats]",
+      "title": "[Title]"
+    }
   },
   "integrations": {
-    "title": "Integrations",
-    "subtitle": "Connect your CRM and other tools to streamline your workflow",
-    "tabs": {
-      "crm": "CRM Systems",
-      "other": "Other Tools"
+    "coming_soon": {
+      "description": "More integrations will be available in future updates",
+      "title": "Coming Soon"
+    },
+    "connect": "Connect",
+    "connected": {
+      "description": "Successfully connected to {provider}",
+      "title": "Connected Successfully"
+    },
+    "disconnect": "Disconnect",
+    "disconnected": {
+      "description": "Successfully disconnected from {provider}",
+      "title": "Disconnected Successfully"
+    },
+    "error": {
+      "description": "An error occurred while processing your request",
+      "title": "Error"
     },
     "hubspot": {
       "description": "Sync contacts, companies, and deals with HubSpot CRM"
     },
-    "zoho": {
-      "description": "Connect to Zoho CRM with multi-DC support"
+    "mapping": {
+      "error": {
+        "description": "Failed to save field mapping",
+        "title": "Mapping Error"
+      },
+      "saved": {
+        "description": "Field mapping has been saved successfully",
+        "title": "Mapping Saved"
+      }
     },
     "odoo": {
       "description": "Integrate with Odoo CRM using JSON-RPC"
     },
+    "portal_id": "Portal ID",
     "status": {
       "connected": "Connected",
       "connecting": "Connecting",
       "disconnected": "Disconnected",
       "error": "Error"
     },
-    "connect": "Connect",
-    "disconnect": "Disconnect",
-    "test": "Test Connection",
-    "portal_id": "Portal ID",
-    "connected": {
-      "title": "Connected Successfully",
-      "description": "Successfully connected to {provider}"
-    },
-    "disconnected": {
-      "title": "Disconnected Successfully", 
-      "description": "Successfully disconnected from {provider}"
+    "subtitle": "Connect your CRM and other tools to streamline your workflow",
+    "tabs": {
+      "crm": "CRM Systems",
+      "other": "Other Tools"
     },
     "test": {
+      "error": {
+        "description": "Failed to test connection to {provider}",
+        "title": "Connection Test Failed"
+      },
       "success": {
-        "title": "Connection Test Successful",
-        "description": "Successfully tested connection to {provider}"
-      },
-      "error": {
-        "title": "Connection Test Failed",
-        "description": "Failed to test connection to {provider}"
+        "description": "Successfully tested connection to {provider}",
+        "title": "Connection Test Successful"
       }
     },
-    "error": {
-      "title": "Error",
-      "description": "An error occurred while processing your request"
-    },
-    "coming_soon": {
-      "title": "Coming Soon",
-      "description": "More integrations will be available in future updates"
-    },
-    "mapping": {
-      "saved": {
-        "title": "Mapping Saved",
-        "description": "Field mapping has been saved successfully"
-      },
-      "error": {
-        "title": "Mapping Error",
-        "description": "Failed to save field mapping"
-      }
+    "title": "Integrations",
+    "zoho": {
+      "description": "Connect to Zoho CRM with multi-DC support"
     }
   },
-  "campaigns": {
-    "title": "Campaigns",
-    "step": "Step {s}",
-    "steps": {
-      "details": "Campaign Details",
-      "audience": "Audience & Pacing",
-      "windows": "Windows & Compliance",
-      "review": "Review & Create"
+  "leads": {
+    "actions": {
+      "add": "[Add]",
+      "import": "[Import]",
+      "schedule": "[Schedule]"
+    },
+    "add_title": "[Add Title]",
+    "cols": {
+      "class": "[Class]",
+      "company": "[Company]",
+      "compliance": "[Compliance]",
+      "consent": "[Consent]",
+      "country": "[Country]",
+      "lang": "[Lang]",
+      "name": "[Name]",
+      "phone": "[Phone]",
+      "role": "[Role]"
+    },
+    "empty": {
+      "desc": "[Desc]",
+      "title": "[Title]"
+    },
+    "errors": {
+      "e164": "[E164]"
     },
     "fields": {
-      "name": "Campaign Name",
-      "goal": "Goal",
-      "role": "Role",
-      "lang": "Default Language",
-      "from": "From Number",
-      "agent": "Agent ID",
-      "kb": "Knowledge Base ID",
-      "audience": "Audience (lead ids comma-separated)",
-      "pacing": "Pacing (calls per minute)",
-      "budget": "Budget Cap (cents)",
-      "dow": "Days of week (1=Mon...7=Sun)",
-      "quiet_hours": "Respect quiet hours",
-      "start_at": "Start date/time",
-      "template": "Outcome Template",
-      "template_select": "Select template..."
+      "company": "[Company]",
+      "consent": "[Consent]",
+      "country": "[Country]",
+      "lang": "[Lang]",
+      "name": "[Name]",
+      "phone": "[Phone]",
+      "role": "[Role]"
     },
-    "compliance": "Compliance",
-    "compliance_disclosure": "Disclosure text…",
-    "compliance_record": "Recording consent…",
-    "actions": {
-      "create_schedule": "Create & Schedule"
+    "placeholders": {
+      "e164": "[E164]"
     },
+    "title": "[Title]",
     "toasts": {
-      "created": "Campaign created with ID: {id}"
+      "added": "[Added]"
     }
   },
   "numbers": {
-    "my_numbers": "My Numbers",
-    "buy_numbers": "Buy Numbers",
-    "use_my_number": "Use my number",
-    "buy_number": "Buy a number",
-    "default_from": "Default caller ID",
-    "route": "Route",
-    "route_number": "Route Number",
     "agent_id": "Agent ID",
     "business_hours": "Business Hours",
+    "buy_number": "Buy a number",
+    "buy_numbers": "Buy Numbers",
+    "default_from": "Default caller ID",
     "enable_voicemail": "Enable Voicemail",
+    "my_numbers": "My Numbers",
+    "route": "Route",
+    "route_number": "Route Number",
+    "use_my_number": "Use my number",
     "voicemail_message": "Voicemail Message"
   },
-  "history": {
-    "title": "Call History & Outcomes"
+  "settings": {
+    "account": "Account",
+    "billing": "Billing",
+    "integrations": "Integrations",
+    "profile": "Profile",
+    "team": "Team",
+    "title": "Settings",
+    "unsaved": "[Unsaved]"
   }
 }

@@ -1,0 +1,40 @@
+{
+  "coming_soon": "[Prochainement]",
+  "personal": {
+    "dual_time": "Double affichage de l'heure",
+    "email": "admin@example.com",
+    "language": "Anglais",
+    "name": "Utilisateur Admin",
+    "timezone": "UTC",
+    "title": "Informations personnelles"
+  },
+  "save": "Économiser",
+  "subtitle": "Gérer les préférences de votre compte et de votre espace de travail",
+  "tabs": {
+    "audit": "Audit",
+    "billing": "Facturation",
+    "compliance": "Compliance",
+    "integrations": "Intégrations",
+    "members": "Les membres",
+    "personal": "Personnel",
+    "telephony": "Téléphonie",
+    "workspace": "Workspace_"
+  },
+  "telephony": {
+    "buy_number": "[Numéro d'achat]",
+    "numbers": "[Chiffres]"
+  },
+  "title": "Paramètres",
+  "workspace": {
+    "accepting": "[Accepter]",
+    "domain": "[Domain]",
+    "invite": "[Invite]",
+    "invite_email": "[Inviter Email]",
+    "logo": "[Logo]",
+    "members": "[Membres]",
+    "name": "[nom]",
+    "remove": "[Retirer]",
+    "title": "[Titre]",
+    "upload_logo": "[Télécharger le logo]"
+  }
+}

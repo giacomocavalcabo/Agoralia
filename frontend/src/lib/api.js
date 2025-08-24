@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://service-1-production.up.railway.app';
+export const API_BASE_URL = import.meta.env.DEV 
+  ? '/api'  // Usa proxy in dev
+  : (import.meta.env.VITE_API_BASE_URL || 'https://service-1-production.up.railway.app');
 
 export async function apiFetch(path, options = {}) {
 	const url = `${API_BASE_URL}${path}`;
@@ -13,10 +15,20 @@ export async function apiFetch(path, options = {}) {
 		body: options.body ? JSON.stringify(options.body) : undefined,
 		credentials: 'include',
 	});
+	
+	// Gestione specifica per 401 (non autenticato)
+	if (resp.status === 401) {
+		if (import.meta.env.DEV) {
+			console.info('[API] 401 Not authenticated');
+		}
+		throw new Error('unauthenticated');
+	}
+	
 	if (!resp.ok) {
 		const text = await resp.text().catch(() => '');
-		throw new Error(`API ${resp.status}: ${text || resp.statusText}`);
+		throw new Error(`http_${resp.status}: ${text || resp.statusText}`);
 	}
+	
 	const contentType = resp.headers.get('content-type') || '';
 	if (contentType.includes('application/json')) {
 		return resp.json();

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
+import { useIsDemo } from './useDemoData';
+import { useAuth } from './useAuth';
 
 export const qk = {
   list: (params) => ['kb:list', params],
@@ -8,18 +10,50 @@ export const qk = {
   assignments: ['kb:assignments']
 };
 
+function haltOnAuthOrDemo() {
+  const { user, workspace } = useAuth?.() ?? {};
+  const isDemo = useIsDemo?.() ?? false;
+  return { isAuthed: !!user?.id, isDemo, workspaceId: workspace?.id };
+}
+
 export function useKbList(params = {}) {
+  const { isAuthed, isDemo, workspaceId } = haltOnAuthOrDemo();
   return useQuery({ 
     queryKey: qk.list(params), 
-    queryFn: () => api.get('/kb', { params }) 
+    enabled: isAuthed && !isDemo && !!workspaceId,            // ❗ non chiamare l'API se non authed, demo, o senza workspace
+    queryFn: async () => {
+      try {
+        const r = await api.get('/kb', { 
+          params: { ...params, workspace_id: workspaceId }
+        });
+        return r.data || { items: [] };
+      } catch (e) {
+        // 401/422 → torna array vuoto, gestiamo a livello UI
+        if (import.meta.env.DEV) console.warn('[KB] list fallback due to error', e);
+        return { items: [] };
+      }
+    },
+    staleTime: 30_000,
   });
 }
 
 export function useKbDetail(id) {
+  const { isAuthed, isDemo, workspaceId } = haltOnAuthOrDemo();
   return useQuery({ 
-    enabled: !!id, 
+    enabled: !!id && isAuthed && !isDemo && !!workspaceId, 
     queryKey: qk.detail(id), 
-    queryFn: () => api.get(`/kb/${id}`) 
+    queryFn: async () => {
+      try {
+        const r = await api.get(`/kb/${id}`, {
+          params: { workspace_id: workspaceId }
+        });
+        return r.data || null;
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('[KB] detail fallback due to error', e);
+        return null;
+      }
+    },
+    staleTime: 30_000,
   });
 }
 
@@ -71,7 +105,9 @@ export function useStartImport() {
       qc.invalidateQueries({ queryKey: qk.list({}) });
     },
     onError: (error) => {
-      console.error('Import start failed:', error);
+      if (import.meta.env.DEV) {
+        console.error('Import start failed:', error);
+      }
     }
   });
 }
@@ -86,7 +122,9 @@ export function useCommitImport() {
       qc.invalidateQueries({ queryKey: qk.list({}) });
     },
     onError: (error) => {
-      console.error('Import commit failed:', error);
+      if (import.meta.env.DEV) {
+        console.error('Import commit failed:', error);
+      }
     }
   });
 }

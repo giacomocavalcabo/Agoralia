@@ -1,0 +1,275 @@
+{
+  "calendar": {
+    "errors": {
+      "budget": "[Presupuesto]",
+      "concurrency": "[Concurrencia]",
+      "quiet_hours": "No se puede programar durante las horas de silencio para {iso}",
+      "rpo": "No se alcanza el objetivo del punto de recuperación {iso}"
+    },
+    "legend": {
+      "blocked": "[Bloqueado]",
+      "scheduled": "[Programado]",
+      "warn_budget": "[Presupuesto Warn]",
+      "warn_concurrency": "[Advertir Concurrencia]"
+    },
+    "quick": {
+      "submit_done": "[Enviar Hecho]",
+      "title": "[Título]"
+    },
+    "range": "De {fromStr} a {toStr}",
+    "title": "[Título]"
+  },
+  "campaigns": {
+    "actions": {
+      "create_schedule": "Crear y programar"
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Texto de divulgación..",
+    "compliance_record": "Consentimiento de grabación..",
+    "fields": {
+      "agent": "ID de agente",
+      "audience": "Audiencia (identificadores separados por comas)",
+      "budget": "Límite presupuestario (céntimos)",
+      "dow": "Días de la semana (1=lunes...7=domingos)",
+      "from": "De Número",
+      "goal": "Objetivo",
+      "kb": "Base de conocimientos ID",
+      "lang": "Idioma por defecto",
+      "name": "Nombre de la campaña",
+      "pacing": "Ritmo (llamadas por minuto)",
+      "quiet_hours": "Respetar las horas de silencio",
+      "role": "Papel",
+      "start_at": "Fecha/hora de inicio",
+      "template": "Plantilla de resultados",
+      "template_select": "Seleccionar plantilla..."
+    },
+    "step": "Paso {s}",
+    "steps": {
+      "audience": "Audiencia y ritmo",
+      "details": "Detalles de la campaña",
+      "review": "Revisar y crear",
+      "windows": "Windows y __GL_3"
+    },
+    "title": "Campañas",
+    "toasts": {
+      "created": "Campaña creada con ID: {id}"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[Título]"
+    },
+    "overview": "Visión general",
+    "quick_actions": "Acciones rápidas",
+    "recent_activity": "Actividad reciente",
+    "title": "Cuadro de mandos",
+    "welcome": "Bienvenido de nuevo"
+  },
+  "history": {
+    "title": "Historial de llamadas y resultados"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[Check On]",
+      "merge": "[Fusionar]",
+      "resolve_strategy": "[Resolver Estrategia]",
+      "skip": "[Skip]",
+      "title": "[Título]"
+    },
+    "launch": {
+      "launch": "[Lanzamiento]",
+      "launching": "[Lanzamiento]",
+      "new_import": "[Nueva importación]",
+      "success": "[Éxito]",
+      "success_desc": "[Success Desc]",
+      "view_job": "[Ver Trabajo]"
+    },
+    "legal": {
+      "disclosure": "[Divulgación]"
+    },
+    "mapping": {
+      "fields": "[Campos]",
+      "subtitle": "[Subtítulo]",
+      "title": "[Título]"
+    },
+    "paste": {
+      "label": "[Etiqueta]",
+      "placeholder": "[Marcador de posición]",
+      "process": "[Proceso]",
+      "processing": "[Procesamiento]"
+    },
+    "prefix": {
+      "apply_to_all": "[Aplicar a todos]",
+      "auto": "[Coche]",
+      "default_country": "[País por defecto]",
+      "force_0039": "[Fuerza 0039]",
+      "force_39": "[Fuerza 39]",
+      "no_prefix": "[Sin prefijo]",
+      "strategy": "[Estrategia]",
+      "title": "[Título]"
+    },
+    "preview": {
+      "continue": "[Continuar]",
+      "delimiter": "[Delimitador]",
+      "fields": "[Campos]",
+      "rows": "[Filas]",
+      "showing": "[Mostrando]",
+      "title": "[Título]",
+      "total": "[Total]"
+    },
+    "processing": "[Procesamiento]",
+    "review": {
+      "config": "[Config]",
+      "cost": "[Coste]",
+      "cost_desc": "[Cost Desc]",
+      "cost_note": "[Nota de costes]",
+      "subtitle": "[Subtítulo]",
+      "summary": "[Resumen]",
+      "title": "[Título]"
+    },
+    "sheet": {
+      "subtitle": "[Subtítulo]",
+      "title": "[Título]",
+      "upload_csv": "[Cargar Csv]"
+    },
+    "steps": {
+      "mapping": "[Cartografía]",
+      "review": "[Revisión]",
+      "upload": "[Subir]"
+    },
+    "upload": {
+      "drag_drop": "[Drag Drop]",
+      "drop_here": "[Drop Here]",
+      "or_click": "[O haga clic]",
+      "subtitle": "[Subtítulo]",
+      "supported_formats": "[Formatos admitidos]",
+      "title": "[Título]"
+    }
+  },
+  "integrations": {
+    "coming_soon": {
+      "description": "En futuras actualizaciones habrá más integraciones",
+      "title": "Próximamente"
+    },
+    "connect": "Conectar",
+    "connected": {
+      "description": "Conectado con éxito a {provider}",
+      "title": "Conectado correctamente"
+    },
+    "disconnect": "Desconecte",
+    "disconnected": {
+      "description": "Desconectado con éxito de {provider}",
+      "title": "Desconectado con éxito"
+    },
+    "error": {
+      "description": "Se ha producido un error al procesar su solicitud",
+      "title": "Error"
+    },
+    "hubspot": {
+      "description": "Sincroniza contactos, empresas y tratos con HubSpot CRM"
+    },
+    "mapping": {
+      "error": {
+        "description": "Error al guardar la asignación de campos",
+        "title": "Error de asignación"
+      },
+      "saved": {
+        "description": "La asignación de campos se ha guardado correctamente",
+        "title": "Cartografía guardada"
+      }
+    },
+    "odoo": {
+      "description": "Integración con Odoo CRM usando JSON-RPC"
+    },
+    "portal_id": "ID del portal",
+    "status": {
+      "connected": "Conectado",
+      "connecting": "Conexión",
+      "disconnected": "Desconectado",
+      "error": "Error"
+    },
+    "subtitle": "Conecte su CRM y otras herramientas para agilizar su flujo de trabajo",
+    "tabs": {
+      "crm": "Sistemas CRM",
+      "other": "Otras herramientas"
+    },
+    "test": {
+      "error": {
+        "description": "No se ha podido probar la conexión con {provider}",
+        "title": "Fallo en la prueba de conexión"
+      },
+      "success": {
+        "description": "Conexión a {provider} probada con éxito",
+        "title": "Prueba de conexión correcta"
+      }
+    },
+    "title": "Integraciones",
+    "zoho": {
+      "description": "Conéctate a Zoho CRM con soporte multi-DC"
+    }
+  },
+  "leads": {
+    "actions": {
+      "add": "[Añadir]",
+      "import": "[Import]",
+      "schedule": "[Horario]"
+    },
+    "add_title": "[Añadir título]",
+    "cols": {
+      "class": "[Clase]",
+      "company": "[Empresa]",
+      "compliance": "[Compliance]",
+      "consent": "[Consentimiento]",
+      "country": "[País]",
+      "lang": "[Lang]",
+      "name": "[Nombre]",
+      "phone": "[Teléfono]",
+      "role": "[Papel]"
+    },
+    "empty": {
+      "desc": "[Desc]",
+      "title": "[Título]"
+    },
+    "errors": {
+      "e164": "[E164]"
+    },
+    "fields": {
+      "company": "[Empresa]",
+      "consent": "[Consentimiento]",
+      "country": "[País]",
+      "lang": "[Lang]",
+      "name": "[Nombre]",
+      "phone": "[Teléfono]",
+      "role": "[Papel]"
+    },
+    "placeholders": {
+      "e164": "[E164]"
+    },
+    "title": "[Título]",
+    "toasts": {
+      "added": "[Añadido]"
+    }
+  },
+  "numbers": {
+    "agent_id": "ID de agente",
+    "business_hours": "Horario comercial",
+    "buy_number": "Comprar un número",
+    "buy_numbers": "Comprar números",
+    "default_from": "Identificador de llamadas por defecto",
+    "enable_voicemail": "Activar el buzón de voz",
+    "my_numbers": "Mis cifras",
+    "route": "Ruta",
+    "route_number": "Número de ruta",
+    "use_my_number": "Utiliza mi número",
+    "voicemail_message": "Mensaje de voz"
+  },
+  "settings": {
+    "account": "Cuenta",
+    "billing": "Facturación",
+    "integrations": "Integraciones",
+    "profile": "Perfil",
+    "team": "Equipo",
+    "title": "Ajustes",
+    "unsaved": "[Sin guardar]"
+  }
+}

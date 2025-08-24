@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "create": "Creare"
+  },
+  "indicators": {
+    "test_mode": "Modalità test"
+  },
+  "nav": {
+    "breadcrumbs": "Pangrattato"
+  },
+  "open-create-drawer": "Aprire il cassetto Crea",
+  "search": {
+    "aria": "Ricerca",
+    "placeholder": "Ricerca..."
+  }
+}

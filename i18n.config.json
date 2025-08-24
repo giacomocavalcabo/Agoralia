@@ -1,0 +1,23 @@
+{
+  "sourceLocale": "en-US",
+  "targetLocales": ["it-IT", "fr-FR", "es-ES", "de-DE", "ar-EG"],
+  "namespaces": ["common", "pages", "admin", "billing", "app", "auth", "kb", "integrations", "settings", "ui", "errors", "compliance"],
+  "glossary": ["Agoralia", "Workspace", "Playbook", "Compliance", "ColdAI"],
+  "preservePatterns": [
+    "\\{\\{\\s*[\\w.-]+\\s*\\}\\}",
+    "\\{\\s*[\\w.-]+(?:\\s*,\\s*[\\w\\s,{}]+)?\\}",
+    "%\\{[\\w.-]+\\}",
+    "%\\([\\w.-]+\\)s",
+    ":\\b[\\w.-]+\\b",
+    "\\$\\{[\\w.-]+\\}",
+    "</?[\\w-]+(?:\\s+[^>]*)?>|<\\d+>|</\\d+>"
+  ],
+  "rtlLocales": ["ar", "he", "fa"],
+  "deepl": {
+    "monthly_cap": 500000,
+    "soft_warn": 400000,
+    "batch_size": 50,
+    "max_batch_chars": 20000,
+    "max_retries": 3
+  }
+}

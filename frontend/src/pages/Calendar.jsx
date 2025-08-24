@@ -78,7 +78,7 @@ export default function Calendar(){
           <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>Mese</button>
         </div>
       </div>
-      <div className="kpi-title">{t('pages.calendar.range', { from: fromStr, to: toStr })}</div>
+      <div className="kpi-title">{t('pages.calendar.range', { fromStr, toStr })}</div>
       <div className="flex items-center gap-2.5">
         <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(16,185,129,.25)' }}></span>{t('pages.calendar.legend.scheduled')||'Scheduled'}</span>
         <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)' }}></span>{t('pages.calendar.legend.blocked')||'Blocked'}</span>

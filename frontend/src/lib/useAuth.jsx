@@ -16,12 +16,19 @@ export function AuthProvider({ children }) {
   const checkAuth = async () => {
     try {
       const response = await api.get('/auth/me');
-      if (response.authenticated) {
-        setUser(response.user);
+      // Gestisce sia {user:{...}} che {...}
+      const u = response?.user ?? response;
+      if (u && u.id && u.email) {
+        setUser(u);
         setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.log('Not authenticated');
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +75,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
-      // Redirect to login page
+      // Redirect to login page using React Router
       window.location.href = '/login';
     }
   };

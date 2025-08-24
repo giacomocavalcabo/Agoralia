@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "create": "Cree"
+  },
+  "indicators": {
+    "test_mode": "Modo de prueba"
+  },
+  "nav": {
+    "breadcrumbs": "Migas de pan"
+  },
+  "open-create-drawer": "Abrir el cajón Crear",
+  "search": {
+    "aria": "Buscar en",
+    "placeholder": "Busca..."
+  }
+}

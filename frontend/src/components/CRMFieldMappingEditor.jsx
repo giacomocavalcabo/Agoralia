@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/button';
 import { Input } from './ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Badge } from './ui/Badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/Tabs';
 import { useToast } from './ToastProvider';
-import { useTranslation } from '../lib/i18n';
+import { useI18n } from '../lib/i18n.jsx';
 
 const CRMFieldMappingEditor = ({ 
   workspaceId, 
@@ -14,7 +14,7 @@ const CRMFieldMappingEditor = ({
   onMappingUpdate,
   initialMapping = null 
 }) => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
   const { toast } = useToast();
   
   const [mapping, setMapping] = useState({});

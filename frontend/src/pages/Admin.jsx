@@ -22,7 +22,8 @@ export default function Admin() {
 	const [callsFilters, setCallsFilters] = useState({ q:'', iso:'', lang:'' })
 	const [notif, setNotif] = useState({ kind:'email', locale:'en-US', subject:'', body_md:'' })
 	const [error, setError] = useState('')
-	const [adminEmail, setAdminEmail] = useState(typeof window!=='undefined' ? (localStorage.getItem('admin_email') || '') : '')
+	const [adminEmail, setAdminEmail] = useState('')
+	const [mounted, setMounted] = useState(false)
 	const [activity, setActivity] = useState([])
 	const [wsBilling, setWsBilling] = useState(null)
 	const [wsId, setWsId] = useState('ws_1')
@@ -205,16 +206,27 @@ export default function Admin() {
 			const res = await fetch(withAdmin(`${api}/admin/users/${u.id}/impersonate`), { method:'POST', headers })
 			if (!res.ok) throw new Error('Forbidden')
 			const j = await res.json()
-			localStorage.setItem('impersonate_token', j.token)
-			localStorage.setItem('impersonate_user', JSON.stringify({ id: u.id, email: u.email, name: u.name, expires_at: j.expires_at }))
-			toast(t('admin.notices.impersonating', { user: u.email || u.name || u.id }))
+			if (mounted) {
+				localStorage.setItem('impersonate_token', j.token)
+				localStorage.setItem('impersonate_user', JSON.stringify({ id: u.id, email: u.email, name: u.name, expires_at: j.expires_at }))
+			}
+			toast(t('admin.notices.impersonating', { 'u.id': u.email || u.name || u.id }))
 		} catch(e){ toast('Failed to impersonate') }
 	}
+
+	// Safe localStorage access only after mount
+	useEffect(() => {
+		setMounted(true)
+		const savedAdminEmail = localStorage.getItem('admin_email')
+		if (savedAdminEmail) {
+			setAdminEmail(savedAdminEmail)
+		}
+	}, [])
 
 	return (
 		<div className="grid gap-3">
 			<div className="panel flex items-center gap-2">
-				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
+				<input className="input" placeholder="Admin email" value={adminEmail} onChange={(e)=> { setAdminEmail(e.target.value); if (mounted) localStorage.setItem('admin_email', e.target.value) }} onKeyDown={(e)=> { if(e.key==='Enter'){ loadHealth(); if(tab==='users') loadUsers(); if(tab==='workspaces') loadWorkspaces(); if(tab==='calls') loadCalls(); if(tab==='compliance') loadCompliance(); loadKpi() } }} />
 				<button className="btn" onClick={()=>{ loadHealth(); loadUsers(); loadWorkspaces(); loadCalls(); loadCompliance(); loadKpi(); if(tab==='campaigns') loadCampaigns() }}>Load</button>
 				<input className="input flex-1" placeholder="Search…" value={q} onChange={(e)=> setQ(e.target.value)} onKeyDown={(e)=> e.key==='Enter' && runSearch()} />
 				<button className="btn" onClick={runSearch}>Search</button>

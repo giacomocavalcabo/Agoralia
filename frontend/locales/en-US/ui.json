@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "create": "Create"
+  },
+  "indicators": {
+    "test_mode": "Test Mode"
+  },
+  "nav": {
+    "breadcrumbs": "Breadcrumbs"
+  },
+  "open-create-drawer": "Open Create Drawer",
+  "search": {
+    "aria": "Search",
+    "placeholder": "Search..."
+  }
+}

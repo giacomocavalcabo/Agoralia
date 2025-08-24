@@ -1,0 +1,58 @@
+{
+  "connect": "[Collegati]",
+  "connected": {
+    "description": "L'integrazione è stata collegata con successo",
+    "title": "[Titolo]"
+  },
+  "disconnect": "[Disconnessione]",
+  "disconnected": {
+    "description": "Integrazione scollegata",
+    "title": "[Titolo]"
+  },
+  "error": {
+    "description": "[Descrizione]",
+    "title": "[Titolo]"
+  },
+  "hubspot": {
+    "description": "[Descrizione]"
+  },
+  "mapping": {
+    "error": {
+      "description": "[Descrizione]",
+      "title": "[Titolo]"
+    },
+    "saved": {
+      "description": "[Descrizione]",
+      "title": "[Titolo]"
+    }
+  },
+  "odoo": {
+    "description": "[Descrizione]"
+  },
+  "portal_id": "[Portal Id]",
+  "status": {
+    "connected": "[Collegato]",
+    "connecting": "[Collegamento]",
+    "disconnected": "[Disconnesso]",
+    "error": "[Errore]"
+  },
+  "subtitle": "[Sottotitolo]",
+  "tabs": {
+    "crm": "[Crm]",
+    "other": "[Altro]"
+  },
+  "test": {
+    "error": {
+      "description": "Test di connessione fallito",
+      "title": "[Titolo]"
+    },
+    "success": {
+      "description": "Test di connessione riuscito",
+      "title": "[Titolo]"
+    }
+  },
+  "title": "[Titolo]",
+  "zoho": {
+    "description": "[Descrizione]"
+  }
+}

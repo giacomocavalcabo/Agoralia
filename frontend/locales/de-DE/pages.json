@@ -1,0 +1,275 @@
+{
+  "calendar": {
+    "errors": {
+      "budget": "[Budget]",
+      "concurrency": "[Gleichzeitigkeit]",
+      "quiet_hours": "Kann nicht während der Ruhezeiten für {iso} geplant werden",
+      "rpo": "Ziel des Wiederherstellungspunkts nicht erreicht {iso}"
+    },
+    "legend": {
+      "blocked": "[Gesperrt]",
+      "scheduled": "[Geplant]",
+      "warn_budget": "[Warning Budget]",
+      "warn_concurrency": "[Warnung Gleichzeitigkeit]"
+    },
+    "quick": {
+      "submit_done": "[Abschicken Erledigt]",
+      "title": "[Titel]"
+    },
+    "range": "Von {fromStr} bis {toStr}",
+    "title": "[Titel]"
+  },
+  "campaigns": {
+    "actions": {
+      "create_schedule": "Erstellen & Planen"
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Text zur Offenlegung..",
+    "compliance_record": "Zustimmung zur Aufnahme..",
+    "fields": {
+      "agent": "Agent ID",
+      "audience": "Publikum (durch Komma getrennte Lead-IDs)",
+      "budget": "Haushaltsobergrenze (in Cent)",
+      "dow": "Wochentage (1=Mo...7=So)",
+      "from": "Von Nummer",
+      "goal": "Goal",
+      "kb": "Wissensdatenbank-ID",
+      "lang": "Standardsprache",
+      "name": "Name der Kampagne",
+      "pacing": "Pacing (Anrufe pro Minute)",
+      "quiet_hours": "Ruhezeiten einhalten",
+      "role": "Rolle",
+      "start_at": "Startdatum/-zeit",
+      "template": "Ergebnisvorlage",
+      "template_select": "Vorlage auswählen..."
+    },
+    "step": "Schritt {s}",
+    "steps": {
+      "audience": "Publikum und Rhythmus",
+      "details": "Details zur Kampagne",
+      "review": "Überprüfen & Erstellen",
+      "windows": "Windows & Compliance"
+    },
+    "title": "Kampagnen",
+    "toasts": {
+      "created": "Kampagne erstellt mit ID: {id}"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[Titel]"
+    },
+    "overview": "Übersicht",
+    "quick_actions": "Quick Actions",
+    "recent_activity": "Jüngste Aktivität",
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück"
+  },
+  "history": {
+    "title": "Anrufverlauf und Ergebnisse"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[Überprüfen]",
+      "merge": "[Zusammenführung]",
+      "resolve_strategy": "[Strategie auflösen]",
+      "skip": "[Überspringen]",
+      "title": "[Titel]"
+    },
+    "launch": {
+      "launch": "[Launch]",
+      "launching": "[Launching]",
+      "new_import": "[Neueinfuhr]",
+      "success": "[Erfolg]",
+      "success_desc": "[Success Desc]",
+      "view_job": "[Job ansehen]"
+    },
+    "legal": {
+      "disclosure": "[Offenlegung]"
+    },
+    "mapping": {
+      "fields": "[Felder]",
+      "subtitle": "[Subtitle]",
+      "title": "[Titel]"
+    },
+    "paste": {
+      "label": "[Etikett]",
+      "placeholder": "[Platzhalter]",
+      "process": "[Prozess]",
+      "processing": "[Verarbeitung]"
+    },
+    "prefix": {
+      "apply_to_all": "[Anwenden auf alle]",
+      "auto": "[Auto]",
+      "default_country": "[Standardland]",
+      "force_0039": "[Force 0039]",
+      "force_39": "[Force 39]",
+      "no_prefix": "[Kein Präfix]",
+      "strategy": "[Strategie]",
+      "title": "[Titel]"
+    },
+    "preview": {
+      "continue": "[Weiter]",
+      "delimiter": "[Begrenzungszeichen]",
+      "fields": "[Felder]",
+      "rows": "[Zeilen]",
+      "showing": "[Zeigen]",
+      "title": "[Titel]",
+      "total": "[Gesamt]"
+    },
+    "processing": "[Verarbeitung]",
+    "review": {
+      "config": "[Config]",
+      "cost": "[Kosten]",
+      "cost_desc": "[Cost Desc]",
+      "cost_note": "[Kostenhinweis]",
+      "subtitle": "[Subtitle]",
+      "summary": "[Zusammenfassung]",
+      "title": "[Titel]"
+    },
+    "sheet": {
+      "subtitle": "[Subtitle]",
+      "title": "[Titel]",
+      "upload_csv": "[Csv hochladen]"
+    },
+    "steps": {
+      "mapping": "[Mapping]",
+      "review": "[Rückblick]",
+      "upload": "[Hochladen]"
+    },
+    "upload": {
+      "drag_drop": "[Drag Drop]",
+      "drop_here": "[Drop Here]",
+      "or_click": "[Oder klicken]",
+      "subtitle": "[Subtitle]",
+      "supported_formats": "[Unterstützte Formate]",
+      "title": "[Titel]"
+    }
+  },
+  "integrations": {
+    "coming_soon": {
+      "description": "Weitere Integrationen werden in zukünftigen Updates verfügbar sein",
+      "title": "Demnächst verfügbar"
+    },
+    "connect": "Verbinden Sie",
+    "connected": {
+      "description": "Erfolgreich verbunden mit {provider}",
+      "title": "Erfolgreich verbunden"
+    },
+    "disconnect": "Trennen Sie die Verbindung",
+    "disconnected": {
+      "description": "Die Verbindung zu {provider} wurde erfolgreich getrennt",
+      "title": "Erfolgreich abgemeldet"
+    },
+    "error": {
+      "description": "Bei der Bearbeitung Ihrer Anfrage ist ein Fehler aufgetreten",
+      "title": "Fehler"
+    },
+    "hubspot": {
+      "description": "Synchronisierung von Kontakten, Unternehmen und Geschäften mit HubSpot CRM"
+    },
+    "mapping": {
+      "error": {
+        "description": "Feldzuordnung konnte nicht gespeichert werden",
+        "title": "Mapping-Fehler"
+      },
+      "saved": {
+        "description": "Die Feldzuordnung wurde erfolgreich gespeichert",
+        "title": "Gespeicherte Kartierung"
+      }
+    },
+    "odoo": {
+      "description": "Integration mit Odoo CRM über JSON-RPC"
+    },
+    "portal_id": "Portal-ID",
+    "status": {
+      "connected": "Verbunden",
+      "connecting": "Verbinden Sie",
+      "disconnected": "Getrennt",
+      "error": "Fehler"
+    },
+    "subtitle": "Verbinden Sie Ihr CRM und andere Tools, um Ihren Arbeitsablauf zu optimieren",
+    "tabs": {
+      "crm": "CRM-Systeme",
+      "other": "Andere Tools"
+    },
+    "test": {
+      "error": {
+        "description": "Verbindung zu {provider} konnte nicht getestet werden",
+        "title": "Verbindungstest fehlgeschlagen"
+      },
+      "success": {
+        "description": "Erfolgreich getestete Verbindung zu {provider}",
+        "title": "Verbindungstest erfolgreich"
+      }
+    },
+    "title": "Integrationen",
+    "zoho": {
+      "description": "Verbindung zu Zoho CRM mit Multi-DC-Unterstützung"
+    }
+  },
+  "leads": {
+    "actions": {
+      "add": "[Hinzufügen]",
+      "import": "[Import]",
+      "schedule": "[Zeitplan]"
+    },
+    "add_title": "[Titel hinzufügen]",
+    "cols": {
+      "class": "[Klasse]",
+      "company": "[Unternehmen]",
+      "compliance": "[Compliance]",
+      "consent": "[Zustimmen]",
+      "country": "[Land]",
+      "lang": "[Lang]",
+      "name": "[Name]",
+      "phone": "[Telefon]",
+      "role": "[Rolle]"
+    },
+    "empty": {
+      "desc": "[Desc]",
+      "title": "[Titel]"
+    },
+    "errors": {
+      "e164": "[E164]"
+    },
+    "fields": {
+      "company": "[Unternehmen]",
+      "consent": "[Zustimmen]",
+      "country": "[Land]",
+      "lang": "[Lang]",
+      "name": "[Name]",
+      "phone": "[Telefon]",
+      "role": "[Rolle]"
+    },
+    "placeholders": {
+      "e164": "[E164]"
+    },
+    "title": "[Titel]",
+    "toasts": {
+      "added": "[Hinzugefügt]"
+    }
+  },
+  "numbers": {
+    "agent_id": "Agent ID",
+    "business_hours": "Geschäftszeiten",
+    "buy_number": "Kaufen Sie eine Nummer",
+    "buy_numbers": "Zahlen kaufen",
+    "default_from": "Standard-Anrufer-ID",
+    "enable_voicemail": "Voicemail einschalten",
+    "my_numbers": "Meine Zahlen",
+    "route": "Straße",
+    "route_number": "Route Number",
+    "use_my_number": "Verwenden Sie meine Nummer",
+    "voicemail_message": "Voicemail-Nachricht"
+  },
+  "settings": {
+    "account": "Konto",
+    "billing": "Rechnungsstellung",
+    "integrations": "Integrationen",
+    "profile": "Profil",
+    "team": "Team",
+    "title": "Einstellungen",
+    "unsaved": "[Ungesichert]"
+  }
+}

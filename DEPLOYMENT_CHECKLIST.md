@@ -69,7 +69,7 @@ cd frontend
 ```bash
 # Base URLs
 APP_BASE_URL=https://api.agoralia.app
-FRONTEND_BASE_URL=https://app.agoralia.com
+FRONTEND_BASE_URL=https://app.agoralia.app
 
 # CRM HubSpot
 CRM_HUBSPOT_CLIENT_ID=your_hubspot_client_id

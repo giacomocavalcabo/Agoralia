@@ -1,0 +1,58 @@
+{
+  "connect": "[Connect]",
+  "connected": {
+    "description": "Integration connected successfully",
+    "title": "[Title]"
+  },
+  "disconnect": "[Disconnect]",
+  "disconnected": {
+    "description": "Integration disconnected",
+    "title": "[Title]"
+  },
+  "error": {
+    "description": "[Description]",
+    "title": "[Title]"
+  },
+  "hubspot": {
+    "description": "[Description]"
+  },
+  "mapping": {
+    "error": {
+      "description": "[Description]",
+      "title": "[Title]"
+    },
+    "saved": {
+      "description": "[Description]",
+      "title": "[Title]"
+    }
+  },
+  "odoo": {
+    "description": "[Description]"
+  },
+  "portal_id": "[Portal Id]",
+  "status": {
+    "connected": "[Connected]",
+    "connecting": "[Connecting]",
+    "disconnected": "[Disconnected]",
+    "error": "[Error]"
+  },
+  "subtitle": "[Subtitle]",
+  "tabs": {
+    "crm": "[Crm]",
+    "other": "[Other]"
+  },
+  "test": {
+    "error": {
+      "description": "Connection test failed",
+      "title": "[Title]"
+    },
+    "success": {
+      "description": "Connection test successful",
+      "title": "[Title]"
+    }
+  },
+  "title": "[Title]",
+  "zoho": {
+    "description": "[Description]"
+  }
+}

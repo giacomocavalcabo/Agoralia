@@ -2,8 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { Skeleton } from '../components/ui/Skeleton.jsx'
-import { useI18n } from '../lib/i18n.jsx'
-import DashboardHeader from '../components/DashboardHeader.jsx'
+import { useTranslation } from 'react-i18next'
+import { PageHeader } from '../components/ui/FormPrimitives.jsx'
 import KpiCard from '../components/ui/KpiCard.jsx'
 import TimeSeries from '../components/ui/TimeSeries.jsx'
 import GaugeBudget from '../components/ui/GaugeBudget.jsx'
@@ -13,12 +13,22 @@ import MiniMap from '../components/ui/MiniMap.jsx'
 import EventFeed from '../components/ui/EventFeed.jsx'
 import DataTable from '../components/DataTable.jsx'
 import useLiveWS from '../lib/useLiveWS.js'
+import { useDemoData } from '../lib/useDemoData.js'
+import { 
+	generateDemoMetrics, 
+	generateDemoFunnelData, 
+	generateDemoAgents, 
+	generateDemoGeoData, 
+	generateDemoCostSeries, 
+	generateDemoTrends 
+} from '../lib/demo/fakes.js'
 
 export default function Dashboard() {
-	const { t } = useI18n()
+	const { t } = useTranslation('pages')
 	const navigate = useNavigate()
-	const abortControllerRef = useRef(null)
 	
+	const abortControllerRef = useRef(null)
+	const showDemoData = useDemoData()
 	const [summary, setSummary] = useState(null)
 	const [funnelData, setFunnelData] = useState({})
 	const [topAgents, setTopAgents] = useState([])
@@ -38,56 +48,76 @@ export default function Dashboard() {
 		errors24h, 
 		lastUpdate 
 	} = useLiveWS('/ws')
-
+	
 	// Load data with AbortController for cleanup
 	const load = useCallback(async (abortSignal) => {
 		setLoading(true)
 		setError(null)
 		
 		try {
-			const [s, f, a, g, c] = await Promise.all([
-				apiFetch(`/dashboard/summary?days=${trendDays}`, { signal: abortSignal }).catch(() => ({
-					calls_today: 0,
-					minutes_month: 0,
-					avg_duration_sec: 0,
-					contact_rate: 0.0,
-					qualified_rate: 0.0,
-					spend_today_cents: 0,
-					budget_monthly_cents: 100000, // €1000 default
-					budget_spent_month_cents: 0,
-					concurrency_used: 0,
-					concurrency_limit: 10
-				})),
-				apiFetch('/metrics/funnel?days=30', { signal: abortSignal }).catch(() => ({ reached: 0, connected: 0, qualified: 0, booked: 0 })),
-				apiFetch('/metrics/agents/top?days=30&limit=10', { signal: abortSignal }).catch(() => []),
-				apiFetch('/metrics/geo?days=30', { signal: abortSignal }).catch(() => []),
-				apiFetch('/metrics/cost/series?days=30', { signal: abortSignal }).catch(() => [])
-			])
-			
-			setSummary(s)
-			setFunnelData(f)
-			setTopAgents(a)
-			setGeoData(g)
-			setCostSeries(c)
-			
-			// Generate trend data (placeholder for now)
-			const labels = Array.from({ length: trendDays }).map((_, i) => `${i + 1}`)
-			setTrends({
-				labels,
-				created: labels.map(() => Math.floor(Math.random() * 20 + 10)),
-				finished: labels.map(() => Math.floor(Math.random() * 15 + 8)),
-				qualified: labels.map(() => Math.floor(Math.random() * 10 + 5)),
-				contact_rate: labels.map(() => Math.floor(Math.random() * 30 + 20))
-			})
+			// Use demo data for admin users, real API for others
+			if (showDemoData) {
+				// Generate demo data for admin users
+				const s = generateDemoMetrics()
+				const f = generateDemoFunnelData()
+				const a = generateDemoAgents()
+				const g = generateDemoGeoData()
+				const c = generateDemoCostSeries(30)
+				
+				setSummary(s)
+				setFunnelData(f)
+				setTopAgents(a)
+				setGeoData(g)
+				setCostSeries(c)
+				setTrends(generateDemoTrends(trendDays))
+			} else {
+				// Real API calls for normal users - no demo data
+				const [s, f, a, g, c] = await Promise.all([
+					apiFetch(`/dashboard/summary?days=${trendDays}`, { signal: abortSignal }).catch(() => ({
+						calls_today: 0,
+						minutes_month: 0,
+						avg_duration_sec: 0,
+						contact_rate: 0.0,
+						qualified_rate: 0.0,
+						spend_today_cents: 0,
+						budget_monthly_cents: 100000, // €1000 default
+						budget_spent_month_cents: 0,
+						concurrency_used: 0,
+						concurrency_limit: 10
+					})),
+					apiFetch('/metrics/funnel?days=30', { signal: abortSignal }).catch(() => ({ reached: 0, connected: 0, qualified: 0, booked: 0 })),
+					apiFetch('/metrics/agents/top?days=30&limit=10', { signal: abortSignal }).catch(() => []),
+					apiFetch('/metrics/geo?days=30', { signal: abortSignal }).catch(() => []),
+					apiFetch('/metrics/cost/series?days=30', { signal: abortSignal }).catch(() => [])
+				])
+				
+				setSummary(s)
+				setFunnelData(f)
+				setTopAgents(a)
+				setGeoData(g)
+				setCostSeries(c)
+				
+				// Empty trends for new users
+				const labels = Array.from({ length: trendDays }).map((_, i) => `${i + 1}`)
+				setTrends({
+					labels,
+					created: labels.map(() => 0),
+					finished: labels.map(() => 0),
+					qualified: labels.map(() => 0),
+					contact_rate: labels.map(() => 0)
+				})
+			}
 		} catch (err) {
 			if (err.name !== 'AbortError') {
 				setError(err.message)
-				console.error('Dashboard load error:', err)
+				if (import.meta.env.DEV) {
+					console.error('Dashboard load error:', err)
+				}
 			}
 		} finally { 
 			setLoading(false) 
 		}
-	}, [trendDays])
+	}, [trendDays, showDemoData])
 
 	// Load data on mount and trendDays change
 	useEffect(() => {
@@ -133,8 +163,8 @@ export default function Dashboard() {
 	// Live calls table data
 	const liveCallsData = liveCalls.map(call => ({
 		id: call.id,
-		lead: call.lead_name || 'Unknown',
-		agent: call.agent_name || 'Unknown',
+		lead: call.lead_name || t('common.unknown'),
+		agent: call.agent_name || t('common.unknown'),
 		status: call.status || 'unknown',
 		started: call.started_at ? new Date(call.started_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
 		duration: call.duration_sec ? fmtMMSS(call.duration_sec) : '00:00'
@@ -143,17 +173,22 @@ export default function Dashboard() {
 	// Error state
 	if (error) {
 		return (
-			<div className="space-y-6">
-				<DashboardHeader title="Dashboard" range={{}} onRangeChange={() => {}} onQuick={() => {}} />
-				<div className="panel text-center py-12">
-					<div className="text-lg font-semibold text-danger mb-2">Errore nel caricamento</div>
-					<div className="text-ink-600 mb-4">{error}</div>
-					<button 
-						onClick={() => load(abortControllerRef.current?.signal)}
-						className="btn"
-					>
-						Riprova
-					</button>
+			<div className="px-6 lg:px-8 py-6">
+				<div className="space-y-6 md:space-y-8">
+					<PageHeader 
+						title={t('dashboard.title')}
+						description={t('dashboard.description')}
+					/>
+					<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 text-center py-12">
+						<div className="text-lg font-semibold text-red-600 mb-2">{t('common.error')}</div>
+						<div className="text-gray-600 mb-4">{error}</div>
+						<button 
+							onClick={() => load(abortControllerRef.current?.signal)}
+							className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+						>
+							{t('common.retry')}
+						</button>
+					</div>
 				</div>
 			</div>
 		)
@@ -162,137 +197,212 @@ export default function Dashboard() {
 	// Loading state
 	if (loading && !summary) {
 		return (
-			<div className="space-y-6">
-				<DashboardHeader title="Dashboard" range={{}} onRangeChange={() => {}} onQuick={() => {}} />
-				<div className="grid grid-cols-12 gap-4">
-					{Array.from({ length: 12 }).map((_, i) => (
-						<div key={i} className={`${i < 4 ? 'col-span-3' : i === 4 ? 'col-span-8' : i === 5 ? 'col-span-4' : i === 6 ? 'col-span-4' : i === 7 ? 'col-span-4' : i === 8 ? 'col-span-4' : i === 9 ? 'col-span-8' : 'col-span-4'}`}>
-							<Skeleton height={i < 4 ? 84 : i === 4 ? 256 : i === 5 ? 256 : i === 6 ? 256 : i === 7 ? 256 : i === 8 ? 256 : i === 9 ? 256 : 256} />
+			<div className="px-6 lg:px-8 py-6">
+				<div className="space-y-6 md:space-y-8">
+					<PageHeader 
+						title={t('dashboard.title')}
+						description={t('dashboard.description')}
+					/>
+					<div className="grid grid-cols-12 gap-4 md:gap-6">
+						{/* KPI Cards Skeletons */}
+						{Array.from({ length: 4 }).map((_, i) => (
+							<div key={i} className="col-span-12 md:col-span-3">
+								<Skeleton height={120} className="rounded-xl" />
+							</div>
+						))}
+						
+						{/* Chart Skeletons */}
+						<div className="col-span-12 xl:col-span-8">
+							<Skeleton height={280} className="rounded-xl" />
 						</div>
-					))}
+						<div className="col-span-12 xl:col-span-4">
+							<Skeleton height={280} className="rounded-xl" />
+						</div>
+						
+						{/* Secondary Charts Skeletons */}
+						{Array.from({ length: 3 }).map((_, i) => (
+							<div key={i} className="col-span-12 lg:col-span-4">
+								<Skeleton height={280} className="rounded-xl" />
+							</div>
+						))}
+						
+						{/* Bottom Tables Skeletons */}
+						<div className="col-span-12 xl:col-span-8">
+							<Skeleton height={360} className="rounded-xl" />
+						</div>
+						<div className="col-span-12 xl:col-span-4">
+							<Skeleton height={360} className="rounded-xl" />
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	// Empty state when no data
+	if (!loading && !summary && !error) {
+		return (
+			<div className="px-6 lg:px-8 py-6">
+				<div className="space-y-6 md:space-y-8">
+					<PageHeader 
+						title={t('dashboard.title')}
+						description={t('dashboard.description')}
+					/>
+					<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 text-center py-12">
+						<div className="text-lg font-semibold text-gray-900 mb-2">{t('dashboard.empty.title', 'No Dashboard Data')}</div>
+						<div className="text-gray-600 mb-4">{t('dashboard.empty.description', 'Start by creating your first campaign or importing leads.')}</div>
+						<button 
+							onClick={() => navigate('/campaigns')}
+							className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+						>
+							{t('dashboard.empty.cta', 'Get Started')}
+						</button>
+					</div>
 				</div>
 			</div>
 		)
 	}
 
 	return (
-		<div className="space-y-6">
-			<DashboardHeader 
-				title="Dashboard" 
-				range={{}} 
-				onRangeChange={() => {}} 
-				onQuick={() => {}} 
-			/>
-			
-			{/* 12-Column Grid Layout */}
-			<div className="grid grid-cols-12 gap-4">
+		<div className="px-6 lg:px-8 py-6">
+			<div className="space-y-6 md:space-y-8">
+				<PageHeader 
+					title={t('dashboard.title')}
+					description={t('dashboard.description')}
+				/>
 				
-				{/* Row 1: KPI Cards (3×4) */}
-				<div className="col-span-3">
-					<KpiCard 
-						label="Calls Today" 
-						value={summary?.calls_today || 0}
-						delta={12}
-						state={summary?.calls_today > 50 ? 'warn' : 'normal'}
-						trendData={[12, 15, 18, 22, 19, 24, 28]}
-					/>
-				</div>
-				<div className="col-span-3">
-					<KpiCard 
-						label="Minutes Month" 
-						value={summary?.minutes_month || 0}
-						delta={-5}
-						trendData={[120, 135, 142, 138, 156, 148, 162]}
-					/>
-				</div>
-				<div className="col-span-3">
-					<KpiCard 
-						label="Avg Duration" 
-						value={fmtMMSS(summary?.avg_duration_sec || 0)}
-						delta={8}
-						trendData={[120, 125, 118, 132, 128, 135, 142]}
-					/>
-				</div>
-				<div className="col-span-3">
-					<KpiCard 
-						label="Contact Rate" 
-						value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
-						delta={-3}
-						state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
-						trendData={[25, 28, 22, 26, 24, 21, 23]}
-					/>
-				</div>
-				
-				{/* Row 2: TimeSeries + GaugeBudget */}
-				<div className="col-span-8">
-					<TimeSeries 
-						data={trends}
-						labels={trends.labels}
-						days={trendDays}
-						onDaysChange={setTrendDays}
-					/>
-				</div>
-				<div className="col-span-4">
-					<GaugeBudget 
-						spent={summary?.budget_spent_month_cents || 0}
-						cap={summary?.budget_monthly_cents || 100000}
-						warnPercent={80}
-						costSeries={costSeries}
-					/>
-				</div>
-				
-				{/* Row 3: Funnel + TopAgents + MiniMap */}
-				<div className="col-span-4">
-					<FunnelSteps 
-						data={funnelData} 
-						onDrillDown={(step) => handleDrillDown('funnel-qualified', step)}
-					/>
-				</div>
-				<div className="col-span-4">
-					<TopAgentsBar 
-						agents={topAgents}
-						onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
-					/>
-				</div>
-				<div className="col-span-4">
-					<MiniMap 
-						data={geoData}
-						onDrillDown={(country) => handleDrillDown('country', country)}
-					/>
-				</div>
-				
-				{/* Row 4: LiveTable + EventFeed */}
-				<div className="col-span-8">
-					<div className="panel">
-						<div className="flex items-center justify-between mb-4">
-							<div className="text-sm font-semibold text-ink-900">Live Calls</div>
-							<div className="flex items-center gap-2">
-								<div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-success' : 'bg-danger'}`}></div>
-								<span className="text-xs text-ink-600">
-									{isConnected ? 'Live' : 'Polling'} • {liveCalls.length} active
-								</span>
-							</div>
+				{/* Demo Data Banner for Admin */}
+				{showDemoData && (
+					<div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+						<div className="flex items-center gap-2">
+							<div className="w-2 h-2 rounded-full bg-amber-500"></div>
+							<span className="text-sm font-medium text-amber-800">
+								{t('admin.demo_data_enabled', 'Demo data enabled - showing sample metrics')}
+							</span>
 						</div>
-						
-						{liveCalls.length === 0 ? (
-							<div className="text-sm text-ink-500 text-center py-8">No active calls</div>
-						) : (
-							<DataTable
-								data={liveCallsData}
-								columns={[
-									{ key: 'lead', label: 'Lead' },
-									{ key: 'agent', label: 'Agent' },
-									{ key: 'status', label: 'Status' },
-									{ key: 'started', label: 'Started' },
-									{ key: 'duration', label: 'Duration' }
-								]}
-								className="h-64 overflow-y-auto"
-							/>
-						)}
 					</div>
-				</div>
-				<div className="col-span-4">
-					<EventFeed events={events} />
+				)}
+				
+				{/* 12-Column Grid Layout */}
+				<div className="grid grid-cols-12 gap-4 md:gap-6">
+				
+					{/* Row 1: KPI Cards (3×4) */}
+					<div className="col-span-12 md:col-span-3">
+						<KpiCard 
+							label={t('dashboard.metrics.calls_today')} 
+							value={summary?.calls_today || 0}
+							delta={showDemoData ? 12 : undefined}
+							state={summary?.calls_today > 50 ? 'warn' : 'normal'}
+							trendData={showDemoData ? [12, 15, 18, 22, 19, 24, 28] : undefined}
+							className="min-h-[120px]"
+						/>
+					</div>
+					<div className="col-span-12 md:col-span-3">
+						<KpiCard 
+							label={t('dashboard.metrics.minutes_month')} 
+							value={summary?.minutes_month || 0}
+							delta={showDemoData ? -5 : undefined}
+							trendData={showDemoData ? [120, 135, 142, 138, 156, 148, 162] : undefined}
+							className="min-h-[120px]"
+						/>
+					</div>
+					<div className="col-span-12 md:col-span-3">
+						<KpiCard 
+							label={t('dashboard.metrics.avg_duration')} 
+							value={fmtMMSS(summary?.avg_duration_sec || 0)}
+							delta={showDemoData ? 8 : undefined}
+							trendData={showDemoData ? [120, 125, 118, 132, 128, 135, 142] : undefined}
+							className="min-h-[120px]"
+						/>
+					</div>
+					<div className="col-span-12 md:col-span-3">
+						<KpiCard 
+							label={t('dashboard.metrics.contact_rate')} 
+							value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
+							delta={showDemoData ? -3 : undefined}
+							state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
+							trendData={showDemoData ? [25, 28, 22, 26, 24, 21, 23] : undefined}
+							className="min-h-[120px]"
+						/>
+					</div>
+				
+					{/* Row 2: TimeSeries + GaugeBudget */}
+					<div className="col-span-12 xl:col-span-8">
+						<TimeSeries 
+							data={trends}
+							labels={trends.labels}
+							days={trendDays}
+							onDaysChange={setTrendDays}
+							className="min-h-[320px]"
+						/>
+					</div>
+					<div className="col-span-12 xl:col-span-4">
+						<GaugeBudget 
+							spent={summary?.budget_spent_month_cents || 0}
+							cap={summary?.budget_monthly_cents || 100000}
+							warnPercent={80}
+							costSeries={costSeries}
+							className="min-h-[320px]"
+						/>
+					</div>
+				
+					{/* Row 3: Funnel + TopAgents + MiniMap */}
+					<div className="col-span-12 lg:col-span-4">
+						<FunnelSteps 
+							data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} 
+							onDrillDown={(step) => handleDrillDown('funnel-qualified', step)}
+							className="min-h-[320px]"
+						/>
+					</div>
+					<div className="col-span-12 lg:col-span-4">
+						<TopAgentsBar 
+							agents={showDemoData ? topAgents : []}
+							onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
+							className="min-h-[320px]"
+						/>
+					</div>
+					<div className="col-span-12 lg:col-span-4">
+						<MiniMap 
+							data={showDemoData ? geoData : []}
+							onDrillDown={(country) => handleDrillDown('country', country)}
+							className="min-h-[320px]"
+						/>
+					</div>
+				
+					{/* Row 4: LiveTable + EventFeed */}
+					<div className="col-span-12 xl:col-span-8">
+						<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 min-h-[360px]">
+							<div className="flex items-center justify-between mb-4">
+								<div className="text-sm font-semibold text-gray-900">{t('dashboard.live_calls.title')}</div>
+								<div className="flex items-center gap-2">
+									<div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+									<span className="text-xs text-gray-600">
+										{isConnected ? t('common.live') : t('common.polling')} • {liveCalls.length} {t('common.active')}
+									</span>
+								</div>
+							</div>
+							
+							{liveCalls.length === 0 ? (
+								<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.live_calls.empty')}</div>
+							) : (
+								<div className="max-h-[280px] overflow-y-auto pr-2">
+									<DataTable
+										data={liveCallsData}
+										columns={[
+											{ key: 'lead', label: t('common.lead') },
+											{ key: 'agent', label: t('common.agent') },
+											{ key: 'status', label: t('common.status') },
+											{ key: 'started', label: t('common.started') },
+											{ key: 'duration', label: t('common.duration') }
+										]}
+									/>
+								</div>
+							)}
+						</div>
+					</div>
+					<div className="col-span-12 xl:col-span-4">
+						<EventFeed events={events} className="min-h-[360px]" />
+					</div>
 				</div>
 			</div>
 		</div>

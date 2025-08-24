@@ -1,122 +1,328 @@
 {
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Bentornato",
-    "overview": "Panoramica",
-    "recent_activity": "Attività Recenti",
-    "quick_actions": "Azioni Rapide"
+  "calendar": {
+    "errors": {
+      "budget": "[Bilancio]",
+      "concurrency": "[Concurrency]",
+      "quiet_hours": "Non è possibile programmare durante le ore di silenzio per {iso}",
+      "rpo": "Obiettivo del punto di recupero non raggiunto {iso}"
+    },
+    "legend": {
+      "blocked": "[Bloccato]",
+      "scheduled": "[Programmato]",
+      "warn_budget": "[Avvisare il bilancio]",
+      "warn_concurrency": "[Avvertire la concorrenza]"
+    },
+    "quick": {
+      "submit_done": "[Invia Fatto]",
+      "title": "[Titolo]"
+    },
+    "range": "Da {fromStr} a {toStr}",
+    "title": "[Titolo]"
   },
-  "settings": {
-    "title": "Impostazioni",
-    "profile": "Profilo",
-    "account": "Account",
-    "billing": "Fatturazione",
-    "team": "Team",
-    "integrations": "Integrazioni"
+  "campaigns": {
+    "actions": {
+      "create_schedule": "Crea e Pianifica"
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Testo disclosure…",
+    "compliance_record": "Consenso registrazione…",
+    "fields": {
+      "agent": "ID Agente",
+      "audience": "Pubblico (ID lead separati da virgola)",
+      "budget": "Limite Budget (centesimi)",
+      "dow": "Giorni settimana (1=Lun...7=Dom)",
+      "from": "Numero Mittente",
+      "goal": "Obiettivo",
+      "kb": "ID Base Conoscenza",
+      "lang": "Lingua Predefinita",
+      "name": "Nome Campagna",
+      "pacing": "Ritmo (chiamate al minuto)",
+      "quiet_hours": "Rispetta orari silenzio",
+      "role": "Ruolo",
+      "start_at": "Data/ora inizio",
+      "template": "Template Risultati",
+      "template_select": "Seleziona template..."
+    },
+    "step": "Passo {s}",
+    "steps": {
+      "audience": "Pubblico e Ritmo",
+      "details": "Dettagli Campagna",
+      "review": "Revisione e Creazione",
+      "windows": "Finestre e Compliance"
+    },
+    "title": "Campagne",
+    "toasts": {
+      "created": "Campagna creata con ID: {id}"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[Titolo]"
+    },
+    "live_calls": {
+      "title": "Chiamate Live",
+      "empty": "Nessuna chiamata attiva"
+    },
+    "metrics": {
+      "calls_today": "Chiamate Oggi",
+      "minutes_month": "Minuti Mese",
+      "avg_duration": "Durata Media",
+      "contact_rate": "Tasso Contatto",
+      "calls_created": "Create",
+      "calls_finished": "Completate", 
+      "calls_qualified": "Qualificate"
+    },
+    "trends": {
+      "title": "Trend Chiamate",
+      "empty": "Nessun dato trend disponibile"
+    },
+    "funnel": {
+      "title": "Imbuto Conversione",
+      "reached": "Raggiunti",
+      "connected": "Connessi",
+      "qualified": "Qualificati",
+      "booked": "Prenotati",
+      "overall_conversion": "Conversione complessiva"
+    },
+    "agents": {
+      "title": "Agenti Top",
+      "empty": "Nessun dato agente disponibile",
+      "calls": "chiamate",
+      "avg": "media",
+      "top_performer": "Miglior performer"
+    },
+    "geo": {
+      "title": "Distribuzione Geografica",
+      "coming_soon": "Visualizzazione mappa in arrivo",
+      "calls": "chiamate",
+      "qualified": "qualificate",
+      "top_country": "Paese top",
+      "empty": "Nessun dato geografico disponibile"
+    },
+    "stats": {
+      "total_created": "Totale Create",
+      "total_finished": "Totale Completate", 
+      "total_qualified": "Totale Qualificate",
+      "avg_contact_rate": "Tasso Contatto Medio"
+    },
+    "buttons": {
+      "today": "Oggi",
+      "7d": "7g",
+      "30d": "30g",
+      "import": "Importa",
+      "schedule": "Programma"
+    },
+    "overview": "Panoramica",
+    "quick_actions": "Azioni Rapide",
+    "recent_activity": "Attività Recenti",
+    "title": "Dashboard",
+    "welcome": "Bentornato"
+  },
+  "history": {
+    "title": "Cronologia Chiamate e Risultati"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[Controlla]",
+      "merge": "[Unisci]",
+      "resolve_strategy": "[Risolvi la strategia]",
+      "skip": "[Skip]",
+      "title": "[Titolo]"
+    },
+    "launch": {
+      "launch": "[Lancio]",
+      "launching": "[lancio]",
+      "new_import": "[Nuova importazione]",
+      "success": "[Successo]",
+      "success_desc": "[Success Desc]",
+      "view_job": "[Visualizza lavoro]"
+    },
+    "legal": {
+      "disclosure": "[Divulgazione]"
+    },
+    "mapping": {
+      "fields": "[Campi]",
+      "subtitle": "[Sottotitolo]",
+      "title": "[Titolo]"
+    },
+    "paste": {
+      "label": "[Etichetta]",
+      "placeholder": "[Segnaposto]",
+      "process": "[Processo]",
+      "processing": "[Elaborazione]"
+    },
+    "prefix": {
+      "apply_to_all": "[Applicare a tutti]",
+      "auto": "[Auto]",
+      "default_country": "[Paese predefinito]",
+      "force_0039": "[Forza 0039]",
+      "force_39": "[Forza 39]",
+      "no_prefix": "[Nessun prefisso]",
+      "strategy": "[Strategia]",
+      "title": "[Titolo]"
+    },
+    "preview": {
+      "continue": "[Continua]",
+      "delimiter": "[Delimitatore]",
+      "fields": "[Campi]",
+      "rows": "[Righe]",
+      "showing": "[Mostra]",
+      "title": "[Titolo]",
+      "total": "[Totale]"
+    },
+    "processing": "[Elaborazione]",
+    "review": {
+      "config": "[Config]",
+      "cost": "[Costo]",
+      "cost_desc": "[Costo Desc]",
+      "cost_note": "[Nota di costo]",
+      "subtitle": "[Sottotitolo]",
+      "summary": "[Sommario]",
+      "title": "[Titolo]"
+    },
+    "sheet": {
+      "subtitle": "[Sottotitolo]",
+      "title": "[Titolo]",
+      "upload_csv": "[Carica Csv]"
+    },
+    "steps": {
+      "mapping": "[Mappatura]",
+      "review": "[Recensione]",
+      "upload": "[Upload]"
+    },
+    "upload": {
+      "drag_drop": "[Drag Drop]",
+      "drop_here": "[Lascia qui]",
+      "or_click": "[Oppure cliccare]",
+      "subtitle": "[Sottotitolo]",
+      "supported_formats": "[Formati supportati]",
+      "title": "[Titolo]"
+    }
   },
   "integrations": {
-    "title": "Integrazioni",
-    "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
-    "tabs": {
-      "crm": "Sistemi CRM",
-      "other": "Altri Strumenti"
+    "coming_soon": {
+      "description": "Altre integrazioni saranno disponibili negli aggiornamenti futuri",
+      "title": "Prossimamente"
+    },
+    "connect": "Connetti",
+    "connected": {
+      "description": "Connesso con successo a {provider}",
+      "title": "Connesso con Successo"
+    },
+    "disconnect": "Disconnetti",
+    "disconnected": {
+      "description": "Disconnesso con successo da {provider}",
+      "title": "Disconnesso con Successo"
+    },
+    "error": {
+      "description": "Si è verificato un errore durante l'elaborazione della richiesta",
+      "title": "Errore"
     },
     "hubspot": {
       "description": "Sincronizza contatti, aziende e opportunità con HubSpot CRM"
     },
-    "zoho": {
-      "description": "Connetti a Zoho CRM con supporto multi-DC"
+    "mapping": {
+      "error": {
+        "description": "Impossibile salvare la mappatura dei campi",
+        "title": "Errore di mappatura"
+      },
+      "saved": {
+        "description": "La mappatura dei campi è stata salvata con successo",
+        "title": "Mappatura salvata"
+      }
     },
     "odoo": {
       "description": "Integra con Odoo CRM usando JSON-RPC"
     },
+    "portal_id": "ID Portale",
     "status": {
       "connected": "Connesso",
       "connecting": "Connessione in corso",
       "disconnected": "Disconnesso",
       "error": "Errore"
     },
-    "connect": "Connetti",
-    "disconnect": "Disconnetti",
-    "test": "Test Connessione",
-    "portal_id": "ID Portale",
-    "connected": {
-      "title": "Connesso con Successo",
-      "description": "Connesso con successo a {provider}"
-    },
-    "disconnected": {
-      "title": "Disconnesso con Successo",
-      "description": "Disconnesso con successo da {provider}"
+    "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
+    "tabs": {
+      "crm": "Sistemi CRM",
+      "other": "Altri Strumenti"
     },
     "test": {
-      "success": {
-        "title": "Test Connessione Riuscito",
-        "description": "Test connessione a {provider} riuscito"
-      },
       "error": {
-        "title": "Test Connessione Fallito",
-        "description": "Test connessione a {provider} fallito"
+        "description": "Test connessione a {provider} fallito",
+        "title": "Test Connessione Fallito"
+      },
+      "success": {
+        "description": "Test connessione a {provider} riuscito",
+        "title": "Test Connessione Riuscito"
       }
     },
-    "error": {
-      "title": "Errore",
-      "description": "Si è verificato un errore durante l'elaborazione della richiesta"
-    },
-    "coming_soon": {
-      "title": "Prossimamente",
-      "description": "Altre integrazioni saranno disponibili negli aggiornamenti futuri"
+    "title": "Integrazioni",
+    "zoho": {
+      "description": "Connetti a Zoho CRM con supporto multi-DC"
     }
   },
-  "campaigns": {
-    "title": "Campagne",
-    "step": "Passo {s}",
-    "steps": {
-      "details": "Dettagli Campagna",
-      "audience": "Pubblico e Ritmo",
-      "windows": "Finestre e Compliance",
-      "review": "Revisione e Creazione"
+  "leads": {
+    "actions": {
+      "add": "[Aggiungi]",
+      "import": "[Importazione]",
+      "schedule": "[Programma]"
+    },
+    "add_title": "[Aggiungi titolo]",
+    "cols": {
+      "class": "[Classe]",
+      "company": "[Azienda]",
+      "compliance": "[Compliance]",
+      "consent": "[Consenso]",
+      "country": "[Paese]",
+      "lang": "[Lang]",
+      "name": "[Nome]",
+      "phone": "[Telefono]",
+      "role": "[Role]"
+    },
+    "empty": {
+      "desc": "[Desc]",
+      "title": "[Titolo]"
+    },
+    "errors": {
+      "e164": "[E164]"
     },
     "fields": {
-      "name": "Nome Campagna",
-      "goal": "Obiettivo",
-      "role": "Ruolo",
-      "lang": "Lingua Predefinita",
-      "from": "Numero Mittente",
-      "agent": "ID Agente",
-      "kb": "ID Base Conoscenza",
-      "audience": "Pubblico (ID lead separati da virgola)",
-      "pacing": "Ritmo (chiamate al minuto)",
-      "budget": "Limite Budget (centesimi)",
-      "dow": "Giorni settimana (1=Lun...7=Dom)",
-      "quiet_hours": "Rispetta orari silenzio",
-      "start_at": "Data/ora inizio",
-      "template": "Template Risultati",
-      "template_select": "Seleziona template..."
+      "company": "[Azienda]",
+      "consent": "[Consenso]",
+      "country": "[Paese]",
+      "lang": "[Lang]",
+      "name": "[Nome]",
+      "phone": "[Telefono]",
+      "role": "[Role]"
     },
-    "compliance": "Compliance",
-    "compliance_disclosure": "Testo disclosure…",
-    "compliance_record": "Consenso registrazione…",
-    "actions": {
-      "create_schedule": "Crea e Pianifica"
+    "placeholders": {
+      "e164": "[E164]"
     },
+    "title": "[Titolo]",
     "toasts": {
-      "created": "Campagna creata con ID: {id}"
+      "added": "[Aggiunto]"
     }
   },
   "numbers": {
-    "my_numbers": "I Miei Numeri",
-    "buy_numbers": "Compra Numeri",
-    "use_my_number": "Usa il mio numero",
-    "buy_number": "Compra un numero",
-    "default_from": "ID mittente predefinito",
-    "route": "Instrada",
-    "route_number": "Instrada Numero",
     "agent_id": "ID Agente",
     "business_hours": "Orari Lavorativi",
+    "buy_number": "Compra un numero",
+    "buy_numbers": "Compra Numeri",
+    "default_from": "ID mittente predefinito",
     "enable_voicemail": "Abilita Segreteria",
+    "my_numbers": "I Miei Numeri",
+    "route": "Instrada",
+    "route_number": "Instrada Numero",
+    "use_my_number": "Usa il mio numero",
     "voicemail_message": "Messaggio Segreteria"
   },
-  "history": {
-    "title": "Cronologia Chiamate e Risultati"
+  "settings": {
+    "account": "Account",
+    "billing": "Fatturazione",
+    "integrations": "Integrazioni",
+    "profile": "Profilo",
+    "team": "Team",
+    "title": "Impostazioni",
+    "unsaved": "[Non salvato]"
   }
 }

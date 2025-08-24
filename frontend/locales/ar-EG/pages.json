@@ -1,0 +1,275 @@
+{
+  "calendar": {
+    "errors": {
+      "budget": "[الميزانية]",
+      "concurrency": "[التزامن]",
+      "quiet_hours": "لا يمكن الجدولة خلال ساعات الهدوء لـ _PH_0___ {iso}",
+      "rpo": "لم يتحقق هدف نقطة الاسترداد {iso}"
+    },
+    "legend": {
+      "blocked": "[محظور]",
+      "scheduled": "[مقرر]",
+      "warn_budget": "[ميزانية التحذير]",
+      "warn_concurrency": "[تحذير التزامن]"
+    },
+    "quick": {
+      "submit_done": "[تم الإرسال]",
+      "title": "[العنوان]"
+    },
+    "range": "من {fromStr}_ إلى {toStr}___",
+    "title": "[العنوان]"
+  },
+  "campaigns": {
+    "actions": {
+      "create_schedule": "الإنشاء والجدول الزمني"
+    },
+    "compliance": "_GL_3___",
+    "compliance_disclosure": "نص الإفصاح..",
+    "compliance_record": "تسجيل الموافقة على التسجيل..",
+    "fields": {
+      "agent": "معرّف الوكيل",
+      "audience": "الجمهور (المعرفات الرئيسية مفصولة بفواصل)",
+      "budget": "سقف الميزانية (بالسنتات)",
+      "dow": "أيام الأسبوع (1=الشهر...7=الشمس)",
+      "from": "من الرقم",
+      "goal": "الهدف",
+      "kb": "معرّف قاعدة المعرفة",
+      "lang": "اللغة الافتراضية",
+      "name": "اسم الحملة",
+      "pacing": "الوتيرة (مكالمات في الدقيقة)",
+      "quiet_hours": "احترم ساعات الهدوء",
+      "role": "الدور",
+      "start_at": "تاريخ/وقت البدء",
+      "template": "قالب النتائج",
+      "template_select": "حدد القالب..."
+    },
+    "step": "الخطوة _PH_0___ {s}",
+    "steps": {
+      "audience": "الجمهور والوتيرة",
+      "details": "تفاصيل الحملة",
+      "review": "مراجعة وإنشاء",
+      "windows": "ويندوز و _GL_3___"
+    },
+    "title": "الحملات",
+    "toasts": {
+      "created": "تم إنشاء الحملة بمعرف: _PH_0___ {id}"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[العنوان]"
+    },
+    "overview": "لمحة عامة",
+    "quick_actions": "الإجراءات السريعة",
+    "recent_activity": "أحدث الأنشطة",
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك"
+  },
+  "history": {
+    "title": "سجل المكالمات والنتائج"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[تحقق من]",
+      "merge": "[دمج]",
+      "resolve_strategy": "[استراتيجية الحل]",
+      "skip": "[تخطى]",
+      "title": "[العنوان]"
+    },
+    "launch": {
+      "launch": "[إطلاق]",
+      "launching": "[إطلاق]",
+      "new_import": "[استيراد جديد]",
+      "success": "[النجاح]",
+      "success_desc": "[وصف النجاح]",
+      "view_job": "[عرض الوظيفة]"
+    },
+    "legal": {
+      "disclosure": "[إفصاح]"
+    },
+    "mapping": {
+      "fields": "[الحقول]",
+      "subtitle": "[العنوان الفرعي]",
+      "title": "[العنوان]"
+    },
+    "paste": {
+      "label": "[التسمية]",
+      "placeholder": "[عنصر نائب]",
+      "process": "[العملية]",
+      "processing": "[المعالجة]"
+    },
+    "prefix": {
+      "apply_to_all": "[تنطبق على الجميع]",
+      "auto": "[سيارة]",
+      "default_country": "[البلد الافتراضي]",
+      "force_0039": "[القوة 0039]",
+      "force_39": "[القوة 39]",
+      "no_prefix": "[لا توجد بادئة]",
+      "strategy": "[الاستراتيجية]",
+      "title": "[العنوان]"
+    },
+    "preview": {
+      "continue": "[تابع]",
+      "delimiter": "[المحدد]",
+      "fields": "[الحقول]",
+      "rows": "[الصفوف]",
+      "showing": "[عرض]",
+      "title": "[العنوان]",
+      "total": "[المجموع]"
+    },
+    "processing": "[المعالجة]",
+    "review": {
+      "config": "[التكوين]",
+      "cost": "[التكلفة]",
+      "cost_desc": "[وصف التكلفة]",
+      "cost_note": "[ملاحظة التكلفة]",
+      "subtitle": "[العنوان الفرعي]",
+      "summary": "[ملخص]",
+      "title": "[العنوان]"
+    },
+    "sheet": {
+      "subtitle": "[العنوان الفرعي]",
+      "title": "[العنوان]",
+      "upload_csv": "[تحميل ملف Csv]"
+    },
+    "steps": {
+      "mapping": "[رسم الخرائط]",
+      "review": "[مراجعة]",
+      "upload": "[تحميل]"
+    },
+    "upload": {
+      "drag_drop": "[السحب والإفلات]",
+      "drop_here": "[أسقط هنا]",
+      "or_click": "[أو انقر]",
+      "subtitle": "[العنوان الفرعي]",
+      "supported_formats": "[التنسيقات المدعومة]",
+      "title": "[العنوان]"
+    }
+  },
+  "integrations": {
+    "coming_soon": {
+      "description": "سيتوفر المزيد من عمليات التكامل في التحديثات المستقبلية",
+      "title": "قريباً"
+    },
+    "connect": "الاتصال",
+    "connected": {
+      "description": "تم الاتصال بنجاح ب _PH_0__ _PH_0__ {provider}",
+      "title": "متصل بنجاح"
+    },
+    "disconnect": "قطع الاتصال",
+    "disconnected": {
+      "description": "تم قطع الاتصال بنجاح من _PH_0___H_0__ {provider}",
+      "title": "تم قطع الاتصال بنجاح"
+    },
+    "error": {
+      "description": "حدث خطأ أثناء معالجة طلبك",
+      "title": "خطأ"
+    },
+    "hubspot": {
+      "description": "مزامنة جهات الاتصال، والشركات، والصفقات مع HubSpot CRM"
+    },
+    "mapping": {
+      "error": {
+        "description": "فشل في حفظ تعيين الحقل",
+        "title": "خطأ في التعيين"
+      },
+      "saved": {
+        "description": "تم حفظ تعيين الحقل بنجاح",
+        "title": "رسم الخرائط المحفوظة"
+      }
+    },
+    "odoo": {
+      "description": "التكامل مع أودو CRM باستخدام JSON-RPC"
+    },
+    "portal_id": "معرّف البوابة",
+    "status": {
+      "connected": "متصل",
+      "connecting": "التوصيل",
+      "disconnected": "غير متصل",
+      "error": "خطأ"
+    },
+    "subtitle": "ربط إدارة علاقات العملاء والأدوات الأخرى لتبسيط سير عملك",
+    "tabs": {
+      "crm": "أنظمة إدارة علاقات العملاء",
+      "other": "أدوات أخرى"
+    },
+    "test": {
+      "error": {
+        "description": "فشل في اختبار الاتصال ب _PH_0_____ {provider}",
+        "title": "فشل اختبار الاتصال"
+      },
+      "success": {
+        "description": "تم اختبار الاتصال ب _PH_0__ _PH_0__ بنجاح {provider}",
+        "title": "تم اختبار الاتصال بنجاح"
+      }
+    },
+    "title": "عمليات الدمج",
+    "zoho": {
+      "description": "الاتصال بإدارة علاقات العملاء Zoho CRM مع دعم متعدد المراكز الرقمية"
+    }
+  },
+  "leads": {
+    "actions": {
+      "add": "[إضافة]",
+      "import": "[استيراد]",
+      "schedule": "[الجدول الزمني]"
+    },
+    "add_title": "[إضافة عنوان]",
+    "cols": {
+      "class": "[الفصل]",
+      "company": "[الشركة]",
+      "compliance": "[_GL_L_3___]",
+      "consent": "[موافقة]",
+      "country": "[الدولة]",
+      "lang": "[لانج]",
+      "name": "[الاسم]",
+      "phone": "[الهاتف]",
+      "role": "[الدور]"
+    },
+    "empty": {
+      "desc": "[اختصار]",
+      "title": "[العنوان]"
+    },
+    "errors": {
+      "e164": "[E164]"
+    },
+    "fields": {
+      "company": "[الشركة]",
+      "consent": "[موافقة]",
+      "country": "[الدولة]",
+      "lang": "[لانج]",
+      "name": "[الاسم]",
+      "phone": "[الهاتف]",
+      "role": "[الدور]"
+    },
+    "placeholders": {
+      "e164": "[E164]"
+    },
+    "title": "[العنوان]",
+    "toasts": {
+      "added": "[مضاف]"
+    }
+  },
+  "numbers": {
+    "agent_id": "معرّف الوكيل",
+    "business_hours": "ساعات العمل",
+    "buy_number": "اشتر رقماً",
+    "buy_numbers": "أرقام الشراء",
+    "default_from": "معرّف المتصل الافتراضي",
+    "enable_voicemail": "تمكين البريد الصوتي",
+    "my_numbers": "أرقامي",
+    "route": "المسار",
+    "route_number": "رقم المسار",
+    "use_my_number": "استخدم رقمي",
+    "voicemail_message": "رسالة البريد الصوتي"
+  },
+  "settings": {
+    "account": "الحساب",
+    "billing": "الفواتير",
+    "integrations": "عمليات الدمج",
+    "profile": "الملف الشخصي",
+    "team": "الفريق",
+    "title": "الإعدادات",
+    "unsaved": "[غير محفوظة]"
+  }
+}

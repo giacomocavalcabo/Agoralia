@@ -1,0 +1,32 @@
+{
+  "/": "Knowledge Base with {params}",
+  "imports": {
+    "add_field": "[Add Field]",
+    "apply_merge": "[Apply Merge]",
+    "conflicts": "[Conflicts]",
+    "existing_fields": "[Existing Fields]",
+    "existing_value": "[Existing Value]",
+    "field_changes": "[Field Changes]",
+    "field_new": "[Field New]",
+    "field_update": "[Field Update]",
+    "field_value": "[Field Value]",
+    "imported_fields": "[Imported Fields]",
+    "keep_existing": "[Keep Existing]",
+    "merge_strategy": "[Merge Strategy]",
+    "merge_summary": "[Merge Summary]",
+    "merge_values": "[Merge Values]",
+    "merged_preview": "[Merged Preview]",
+    "merging": "[Merging]",
+    "new_fields": "[New Fields]",
+    "new_value": "[New Value]",
+    "no_diff_available": "[No Diff Available]",
+    "no_value": "[No Value]",
+    "ready_to_merge": "[Ready To Merge]",
+    "strategy_auto_merge": "[Strategy Auto Merge]",
+    "strategy_auto_new": "[Strategy Auto New]",
+    "strategy_manual": "[Strategy Manual]",
+    "updated": "[Updated]",
+    "use_new": "[Use New]"
+  },
+  "index": "Knowledge Base"
+}

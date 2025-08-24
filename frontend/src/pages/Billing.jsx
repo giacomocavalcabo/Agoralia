@@ -322,8 +322,8 @@ function AutoRecharge({ data, onUpdate }) {
               {data.enabled && (
                 <p className="text-sm text-gray-500">
                   {t('billing.auto_recharge.description', {
-                    threshold: data.threshold,
-                    topup: data.topup
+                    topup: data.topup,
+                    threshold: data.threshold
                   }) || `Recharge $${data.topup} when balance falls below $${data.threshold}`}
                 </p>
               )}

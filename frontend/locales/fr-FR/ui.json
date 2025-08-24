@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "create": "Créer"
+  },
+  "indicators": {
+    "test_mode": "Mode test"
+  },
+  "nav": {
+    "breadcrumbs": "Chapelure"
+  },
+  "open-create-drawer": "Ouvrir le tiroir de création",
+  "search": {
+    "aria": "Recherche",
+    "placeholder": "Recherche..."
+  }
+}

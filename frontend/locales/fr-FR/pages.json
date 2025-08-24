@@ -1,0 +1,275 @@
+{
+  "calendar": {
+    "errors": {
+      "budget": "[Budget]",
+      "concurrency": "[Concurrence]",
+      "quiet_hours": "Impossible de programmer des heures calmes pour {iso}",
+      "rpo": "Objectif du point de récupération non atteint {iso}"
+    },
+    "legend": {
+      "blocked": "[Bloqué]",
+      "scheduled": "[programmé]",
+      "warn_budget": "[Budget d'avertissement]",
+      "warn_concurrency": "[Avertir la Concurrence]"
+    },
+    "quick": {
+      "submit_done": "[Soumettre terminé]",
+      "title": "[Titre]"
+    },
+    "range": "De {fromStr} à {toStr}",
+    "title": "[Titre]"
+  },
+  "campaigns": {
+    "actions": {
+      "create_schedule": "Créer et programmer"
+    },
+    "compliance": "Compliance",
+    "compliance_disclosure": "Texte de divulgation..",
+    "compliance_record": "Consentement à l'enregistrement..",
+    "fields": {
+      "agent": "Agent ID",
+      "audience": "Audience (identifiants séparés par des virgules)",
+      "budget": "Plafond budgétaire (cents)",
+      "dow": "Jours de la semaine (1=lundi...7=dimanche)",
+      "from": "A partir du numéro",
+      "goal": "Goal",
+      "kb": "Base de connaissances ID",
+      "lang": "Langue par défaut",
+      "name": "Nom de la campagne",
+      "pacing": "Cadence (appels par minute)",
+      "quiet_hours": "Respecter les heures de silence",
+      "role": "Rôle",
+      "start_at": "Date/heure de début",
+      "template": "Modèle de résultat",
+      "template_select": "Sélectionner un modèle..."
+    },
+    "step": "Étape {s}",
+    "steps": {
+      "audience": "Public et rythme",
+      "details": "Détails de la campagne",
+      "review": "Réviser et créer",
+      "windows": "Windows & Compliance"
+    },
+    "title": "Campagnes",
+    "toasts": {
+      "created": "Campagne créée avec ID : {id}"
+    }
+  },
+  "dashboard": {
+    "health": {
+      "title": "[Titre]"
+    },
+    "overview": "Vue d'ensemble",
+    "quick_actions": "Actions rapides",
+    "recent_activity": "Activité récente",
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue à nouveau"
+  },
+  "history": {
+    "title": "Historique des appels et résultats"
+  },
+  "import": {
+    "dedupe": {
+      "check_on": "[Vérifier]",
+      "merge": "[Fusionner]",
+      "resolve_strategy": "[Résoudre la stratégie]",
+      "skip": "[Sauter]",
+      "title": "[Titre]"
+    },
+    "launch": {
+      "launch": "[Lancer]",
+      "launching": "[Lancement]",
+      "new_import": "[Nouvelle importation]",
+      "success": "[Succès]",
+      "success_desc": "[Success Desc]",
+      "view_job": "[Voir l'emploi]"
+    },
+    "legal": {
+      "disclosure": "[Divulgation]"
+    },
+    "mapping": {
+      "fields": "[Champs]",
+      "subtitle": "[Sous-titre]",
+      "title": "[Titre]"
+    },
+    "paste": {
+      "label": "[Étiquette]",
+      "placeholder": "[Placeholder]",
+      "process": "[Processus]",
+      "processing": "[Traitement]"
+    },
+    "prefix": {
+      "apply_to_all": "[Appliquer à tous]",
+      "auto": "[Auto]",
+      "default_country": "[Pays par défaut]",
+      "force_0039": "[Force 0039]",
+      "force_39": "[Force 39]",
+      "no_prefix": "[Pas de préfixe]",
+      "strategy": "[Stratégie]",
+      "title": "[Titre]"
+    },
+    "preview": {
+      "continue": "[Continuer]",
+      "delimiter": "[Délimiteur]",
+      "fields": "[Champs]",
+      "rows": "[rangs]",
+      "showing": "[Montrer]",
+      "title": "[Titre]",
+      "total": "[Total]"
+    },
+    "processing": "[Traitement]",
+    "review": {
+      "config": "[Config]",
+      "cost": "[Coût]",
+      "cost_desc": "[Descente de coût]",
+      "cost_note": "[Note sur les coûts]",
+      "subtitle": "[Sous-titre]",
+      "summary": "[Résumé]",
+      "title": "[Titre]"
+    },
+    "sheet": {
+      "subtitle": "[Sous-titre]",
+      "title": "[Titre]",
+      "upload_csv": "[Télécharger Csv]"
+    },
+    "steps": {
+      "mapping": "[Cartographie]",
+      "review": "[Révision]",
+      "upload": "[Télécharger]"
+    },
+    "upload": {
+      "drag_drop": "[Glisser-Déposer]",
+      "drop_here": "[Déposer ici]",
+      "or_click": "[Ou cliquez]",
+      "subtitle": "[Sous-titre]",
+      "supported_formats": "[Formats pris en charge]",
+      "title": "[Titre]"
+    }
+  },
+  "integrations": {
+    "coming_soon": {
+      "description": "D'autres intégrations seront disponibles dans les prochaines mises à jour",
+      "title": "Bientôt disponible"
+    },
+    "connect": "Connecter",
+    "connected": {
+      "description": "Connexion réussie avec {provider}",
+      "title": "Connexion réussie"
+    },
+    "disconnect": "Déconnexion",
+    "disconnected": {
+      "description": "Déconnexion réussie de {provider}",
+      "title": "Déconnexion réussie"
+    },
+    "error": {
+      "description": "Une erreur s'est produite lors du traitement de votre demande",
+      "title": "Erreur"
+    },
+    "hubspot": {
+      "description": "Synchronisation des contacts, des entreprises et des contrats avec HubSpot CRM"
+    },
+    "mapping": {
+      "error": {
+        "description": "Échec de l'enregistrement du mappage des champs",
+        "title": "Erreur de cartographie"
+      },
+      "saved": {
+        "description": "Le mappage des champs a été sauvegardé avec succès",
+        "title": "Cartographie sauvegardée"
+      }
+    },
+    "odoo": {
+      "description": "Intégrer Odoo CRM en utilisant JSON-RPC"
+    },
+    "portal_id": "ID du portail",
+    "status": {
+      "connected": "Connecté",
+      "connecting": "Connexion",
+      "disconnected": "Déconnecté",
+      "error": "Erreur"
+    },
+    "subtitle": "Connectez votre CRM et d'autres outils pour rationaliser votre flux de travail",
+    "tabs": {
+      "crm": "Systèmes de gestion de la relation client (CRM)",
+      "other": "Autres outils"
+    },
+    "test": {
+      "error": {
+        "description": "Échec du test de connexion à {provider}",
+        "title": "Échec du test de connexion"
+      },
+      "success": {
+        "description": "La connexion à {provider} a été testée avec succès",
+        "title": "Test de connexion réussi"
+      }
+    },
+    "title": "Intégrations",
+    "zoho": {
+      "description": "Connexion à Zoho CRM avec support multi-DC"
+    }
+  },
+  "leads": {
+    "actions": {
+      "add": "[Ajouter]",
+      "import": "[Import]",
+      "schedule": "[Calendrier]"
+    },
+    "add_title": "[Ajouter un titre]",
+    "cols": {
+      "class": "[Classe]",
+      "company": "[Entreprise]",
+      "compliance": "[Compliance]",
+      "consent": "[consentement]",
+      "country": "[Pays]",
+      "lang": "[Lang]",
+      "name": "[nom]",
+      "phone": "[Téléphone]",
+      "role": "[Rôle]"
+    },
+    "empty": {
+      "desc": "[Desc]",
+      "title": "[Titre]"
+    },
+    "errors": {
+      "e164": "[E164]"
+    },
+    "fields": {
+      "company": "[Entreprise]",
+      "consent": "[consentement]",
+      "country": "[Pays]",
+      "lang": "[Lang]",
+      "name": "[nom]",
+      "phone": "[Téléphone]",
+      "role": "[Rôle]"
+    },
+    "placeholders": {
+      "e164": "[E164]"
+    },
+    "title": "[Titre]",
+    "toasts": {
+      "added": "[Ajouté]"
+    }
+  },
+  "numbers": {
+    "agent_id": "Agent ID",
+    "business_hours": "Heures d'ouverture",
+    "buy_number": "Acheter un numéro",
+    "buy_numbers": "Acheter des numéros",
+    "default_from": "Identification de l'appelant par défaut",
+    "enable_voicemail": "Activer la messagerie vocale",
+    "my_numbers": "Mes chiffres",
+    "route": "Route",
+    "route_number": "Numéro de route",
+    "use_my_number": "Utiliser mon numéro",
+    "voicemail_message": "Message vocal"
+  },
+  "settings": {
+    "account": "Compte",
+    "billing": "Facturation",
+    "integrations": "Intégrations",
+    "profile": "Profil",
+    "team": "L'équipe",
+    "title": "Paramètres",
+    "unsaved": "[Non sauvegardé]"
+  }
+}

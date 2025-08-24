@@ -183,7 +183,7 @@ class AIClient:
         except Exception as e:
             print(f"Streaming failed: {e}")
             raise e
-
+    
     def generate_embeddings(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
         """Generate embeddings for texts using OpenAI"""
         try:
@@ -200,7 +200,7 @@ class AIClient:
         except Exception as e:
             print(f"Embedding generation failed: {e}")
             return self._mock_generate_embeddings(texts)
-
+    
     def _mock_generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Mock embedding generation for development"""
         import random

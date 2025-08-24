@@ -1,12 +1,19 @@
 {
   "next": "Avanti",
+  "back": "Indietro",
   "prev": "Precedente",
   "cancel": "Annulla",
   "save": "Salva",
+  "loading": "Caricamento...",
   "connecting": "Connessione in corso...",
   "disconnecting": "Disconnessione in corso...",
   "testing": "Test in corso...",
   
+  "range": "Mostrando da {from} a {to}",
+  "of_total": "di {total}",
+  "actions": {
+    "more": "Altro"
+  },
   "auth": {
     "sign_in_title": "Accedi ad Agoralia",
     "no_account": "Nessun account? Lo creeremo al primo login.",
@@ -22,5 +29,17 @@
     "sign_in": "Accedi",
     "send_magic_link": "Invia Link Magico",
     "need_help": "Hai problemi? Contatta il supporto"
-  }
+  },
+  "retry": "Riprova",
+  "error": "Errore",
+  "unknown": "Sconosciuto",
+  "live": "Live",
+  "polling": "Polling",
+  "active": "attivo",
+  "lead": "Lead",
+  "agent": "Agente",
+  "status": "Stato",
+  "started": "Iniziato",
+  "duration": "Durata",
+  "empty": "Vuoto"
 }

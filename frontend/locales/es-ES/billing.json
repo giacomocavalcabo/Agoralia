@@ -1,0 +1,47 @@
+{
+  "auto_recharge": {
+    "description": "Recarga automática de {threshold} cuando el saldo es inferior a {topup}",
+    "disabled": "Recarga automática desactivada",
+    "enable": "[Activar]",
+    "enabled": "Recarga automática activada",
+    "threshold": "[Umbral]",
+    "title": "[Título]",
+    "topup": "[Topup]"
+  },
+  "invoices": {
+    "download": "[Descargar]",
+    "title": "[Título]",
+    "view_all": "[Ver todos]"
+  },
+  "overview": {
+    "balance": "[Balance]",
+    "cap_status": "[Cap Status]",
+    "minutes_mtd": "[Actas enviadas]",
+    "usage_mtd": "[Uso Mtd]"
+  },
+  "payment_methods": {
+    "add": "[Añadir]",
+    "add_card": "[Añadir tarjeta]",
+    "adding": "[Añadir]",
+    "card_details": "[Detalles de la tarjeta]",
+    "default": "[Por defecto]",
+    "title": "[Título]",
+    "unavailable": "[No disponible]",
+    "unavailable_desc": "[Unavailable Desc]"
+  },
+  "subtitle": "[Subtítulo]",
+  "title": "[Título]",
+  "usage_cap": {
+    "current": "Uso actual",
+    "description": "Límite de consumo mensual fijado en {type} con alertas en {limit}",
+    "hard": "Hard Cap (tope de llamadas)",
+    "hard_cap": "Tapa dura",
+    "limit": "Límite mensual ($)",
+    "soft": "Tapa blanda (sólo advertencias)",
+    "soft_cap": "Tapa blanda",
+    "stop_calls": "Detener llamadas en el límite",
+    "title": "Tapa de uso",
+    "type": "Tipo de tapa",
+    "warnings_only": "Sólo advertencias"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "sourceLocale": "en",
+  "targetLocales": ["it", "fr", "es", "hi", "ar"],
+  "namespaces": ["nav", "home", "hero", "tryCall", "product", "solutions", "resources", "company", "footer", "common", "forms", "errors", "meta"],
+  "glossary": ["Agoralia", "ColdAI", "B2B", "API", "AI", "KYC", "QA", "Voice Agents", "Playbooks"],
+  "preservePatterns": [
+    "\\{\\{\\s*[\\w.-]+\\s*\\}\\}",
+    "\\{\\s*[\\w.-]+(?:\\s*,\\s*[\\w\\s,{}]+)?\\}",
+    "%\\{[\\w.-]+\\}",
+    "%\\([\\w.-]+\\)s",
+    ":\\b[\\w.-]+\\b",
+    "\\$\\{[\\w.-]+\\}",
+    "</?[\\w-]+(?:\\s+[^>]*)?>|<\\d+>|</\\d+>"
+  ],
+  "rtlLocales": ["ar"],
+  "deepl": {
+    "monthly_cap": 500000,
+    "soft_warn": 400000,
+    "batch_size": 50,
+    "max_batch_chars": 20000,
+    "max_retries": 3
+  },
+  "paths": {
+    "locales": "web/src/i18n/messages",
+    "cache": "web/.i18n",
+    "scripts": "scripts"
+  }
+}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth.jsx'
 import LanguageSwitcher from './LanguageSwitcher.jsx'
+import { useIsDemo } from '../lib/demoGate.js'
 import { 
   HomeIcon, 
   ChartBarIcon, 
@@ -42,10 +43,11 @@ const adminNavigation = [
 ]
 
 export default function AppShell({ children }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('common')
   const location = useLocation()
   const { user, logout } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const isDemo = useIsDemo()
   
   // Close user menu when clicking outside
   useEffect(() => {
@@ -65,10 +67,15 @@ export default function AppShell({ children }) {
       <div className="bg-white border-b border-gray-200">
         <div className="flex h-16 items-center justify-between px-6">
           {/* Left: Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div className="flex-shrink-0">
               <h1 className="text-xl font-semibold text-gray-900">Agoralia</h1>
             </div>
+            {isDemo && (
+              <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs font-medium">
+                Demo
+              </span>
+            )}
           </div>
           
           {/* Center: Global Search */}
@@ -88,10 +95,7 @@ export default function AppShell({ children }) {
             {/* Language Switcher */}
             <LanguageSwitcher />
             
-            {/* Test Mode Pill */}
-            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-              Test Mode
-            </div>
+
             
             {/* Notifications */}
             <button className="p-2 text-gray-400 hover:text-gray-500">
@@ -110,9 +114,9 @@ export default function AppShell({ children }) {
                   </span>
                 </div>
                 <span className="text-sm font-medium text-gray-700">
-                  {user?.name || user?.email || 'User'}
+                  {user?.name || user?.email?.split('@')[0] || 'User'}
                 </span>
-                {user?.is_admin_global && (
+                {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                     Admin
                   </span>
@@ -132,8 +136,13 @@ export default function AppShell({ children }) {
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                   <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                    <p className="text-sm font-medium text-gray-900">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
                     <p className="text-xs text-gray-500">{user?.email}</p>
+                    {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
+                        Admin
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => {
@@ -167,6 +176,7 @@ export default function AppShell({ children }) {
                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
                 title={item.name}
+                aria-label={item.name}
               >
                 <item.icon className="h-6 w-6" />
                 
@@ -179,7 +189,7 @@ export default function AppShell({ children }) {
           })}
           
           {/* Admin Navigation Separator */}
-          {user?.is_admin_global && (
+          {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
             <>
               <div className="w-8 h-px bg-gray-200 my-2"></div>
               {adminNavigation.map((item) => {
@@ -195,6 +205,7 @@ export default function AppShell({ children }) {
                         : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
                     }`}
                     title={item.name}
+                    aria-label={item.name}
                   >
                     <item.icon className="h-6 w-6" />
                     

@@ -1,101 +1,710 @@
 {
-  "admin": {
-    "nav": {"dashboard":"Dashboard","users":"Users","workspaces":"Workspaces","calls":"Calls","campaigns":"Campaigns","compliance":"Compliance","notifications":"Notifications","billing":"Billing","logs":"Logs","settings":"Settings"},
-    "kpi": {"users_total":"{n} users","active_7d":"{n} active (7d)","mrr":"MRR {amount}","minutes_mtd":"{n} minutes MTD"},
-    "users": {"search_placeholder":"Search name or email…","impersonate":"Impersonate","suspend":"Suspend","unsuspend":"Unsuspend"},
-    "calls": {"live_title":"Live calls","filters":{"iso":"Country","lang":"Language"}},
-    "compliance": {"attestations":"Attestations","generate":"Generate PDF","preflight":"Pre‑flight logs"},
-    "notices": {"impersonating":"Impersonating {user}. Return to admin."}
-  },
-  "pages": {
-    "dashboard": {
-      "title": "Dashboard",
-      "health": { "title": "System health" },
-      "live": { "title": "Live calls" },
-      "activity": "Recent activity",
-      "kpi": {
-        "minutes": "Minutes (MTD)",
-        "calls_today": "Calls today",
-        "success": "Success rate"
-      }
-    },
-    "leads": {
-      "title": "Leads",
-      "actions": { "add": "Add lead", "schedule": "Schedule", "import": "Import" },
-      "cols": { "name":"Name", "company":"Company", "phone":"Phone", "country":"Country", "lang":"Lang", "role":"Role", "consent":"Consent" },
-      "empty": { "title":"No leads yet", "desc":"Start by adding a lead or importing a CSV." },
-      "add_title": "Add lead",
-      "fields": { "name":"Name", "company":"Company", "phone":"Phone (E.164)", "country":"Country ISO", "lang":"Language", "role":"Role", "consent":"Consent given" },
-      "placeholders": { "e164":"+12025550123" },
-      "errors": { "e164":"Enter a valid E.164 phone number" },
-      "toasts": { "added":"Lead added" }
-    },
-    "import": {
-      "title": "Import",
-      "steps": { "source": "Source" },
-      "paste_numbers": "Paste phone numbers (one per line)",
-      "upload_csv": "Upload CSV",
-      "preview": "Preview",
-      "no_numbers": "No numbers detected",
-      "no_numbers_desc": "Paste lines like +12025550123.",
-      "wip": "Work in progress",
-      "wip_desc": "Steps 2–4 will appear here."
-    },
-    "campaigns": {
-      "title": "Campaigns",
-      "steps": { "details":"Details", "audience":"Audience & Pacing", "windows":"Windows & Compliance", "review":"Review" },
-      "fields": { "name":"Name", "goal":"Goal", "role":"Role", "lang":"Call language (default)", "agent":"Agent", "kb":"Knowledge base", "from":"Caller ID (from)", "pacing":"Pacing (per minute)", "budget":"Budget cap (cents)", "quiet_hours":"Respect quiet hours" },
-      "actions": { "create_schedule":"Create & schedule" },
-      "toasts": { "created":"Campaign created {id}" }
-    },
-    "calendar": {
-      "title": "Calendar",
-      "range": "{from} → {to}",
-      "legend": { "scheduled":"Scheduled", "call":"Call", "blocked":"Blocked", "warn":"Warn", "warn_budget":"Warn • Budget", "warn_concurrency":"Warn • Concurrency" },
-      "quick": {
-        "title": "Schedule call",
-        "lead": "Lead",
-        "agent": "Agent",
-        "kb": "Knowledge base",
-        "from": "Caller ID",
-        "datetime": "Date & time",
-        "submit": "Schedule",
-        "submit_done": "Scheduled"
+	"title": "Pages",
+	"dashboard": {
+		"title": "Dashboard",
+		"description": "Overview of your campaigns and performance",
+		"metrics": {
+			"calls_today": "Calls Today",
+			"minutes_month": "Minutes Month",
+			"avg_duration": "Avg Duration",
+			"contact_rate": "Contact Rate"
+		},
+		"trends": {
+			"title": "Call Trends"
+		},
+		"stats": {
+			"total_created": "Total Created",
+			"total_finished": "Total Finished",
+			"total_qualified": "Total Qualified",
+			"avg_contact_rate": "Avg Contact Rate"
+		},
+		"funnel": {
+			"title": "Conversion Funnel",
+			"reached": "Reached",
+			"connected": "Connected",
+			"qualified": "Qualified",
+			"booked": "Booked",
+			"overall_conversion": "Overall conversion"
+		},
+		"empty": {
+			"calls": {
+				"title": "No call data",
+				"description": "Try a different date range."
+			}
+		},
+		"budget": {
+			"not_configured": {
+				"title": "Budget not configured",
+				"description": "Set a monthly cap to track usage.",
+				"short": "Not configured"
+			}
+		},
+		"agents": {
+			"title": "Top Agents",
+			"calls": "calls",
+			"avg": "avg",
+			"top_performer": "Top performer",
+			"empty": "No agent data available"
+		},
+		"geo": {
+			"title": "Geographic Distribution",
+			"coming_soon": "Map visualization coming soon",
+			"calls": "calls",
+			"qualified": "qualified",
+			"top_country": "Top country",
+			"empty": "No geographic data available"
+		},
+		"live_calls": {
+			"title": "Live Calls",
+			"empty": "No active calls",
+			"connecting": "Connecting…"
+		},
+		"recent_activity": {
+			"title": "Recent Activity",
+			"empty": "No recent events",
+			"error": "Unable to load recent events"
+		},
+		"buttons": {
+			"7d": "7d",
+			"30d": "30d"
+		}
+	},
+	"campaigns": {"title":"Campaigns","description":"Manage your outbound campaigns"},
+	"calls": {
+		"title": "Calls",
+		"description": "Monitor live calls and recent activity",
+		"toolbar": {
+			"search_placeholder": "Search calls (number, agent, queue)…",
+			"filters": {
+				"status": "Status",
+				"direction": "Direction",
+				"agent": "Agent",
+				"queue": "Queue"
+			},
+			"clear_all": "Clear all"
+		},
+		"table": {
+			"columns": {
+				"time": "Time",
+				"from": "From",
+				"to": "To",
+				"agent": "Agent",
+				"queue": "Queue",
+				"direction": "Direction",
+				"status": "Status",
+				"duration": "Duration",
+				"actions": "Actions"
+			},
+			"empty": {
+				"title": "No calls",
+				"description": "There are no matching calls."
+			},
+			"error": {
+				"title": "Loading error",
+				"description": "We couldn't load calls. Please retry.",
+				"retry": "Retry"
+			}
+		},
+		"live": {
+			"title": "Live calls",
+			"empty": "No active calls",
+			"connecting": "Connecting…"
+		},
+		"badges": {
+			"inbound": "Inbound",
+			"outbound": "Outbound",
+			"ringing": "Ringing",
+			"active": "Active",
+			"ended": "Ended"
+		}
+	},
+	"activity": {
+		"title": "Recent activity",
+		"empty": "No recent events",
+		"error": "Unable to load recent events"
+	},
+	  "leads": {
+    "title": "Leads",
+    "toolbar": {
+      "search_placeholder": "Search leads...",
+      "filters": {
+        "status": "Status",
+        "campaign": "Campaign",
+        "owner": "Owner",
+        "stage": "Stage",
+        "any": "Any"
       },
-      "errors": {
-        "quiet_hours": "Selected time is outside allowed hours for {iso}.",
-        "rpo": "Number is RPO/DNC blocked for {iso}.",
-        "budget": "Budget cap reached.",
-        "concurrency": "No free slots right now."
-      },
-      "badge": { "tz":"TZ", "lang":"Lang" }
+      "date_range": { "from": "From", "to": "To" },
+      "bulk": { "assign": "Assign", "delete": "Delete", "export": "Export CSV" },
+      "actions": { "import": "Import", "add": "Add Lead" }
     },
-    "settings": { "title": "Settings" },
-    "analytics": {
-      "title": "Analytics",
-      "kpi": { "calls": "Calls", "connected_rate": "Connected", "qualified_rate": "Qualified" },
-      "actions": { "export_csv": "Export CSV", "export_json": "Export JSON" },
-      "charts": { "calls_over_time": "Calls over time" }
-    },
-    "history": {
-      "title": "History",
-      "columns": { "time":"Time","direction":"Direction","to":"To","from":"From","company":"Company","outcome":"Outcome","duration":"Duration","cost":"Cost" },
-      "drawer": { "open_full": "Open full call" }
-    },
-    "settings": {
-      "workspace": {
-        "members": "Members",
-        "invite": "Invite",
-        "audit": "Audit",
+    "table": {
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
         "email": "Email",
-        "role": "Role",
-        "remove": "Remove",
-        "send_invite": "Send invite",
-        "pending": "Pending invites",
-        "confirm_change_role": "Change role?",
-        "confirm_remove": "Remove member?",
-        "accept": "Accept invite"
+        "status": "Status",
+        "campaign": "Campaign",
+        "stage": "Stage",
+        "owner": "Owner",
+        "last_contact": "Last Contact",
+        "score": "Score",
+        "actions": "Actions"
+      },
+      "pagination": { "page_size": "Size", "showing": "Showing {{from}}–{{to}} of {{total}}" },
+      "sorting": { "asc": "Sort ascending", "desc": "Sort descending" }
+    },
+    "row_actions": { "view": "View", "call": "Call", "schedule": "Schedule", "assign": "Assign", "delete": "Delete" },
+    "actions": {
+      "import": "Import Leads",
+      "add": "Add Lead"
+    },
+    "empty": {
+      "title": "No leads found",
+      "description": "Try adjusting filters or import a new list of leads.",
+      "cta_import": "Import Leads",
+      "cta_add": "Add Lead"
+    },
+    "error": {
+      "title": "Unable to load leads",
+      "description": "Something went wrong while loading leads.",
+      "retry": "Retry"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Delete selected leads",
+        "description": "This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "success": "Leads deleted",
+        "failure": "Failed to delete leads"
+      },
+      "assign": {
+        "title": "Assign leads",
+        "description": "Choose an owner to assign selected leads.",
+        "confirm": "Assign",
+        "cancel": "Cancel",
+        "success": "Leads assigned",
+        "failure": "Failed to assign leads"
       }
-    }
-  }
+    },
+    "export": { "starting": "Export started", "done": "Export completed", "failed": "Export failed" }
+  },
+	"numbers": {
+		"title": "Numbers",
+		"description": "Manage phone numbers, capabilities and assignments",
+		"toolbar": {
+			"search_placeholder": "Search numbers (E.164, carrier, label)…",
+			"filters": { "country": "Country", "capabilities": "Capabilities", "status": "Status", "carrier": "Carrier" },
+			"bulk": { "assign": "Assign", "release": "Release", "export": "Export" },
+			"view": { "density": "Density", "columns": "Columns" },
+			"clear_all": "Clear all"
+		},
+		"table": {
+			"columns": {
+				"number": "Number", "country": "Country", "capabilities": "Capabilities", "status": "Status",
+				"assigned_to": "Assigned To", "purchased_at": "Purchased", "carrier": "Carrier", "actions": "Actions"
+			},
+			"empty": { "title": "No numbers found", "description": "Try changing filters or purchase a new number", "cta_new": "Purchase number" },
+			"error": { "title": "Loading error", "description": "We couldn't load numbers. Please retry.", "retry": "Retry" },
+			"pagination": { "showing": "Showing {from}-{to} of {total}", "page_size": "Rows per page" }
+		},
+		"actions": { "assign": "Assign", "release": "Release", "configure": "Configure", "details": "Details" },
+		"badges": { "voice": "Voice", "sms": "SMS", "mms": "MMS" }
+	},
+	"history": {"title":"History","description":"View call history and outcomes"},
+	"compliance": {"attestations":"Attestations","generate":"Generate PDF","preflight":"Pre‑flight logs"},
+	"import": {
+		"title": "Import",
+		"description": "Import contacts from CSV",
+		"legal": {
+			"title": "Legal Review",
+			"subtitle": "Review and classify your contacts for compliance",
+			"summary": {
+				"title": "Compliance Summary"
+			},
+			"category": {
+				"allowed": "Allowed",
+				"conditional": "Conditional",
+				"blocked": "Blocked"
+			},
+			"fields": {
+				"contact_class": "Contact Class",
+				"relationship_basis": "Relationship Basis",
+				"opt_in": "Opt-in",
+				"national_dnc": "National DNC",
+				"existing": "Existing",
+				"none": "None",
+				"yes": "Yes",
+				"no": "No",
+				"in_registry": "In Registry",
+				"not_in_registry": "Not in Registry"
+			},
+			"cols": {
+				"name": "Name",
+				"phone": "Phone",
+				"country": "Country",
+				"class": "Class",
+				"existing": "Existing?",
+				"opt_in": "Opt-in?",
+				"dnc": "DNC?",
+				"category": "Category",
+				"why": "Why"
+			},
+			"bulk": {
+				"select": "Select field",
+				"select_value": "Select value",
+				"apply": "Apply"
+			},
+			"autofill": "Auto-fill",
+			"selected": "selected",
+			"unknown": "Unknown",
+			"reasons": "Reasons:",
+			"updating": "Updating..."
+		}
+	},
+	"admin": {"title":"Admin","description":"System administration and compliance"},
+	"settings": {
+		"title": "Settings",
+		"description": "Configure your workspace, team, and preferences",
+		"nav": {
+			"title": "Settings",
+			"subtitle": "Manage your workspace configuration",
+			"profile": "Profile",
+			"company": "Company",
+			"account": "Account",
+			"account_desc": "Personal information and preferences",
+			"workspace": "Workspace",
+			"workspace_desc": "Workspace settings and branding",
+			"notifications": "Notifications",
+			"notifications_desc": "Email and notification preferences",
+			"security": "Security",
+			"security_desc": "Password and 2FA settings",
+			"api_keys": "API Keys",
+			"api_keys_desc": "Manage API access tokens",
+			"telephony": "Telephony",
+			"telephony_desc": "Phone number settings",
+			"members": "Members",
+			"members_desc": "Team member management",
+			"integrations": "Integrations",
+			"integrations_desc": "Third-party service connections",
+			"billing": "Billing",
+			"billing_desc": "Subscription and payment management",
+			"audit": "Audit",
+			"audit_desc": "System activity logs"
+		},
+		"account": {
+			"title": "Personal Information",
+			"description": "Update your personal details and preferences",
+			"fields": {
+				"name": "Full Name",
+				"email": "Email Address",
+				"language": "Language",
+				"timezone": "Timezone",
+				"dual_time": "Show dual time in interface"
+			},
+			"languages": {
+				"english": "English",
+				"italian": "Italiano",
+				"french": "Français"
+			},
+			"timezones": {
+				"rome": "Europe/Rome",
+				"london": "Europe/London",
+				"new_york": "America/New_York"
+			},
+			"actions": {
+				"save": "Save Changes"
+			},
+			"messages": {
+				"saved": "Personal information updated successfully"
+			},
+			"errors": {
+				"load_failed": "Failed to load personal information",
+				"save_failed": "Failed to save personal information"
+			}
+		},
+		"workspace": {
+			"title": "Workspace Settings",
+			"description": "Configure your workspace branding and settings",
+			"fields": {
+				"name": "Workspace Name",
+				"domain": "Custom Domain",
+				"logo": "Workspace Logo",
+				"upload_logo": "Upload Logo"
+			},
+			"actions": {
+				"save": "Save Changes"
+			},
+			"messages": {
+				"saved": "Workspace settings updated successfully"
+			},
+			"errors": {
+				"save_failed": "Failed to save workspace settings"
+			}
+		},
+		"notifications": {
+			"title": "Notification Preferences",
+			"description": "Configure how you receive notifications",
+			"fields": {
+				"email_notifications": "Email Notifications",
+				"desktop_notifications": "Desktop Notifications",
+				"daily_digest": "Daily Digest",
+				"weekly_report": "Weekly Report"
+			},
+			"actions": {
+				"save": "Save Changes"
+			},
+			"messages": {
+				"saved": "Notification preferences updated successfully"
+			},
+			"errors": {
+				"save_failed": "Failed to save notification preferences"
+			}
+		},
+		"security": {
+			"title": "Security Settings",
+			"description": "Manage your password and two-factor authentication",
+			"fields": {
+				"current_password": "Current Password",
+				"new_password": "New Password",
+				"confirm_password": "Confirm New Password",
+				"two_factor": "Two-Factor Authentication"
+			},
+			"actions": {
+				"save": "Update Password",
+				"enable_2fa": "Enable 2FA",
+				"disable_2fa": "Disable 2FA"
+			},
+			"messages": {
+				"password_updated": "Password updated successfully",
+				"two_factor_enabled": "Two-factor authentication enabled",
+				"two_factor_disabled": "Two-factor authentication disabled"
+			},
+			"errors": {
+				"save_failed": "Failed to update security settings"
+			}
+		},
+		"api_keys": {
+			"title": "API Keys",
+			"description": "Manage your API access tokens",
+			"actions": {
+				"create_key": "Create API Key",
+				"revoke": "Revoke",
+				"copy": "Copy"
+			},
+			"empty": {
+				"title": "No API keys",
+				"description": "Create your first API key to start integrating with our API",
+				"cta": "Create API Key"
+			},
+			"messages": {
+				"created": "API key created successfully",
+				"revoked": "API key revoked successfully",
+				"copied": "API key copied to clipboard"
+			},
+			"errors": {
+				"create_failed": "Failed to create API key",
+				"revoke_failed": "Failed to revoke API key"
+			}
+		},
+		"telephony": {
+			"title": "Telephony Settings",
+			"description": "Configure your phone number preferences",
+			"fields": {
+				"default_country": "Default Country",
+				"caller_id": "Default Caller ID",
+				"quiet_hours": "Respect Quiet Hours"
+			},
+			"actions": {
+				"save": "Save Changes"
+			},
+			"messages": {
+				"saved": "Telephony settings updated successfully"
+			},
+			"errors": {
+				"save_failed": "Failed to save telephony settings"
+			}
+		},
+		"members": {
+			"title": "Team Members",
+			"description": "Manage your workspace team members",
+			"fields": {
+				"invite_email": "Email Address",
+				"role": "Role"
+			},
+			"roles": {
+				"viewer": "Viewer",
+				"editor": "Editor",
+				"admin": "Admin"
+			},
+			"actions": {
+				"invite": "Invite Member",
+				"remove": "Remove Member",
+				"change_role": "Change Role"
+			},
+			"messages": {
+				"invite_sent": "Invitation sent successfully",
+				"member_removed": "Member removed successfully",
+				"role_updated": "Role updated successfully"
+			},
+			"errors": {
+				"invite_failed": "Failed to send invitation",
+				"remove_failed": "Failed to remove member"
+			}
+		},
+		"integrations": {
+			"title": "Integrations",
+			"description": "Connect with third-party services",
+			"tabs": {
+				"crm": "CRM",
+				"mapping": "Field Mapping",
+				"sync": "Sync Status",
+				"other": "Other"
+			},
+			"hubspot": {
+				"description": "Connect your HubSpot CRM to sync contacts and deals"
+			},
+			"zoho": {
+				"description": "Connect your Zoho CRM to sync contacts and leads"
+			},
+			"odoo": {
+				"description": "Connect your Odoo ERP to sync contacts and opportunities"
+			},
+			"portal_id": "Portal ID",
+			"status": {
+				"connected": "Connected",
+				"connecting": "Connecting",
+				"error": "Error",
+				"disconnected": "Disconnected"
+			},
+			"actions": {
+				"connect": "Connect",
+				"disconnect": "Disconnect",
+				"test": "Test Connection",
+				"field_mapping": "Field Mapping",
+				"sync_status": "Sync Status",
+				"back_to_integrations": "Back to Integrations",
+				"go_to_integrations": "Go to Integrations"
+			},
+			"mapping": {
+				"title": "Field Mapping",
+				"select_provider": "Select a CRM Provider",
+				"select_provider_desc": "Choose a connected CRM provider to configure field mapping"
+			},
+			"sync": {
+				"title": "Sync Status",
+				"select_provider": "Select a CRM Provider",
+				"select_provider_desc": "Choose a connected CRM provider to view sync status"
+			},
+			"other": {
+				"coming_soon": "Coming Soon",
+				"coming_soon_desc": "More integrations will be available in future updates"
+			},
+			"messages": {
+				"connected": "Integration Connected",
+				"connected_desc": "{provider} has been successfully connected",
+				"disconnected": "Integration Disconnected",
+				"disconnected_desc": "{provider} has been successfully disconnected",
+				"test_success": "Connection Test Successful",
+				"test_success_desc": "{provider} connection is working properly",
+				"test_failed": "Connection Test Failed",
+				"test_failed_desc": "Unable to connect to {provider}"
+			},
+			"errors": {
+				"load_failed": "Failed to load integrations",
+				"connection_failed": "Failed to connect integration",
+				"disconnection_failed": "Failed to disconnect integration"
+			}
+		},
+		"billing": {
+			"title": "Billing",
+			"description": "Manage your subscription and billing",
+			"cta_manage_billing": "Manage Billing"
+		},
+		"audit": {
+			"title": "Audit Logs",
+			"description": "View system activity and changes"
+		},
+		"errors": {
+			"required": "This field is required",
+			"invalid_email": "Please enter a valid email address",
+			"min_length": "Must be at least {min} characters",
+			"passwords_mismatch": "Passwords do not match"
+		}
+	},
+	"billing": {"title":"Billing","description":"Manage your subscription"},
+	"kb": {
+		"title": "Knowledge Base",
+		"description": "Manage your knowledge base",
+		"auth": {
+			"title": "Authentication Required",
+			"description": "Please log in to access the Knowledge Base."
+		},
+		"overview": {
+			"title": "Knowledge Base Overview",
+			"description": "Manage and organize your knowledge base content",
+			"toolbar": {
+				"search_placeholder": "Search knowledge base...",
+				"filter": {
+					"all": "All",
+					"published": "Published",
+					"drafts": "Drafts",
+					"archived": "Archived"
+				},
+				"bulk": {
+					"assign": "Assign",
+					"delete": "Delete",
+					"export": "Export",
+					"import": "Import",
+					"new_offer_pack": "New Offer Pack"
+				}
+			},
+			"table": {
+				"columns": {
+					"title": "Title",
+					"category": "Category",
+					"status": "Status",
+					"language": "Language",
+					"updated_at": "Updated",
+					"owner": "Owner"
+				},
+				"empty": {
+					"title": "No Knowledge Base Found",
+					"description": "Start by creating your first knowledge base",
+					"cta_new": "Create Knowledge Base"
+				},
+				"error": {
+					"title": "Loading Error",
+					"description": "Unable to load knowledge base data",
+					"retry": "Retry"
+				}
+			},
+			"toasts": {
+				"deleted": "Knowledge base deleted successfully",
+				"assigned": "Knowledge base assigned successfully",
+				"exported": "Knowledge base exported successfully",
+				"error_generic": "An error occurred"
+			}
+		},
+		"editor": {
+			"title": "Editor",
+			"fields": {
+				"title": "Title",
+				"category": "Category",
+				"language": "Language",
+				"visibility": "Visibility",
+				"tags": "Tags",
+				"content": "Content",
+				"attachments": "Attachments"
+			},
+			"actions": {
+				"save": "Save",
+				"saving": "Saving...",
+				"saved": "Saved",
+				"publish": "Publish",
+				"unpublish": "Unpublish",
+				"delete": "Delete"
+			},
+			"messages": {
+				"saved": "Changes saved successfully",
+				"published": "Knowledge base published",
+				"unpublished": "Knowledge base unpublished",
+				"deleted": "Knowledge base deleted",
+				"error_generic": "An error occurred",
+				"unsaved_guard": "You have unsaved changes. Are you sure you want to leave?"
+			},
+			"shortcuts": {
+				"save": "Save (Ctrl/Cmd + S)"
+			}
+		},
+		"assignments": {
+			"title": "Knowledge Base Assignments",
+			"description": "Configure which KB to use for numbers, campaigns, and agents",
+			"table": {
+				"columns": {
+					"assignee": "Assignee",
+					"role": "Role",
+					"status": "Status",
+					"updated_at": "Updated"
+				}
+			},
+			"actions": {
+				"assign": "Assign",
+				"unassign": "Unassign"
+			},
+			"confirm": {
+				"assign_title": "Assign Knowledge Base",
+				"assign_desc": "Are you sure you want to assign this knowledge base?",
+				"unassign_title": "Unassign Knowledge Base",
+				"unassign_desc": "Are you sure you want to unassign this knowledge base?",
+				"confirm": "Confirm",
+				"cancel": "Cancel"
+			},
+			"toasts": {
+				"assigned": "Knowledge base assigned successfully",
+				"unassigned": "Knowledge base unassigned successfully",
+				"error_generic": "An error occurred"
+			},
+			"empty": {
+				"title": "No Assignments",
+				"description": "Start by assigning knowledge bases to your workspace"
+			}
+		},
+		    "imports": {
+      "title": "Imports",
+      "description": "Manage data imports for your knowledge base",
+      "actions": { "new_import": "New Import" },
+      "steps": {
+				"upload": "Upload",
+				"mapping": "Field Mapping",
+				"validate": "Validation",
+				"confirm": "Confirm"
+			},
+			"upload": {
+				"drop_here": "Drop files here",
+				"or_browse": "or browse",
+				"allowed_types": "Supported: CSV, PDF, DOCX",
+				"next": "Next"
+			},
+			"mapping": {
+				"source_field": "Source Field",
+				"target_field": "Target Field",
+				"preview": "Preview",
+				"next": "Next",
+				"back": "Back"
+			},
+			"validate": {
+				"errors_found": "Validation errors found",
+				"download_report": "Download Error Report",
+				"next": "Next",
+				"back": "Back"
+			},
+			"confirm": {
+				"summary": "Import Summary",
+				"import_now": "Import Now",
+				"back": "Back"
+			},
+			"toasts": {
+				"importing": "Import started",
+				"imported": "Import completed successfully",
+				"error_generic": "Import failed"
+			},
+			"empty": {
+				"title": "No Import Jobs",
+				"description": "Start by creating your first import"
+			}
+		}
+	},
+	"common": {
+		"save": "Save",
+		"saving": "Saving...",
+		"cancel": "Cancel",
+		"connecting": "Connecting...",
+		"testing": "Testing...",
+		"disconnecting": "Disconnecting...",
+		"open": "Open",
+		"manage": "Manage",
+		"back": "Back"
+	}
 }

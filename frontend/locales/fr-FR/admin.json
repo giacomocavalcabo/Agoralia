@@ -1,0 +1,9 @@
+{
+  "notices": {
+    "impersonating": "Vous vous faites passer pour {id}"
+  },
+  "users": {
+    "impersonate": "[Se faire passer pour un autre]",
+    "search_placeholder": "[Espace réservé à la recherche]"
+  }
+}

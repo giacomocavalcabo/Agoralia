@@ -1,0 +1,47 @@
+{
+  "auto_recharge": {
+    "description": "Automatically recharge {topup} when balance drops below {threshold}",
+    "disabled": "Auto-recharge disabled",
+    "enable": "[Enable]",
+    "enabled": "Auto-recharge enabled",
+    "threshold": "[Threshold]",
+    "title": "[Title]",
+    "topup": "[Topup]"
+  },
+  "invoices": {
+    "download": "[Download]",
+    "title": "[Title]",
+    "view_all": "[View All]"
+  },
+  "overview": {
+    "balance": "[Balance]",
+    "cap_status": "[Cap Status]",
+    "minutes_mtd": "[Minutes Mtd]",
+    "usage_mtd": "[Usage Mtd]"
+  },
+  "payment_methods": {
+    "add": "[Add]",
+    "add_card": "[Add Card]",
+    "adding": "[Adding]",
+    "card_details": "[Card Details]",
+    "default": "[Default]",
+    "title": "[Title]",
+    "unavailable": "[Unavailable]",
+    "unavailable_desc": "[Unavailable Desc]"
+  },
+  "subtitle": "[Subtitle]",
+  "title": "[Title]",
+  "usage_cap": {
+    "current": "Current Usage",
+    "description": "Monthly usage cap set to {limit} with alerts at {type}",
+    "hard": "Hard Cap (stop calls)",
+    "hard_cap": "Hard Cap",
+    "limit": "Monthly Limit ($)",
+    "soft": "Soft Cap (warnings only)",
+    "soft_cap": "Soft Cap",
+    "stop_calls": "Stop calls at limit",
+    "title": "Usage Cap",
+    "type": "Cap Type",
+    "warnings_only": "Warnings only"
+  }
+}

@@ -128,9 +128,10 @@ REDIS_URL=redis://localhost:6379
 ADMIN_EMAILS=admin@example.com,admin2@example.com
 
 # Email Providers
-EMAIL_PROVIDER=postmark  # or sendgrid
+EMAIL_PROVIDER=postmark  # or sendgrid or mailersend
 POSTMARK_TOKEN=your_token
 SENDGRID_API_KEY=your_key
+MAILERSEND_API_KEY=your_key
 
 # Retell Integration
 RETELL_API_KEY=your_key

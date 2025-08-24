@@ -8,9 +8,28 @@ from fastapi import Query
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
+
+# bootstrap opzionale per esecuzione "da dentro backend/"
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+# Import assoluti dal pacchetto backend
 from backend.db import Base, engine, get_db
+from backend.logger import logger
+from backend.config import settings
+from backend.routers import crm, auth, auth_microsoft
+from backend.schemas import (
+    LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
+    KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
+    KbSectionUpdate, KbFieldCreate, KbFieldUpdate, ImportMappingRequest,
+    ImportReviewRequest, KbUsageTrackRequest
+)
+from backend import schemas
+
 # Models will be imported locally where needed to avoid duplication
-from fastapi.middleware.cors import CORSMiddleware
 from typing import Callable, Any
 from sqlalchemy import or_
 import hashlib
@@ -20,17 +39,17 @@ import random
 try:
     # retell-sdk is optional during local dev, but required in prod for webhook verification
     from retell import Retell  # type: ignore
-except Exception:  # pragma: no cover
+except Exception: # pragma: no cover
     Retell = None  # type: ignore
 
 try:
     import bcrypt  # type: ignore
-except Exception:  # pragma: no cover
+except Exception: # pragma: no cover
     bcrypt = None  # type: ignore
 
 try:
     import redis  # type: ignore
-except Exception:  # pragma: no cover
+except Exception: # pragma: no cover
     redis = None  # type: ignore
 
 # Chromium PDF generator
@@ -45,22 +64,85 @@ try:
 except Exception as e:
     print(f"Warning: Chromium PDF generator not available: {e}. Compliance attestations will use fallback.")
 
-# Knowledge Base imports
-from backend import schemas
-from backend.ai_client import ai_client, get_kb_template, create_default_sections
-from backend.routers import crm
-
+logger.info("Starting Agoralia API initialization...")
 
 app = FastAPI(title="Agoralia API", version="0.1.0")
+app.state.oauth_state = {}  # per validare 'state' su OAuth callback (temp store)
+
+# ===================== CORS Configuration =====================
+import logging
+import os
+import importlib
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from backend.config import settings
+
+# Firma di runtime per identificare quale app sta girando
+GIT_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA") or os.getenv("GIT_SHA") or "unknown"
+GIT_BRANCH = os.getenv("RAILWAY_GIT_BRANCH") or os.getenv("GIT_BRANCH") or "unknown"
+ENTRYPOINT = __name__  # dovrebbe essere "backend.main"
+
+# logger (evita il NameError visto nei log)
+logger = logging.getLogger("uvicorn.error")
+
+# Log utili all'avvio (appariranno nei log Railway)
+logger.info("CORS allow_origins = %s", settings.cors_allow_origins)
+logger.info("CORS allow_origin_regex = %s", settings.cors_allow_origin_regex)
+
+# CORS deve essere l'ULTIMO add_middleware (outermost nello stack)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,
+    allow_origin_regex=settings.cors_allow_origin_regex,  # <— usa la property giusta
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# Middleware di log richieste (non interferisce con CORS)
+@app.middleware("http")
+async def _log_origin(request: Request, call_next):
+    origin = request.headers.get("origin")
+    logger.info("[CORS] %s %s | Origin=%s", request.method, request.url.path, origin)
+    return await call_next(request)
+
+logger.info("CORS middleware configured successfully")
+logger.info("FastAPI app created successfully")
 
 # ===================== Health check endpoint =====================
+@app.get("/_whoami", include_in_schema=False)
+def whoami():
+    return {
+        "git_sha": GIT_SHA,
+        "git_branch": GIT_BRANCH,
+        "entrypoint": ENTRYPOINT,
+        "routes": sorted(set(r.path for r in app.routes)),
+    }
+
 @app.get("/health")
 def health():
     """
     Health check endpoint per Railway - risponde IMMEDIATAMENTE
     NON fa chiamate a OpenAI/Redis qui per essere sempre veloce
     """
-    return {"ok": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {
+        "ok": True, 
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_sha": GIT_SHA,
+        "git_branch": GIT_BRANCH,
+        "entrypoint": ENTRYPOINT,
+    }
+
+# Endpoint di debug visibile nei log dello screenshot (prima era 404)
+@app.get("/debug/cors", include_in_schema=False)
+def debug_cors(request: Request):
+    return {
+        "allow_origins": settings.cors_allow_origins,
+        "allow_origin_regex": settings.cors_allow_origin_regex,
+        "seen_origin": request.headers.get("origin"),
+        "host": request.headers.get("host"),
+        "x_forwarded_proto": request.headers.get("x-forwarded-proto"),
+    }
 
 @app.get("/db/health")
 def db_health(db: Session = Depends(get_db)):
@@ -69,10 +151,37 @@ def db_health(db: Session = Depends(get_db)):
     Se fallisce, il problema è connessione DB, non la logica dell'app
     """
     try:
-        db.execute("SELECT 1")
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         return {"db": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database not reachable: {str(e)}")
+
+@app.get("/auth/test")
+def auth_test():
+    """
+    Health check endpoint for authentication system
+    Tests database connection and session management
+    """
+    try:
+        # Test database connection
+        from sqlalchemy import text
+        db = next(get_db())
+        db.execute(text("SELECT 1"))
+        
+        return {
+            "status": "ok",
+            "auth_system": "operational",
+            "database": "connected",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=503, 
+            detail=f"Authentication system unavailable: {str(e)}"
+        )
+
+# /auth/me endpoint moved to backend/routers/auth.py
 
 @app.post("/setup/admin")
 def setup_admin():
@@ -139,7 +248,7 @@ def setup_admin():
         raise HTTPException(status_code=500, detail=f"Error creating admin: {str(e)}")
 
 @app.post("/setup/user")
-def setup_user(payload: dict):
+def setup_user(payload: RegisterRequest):
     """
     Endpoint per creare utenti normali (non admin)
     """
@@ -147,12 +256,11 @@ def setup_user(payload: dict):
         from backend.models import User, UserAuth
         import bcrypt
         
-        email = payload.get("email")
-        password = payload.get("password")
-        name = payload.get("name")
+        email = payload.email
+        password = payload.password
+        name = payload.name
         
-        if not email or not password or not name:
-            raise HTTPException(status_code=400, detail="Email, password and name required")
+        # Password policy validation is handled by Pydantic schema
         
         db = next(get_db())
         
@@ -359,125 +467,26 @@ def audit(kind: str, entity: str):
 
 
 
-# CORS configuration - Fix completo per sessioni cross-site
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173", 
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://agoralia.vercel.app",   # prod FE
-]
-# consenti anche le preview Vercel (solo domini *.vercel.app)
-ALLOWED_ORIGIN_REGEX = r"^https://.*\.vercel\.app$"
+# Routers already imported above
+logger.info("Importing routers...")
 
-# Parametrica le origini da env
-origins_env = os.getenv("CORS_ORIGINS", "")
-if origins_env:
-    ALLOWED_ORIGINS += [o.strip() for o in origins_env.split(",") if o.strip()]
+# Include routers
+logger.info("Including CRM router...")
+app.include_router(crm.router)
+logger.info("CRM router included successfully")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
-    allow_credentials=True,  # necessario per cookie di sessione
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=[
-        "Content-Type",
-        "Authorization", 
-        "X-CSRF-Token",
-        "X-Workspace-Id",
-        "X-Api-Key",
-        "X-Request-Id",
-    ],
-    expose_headers=["X-Request-Id"],
-)
+logger.info("Including Auth router...")
+app.include_router(auth.router)
+app.include_router(auth_microsoft.router)
+logger.info("Auth router included successfully")
+
+# Session management moved to backend/sessions.py to avoid circular imports
 
 
-# ===================== Sessions & CSRF =====================
-class SessionStore:
-    def __init__(self) -> None:
-        self._mem: dict[str, dict] = {}
-        self._redis = None
-        url = os.getenv("REDIS_URL") or os.getenv("REDIS_TLS_URL")
-        if url and redis is not None:
-            try:
-                self._redis = redis.from_url(url, decode_responses=True)
-            except Exception:
-                self._redis = None
-
-    def get(self, sid: str) -> Optional[dict]:
-        try:
-            if self._redis is not None:
-                data = self._redis.get(f"sess:{sid}")
-                return json.loads(data) if data else None
-            return self._mem.get(sid)
-        except Exception:
-            return None
-
-    def set(self, sid: str, data: dict, ttl_seconds: int = 60 * 60 * 24 * 14) -> None:
-        data = dict(data)
-        data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        if self._redis is not None:
-            try:
-                self._redis.setex(f"sess:{sid}", ttl_seconds, json.dumps(data))
-                return
-            except Exception:
-                pass
-        self._mem[sid] = data
-
-    def delete(self, sid: str) -> None:
-        if self._redis is not None:
-            try:
-                self._redis.delete(f"sess:{sid}")
-            except Exception:
-                pass
-        self._mem.pop(sid, None)
+# Session management moved to backend/sessions.py to avoid circular imports
 
 
-_SESSIONS = SessionStore()
-
-
-def _get_session(req: Request) -> Optional[dict]:
-    sid = req.cookies.get("session_id")
-    if not sid:
-        return None
-    sess = _SESSIONS.get(sid)
-    # Basic expiration check (optional; rely on Redis TTL otherwise)
-    return sess
-
-
-def _create_session(resp: Response, claims: dict) -> dict:
-    sid = secrets.token_urlsafe(24)
-    csrf = secrets.token_urlsafe(24)
-    sess = {"sid": sid, "csrf": csrf, "claims": claims}
-    _SESSIONS.set(sid, sess)
-    # HttpOnly, SameSite=None per sessioni cross-site (Vercel → Railway)
-    # Secure=True obbligatorio con SameSite=None
-    resp.set_cookie(
-        "session_id", 
-        sid, 
-        httponly=True, 
-        samesite="none", 
-        secure=True,  # obbligatorio con SameSite=None
-        path="/",
-        max_age=14*24*3600  # 14 giorni
-    )
-    resp.headers["x-csrf-token"] = csrf
-    return sess
-
-
-@app.middleware("http")
-async def csrf_middleware(request: Request, call_next):
-    try:
-        if request.method in ("POST", "PUT", "PATCH", "DELETE") and request.url.path.startswith("/"):
-            sess = _get_session(request)
-            if sess is not None:
-                sent = request.headers.get("x-csrf-token") or request.headers.get("X-CSRF-Token")
-                if not sent or sent != sess.get("csrf"):
-                    return Response(status_code=403, content="CSRF token missing or invalid")
-        return await call_next(request)
-    except Exception:
-        return Response(status_code=500, content="Server error")
+# CSRF middleware removed - using sessions.py for session management
 
 
 @app.get("/health")
@@ -1330,8 +1339,7 @@ async def auth_register(payload: dict, request: Request) -> Response:
             media_type="application/json"
         )
 
-@app.post("/auth/login")
-async def auth_login(payload: dict, request: Request) -> Response:
+# /auth/login endpoint moved to backend/routers/auth.py
     """
     Enhanced login endpoint with:
     - Rate limiting and anti-bruteforce protection
@@ -1375,32 +1383,10 @@ async def auth_login(payload: dict, request: Request) -> Response:
             raise e
         
         # ===================== Input Validation =====================
-        email = (payload.get("email") or "").strip().lower()
-        password = payload.get("password") or ""
+        email = payload.email.strip().lower()
+        password = payload.password
         
-        if not email or not password:
-            auth_audit_logger.log_auth_event(
-                "login_failed", 
-                email, 
-                False, 
-                request,
-                {"reason": "missing_credentials"}
-            )
-            raise HTTPException(status_code=400, detail="Email and password are required")
-        
-        # ===================== Password Policy Check =====================
-        is_valid, policy_message = password_policy.validate(password)
-        if not is_valid:
-            auth_audit_logger.log_auth_event(
-                "login_failed", 
-                email, 
-                False, 
-                request,
-                {"reason": "password_policy_violation", "message": policy_message}
-            )
-            raise HTTPException(status_code=400, detail=policy_message)
-        
-        print(f"📝 [{request_id}] Email: {email}, Password: valid")
+        print(f"📝 [{request_id}] Email: {email}, Password: provided")
         
         # ===================== Database Connection Test =====================
         print(f"🗄️ [{request_id}] Testing database connection...")
@@ -1631,6 +1617,202 @@ async def auth_login(payload: dict, request: Request) -> Response:
         
         auth_audit_logger.log_auth_event(
             "login_failed", 
+            email if 'email' in locals() else None, 
+            False, 
+            request,
+            {"reason": "unexpected_error", "error": str(e)}
+        )
+        
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# /auth/register endpoint moved to backend/routers/auth.py
+    """
+    User registration endpoint for self-service signup
+    Creates new user account with password policy validation
+    """
+    import time
+    import traceback
+    from backend.models import User, UserAuth, WorkspaceMember
+    from backend.utils.auth_security import (
+        auth_audit_logger, 
+        session_manager,
+        password_policy
+    )
+    
+    start_time = time.time()
+    request_id = f"register_{int(time.time())}_{hash(str(payload)) % 1000}"
+    
+    try:
+        print(f"🚀 [{request_id}] Registration attempt started")
+        print(f"📧 [{request_id}] Email: {payload.email}")
+        print(f"👤 [{request_id}] Name: {payload.name}")
+        print(f"🌐 [{request_id}] Origin: {request.headers.get('origin', 'unknown')}")
+        
+        # ===================== Input Validation =====================
+        email = payload.email.strip().lower()
+        password = payload.password
+        name = payload.name.strip()
+        
+        # Password policy validation is handled by Pydantic schema
+        print(f"📝 [{request_id}] Input validation passed")
+        
+        # ===================== Database Connection Test =====================
+        print(f"🗄️ [{request_id}] Testing database connection...")
+        try:
+            db = next(get_db())
+            print(f"✅ [{request_id}] Database connection successful")
+        except OperationalError as e:
+            print(f"❌ [{request_id}] Database connection failed (OperationalError): {e}")
+            auth_audit_logger.log_auth_event(
+                "register_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "database_unavailable", "error": str(e)}
+            )
+            raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+        except Exception as e:
+            print(f"❌ [{request_id}] Database connection failed (other): {e}")
+            auth_audit_logger.log_auth_event(
+                "register_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "database_error", "error": str(e)}
+            )
+            raise HTTPException(status_code=500, detail="Internal server error")
+        
+        # ===================== User Creation =====================
+        try:
+            with db:
+                print(f"🔍 [{request_id}] Starting user creation...")
+                
+                # Check if user already exists
+                existing_user = db.query(User).filter(User.email == email).first()
+                if existing_user:
+                    auth_audit_logger.log_auth_event(
+                        "register_failed", 
+                        email, 
+                        False, 
+                        request,
+                        {"reason": "email_already_exists"}
+                    )
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="An account with this email already exists"
+                    )
+                
+                # Create new user
+                user = User(
+                    id=f"u_{int(datetime.now(timezone.utc).timestamp())}",
+                    email=email,
+                    name=name,
+                    is_admin_global=False,  # New users are not admin by default
+                    email_verified_at=None,  # Will be verified later
+                    created_at=datetime.now(timezone.utc)
+                )
+                
+                db.add(user)
+                db.flush()  # Get the user ID
+                print(f"👤 [{request_id}] User created with ID: {user.id}")
+                
+                # Create user auth record
+                import bcrypt
+                salt = bcrypt.gensalt()
+                hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+                
+                user_auth = UserAuth(
+                    id=f"ua_{int(datetime.now(timezone.utc).timestamp())}",
+                    user_id=user.id,
+                    provider='password',
+                    pass_hash=hashed.decode('utf-8'),
+                    created_at=datetime.now(timezone.utc)
+                )
+                
+                db.add(user_auth)
+                print(f"🔐 [{request_id}] UserAuth record created")
+                
+                # Check if admin promotion is needed
+                admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
+                if email.strip() in [e.strip() for e in admin_emails]:
+                    user.is_admin_global = True
+                    db.add(user)
+                    print(f"✅ [{request_id}] Auto-promoted {email} to global admin")
+                
+                # Commit all changes
+                db.commit()
+                print(f"💾 [{request_id}] Database commit successful")
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"❌ [{request_id}] User creation failed: {e}")
+            auth_audit_logger.log_auth_event(
+                "register_failed", 
+                email, 
+                False, 
+                request,
+                {"reason": "user_creation_error", "error": str(e)}
+            )
+            raise HTTPException(status_code=500, detail="Failed to create user account")
+        
+        # ===================== Success Response =====================
+        total_time = time.time() - start_time
+        print(f"🎉 [{request_id}] Registration successful in {total_time:.3f}s for user {email}")
+        
+        # Log successful registration
+        auth_audit_logger.log_auth_event(
+            "register_success", 
+            email, 
+            True, 
+            request,
+            {"user_id": user.id, "registration_time": total_time}
+        )
+        
+        # Build user claims
+        claims = {
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin_global": bool(user.is_admin_global),
+            "email_verified": bool(user.email_verified_at),
+            "memberships": [],  # New users have no workspace memberships yet
+        }
+        
+        # Create response with secure session (auto-login)
+        resp = Response(
+            content=json.dumps({
+                "ok": True, 
+                "message": "Account created successfully! You are now logged in.",
+                "user": claims
+            }), 
+            media_type="application/json"
+        )
+        
+        # Create session and set cookie (auto-login)
+        session_id = session_manager.create_session(claims, request)
+        resp.set_cookie(
+            "session_id", 
+            session_id, 
+            httponly=True, 
+            secure=True, 
+            samesite="lax",
+            max_age=86400  # 24 hours
+        )
+        
+        return resp
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        # Catch all other exceptions and log them
+        total_time = time.time() - start_time
+        print(f"💥 [{request_id}] UNEXPECTED ERROR after {total_time:.3f}s: {e}")
+        print(f"🔍 [{request_id}] Stack trace: {traceback.format_exc()}")
+        
+        auth_audit_logger.log_auth_event(
+            "register_failed", 
             email if 'email' in locals() else None, 
             False, 
             request,
@@ -1905,14 +2087,7 @@ def auth_me(request: Request) -> dict:
         }
 
 
-@app.post("/auth/logout")
-async def auth_logout(request: Request) -> Response:
-    sid = request.cookies.get("session_id")
-    if sid:
-        _SESSIONS.delete(sid)
-    resp = Response(content=json.dumps({"ok": True}), media_type="application/json")
-    resp.delete_cookie("session_id", path="/")
-    return resp
+# /auth/logout endpoint moved to backend/routers/auth.py
 
 
 @app.post("/auth/totp/verify")
@@ -1979,20 +2154,228 @@ def list_leads(
     limit: int = Query(default=25),
     offset: int = Query(default=0),
     sort: str | None = Query(default=None),
+    compliance_category: str | None = Query(default=None),
+    country_iso: str | None = Query(default=None),
 ) -> dict:
+    # TODO: Replace with actual database query
     items = [
-        {"id": "l_101", "name": "Mario Rossi", "company": "Rossi Srl", "phone_e164": "+390212345678", "country_iso": "IT", "lang": "it-IT", "role": "supplier", "consent": True, "created_at": "2025-08-17T09:12:00Z"},
-        {"id": "l_102", "name": "Claire Dubois", "company": "Dubois SA", "phone_e164": "+33123456789", "country_iso": "FR", "lang": "fr-FR", "role": "supplied", "consent": False, "created_at": "2025-08-16T15:02:00Z"},
+        {
+            "id": "l_101", 
+            "name": "Mario Rossi", 
+            "company": "Rossi Srl", 
+            "phone_e164": "+390212345678", 
+            "country_iso": "IT", 
+            "lang": "it-IT", 
+            "role": "supplier", 
+            "contact_class": "b2b",
+            "relationship_basis": "existing",
+            "opt_in": None,
+            "national_dnc": "unknown",
+            "compliance_category": "allowed",
+            "compliance_reasons": ["B2B con relazione esistente"],
+            "created_at": "2025-08-17T09:12:00Z"
+        },
+        {
+            "id": "l_102", 
+            "name": "Claire Dubois", 
+            "company": "Dubois SA", 
+            "phone_e164": "+33123456789", 
+            "country_iso": "FR", 
+            "lang": "fr-FR", 
+            "role": "supplied", 
+            "contact_class": "b2c",
+            "relationship_basis": "none",
+            "opt_in": False,
+            "national_dnc": "unknown",
+            "compliance_category": "blocked",
+            "compliance_reasons": ["B2C richiede opt-in ma stato sconosciuto"],
+            "created_at": "2025-08-16T15:02:00Z"
+        },
     ]
-    return {"total": 244, "items": items}
+    
+    # Apply filters
+    if compliance_category:
+        items = [item for item in items if item.get("compliance_category") == compliance_category]
+    
+    if country_iso:
+        items = [item for item in items if item.get("country_iso") == country_iso.upper()]
+    
+    return {"total": len(items), "items": items}
 
 
 @app.post("/leads")
 async def create_lead(payload: dict) -> dict:
-    # Echo back with a fake id
+    # TODO: Replace with actual database insert
     payload = dict(payload)
-    payload["id"] = "l_new"
+    payload["id"] = f"l_{int(datetime.now().timestamp())}"
+    
+    # Apply compliance classification if compliance engine is available
+    if compliance_engine and payload.get("country_iso"):
+        contact_data = {
+            "contact_class": payload.get("contact_class", "unknown"),
+            "relationship_basis": payload.get("relationship_basis", "unknown"),
+            "opt_in": payload.get("opt_in"),
+            "national_dnc": payload.get("national_dnc", "unknown")
+        }
+        
+        category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+        payload["compliance_category"] = category
+        payload["compliance_reasons"] = reasons
+    
     return payload
+
+
+@app.put("/leads/{lead_id}")
+async def update_lead(lead_id: str, payload: dict) -> dict:
+    # TODO: Replace with actual database update
+    payload["id"] = lead_id
+    payload["updated_at"] = datetime.now().isoformat()
+    
+    # Reclassify if compliance fields changed
+    if compliance_engine and payload.get("country_iso"):
+        contact_data = {
+            "contact_class": payload.get("contact_class", "unknown"),
+            "relationship_basis": payload.get("relationship_basis", "unknown"),
+            "opt_in": payload.get("opt_in"),
+            "national_dnc": payload.get("national_dnc", "unknown")
+        }
+        
+        category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+        payload["compliance_category"] = category
+        payload["compliance_reasons"] = reasons
+    
+    return payload
+
+
+@app.post("/leads/bulk-update")
+async def bulk_update_leads(payload: dict) -> dict:
+    """Bulk update leads with compliance classification"""
+    lead_ids = payload.get("lead_ids", [])
+    updates = payload.get("updates", {})
+    
+    # TODO: Replace with actual database bulk update
+    results = []
+    
+    for lead_id in lead_ids:
+        result = {
+            "id": lead_id,
+            "status": "updated",
+            "compliance_category": "unknown",
+            "compliance_reasons": []
+        }
+        
+        # Apply updates
+        if compliance_engine and updates.get("country_iso"):
+            contact_data = {
+                "contact_class": updates.get("contact_class", "unknown"),
+                "relationship_basis": updates.get("relationship_basis", "unknown"),
+                "opt_in": updates.get("opt_in"),
+                "national_dnc": updates.get("national_dnc", "unknown")
+            }
+            
+            category, reasons = compliance_engine.classify_contact(contact_data, updates["country_iso"])
+            result["compliance_category"] = category
+            result["compliance_reasons"] = reasons
+        
+        results.append(result)
+    
+    return {"updated": len(results), "results": results}
+
+
+@app.post("/compliance/classify")
+async def classify_contact(payload: dict) -> dict:
+    """Classify a single contact for compliance"""
+    if not compliance_engine:
+        raise HTTPException(status_code=500, detail="Compliance engine not available")
+    
+    contact_data = payload.get("contact", {})
+    country_iso = payload.get("country_iso")
+    
+    if not country_iso:
+        raise HTTPException(status_code=400, detail="country_iso is required")
+    
+    category, reasons = compliance_engine.classify_contact(contact_data, country_iso)
+    
+    return {
+        "contact": contact_data,
+        "country_iso": country_iso,
+        "compliance_category": category,
+        "compliance_reasons": reasons
+    }
+
+
+@app.post("/compliance/classify-bulk")
+async def classify_contacts_bulk(payload: dict) -> dict:
+    """Classify multiple contacts for compliance"""
+    if not compliance_engine:
+        raise HTTPException(status_code=500, detail="Compliance engine not available")
+    
+    contacts = payload.get("contacts", [])
+    results = []
+    
+    for contact in contacts:
+        country_iso = contact.get("country_iso")
+        if country_iso:
+            category, reasons = compliance_engine.classify_contact(contact, country_iso)
+            results.append({
+                "contact": contact,
+                "compliance_category": category,
+                "compliance_reasons": reasons
+            })
+        else:
+            results.append({
+                "contact": contact,
+                "compliance_category": "unknown",
+                "compliance_reasons": ["Country ISO missing"]
+            })
+    
+    # Get summary
+    summary = compliance_engine.get_compliance_summary(results)
+    
+    return {
+        "results": results,
+        "summary": summary
+    }
+
+
+@app.post("/dnc/check")
+async def check_dnc(payload: dict) -> dict:
+    """Check DNC status for a phone number"""
+    try:
+        from backend.dnc_service import dnc_service
+    except ImportError as e:
+        logger.warning(f"DNC service not available: {e}")
+        raise HTTPException(status_code=500, detail="DNC service not available")
+    except Exception as e:
+        logger.error(f"Error loading DNC service: {e}")
+        raise HTTPException(status_code=500, detail="DNC service not available")
+    
+    country_iso = payload.get("country_iso")
+    e164 = payload.get("e164")
+    
+    if not country_iso or not e164:
+        raise HTTPException(status_code=400, detail="country_iso and e164 are required")
+    
+    in_registry, proof_url = dnc_service.check_dnc(country_iso, e164)
+    
+    return {
+        "country_iso": country_iso,
+        "e164": e164,
+        "in_registry": in_registry,
+        "proof_url": proof_url,
+        "supported": dnc_service.is_supported(country_iso)
+    }
+
+
+@app.get("/dnc/supported-countries")
+async def get_dnc_supported_countries() -> dict:
+    """Get list of countries with DNC support"""
+    try:
+        from backend.dnc_service import dnc_service
+        countries = dnc_service.get_supported_countries()
+        return {"countries": countries}
+    except ImportError:
+        return {"countries": []}
 
 
 @app.post("/schedule")
@@ -2286,48 +2669,86 @@ def history_export_csv(locale: str | None = None) -> Response:
     return Response(content=headers+",".join(row)+"\n", media_type="text/csv")
 
 
-# ===================== Compliance & Call Settings (stubs) =====================
+# ===================== Compliance & Call Settings =====================
+
+# Import compliance engine
+try:
+    from backend.services.compliance_engine import compliance_engine
+    logger.info("Compliance engine loaded successfully")
+except ImportError as e:
+    logger.warning(f"Compliance engine not available: {e}")
+    compliance_engine = None
+except Exception as e:
+    logger.error(f"Error loading compliance engine: {e}")
+    compliance_engine = None
 
 @app.post("/compliance/preflight")
 async def compliance_preflight(payload: dict) -> dict:
     items = payload.get("items", [])
     out: list[dict] = []
     allow, delay, block = 0, 0, 0
+    
     for it in items:
         e164 = it.get("e164", "")
         iso = (it.get("country_iso") or ("IT" if e164.startswith("+39") else "FR" if e164.startswith("+33") else "US")).upper()
+        
+        # Use new compliance engine if available
+        if compliance_engine:
+            contact_data = {
+                "contact_class": it.get("contact_class", "unknown"),
+                "relationship_basis": it.get("relationship_basis", "unknown"),
+                "opt_in": it.get("opt_in"),
+                "national_dnc": it.get("national_dnc", "unknown")
+            }
+            
+            # Classify contact using compliance engine
+            category, reasons = compliance_engine.classify_contact(contact_data, iso)
+            
+            # Map compliance category to preflight decision
+            if category == "blocked":
+                decision = "block"
+            elif category == "conditional":
+                decision = "allow"  # Allow but with warnings
+            else:  # allowed
+                decision = "allow"
+        else:
+            # Fallback to old logic
+            fused = _COMPLIANCE.get("fused_by_iso", {}).get(iso) or {}
+            flags = fused.get("flags") or {}
+            reasons = []
+            decision = "allow"
+            
+            # Consent rules
+            if flags.get("requires_consent_b2c") and it.get("contact_class") == "b2c" and not it.get("has_consent"):
+                decision = "block"
+                reasons.append("CONSENT_REQUIRED_B2C")
+            if flags.get("requires_consent_b2b") and it.get("contact_class") == "b2b" and not it.get("has_consent"):
+                decision = "block"
+                reasons.append("CONSENT_REQUIRED_B2B")
+        
+        # Common checks (quiet hours, DNC, etc.)
         fused = _COMPLIANCE.get("fused_by_iso", {}).get(iso) or {}
         flags = fused.get("flags") or {}
         quiet_hours = fused.get("quiet_hours")
         sched_str = it.get("schedule_at") or datetime.now(timezone.utc).isoformat()
+        
         try:
             sched_dt = datetime.fromisoformat(str(sched_str).replace("Z", "+00:00"))
         except Exception:
             sched_dt = datetime.now(timezone.utc)
-
-        reasons: list[str] = []
-        decision = "allow"
 
         # Quiet hours check → delay if outside allowed windows
         if flags.get("has_quiet_hours") and not _time_in_any_window(quiet_hours, sched_dt):
             decision = "delay"
             reasons.append("QUIET_HOURS")
 
-        # DNC scrub requirement → block if explicit `dnc_hit` in request, otherwise mark requirement
+        # DNC scrub requirement → block if explicit `dnc_hit` in request
         if flags.get("requires_dnc_scrub"):
             if it.get("dnc_hit") is True:
                 decision = "block"
                 reasons.append("DNC_HIT")
             else:
                 reasons.append("DNC_REQUIRED")
-
-        # Consent rules
-        if flags.get("requires_consent_b2c") and it.get("contact_class") == "b2c" and not it.get("has_consent"):
-            decision = "block"
-            reasons.append("CONSENT_REQUIRED_B2C")
-        if flags.get("requires_consent_b2b") and it.get("contact_class") == "b2b" and not it.get("has_consent"):
-            decision = "block"
-            reasons.append("CONSENT_REQUIRED_B2B")
 
         # Recording consent
         if flags.get("recording_requires_consent") and it.get("recording_enabled") and not it.get("recording_consent"):
@@ -2369,9 +2790,11 @@ async def compliance_preflight(payload: dict) -> dict:
             "next_window_at": next_window_at,
             "warnings": ["LANG_NOT_SUPPORTED"] if it.get("call_lang") == "ar-EG" else [],
         })
+    
     # cleanup None entries in required_scripts
     for it in out:
         it["required_scripts"] = [x for x in it.get("required_scripts", []) if x]
+    
     return {"items": out, "summary": {"allow": allow, "delay": delay, "block": block}}
 
 
@@ -2674,223 +3097,13 @@ async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dic
     }
 
 
-@app.post("/auth/oauth/google/start")
-async def auth_google_start() -> dict:
-    """Start Google OAuth flow"""
-    import secrets
-    
-    # Generate state token for CSRF protection
-    state = secrets.token_urlsafe(32)
-    
-    # Store state in session for validation
-    # In production, store in Redis with TTL
-    
-    client_id = os.getenv("OAUTH_GOOGLE_CLIENT_ID")
-    if not client_id:
-        raise HTTPException(status_code=500, detail="Google OAuth not configured")
-    
-    redirect_uri = os.getenv("FRONTEND_BASE_URL", "https://app.agoralia.com") + "/auth/oauth/google/callback"
-    
-    auth_url = (
-        "https://accounts.google.com/oauth/authorize?"
-        f"client_id={client_id}&"
-        f"redirect_uri={redirect_uri}&"
-        "scope=openid%20email%20profile&"
-        "response_type=code&"
-        f"state={state}"
-    )
-    
-    return {
-        "auth_url": auth_url,
-        "state": state
-    }
+# Microsoft OAuth spostato in backend/routers/auth.py per consistenza
 
 
-@app.get("/auth/oauth/google/callback")
-async def auth_google_callback(
-    code: str = Query(...),
-    state: str = Query(...),
-    request: Request = None
-) -> Response:
-    """Handle Google OAuth callback"""
-    # In production, validate state and exchange code for tokens
-    # For now, create a mock user session
+# Microsoft OAuth callback spostato in backend/routers/auth.py per consistenza
+# Microsoft OAuth callback spostato in backend/routers/auth.py per consistenza
     
-    # Mock user data from Google
-    mock_user_data = {
-        "sub": "google_123456",
-        "email": "test@example.com",
-        "email_verified": True,
-        "name": "Test User"
-    }
-    
-    with next(get_db()) as db:
-        # Check if user exists
-        user = db.query(User).filter(User.email == mock_user_data["email"]).first()
-        
-        if not user:
-            # Create new user
-            user = User(
-                id=f"u_{secrets.token_urlsafe(16)}",
-                email=mock_user_data["email"],
-                name=mock_user_data["name"],
-                email_verified_at=datetime.now(timezone.utc) if mock_user_data["email_verified"] else None
-            )
-            db.add(user)
-            
-            # Create user auth record
-            ua = UserAuth(
-                id=f"ua_{secrets.token_urlsafe(16)}",
-                user_id=user.id,
-                provider="google",
-                provider_id=mock_user_data["sub"]
-            )
-            db.add(ua)
-            
-            # Check if admin
-            admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
-            if user.email.strip() in [e.strip() for e in admin_emails]:
-                user.is_admin_global = True
-            
-            db.commit()
-        
-        # Build claims
-        memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "role": wm.role
-            })
-        
-        claims = {
-            "user_id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin_global": bool(user.is_admin_global),
-            "email_verified": bool(user.email_verified_at),
-            "memberships": memberships,
-        }
-        
-        # Update last login
-        user.last_login_at = datetime.now(timezone.utc)
-        db.add(user)
-        db.commit()
-    
-    # Create session and redirect to frontend
-    resp = Response(
-        content=json.dumps({"ok": True, "user": claims}),
-        media_type="application/json"
-    )
-    _create_session(resp, claims)
-    
-    # In production, redirect to frontend with session
-    return resp
-
-
-@app.post("/auth/oauth/microsoft/start")
-async def auth_microsoft_start() -> dict:
-    """Start Microsoft OAuth flow"""
-    import secrets
-    
-    # Generate state token for CSRF protection
-    state = secrets.token_urlsafe(32)
-    
-    client_id = os.getenv("OAUTH_MS_CLIENT_ID")
-    if not client_id:
-        raise HTTPException(status_code=500, detail="Microsoft OAuth not configured")
-    
-    redirect_uri = os.getenv("APP_URL", "http://localhost:5173") + "/auth/oauth/microsoft/callback"
-    
-    auth_url = (
-        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
-        f"client_id={client_id}&"
-        f"redirect_uri={redirect_uri}&"
-        "scope=openid%20email%20profile%20offline_access&"
-        "response_type=code&"
-        f"state={state}"
-    )
-    
-    return {
-        "auth_url": auth_url,
-        "state": state
-    }
-
-
-@app.get("/auth/oauth/microsoft/callback")
-async def auth_microsoft_callback(
-    code: str = Query(...),
-    state: str = Query(...),
-    request: Request = None
-) -> Response:
-    """Handle Microsoft OAuth callback"""
-    # Mock user data from Microsoft
-    mock_user_data = {
-        "sub": "ms_123456",
-        "email": "test@example.com",
-        "email_verified": True,
-        "name": "Test User"
-    }
-    
-    with next(get_db()) as db:
-        # Check if user exists
-        user = db.query(User).filter(User.email == mock_user_data["email"]).first()
-        
-        if not user:
-            # Create new user
-            user = User(
-                id=f"u_{secrets.token_urlsafe(16)}",
-                email=mock_user_data["email"],
-                name=mock_user_data["name"],
-                email_verified_at=datetime.now(timezone.utc) if mock_user_data["email_verified"] else None
-            )
-            db.add(user)
-            
-            # Create user auth record
-            ua = UserAuth(
-                id=f"ua_{secrets.token_urlsafe(16)}",
-                user_id=user.id,
-                provider="microsoft",
-                provider_id=mock_user_data["sub"]
-            )
-            db.add(ua)
-            
-            # Check if admin
-            admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
-            if user.email.strip() in [e.strip() for e in admin_emails]:
-                user.is_admin_global = True
-            
-            db.commit()
-        
-        # Build claims
-        memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "role": wm.role
-            })
-        
-        claims = {
-            "user_id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin_global": bool(user.is_admin_global),
-            "email_verified": bool(user.email_verified_at),
-            "memberships": memberships,
-        }
-        
-        # Update last login
-        user.last_login_at = datetime.now(timezone.utc)
-        db.add(user)
-        db.commit()
-    
-    # Create session and redirect to frontend
-    resp = Response(
-        content=json.dumps({"ok": True, "user": claims}),
-        media_type="application/json"
-    )
-    _create_session(resp, claims)
-    
-    return resp
+    # Microsoft OAuth callback spostato in backend/routers/auth.py per consistenza
 
 
 @app.post("/auth/totp/setup")
@@ -3381,10 +3594,7 @@ async def health_check():
         "version": "0.1.0"
     }
 
-# ===================== Include Routers =====================
-
-# Include CRM router
-app.include_router(crm.router)
+# Routers already included above after CORS configuration
 
 # ===================== Main Entry Point =====================
 
@@ -3631,7 +3841,7 @@ def list_knowledge_bases(
 @app.post("/kb")
 def create_knowledge_base(
     request: Request,
-    payload: schemas.KnowledgeBaseCreate,
+    payload: KnowledgeBaseCreate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new knowledge base"""
@@ -3815,7 +4025,7 @@ def get_knowledge_base(
 def update_knowledge_base(
     request: Request,
     kb_id: str,
-    payload: schemas.KnowledgeBaseUpdate,
+            payload: KnowledgeBaseUpdate,
     if_match: str = Header(None, alias="If-Match"),
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
@@ -3865,7 +4075,7 @@ def update_knowledge_base(
 @app.post("/kb/imports")
 def start_kb_import(
     request: Request,
-    payload: schemas.ImportSourceRequest,
+            payload: ImportSourceRequest,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Start knowledge base import from source"""
@@ -4051,7 +4261,7 @@ def _analyze_import_diff(db, job):
 @app.post("/kb/assign")
 def assign_knowledge_base(
     request: Request,
-    payload: schemas.KbAssignmentCreate,
+            payload: KbAssignmentCreate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Assign knowledge base to scope (number, campaign, agent, or workspace default)"""
@@ -4100,7 +4310,7 @@ def assign_knowledge_base(
 def merge_import_changes(
     request: Request,
     job_id: str,
-    merge_decisions: schemas.MergeDecisions,
+            merge_decisions: MergeDecisions,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Merge imported changes based on user decisions"""
@@ -4347,7 +4557,7 @@ def resolve_knowledge_base(
 @app.post("/kb/prompt-bricks")
 def generate_prompt_bricks(
     request: Request,
-    payload: schemas.PromptBricksRequest,
+            payload: PromptBricksRequest,
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Generate prompt bricks (rules/style/voice/facts) from a resolved KB"""
@@ -4602,7 +4812,7 @@ def get_kb_progress(
 def create_kb_section(
     request: Request,
     kb_id: str,
-    payload: schemas.KbSectionCreate,
+            payload: KbSectionCreate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new section in knowledge base"""
@@ -4654,7 +4864,7 @@ def create_kb_section(
 def update_kb_section(
     request: Request,
     section_id: str,
-    payload: schemas.KbSectionUpdate,
+            payload: KbSectionUpdate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update a knowledge base section"""
@@ -4737,7 +4947,7 @@ def delete_kb_section(
 def create_kb_field(
     request: Request,
     kb_id: str,
-    payload: schemas.KbFieldCreate,
+            payload: KbFieldCreate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new field in knowledge base"""
@@ -4800,7 +5010,7 @@ def create_kb_field(
 def update_kb_field(
     request: Request,
     field_id: str,
-    payload: schemas.KbFieldUpdate,
+            payload: KbFieldUpdate,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update a knowledge base field"""
@@ -4902,7 +5112,7 @@ def get_kb_templates(
 def update_import_mapping(
     request: Request,
     job_id: str,
-    payload: schemas.ImportMappingRequest,
+            payload: ImportMappingRequest,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update field mappings for import job"""
@@ -4926,65 +5136,7 @@ def update_import_mapping(
         return {"job_id": job_id, "status": "mapping_updated"}
 
 
-@app.post("/kb/imports/{job_id}/commit")
-def commit_import_job(
-    request: Request,
-    job_id: str,
-    payload: schemas.ImportReviewRequest,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Commit and apply import job changes"""
-    workspace_id = _get_workspace_from_user(request)
-    
-    with next(get_db()) as db:
-        # Verify job exists and belongs to workspace
-        job = db.query(KbImportJob).filter(
-            KbImportJob.id == job_id,
-            KbImportJob.workspace_id == workspace_id
-        ).first()
-        
-        if not job:
-            raise HTTPException(status_code=404, detail="Import job not found")
-        
-        if job.status not in ["reviewing", "completed"]:
-            raise HTTPException(status_code=400, detail="Import job not ready for commit")
-        
-        try:
-            # Process the import based on job type and progress
-            if job.progress_json and "mapping" in job.progress_json:
-                # CSV import with mapping
-                result = commit_csv_import(db, job, payload)
-            else:
-                # File/URL import - apply extracted fields
-                result = commit_extracted_import(db, job, payload)
-            
-            # Update job status
-            job.status = "committed"
-            job.completed_at = datetime.utcnow()
-            
-            # Update target KB if specified
-            if job.target_kb_id and payload.publish_after:
-                target_kb = db.query(KnowledgeBase).filter(
-                    KnowledgeBase.id == job.target_kb_id,
-                    KnowledgeBase.workspace_id == workspace_id
-                ).first()
-                if target_kb:
-                    target_kb.status = "published"
-                    target_kb.published_at = datetime.utcnow()
-            
-            db.commit()
-            
-            return {
-                "job_id": job_id, 
-                "status": "committed",
-                "result": result
-            }
-            
-        except Exception as e:
-            job.status = "failed"
-            job.error_details = {"error": str(e)}
-            db.commit()
-            raise HTTPException(status_code=500, detail=f"Commit failed: {str(e)}")
+
 
 def commit_csv_import(db, job, payload):
     """Commit CSV import with field mappings"""
@@ -5232,7 +5384,7 @@ def retry_import_job(
 def commit_import_job(
     request: Request,
     job_id: str,
-    payload: schemas.ImportReviewRequest,
+    payload: ImportReviewRequest,
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Commit and apply import job changes"""
@@ -5607,7 +5759,7 @@ def _store_call_kb_context(call_id: str, kb_context: dict):
 @app.post("/kb/track-usage")
 def track_kb_usage(
     request: Request,
-    payload: schemas.KbUsageTrackRequest,
+            payload: KbUsageTrackRequest,
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Track KB usage for hit-rate analytics"""
@@ -5717,4 +5869,17 @@ def get_kb_analytics(
             "period_start": start_date.isoformat(),
             "period_end": now.isoformat()
         }
+
+# ===================== Root endpoint =====================
+@app.get("/")
+def root():
+    """
+    Root endpoint - API status
+    """
+    return {
+        "status": "ok", 
+        "service": "Agoralia API",
+        "version": "0.1.0",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 

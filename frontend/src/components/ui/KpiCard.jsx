@@ -1,16 +1,6 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-import {
-	Chart as ChartJS,
-	LineElement,
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	Tooltip,
-	Legend
-} from 'chart.js'
-
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend)
+// Chart.js plugins are registered globally in ChartCard.jsx
 
 export default function KpiCard({ 
 	label, 
@@ -23,19 +13,19 @@ export default function KpiCard({
 	const getStateStyles = () => {
 		switch (state) {
 			case 'danger':
-				return 'border-danger/40 bg-danger/5'
+				return 'border-red-200 bg-red-50'
 			case 'warn':
-				return 'border-warn/40 bg-warn/5'
+				return 'border-amber-200 bg-amber-50'
 			case 'success':
-				return 'border-success/40 bg-success/5'
+				return 'border-green-200 bg-green-50'
 			default:
-				return 'border-line bg-bg-card'
+				return 'border-gray-200 bg-white'
 		}
 	}
 
 	const getDeltaColor = () => {
-		if (delta === undefined) return 'text-ink-600'
-		return delta >= 0 ? 'text-success' : 'text-danger'
+		if (delta === undefined) return 'text-gray-600'
+		return delta >= 0 ? 'text-green-600' : 'text-red-600'
 	}
 
 	const getDeltaIcon = () => {
@@ -44,11 +34,11 @@ export default function KpiCard({
 	}
 
 	return (
-		<div className={`panel border-2 ${getStateStyles()} ${className}`}>
+		<div className={`rounded-xl border shadow-sm p-4 md:p-6 ${getStateStyles()} ${className}`} data-testid="kpi-card">
 			<div className="flex items-start justify-between">
 				<div className="flex-1">
-					<div className="text-sm text-ink-600 mb-1">{label}</div>
-					<div className="text-2xl font-semibold text-ink-900 mb-2">{value}</div>
+					<div className="text-sm text-gray-600 mb-1">{label}</div>
+					<div className="text-2xl font-semibold text-gray-900 mb-2" data-testid="kpi-value">{value}</div>
 					{delta !== undefined && (
 						<div className={`text-xs font-medium ${getDeltaColor()}`}>
 							{getDeltaIcon()} {Math.abs(delta)}%
@@ -56,19 +46,19 @@ export default function KpiCard({
 					)}
 				</div>
 				{trendData && trendData.length > 0 && (
-					<div className="w-16 h-12">
+					<div className="w-16 h-12 overflow-hidden rounded-lg">
 						<Line
 							data={{
 								labels: trendData.map((_, i) => i),
 								datasets: [{
 									data: trendData,
-									borderColor: state === 'danger' ? 'var(--danger)' : 
-												state === 'warn' ? 'var(--warn)' : 
-												state === 'success' ? 'var(--success)' : 'var(--brand-600)',
+									borderColor: state === 'danger' ? '#dc2626' : 
+												state === 'warn' ? '#d97706' : 
+												state === 'success' ? '#16a34a' : '#14b8a6',
 									backgroundColor: 'transparent',
-									borderWidth: 2,
+									borderWidth: 1,
 									fill: false,
-									tension: 0.4,
+									tension: 0.2,
 									pointRadius: 0
 								}]
 							}}
@@ -80,7 +70,11 @@ export default function KpiCard({
 									x: { display: false },
 									y: { display: false }
 								},
-								elements: { point: { radius: 0 } }
+								elements: { point: { radius: 0 } },
+								layout: {
+									padding: { top: 4, bottom: 4, left: 4, right: 4 }
+								},
+								interaction: { intersect: false }
 							}}
 						/>
 					</div>

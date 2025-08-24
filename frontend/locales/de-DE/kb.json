@@ -1,0 +1,32 @@
+{
+  "/": "Wissensdatenbank {params}",
+  "imports": {
+    "add_field": "[Feld hinzufügen]",
+    "apply_merge": "[Zusammenführung anwenden]",
+    "conflicts": "[Conflicts]",
+    "existing_fields": "[Vorhandene Felder]",
+    "existing_value": "[Bestehender Wert]",
+    "field_changes": "[Feldänderungen]",
+    "field_new": "[Feld Neu]",
+    "field_update": "[Feldaktualisierung]",
+    "field_value": "[Feldwert]",
+    "imported_fields": "[Importierte Felder]",
+    "keep_existing": "[Weiterbestehen]",
+    "merge_strategy": "[Fusionsstrategie]",
+    "merge_summary": "[Merge Summary]",
+    "merge_values": "[Werte zusammenführen]",
+    "merged_preview": "[Zusammengefasste Vorschau]",
+    "merging": "[Zusammenführung]",
+    "new_fields": "[Neue Felder]",
+    "new_value": "[Neuer Wert]",
+    "no_diff_available": "[No Diff Available]",
+    "no_value": "[Kein Wert]",
+    "ready_to_merge": "[Ready To Merge]",
+    "strategy_auto_merge": "[Strategy Auto Merge]",
+    "strategy_auto_new": "[Strategie Auto Neu]",
+    "strategy_manual": "[Strategiehandbuch]",
+    "updated": "[Aktualisiert]",
+    "use_new": "[Neu verwenden]"
+  },
+  "index": "Wissensdatenbank"
+}

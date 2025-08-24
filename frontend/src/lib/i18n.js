@@ -1,7 +1,11 @@
 // Robust i18n loader using Vite's import.meta.glob (lazy per locale)
 // No runtime fetch → no broken paths in production
 
-const loaders = import.meta.glob('../locales/*/*.json', { import: 'default' });
+const loaders = import.meta.glob('/src/locales/*/*.json', { import: 'default' });
+
+// Debug: log available loaders
+console.log('[i18n-debug] Available loaders:', Object.keys(loaders));
+console.log('[i18n-debug] Loaders count:', Object.keys(loaders).length);
 
 const cache = {}; // { 'it-IT': { common: {...}, admin: {...} }, ... }
 
@@ -16,7 +20,12 @@ function pathParts(p) {
 export async function loadLocale(locale) {
   if (cache[locale]) return cache[locale];
   
+  console.log(`[i18n-debug] Loading locale: ${locale}`);
+  console.log(`[i18n-debug] Available loaders:`, Object.keys(loaders));
+  
   const entries = Object.entries(loaders).filter(([p]) => p.includes(`/locales/${locale}/`));
+  console.log(`[i18n-debug] Found entries for ${locale}:`, entries.map(([p]) => p));
+  
   if (!entries.length) {
     console.warn(`[i18n] Locale ${locale} not found, using empty dict`);
     return (cache[locale] = {}); // locale non trovato
@@ -38,11 +47,16 @@ export async function loadLocale(locale) {
   const dict = Object.fromEntries(pairs);
   cache[locale] = dict;
   console.log(`[i18n] Loaded locale ${locale}:`, Object.keys(dict));
+  console.log(`[i18n-debug] Cache content for ${locale}:`, dict);
   return dict;
 }
 
 export function getDict(locale, ns = 'common') {
-  return cache[locale]?.[ns] ?? null;
+  const result = cache[locale]?.[ns] ?? null;
+  if (import.meta.env.DEV && ns === 'pages') {
+    console.log(`[i18n-debug] getDict(${locale}, ${ns}):`, result ? Object.keys(result) : 'null');
+  }
+  return result;
 }
 
 export function knownLocales() {
@@ -58,7 +72,11 @@ export function knownLocales() {
 // Fallback chain helper
 export function getFallbackChain(locale) {
   const base = locale.split('-')[0];
-  return [locale, base, 'en-US'].filter((l, i, arr) => arr.indexOf(l) === i);
+  const chain = [locale, base, 'en-US'].filter((l, i, arr) => arr.indexOf(l) === i);
+  
+
+  
+  return chain;
 }
 
 // Interpolation helper

@@ -45,7 +45,7 @@ class CrmWebhookStatus(enum.Enum):
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=lambda: f"u_{int(datetime.utcnow().timestamp())}")
     email = Column(String, unique=True, nullable=False)
     name = Column(String)
     locale = Column(String, default="en-US")
@@ -114,7 +114,7 @@ class Call(Base):
 
 class UserAuth(Base):
     __tablename__ = "user_auth"
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, default=lambda: f"ua_{int(datetime.utcnow().timestamp())}")
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     provider = Column(String, nullable=False)  # password|magic|google|microsoft|github|apple|saml
     provider_id = Column(String)

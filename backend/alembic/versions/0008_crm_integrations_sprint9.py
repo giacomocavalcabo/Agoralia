@@ -1,7 +1,7 @@
 """Sprint 9: CRM Core Integrations
 
 Revision ID: 0008
-Revises: 0007_kb_constraints_indexes
+Revises: 0003_numbers_outcomes
 Create Date: 2025-01-20 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '0008'
-down_revision = '0007_kb_constraints_indexes'
+down_revision = '0003_numbers_outcomes'
 branch_labels = None
 depends_on = None
 

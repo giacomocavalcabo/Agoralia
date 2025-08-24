@@ -7,31 +7,221 @@
     "compliance": {"attestations":"Attestazioni","generate":"Genera PDF","preflight":"Pre‑flight log"},
     "notices": {"impersonating":"Stai impersonando {user}. Torna all'admin."}
   },
-  "pages": {
-    "dashboard": {
-      "title": "Dashboard",
-      "health": { "title": "Stato sistema" },
-      "live": { "title": "Chiamate live" },
-      "activity": "Attività recente",
-      "kpi": {
-        "minutes": "Minuti (MTD)",
-        "calls_today": "Chiamate oggi",
-        "success": "Tasso di successo"
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Panoramica delle campagne e performance",
+    "metrics": {
+      "calls_today": "Chiamate Oggi",
+      "minutes_month": "Minuti Mese",
+      "avg_duration": "Durata Media",
+      "contact_rate": "Tasso Contatto"
+    },
+    "trends": {
+      "title": "Trend Chiamate"
+    },
+    "stats": {
+      "total_created": "Totali Create",
+      "total_finished": "Totali Completate",
+      "total_qualified": "Totali Qualificate",
+      "avg_contact_rate": "Tasso Contatto Medio"
+    },
+    "funnel": {
+      "title": "Imbuto Conversione",
+      "reached": "Raggiunti",
+      "connected": "Connessi",
+      "qualified": "Qualificati",
+      "booked": "Prenotati",
+      "overall_conversion": "Conversione complessiva"
+    },
+    "empty": {
+      "calls": {
+        "title": "Nessun dato chiamate",
+        "description": "Prova un altro intervallo di date."
       }
     },
+    "budget": {
+      "not_configured": {
+        "title": "Budget non configurato",
+        "description": "Imposta un tetto mensile per monitorare l'utilizzo.",
+        "short": "Non configurato"
+      }
+    },
+    "agents": {
+      "title": "Agenti Top",
+      "calls": "chiamate",
+      "avg": "media",
+      "top_performer": "Miglior performer",
+      "empty": "Nessun dato agente disponibile"
+    },
+    "geo": {
+      "title": "Distribuzione Geografica",
+      "coming_soon": "Visualizzazione mappa in arrivo",
+      "calls": "chiamate",
+      "qualified": "qualificate",
+      "top_country": "Paese top",
+      "empty": "Nessun dato geografico disponibile"
+    },
+    "live_calls": {
+      "title": "Chiamate Live",
+      "empty": "Nessuna chiamata attiva",
+      "connecting": "Connessione…"
+    },
+    "recent_activity": {
+      "title": "Attività Recente",
+      "empty": "Nessun evento recente",
+      "error": "Impossibile caricare gli eventi"
+    },
+    "buttons": {
+      "7d": "7g",
+      "30d": "30g"
+    }
+  },
+  "calls": {
+    "title": "Chiamate",
+    "description": "Monitora chiamate live e attività recente",
+    "toolbar": {
+      "search_placeholder": "Cerca chiamate (numero, agente, coda)…",
+      "filters": {
+        "status": "Stato",
+        "direction": "Direzione",
+        "agent": "Agente",
+        "queue": "Coda"
+      },
+      "clear_all": "Pulisci tutto"
+    },
+    "table": {
+      "columns": {
+        "time": "Ora",
+        "from": "Da",
+        "to": "A",
+        "agent": "Agente",
+        "queue": "Coda",
+        "direction": "Direzione",
+        "status": "Stato",
+        "duration": "Durata",
+        "actions": "Azioni"
+      },
+      "empty": {
+        "title": "Nessuna chiamata",
+        "description": "Non ci sono chiamate corrispondenti."
+      },
+      "error": {
+        "title": "Errore di caricamento",
+        "description": "Non siamo riusciti a caricare le chiamate. Riprova.",
+        "retry": "Riprova"
+      }
+    },
+    "live": {
+      "title": "Chiamate live",
+      "empty": "Nessuna chiamata attiva",
+      "connecting": "Connessione…"
+    },
+    "badges": {
+      "inbound": "Entrante",
+      "outbound": "Uscente",
+      "ringing": "Sta squillando",
+      "active": "Attiva",
+      "ended": "Terminata"
+    }
+  },
+  "activity": {
+    "title": "Attività recente",
+    "empty": "Nessun evento recente",
+    "error": "Impossibile caricare gli eventi"
+  },
+  "pages": {
     "leads": {
       "title": "Leads",
-      "actions": { "add": "Aggiungi lead", "schedule": "Pianifica", "import": "Importa" },
-      "cols": { "name":"Nome", "company":"Azienda", "phone":"Telefono", "country":"Paese", "lang":"Lingua", "role":"Ruolo", "consent":"Consenso" },
-      "empty": { "title":"Nessun lead", "desc":"Aggiungi un lead o importa un CSV." },
-      "add_title": "Aggiungi lead",
-      "fields": { "name":"Nome", "company":"Azienda", "phone":"Telefono (E.164)", "country":"Paese ISO", "lang":"Lingua", "role":"Ruolo", "consent":"Consenso dato" },
-      "placeholders": { "e164":"+390212345678" },
-      "errors": { "e164":"Inserisci un numero E.164 valido" },
-      "toasts": { "added":"Lead aggiunto" }
+      "toolbar": {
+        "search_placeholder": "Cerca lead...",
+        "filters": {
+          "status": "Stato",
+          "campaign": "Campagna",
+          "owner": "Assegnatario",
+          "stage": "Stadio",
+          "any": "Qualsiasi"
+        },
+        "date_range": { "from": "Dal", "to": "Al" },
+        "bulk": { "assign": "Assegna", "delete": "Elimina", "export": "Esporta CSV" },
+        "actions": { "import": "Importa", "add": "Nuovo Lead" }
+      },
+      "table": {
+        "columns": {
+          "name": "Nome",
+          "phone": "Telefono",
+          "email": "Email",
+          "status": "Stato",
+          "campaign": "Campagna",
+          "stage": "Stadio",
+          "owner": "Proprietario",
+          "last_contact": "Ultimo contatto",
+          "score": "Punteggio",
+          "actions": "Azioni"
+        },
+        "pagination": { "page_size": "Righe", "showing": "Mostrando {{from}}–{{to}} di {{total}}" },
+        "sorting": { "asc": "Ordina crescente", "desc": "Ordina decrescente" }
+      },
+      "row_actions": { "view": "Dettagli", "call": "Chiama", "schedule": "Agenda", "assign": "Assegna", "delete": "Elimina" },
+      "actions": {
+        "import": "Importa Lead",
+        "add": "Nuovo Lead"
+      },
+      "empty": {
+        "title": "Nessun lead trovato",
+        "description": "Prova a cambiare i filtri oppure importa una nuova lista di lead.",
+        "cta_import": "Importa Lead",
+        "cta_add": "Nuovo Lead"
+      },
+      "error": {
+        "title": "Impossibile caricare i lead",
+        "description": "Si è verificato un errore durante il caricamento.",
+        "retry": "Riprova"
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Elimina lead selezionati",
+          "description": "Questa azione non può essere annullata.",
+          "confirm": "Elimina",
+          "cancel": "Annulla",
+          "success": "Lead eliminati",
+          "failure": "Eliminazione non riuscita"
+        },
+        "assign": {
+          "title": "Assegna lead",
+          "description": "Scegli un proprietario per assegnare i lead selezionati.",
+          "confirm": "Assegna",
+          "cancel": "Annulla",
+          "success": "Lead assegnati",
+          "failure": "Assegnazione non riuscita"
+        }
+      },
+      "export": { "starting": "Esportazione avviata", "done": "Esportazione completata", "failed": "Esportazione fallita" }
+    },
+    "numbers": {
+      "title": "Numeri",
+      "description": "Gestisci numeri telefonici, capacità e assegnazioni",
+      "toolbar": {
+        "search_placeholder": "Cerca numeri (E.164, operatore, etichetta)…",
+        "filters": { "country": "Paese", "capabilities": "Capacità", "status": "Stato", "carrier": "Operatore" },
+        "bulk": { "assign": "Assegna", "release": "Rilascia", "export": "Esporta" },
+        "view": { "density": "Densità", "columns": "Colonne" },
+        "clear_all": "Pulisci tutto"
+      },
+      "table": {
+        "columns": {
+          "number": "Numero", "country": "Paese", "capabilities": "Capacità", "status": "Stato",
+          "assigned_to": "Assegnato a", "purchased_at": "Acquisto", "carrier": "Operatore", "actions": "Azioni"
+        },
+        "empty": { "title": "Nessun numero trovato", "description": "Prova a cambiare i filtri o acquista un nuovo numero", "cta_new": "Acquista numero" },
+        "error": { "title": "Errore di caricamento", "description": "Impossibile caricare i numeri. Riprova.", "retry": "Riprova" },
+        "pagination": { "showing": "Visualizzati {from}-{to} di {total}", "page_size": "Righe per pagina" }
+      },
+      "actions": { "assign": "Assegna", "release": "Rilascia", "configure": "Configura", "details": "Dettagli" },
+      "badges": { "voice": "Voce", "sms": "SMS", "mms": "MMS" }
     },
     "import": {
       "title": "Importa",
+      "description": "Importa contatti da CSV",
       "steps": { "source": "Sorgente" },
       "paste_numbers": "Incolla numeri (uno per riga)",
       "upload_csv": "Carica CSV",
@@ -39,7 +229,52 @@
       "no_numbers": "Nessun numero rilevato",
       "no_numbers_desc": "Incolla righe tipo +390212345678.",
       "wip": "Lavori in corso",
-      "wip_desc": "Gli step 2–4 appariranno qui."
+      "wip_desc": "Gli step 2–4 appariranno qui.",
+      "legal": {
+        "title": "Revisione Legale",
+        "subtitle": "Rivedi e classifica i tuoi contatti per la compliance",
+        "summary": {
+          "title": "Riepilogo Compliance"
+        },
+        "category": {
+          "allowed": "Consentito",
+          "conditional": "Condizionato",
+          "blocked": "Vietato"
+        },
+        "fields": {
+          "contact_class": "Classe Contatto",
+          "relationship_basis": "Base Relazione",
+          "opt_in": "Opt-in",
+          "national_dnc": "DNC Nazionale",
+          "existing": "Esistente",
+          "none": "Nessuna",
+          "yes": "Sì",
+          "no": "No",
+          "in_registry": "Nel Registro",
+          "not_in_registry": "Non nel Registro"
+        },
+        "cols": {
+          "name": "Nome",
+          "phone": "Telefono",
+          "country": "Paese",
+          "class": "Classe",
+          "existing": "Esistente?",
+          "opt_in": "Opt-in?",
+          "dnc": "DNC?",
+          "category": "Categoria",
+          "why": "Perché"
+        },
+        "bulk": {
+          "select": "Seleziona campo",
+          "select_value": "Seleziona valore",
+          "apply": "Applica"
+        },
+        "autofill": "Auto-compila",
+        "selected": "selezionati",
+        "unknown": "Sconosciuto",
+        "reasons": "Motivi:",
+        "updating": "Aggiornamento in corso..."
+      }
     },
     "campaigns": {
       "title": "Campagne",
@@ -82,19 +317,440 @@
       "drawer": { "open_full": "Apri chiamata completa" }
     },
     "settings": {
-      "workspace": {
+      "title": "Impostazioni",
+      "description": "Configura il tuo workspace, team e preferenze",
+      "nav": {
+        "title": "Impostazioni",
+        "subtitle": "Gestisci la configurazione del workspace",
+        "account": "Account",
+        "account_desc": "Informazioni personali e preferenze",
+        "workspace": "Workspace",
+        "workspace_desc": "Impostazioni e branding del workspace",
+        "notifications": "Notifiche",
+        "notifications_desc": "Preferenze email e notifiche",
+        "security": "Sicurezza",
+        "security_desc": "Password e impostazioni 2FA",
+        "api_keys": "Chiavi API",
+        "api_keys_desc": "Gestisci token di accesso API",
+        "telephony": "Telefonia",
+        "telephony_desc": "Impostazioni numeri di telefono",
         "members": "Membri",
-        "invite": "Invita",
+        "members_desc": "Gestione membri del team",
+        "integrations": "Integrazioni",
+        "integrations_desc": "Connessioni servizi terzi",
+        "billing": "Fatturazione",
+        "billing_desc": "Gestione abbonamento e pagamenti",
         "audit": "Audit",
-        "email": "Email",
-        "role": "Ruolo",
-        "remove": "Rimuovi",
-        "send_invite": "Invia invito",
-        "pending": "Inviti in attesa",
-        "confirm_change_role": "Cambiare ruolo?",
-        "confirm_remove": "Rimuovere membro?",
-        "accept": "Accetta invito"
+        "audit_desc": "Log attività di sistema"
+      },
+      "account": {
+        "title": "Informazioni Personali",
+        "description": "Aggiorna i tuoi dettagli personali e preferenze",
+        "fields": {
+          "name": "Nome Completo",
+          "email": "Indirizzo Email",
+          "language": "Lingua",
+          "timezone": "Fuso Orario",
+          "dual_time": "Mostra tempo duale nell'interfaccia"
+        },
+        "languages": {
+          "english": "English",
+          "italian": "Italiano",
+          "french": "Français"
+        },
+        "timezones": {
+          "rome": "Europe/Rome",
+          "london": "Europe/London",
+          "new_york": "America/New_York"
+        },
+        "actions": {
+          "save": "Salva Modifiche"
+        },
+        "messages": {
+          "saved": "Informazioni personali aggiornate con successo"
+        },
+        "errors": {
+          "load_failed": "Impossibile caricare le informazioni personali",
+          "save_failed": "Impossibile salvare le informazioni personali"
+        }
+      },
+      "workspace": {
+        "title": "Impostazioni Workspace",
+        "description": "Configura il branding e le impostazioni del workspace",
+        "fields": {
+          "name": "Nome Workspace",
+          "domain": "Dominio Personalizzato",
+          "logo": "Logo Workspace",
+          "upload_logo": "Carica Logo"
+        },
+        "actions": {
+          "save": "Salva Modifiche"
+        },
+        "messages": {
+          "saved": "Impostazioni workspace aggiornate con successo"
+        },
+        "errors": {
+          "save_failed": "Impossibile salvare le impostazioni workspace"
+        }
+      },
+      "notifications": {
+        "title": "Preferenze Notifiche",
+        "description": "Configura come ricevi le notifiche",
+        "fields": {
+          "email_notifications": "Notifiche Email",
+          "desktop_notifications": "Notifiche Desktop",
+          "daily_digest": "Riepilogo Giornaliero",
+          "weekly_report": "Report Settimanale"
+        },
+        "actions": {
+          "save": "Salva Modifiche"
+        },
+        "messages": {
+          "saved": "Preferenze notifiche aggiornate con successo"
+        },
+        "errors": {
+          "save_failed": "Impossibile salvare le preferenze notifiche"
+        }
+      },
+      "security": {
+        "title": "Impostazioni Sicurezza",
+        "description": "Gestisci la tua password e autenticazione a due fattori",
+        "fields": {
+          "current_password": "Password Attuale",
+          "new_password": "Nuova Password",
+          "confirm_password": "Conferma Nuova Password",
+          "two_factor": "Autenticazione a Due Fattori"
+        },
+        "actions": {
+          "save": "Aggiorna Password",
+          "enable_2fa": "Abilita 2FA",
+          "disable_2fa": "Disabilita 2FA"
+        },
+        "messages": {
+          "password_updated": "Password aggiornata con successo",
+          "two_factor_enabled": "Autenticazione a due fattori abilitata",
+          "two_factor_disabled": "Autenticazione a due fattori disabilitata"
+        },
+        "errors": {
+          "save_failed": "Impossibile aggiornare le impostazioni di sicurezza"
+        }
+      },
+      "api_keys": {
+        "title": "Chiavi API",
+        "description": "Gestisci i tuoi token di accesso API",
+        "actions": {
+          "create_key": "Crea Chiave API",
+          "revoke": "Revoca",
+          "copy": "Copia"
+        },
+        "empty": {
+          "title": "Nessuna chiave API",
+          "description": "Crea la tua prima chiave API per iniziare a integrare con la nostra API",
+          "cta": "Crea Chiave API"
+        },
+        "messages": {
+          "created": "Chiave API creata con successo",
+          "revoked": "Chiave API revocata con successo",
+          "copied": "Chiave API copiata negli appunti"
+        },
+        "errors": {
+          "create_failed": "Impossibile creare la chiave API",
+          "revoke_failed": "Impossibile revocare la chiave API"
+        }
+      },
+      "telephony": {
+        "title": "Impostazioni Telefonia",
+        "description": "Configura le tue preferenze per i numeri di telefono",
+        "fields": {
+          "default_country": "Paese Predefinito",
+          "caller_id": "Caller ID Predefinito",
+          "quiet_hours": "Rispetta Ore Silenziose"
+        },
+        "actions": {
+          "save": "Salva Modifiche"
+        },
+        "messages": {
+          "saved": "Impostazioni telefonia aggiornate con successo"
+        },
+        "errors": {
+          "save_failed": "Impossibile salvare le impostazioni telefonia"
+        }
+      },
+      "members": {
+        "title": "Membri del Team",
+        "description": "Gestisci i membri del team del workspace",
+        "fields": {
+          "invite_email": "Indirizzo Email",
+          "role": "Ruolo"
+        },
+        "roles": {
+          "viewer": "Visualizzatore",
+          "editor": "Editore",
+          "admin": "Amministratore"
+        },
+        "actions": {
+          "invite": "Invita Membro",
+          "remove": "Rimuovi Membro",
+          "change_role": "Cambia Ruolo"
+        },
+        "messages": {
+          "invite_sent": "Invito inviato con successo",
+          "member_removed": "Membro rimosso con successo",
+          "role_updated": "Ruolo aggiornato con successo"
+        },
+        "errors": {
+          "invite_failed": "Impossibile inviare l'invito",
+          "remove_failed": "Impossibile rimuovere il membro"
+        }
+      },
+      "integrations": {
+        "title": "Integrazioni",
+        "description": "Connetti con servizi di terze parti",
+        "tabs": {
+          "crm": "CRM",
+          "mapping": "Mappatura Campi",
+          "sync": "Stato Sincronizzazione",
+          "other": "Altri"
+        },
+        "hubspot": {
+          "description": "Connetti il tuo HubSpot CRM per sincronizzare contatti e deal"
+        },
+        "zoho": {
+          "description": "Connetti il tuo Zoho CRM per sincronizzare contatti e lead"
+        },
+        "odoo": {
+          "description": "Connetti il tuo Odoo ERP per sincronizzare contatti e opportunità"
+        },
+        "portal_id": "ID Portale",
+        "status": {
+          "connected": "Connesso",
+          "connecting": "Connessione in corso",
+          "error": "Errore",
+          "disconnected": "Disconnesso"
+        },
+        "actions": {
+          "connect": "Connetti",
+          "disconnect": "Disconnetti",
+          "test": "Testa Connessione",
+          "field_mapping": "Mappatura Campi",
+          "sync_status": "Stato Sincronizzazione",
+          "back_to_integrations": "Torna alle Integrazioni",
+          "go_to_integrations": "Vai alle Integrazioni"
+        },
+        "mapping": {
+          "title": "Mappatura Campi",
+          "select_provider": "Seleziona un Provider CRM",
+          "select_provider_desc": "Scegli un provider CRM connesso per configurare la mappatura dei campi"
+        },
+        "sync": {
+          "title": "Stato Sincronizzazione",
+          "select_provider": "Seleziona un Provider CRM",
+          "select_provider_desc": "Scegli un provider CRM connesso per visualizzare lo stato di sincronizzazione"
+        },
+        "other": {
+          "coming_soon": "Prossimamente",
+          "coming_soon_desc": "Altre integrazioni saranno disponibili in aggiornamenti futuri"
+        },
+        "messages": {
+          "connected": "Integrazione Connessa",
+          "connected_desc": "{provider} è stato connesso con successo",
+          "disconnected": "Integrazione Disconnessa",
+          "disconnected_desc": "{provider} è stato disconnesso con successo",
+          "test_success": "Test Connessione Riuscito",
+          "test_success_desc": "La connessione a {provider} funziona correttamente",
+          "test_failed": "Test Connessione Fallito",
+          "test_failed_desc": "Impossibile connettersi a {provider}"
+        },
+        "errors": {
+          "load_failed": "Impossibile caricare le integrazioni",
+          "connection_failed": "Impossibile connettere l'integrazione",
+          "disconnection_failed": "Impossibile disconnettere l'integrazione"
+        }
+      },
+      "billing": {
+        "title": "Fatturazione",
+        "description": "Gestisci il tuo abbonamento e la fatturazione",
+        "cta_manage_billing": "Gestisci Fatturazione"
+      },
+      "audit": {
+        "title": "Log Audit",
+        "description": "Visualizza l'attività di sistema e le modifiche"
+      },
+      "errors": {
+        "required": "Questo campo è obbligatorio",
+        "invalid_email": "Inserisci un indirizzo email valido",
+        "min_length": "Deve essere di almeno {min} caratteri",
+        "passwords_mismatch": "Le password non coincidono"
       }
+    },
+    "billing": {"title":"Fatturazione","description":"Gestisci il tuo abbonamento"},
+    "kb": {
+      "title": "Knowledge Base",
+      "description": "Gestisci la tua knowledge base",
+      "overview": {
+        "title": "Panoramica Knowledge Base",
+        "description": "Gestisci e organizza il contenuto della tua knowledge base",
+        "toolbar": {
+          "search_placeholder": "Cerca knowledge base...",
+          "filter": {
+            "all": "Tutti",
+            "published": "Pubblicati",
+            "drafts": "Bozze",
+            "archived": "Archiviati"
+          },
+          "bulk": {
+            "assign": "Assegna",
+            "delete": "Elimina",
+            "export": "Esporta",
+            "import": "Importa",
+            "new_offer_pack": "Nuovo Offer Pack"
+          }
+        },
+        "table": {
+          "columns": {
+            "title": "Titolo",
+            "category": "Categoria",
+            "status": "Stato",
+            "language": "Lingua",
+            "updated_at": "Aggiornato",
+            "owner": "Proprietario"
+          },
+          "empty": {
+            "title": "Nessuna Knowledge Base Trovata",
+            "description": "Inizia creando la tua prima knowledge base",
+            "cta_new": "Crea Knowledge Base"
+          },
+          "error": {
+            "title": "Errore di Caricamento",
+            "description": "Impossibile caricare i dati della knowledge base",
+            "retry": "Riprova"
+          }
+        },
+        "toasts": {
+          "deleted": "Knowledge base eliminata con successo",
+          "assigned": "Knowledge base assegnata con successo",
+          "exported": "Knowledge base esportata con successo",
+          "error_generic": "Si è verificato un errore"
+        }
+      },
+      "editor": {
+        "title": "Editor",
+        "fields": {
+          "title": "Titolo",
+          "category": "Categoria",
+          "language": "Lingua",
+          "visibility": "Visibilità",
+          "tags": "Tag",
+          "content": "Contenuto",
+          "attachments": "Allegati"
+        },
+        "actions": {
+          "save": "Salva",
+          "saving": "Salvando...",
+          "saved": "Salvato",
+          "publish": "Pubblica",
+          "unpublish": "Rimuovi Pubblicazione",
+          "delete": "Elimina"
+        },
+        "messages": {
+          "saved": "Modifiche salvate con successo",
+          "published": "Knowledge base pubblicata",
+          "unpublished": "Pubblicazione rimossa",
+          "error_generic": "Si è verificato un errore",
+          "unsaved_guard": "Hai modifiche non salvate. Sei sicuro di voler uscire?"
+        },
+        "shortcuts": {
+          "save": "Salva (Ctrl/Cmd + S)"
+        }
+      },
+      "assignments": {
+        "title": "Assegnazioni Knowledge Base",
+        "description": "Configura quale KB utilizzare per numeri, campagne e agenti",
+        "table": {
+          "columns": {
+            "assignee": "Assegnatario",
+            "role": "Ruolo",
+            "status": "Stato",
+            "updated_at": "Aggiornato"
+          }
+        },
+        "actions": {
+          "assign": "Assegna",
+          "unassign": "Rimuovi Assegnazione"
+        },
+        "confirm": {
+          "assign_title": "Assegna Knowledge Base",
+          "assign_desc": "Sei sicuro di voler assegnare questa knowledge base?",
+          "unassign_title": "Rimuovi Assegnazione Knowledge Base",
+          "unassign_desc": "Sei sicuro di voler rimuovere l'assegnazione di questa knowledge base?",
+          "confirm": "Conferma",
+          "cancel": "Annulla"
+        },
+        "toasts": {
+          "assigned": "Knowledge base assegnata con successo",
+          "unassigned": "Assegnazione rimossa con successo",
+          "error_generic": "Si è verificato un errore"
+        },
+        "empty": {
+          "title": "Nessuna Assegnazione",
+          "description": "Inizia assegnando knowledge base al tuo workspace"
+        }
+      },
+      "imports": {
+        "title": "Import",
+        "description": "Gestisci gli import di dati per la tua knowledge base",
+        "actions": { "new_import": "Nuovo Import" },
+        "steps": {
+          "upload": "Caricamento",
+          "mapping": "Mapping Campi",
+          "validate": "Validazione",
+          "confirm": "Conferma"
+        },
+        "upload": {
+          "drop_here": "Trascina file qui",
+          "or_browse": "o sfoglia",
+          "allowed_types": "Supportati: CSV, PDF, DOCX",
+          "next": "Avanti"
+        },
+        "mapping": {
+          "source_field": "Campo Sorgente",
+          "target_field": "Campo Destinazione",
+          "preview": "Anteprima",
+          "next": "Avanti",
+          "back": "Indietro"
+        },
+        "validate": {
+          "errors_found": "Errori di validazione trovati",
+          "download_report": "Scarica Report Errori",
+          "next": "Avanti",
+          "back": "Indietro"
+        },
+        "confirm": {
+          "summary": "Riepilogo Import",
+          "import_now": "Importa Ora",
+          "back": "Indietro"
+        },
+        "toasts": {
+          "importing": "Import avviato",
+          "imported": "Import completato con successo",
+          "error_generic": "Import fallito"
+          },
+        "empty": {
+          "title": "Nessun Job di Import",
+          "description": "Inizia creando il tuo primo import"
+        }
+      }
+    },
+    "common": {
+      "save": "Salva",
+      "saving": "Salvataggio...",
+      "cancel": "Annulla",
+      "connecting": "Connessione...",
+      "testing": "Test...",
+      "disconnecting": "Disconnessione...",
+      "open": "Apri",
+      "manage": "Gestisci",
+      "back": "Indietro"
     }
   }
 }

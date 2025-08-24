@@ -1,0 +1,9 @@
+{
+  "notices": {
+    "impersonating": "Estás suplantando a {id}"
+  },
+  "users": {
+    "impersonate": "[Suplantar]",
+    "search_placeholder": "[Marcador de posición de búsqueda]"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "demo_data_enabled": "Demo data enabled - showing sample metrics",
+  "notices": {
+    "impersonating": "You are impersonating {id}"
+  },
+  "users": {
+    "impersonate": "[Impersonate]",
+    "search_placeholder": "[Search Placeholder]"
+  }
+}

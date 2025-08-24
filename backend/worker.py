@@ -288,6 +288,38 @@ def send_notification_job(notification_id: str, target_user_id: str, kind: str, 
                             print(f"SendGrid failed: {response.status_code}")
                 else:
                     print("SendGrid API key not configured")
+            
+            elif email_provider == 'mailersend':
+                # Mailersend integration
+                mailersend_key = os.getenv('MAILERSEND_API_KEY')
+                if mailersend_key:
+                    with httpx.Client() as client:
+                        response = client.post(
+                            'https://api.mailersend.com/v1/email',
+                            headers={
+                                'Authorization': f'Bearer {mailersend_key}',
+                                'Content-Type': 'application/json'
+                            },
+                            json={
+                                'from': {
+                                    'email': 'noreply@agoralia.ai',
+                                    'name': 'Agoralia'
+                                },
+                                'to': [{
+                                    'email': target_user_id,  # In production, fetch user email
+                                    'name': 'User'
+                                }],
+                                'subject': subject,
+                                'html': body_md,  # In production, convert MD to HTML
+                                'text': body_md  # Fallback plain text
+                            }
+                        )
+                        if response.status_code == 202:
+                            print(f"Email sent via Mailersend to {target_user_id}")
+                        else:
+                            print(f"Mailersend failed: {response.status_code} - {response.text}")
+                else:
+                    print("Mailersend API key not configured")
         
         elif kind == 'in_app':
             # In-app notification logic
