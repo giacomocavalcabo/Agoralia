@@ -267,7 +267,7 @@ export default function Dashboard() {
 	}
 
 	return (
-		<div className="px-6 lg:px-8 py-6">
+		<div className="px-6 lg:px-8 py-6" data-testid="dashboard-loaded">
 			<div className="space-y-6 md:space-y-8">
 				<PageHeader 
 					title={t('dashboard.title')}

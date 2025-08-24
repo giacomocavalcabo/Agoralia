@@ -48,7 +48,7 @@ export default function GaugeBudget({
 	const strokeDashoffset = circumference - (percentage / 100) * circumference
 	
 	return (
-		<div className={`panel text-center ${className}`}>
+		<div className={`panel text-center ${className}`} data-testid="budget-gauge">
 			<div className="text-sm text-ink-600 mb-3">{t('dashboard.widgets.budget')}</div>
 			
 			{/* SVG Gauge */}
