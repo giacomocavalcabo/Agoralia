@@ -63,7 +63,7 @@ export default function Root() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/login/verify" element={<LoginVerify />} />
-            <Route path="/auth/register" element={<Register />} />
+            <Route path="/register" element={<Register />} />
             
             {/* Protected routes */}
             <Route path="/*" element={

@@ -1,7 +1,15 @@
 {
   "auth": {
     "title": "Sign in",
-    "description": "Access your workspace to manage calls, leads and campaigns",
+    "description": "Access your Agoralia workspace",
+    "continue_with_google": "Continue with Google",
+    "continue_with_microsoft": "Continue with Microsoft",
+    "or": "or",
+    "email_address": "Email address",
+    "password": "Password",
+    "sign_in": "Sign in",
+    "register": "Create account",
+    "need_help": "Need help?",
     "login": {
       "title": "Sign in",
       "email": "Email",
@@ -157,6 +165,7 @@
       "sla": "SLA Performance"
     },
     "budget": {
+      "not_configured": "Not configured",
       "spent": "Spent",
       "cap": "Cap",
       "remaining": "Remaining",

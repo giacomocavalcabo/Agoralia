@@ -23,7 +23,8 @@ import {
 	generateDemoAgents, 
 	generateDemoGeoData, 
 	generateDemoCostSeries, 
-	generateDemoTrends 
+	generateDemoTrends,
+	generateDemoBilling
 } from '../lib/demo/fakes.js'
 
 export default function Dashboard() {
@@ -62,6 +63,12 @@ export default function Dashboard() {
 			if (showDemoData) {
 				// Generate demo data for admin users
 				const s = generateDemoMetrics()
+				// Hardening: se per qualche motivo i budget sono 0, forzali dal billing demo
+				if (!s.budget_monthly_cents || s.budget_monthly_cents <= 0) {
+					const b = generateDemoBilling()
+					s.budget_monthly_cents = b.monthly_cap_cents
+					s.budget_spent_month_cents = b.spent_month_cents
+				}
 				const f = generateDemoFunnelData()
 				const a = generateDemoAgents()
 				const g = generateDemoGeoData()
@@ -367,11 +374,11 @@ export default function Dashboard() {
 						/>
 					</div>
 				
-					{/* Row 3: ConversionFunnel + TopAgents + MiniMap - MOSAICO: 2 "sm" + 1 "md" */}
+					{/* Row 3: Event Feed + TopAgents + Geo — tutte alte uguali (320px) e non scrollano */}
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="rounded-2xl border bg-white p-4 min-h-[320px] overflow-hidden">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.funnel')}</h3>
-							<ConversionFunnel data={showDemoData ? funnelData : { reached: 0, connected: 0, qualified: 0, booked: 0 }} />
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.events', 'Event Feed')}</h3>
+							<EventFeed events={events} className="min-h-[320px]" />
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
@@ -379,7 +386,7 @@ export default function Dashboard() {
 							<TopAgentsBar 
 								agents={showDemoData ? topAgents : []}
 								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
-								className="max-h-56 overflow-y-auto"
+								className="min-h-[320px] overflow-hidden"
 							/>
 						</div>
 					</div>

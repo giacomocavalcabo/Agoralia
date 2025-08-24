@@ -27,18 +27,42 @@ export const generateDemoLeads = (total = 150) => {
   return rows;
 };
 
-export const generateDemoMetrics = () => ({
-  calls_today: 247,
-  minutes_month: 1842,
-  avg_duration_sec: 186,
-  contact_rate: 0.34,
-  qualified_rate: 0.18,
-  spend_today_cents: 2847, // €28.47
-  budget_monthly_cents: 500000, // €5000
-  budget_spent_month_cents: 187500, // €1875 (37.5%)
-  concurrency_used: 7,
-  concurrency_limit: 15
-});
+// --- Billing demo ---------------------------------------------------------
+export function generateDemoBilling() {
+  // Piani demo sensati: Starter 3k–5k, Pro 5k–10k
+  const plans = [
+    { name: 'Starter', cap: 300000, variance: 200000 }, // €3k–€5k
+    { name: 'Pro',     cap: 500000, variance: 500000 }  // €5k–€10k
+  ];
+  const plan = plans[Math.floor(Math.random() * plans.length)];
+  const monthly_cap_cents =
+    plan.cap + Math.round(Math.random() * plan.variance); // 300k–1M
+  const spent_ratio = 0.25 + Math.random() * 0.35;        // 25%–60%
+  const spent_month_cents = Math.round(monthly_cap_cents * spent_ratio);
+  return {
+    plan: plan.name,
+    currency: 'EUR',
+    monthly_cap_cents,
+    spent_month_cents,
+  };
+}
+
+export const generateDemoMetrics = () => {
+  const billing = generateDemoBilling();
+  return {
+    calls_today: 247,
+    minutes_month: 1842,
+    avg_duration_sec: 186,
+    contact_rate: 0.34,
+    qualified_rate: 0.18,
+    spend_today_cents: 2847, // €28.47
+    // >>> billing coerente in DEMO
+    budget_monthly_cents: billing.monthly_cap_cents,
+    budget_spent_month_cents: billing.spent_month_cents,
+    concurrency_used: 7,
+    concurrency_limit: 15
+  };
+};
 
 export const generateDemoFunnelData = () => {
   // Generate realistic funnel percentages (relative to previous stage)
