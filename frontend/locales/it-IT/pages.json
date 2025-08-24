@@ -321,12 +321,17 @@
       "toolbar": {
         "bulk": {
           "import": "Importa",
-          "new_offer_pack": "Nuovo Pacchetto Offerta"
+          "new_offer_pack": "Nuovo Pacchetto Offerta",
+          "assign": "Assegna",
+          "delete": "Elimina",
+          "export": "Esporta"
         },
         "search_placeholder": "Cerca nella knowledge base...",
         "filter": {
           "all": "Tutti",
-          "published": "Pubblicati"
+          "published": "Pubblicati",
+          "drafts": "Bozze",
+          "archived": "Archiviati"
         }
       }
     },
@@ -355,7 +360,8 @@
       "empty": {
         "title": "Nessuna importazione",
         "description": "Avvia la tua prima importazione knowledge base"
-      }
+      },
+      "download_errors": "Scarica errori CSV"
     },
     "assignments": {
       "title": "Assegnazioni Knowledge Base",

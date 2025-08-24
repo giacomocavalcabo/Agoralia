@@ -386,13 +386,13 @@ export default function Dashboard() {
 				
 					{/* Row 3: Event Feed + TopAgents + Geo — tutte alte uguali (320px) e non scrollano */}
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
+						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.events', 'Event Feed')}</h3>
 							<EventFeed events={events} className="h-full" />
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
+						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<TopAgentsBar 
 								agents={showDemoData ? topAgents : []}
 								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
@@ -401,7 +401,7 @@ export default function Dashboard() {
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
+						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<MiniMap 
 								data={showDemoData ? geoData : []}
 								onDrillDown={(country) => handleDrillDown('country', country)}
@@ -409,7 +409,7 @@ export default function Dashboard() {
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
-						<div className="h-full rounded-2xl border bg-white p-4 overflow-hidden">
+						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 

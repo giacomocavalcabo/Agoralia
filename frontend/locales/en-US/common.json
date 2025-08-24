@@ -12,5 +12,10 @@
   "polling": "polling",
   "active": "active",
   "live_status": "{{count}} active • live",
-  "polling_status": "{{count}} active • polling"
+  "polling_status": "{{count}} active • polling",
+  "lead": "Lead",
+  "agent": "Agent",
+  "status": "Status",
+  "started": "Started",
+  "duration": "Duration"
 }

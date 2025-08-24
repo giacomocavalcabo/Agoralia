@@ -5,16 +5,24 @@ import Card from '../components/ui/Card'
 import { Button } from '../components/ui/button'
 import { useKbList } from '../lib/kbApi'
 import { CompletenessMeter } from '../components/kb/CompletenessMeter'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useI18n } from '../lib/i18n.jsx'
 import { useAuth } from '../lib/useAuth'
 import { useIsDemo } from '../lib/useDemoData'
+import { makeDemoKnowledgeBase } from '../lib/demo/fakes'
+import KBToolbar from '../components/kb/KBToolbar'
 
 export default function KnowledgeBase() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useI18n('pages');
   const { user } = useAuth();
   const isDemo = useIsDemo();
+  
+  // Read initial filters from URL for deep-linking
+  const q = searchParams.get('q') || '';
+  const kind = searchParams.get('kind') || undefined;
+  const status = searchParams.get('status') || undefined;
   
   // Check if KB should be enabled
   const enabled = user?.id && !isDemo;
@@ -28,8 +36,17 @@ export default function KnowledgeBase() {
   })
   
   // Fetch KB list using new hook only if enabled
-  const { data: kbList } = useKbList({ enabled });
+  const { data: kbList } = useKbList({ enabled, q, kind, status });
   const items = kbList?.items ?? [];
+  
+  // Handle filter changes from toolbar
+  const handleFiltersChange = (newFilters) => {
+    // The toolbar now handles URL updates directly
+    // We just need to trigger a refetch if needed
+    if (newFilters.q !== q || newFilters.status !== status) {
+      // The useKbList hook will automatically refetch with new params
+    }
+  };
   
   const company = items.find(i => i.kind === 'company');
   const offers = items.filter(i => i.kind === 'offer_pack');
@@ -286,6 +303,14 @@ export default function KnowledgeBase() {
 
       {items.length > 0 && (
         <Card title="Knowledge Bases">
+            {/* Toolbar con search e filtri */}
+            <div className="mb-4">
+              <KBToolbar 
+                onChange={handleFiltersChange}
+                initial={{ q, status }}
+              />
+            </div>
+            
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

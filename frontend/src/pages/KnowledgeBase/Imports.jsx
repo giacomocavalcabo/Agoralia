@@ -16,6 +16,23 @@ import EmptyState from '../../components/EmptyState'
 import Spinner from '../../components/ui/Spinner'
 import ErrorBlock from '../../components/ui/ErrorBlock'
 
+// Funzione per scaricare errori CSV
+function downloadErrorsCsv(errors = []) {
+  if (!errors?.length) return;
+  const headers = Object.keys(errors[0]);
+  const csv = [
+    headers.join(','),
+    ...errors.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(',')),
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kb-import-errors.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // Mock data per demo - in produzione verrà da API
 const mockJobs = [
   {
@@ -396,6 +413,24 @@ export default function Imports() {
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <h4 className="text-sm font-medium text-red-800">Errore</h4>
                     <p className="text-sm text-red-700">{selectedJob.error}</p>
+                    {/* Bottone per scaricare errori CSV */}
+                    <div className="mt-3">
+                      <Button 
+                        onClick={() => downloadErrorsCsv([
+                          { 
+                            job_id: selectedJob.id, 
+                            source: selectedJob.source, 
+                            error: selectedJob.error,
+                            timestamp: new Date().toISOString()
+                          }
+                        ])}
+                        size="sm"
+                        variant="outline"
+                        className="text-red-700 border-red-300 hover:bg-red-100"
+                      >
+                        📥 Scarica errori CSV
+                      </Button>
+                    </div>
                   </div>
                 )}
                 

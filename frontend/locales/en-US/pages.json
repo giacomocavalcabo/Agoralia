@@ -320,12 +320,17 @@
       "toolbar": {
         "bulk": {
           "import": "Import",
-          "new_offer_pack": "New Offer Pack"
+          "new_offer_pack": "New Offer Pack",
+          "assign": "Assign",
+          "delete": "Delete",
+          "export": "Export"
         },
         "search_placeholder": "Search knowledge base...",
         "filter": {
           "all": "All",
-          "published": "Published"
+          "published": "Published",
+          "drafts": "Drafts",
+          "archived": "Archived"
         }
       }
     },
@@ -354,7 +359,8 @@
       "empty": {
         "title": "No imports",
         "description": "Start your first knowledge base import"
-      }
+      },
+      "download_errors": "Download errors CSV"
     },
     "assignments": {
       "title": "Knowledge Base Assignments",
