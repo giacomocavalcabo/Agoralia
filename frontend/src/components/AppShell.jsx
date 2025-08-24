@@ -165,92 +165,91 @@ export default function AppShell({ children }) {
               )}
             </div>
           
-          {/* Center: Global Search */}
-          <div className="flex-1 max-w-lg mx-8">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder={t('common.search') || 'Search...'}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-transparent"
-              />
+            {/* Center: Global Search */}
+            <div className="flex-1 max-w-lg mx-8">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={t('common.search') || 'Search...'}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-transparent"
+                />
+              </div>
             </div>
-          </div>
           
-          {/* Right: Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-            
-
-            
-            {/* Notifications */}
-            <button className="p-2 text-gray-400 hover:text-gray-500">
-              <BellIcon className="h-5 w-5" />
-            </button>
-            
-            {/* User Menu */}
-            <div className="relative user-menu">
-              <button 
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
-              >
-                <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <span className="text-sm font-medium text-gray-700">
-                  {user?.name || user?.email?.split('@')[0] || 'User'}
-                </span>
-                {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                    Admin
-                  </span>
-                )}
-                {/* Dropdown arrow */}
-                <svg 
-                  className={`w-4 h-4 text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+            {/* Right: Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+              
+              {/* Notifications */}
+              <button className="p-2 text-gray-400 hover:text-gray-500">
+                <BellIcon className="h-5 w-5" />
               </button>
               
-              {/* Dropdown menu */}
-              {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
-                    {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
-                        Admin
-                      </span>
-                    )}
+              {/* User Menu */}
+              <div className="relative user-menu">
+                <button 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      logout();
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.name || user?.email?.split('@')[0] || 'User'}
+                  </span>
+                  {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                      Admin
+                    </span>
+                  )}
+                  {/* Dropdown arrow */}
+                  <svg 
+                    className={`w-4 h-4 text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    Sign out
-                  </button>
-                </div>
-              )}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* Dropdown menu */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                      {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
       
         {/* Main Content */}
         <div className="flex-1 p-6">
           {children}
         </div>
+      </div>
     </div>
   )
 }
