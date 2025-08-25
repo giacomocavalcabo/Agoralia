@@ -2211,6 +2211,7 @@ async def auth_totp_verify(payload: dict, request: Request) -> Response:
 
 @app.get("/leads")
 def list_leads(
+    request: Request,
     query: str | None = Query(default=None),
     limit: int = Query(default=25),
     offset: int = Query(default=0),
@@ -2218,9 +2219,58 @@ def list_leads(
     compliance_category: str | None = Query(default=None),
     country_iso: str | None = Query(default=None),
 ) -> dict:
-    # TODO: Replace with actual database query
+    # Check if demo mode is enabled
+    is_demo = DEMO_MODE or request.headers.get("X-Demo") == "1"
+    
+    if is_demo:
+        # Demo mode: return stub data
+        items = [
+            {
+                "id": "l_101",
+                "name": "Mario Rossi",
+                "company": "Rossi Srl",
+                "phone_e164": "+390212345678",
+                "country_iso": "IT",
+                "lang": "it-IT",
+                "role": "supplier",
+                "contact_class": "b2b",
+                "relationship_basis": "existing",
+                "opt_in": None,
+                "national_dnc": "unknown",
+                "compliance_category": "allowed",
+                "compliance_reasons": ["B2B con relazione esistente"],
+                "created_at": "2025-08-17T09:12:00Z"
+            },
+            {
+                "id": "l_102",
+                "name": "Claire Dubois",
+                "company": "Dubois SA",
+                "phone_e164": "+33123456789",
+                "lang": "fr-FR",
+                "role": "supplied",
+                "contact_class": "b2c",
+                "relationship_basis": "none",
+                "opt_in": False,
+                "national_dnc": "unknown",
+                "compliance_category": "blocked",
+                "compliance_reasons": ["B2C richiede opt-in ma stato sconosciuto"],
+                "created_at": "2025-08-16T15:02:00Z"
+            }
+        ]
+        
+        # Apply filters to demo data
+        if compliance_category:
+            items = [item for item in items if item.get("compliance_category") == compliance_category]
+        
+        if country_iso:
+            items = [item for item in items if item.get("country_iso") == country_iso.upper()]
+        
+        return {"total": len(items), "items": items}
+    
+    # Real mode: return empty array (or actual DB query when implemented)
     items = []
     
+    # TODO: Replace with actual database query
     # Apply filters
     if compliance_category:
         items = [item for item in items if item.get("compliance_category") == compliance_category]
@@ -2539,7 +2589,21 @@ def get_campaign(campaign_id: str) -> dict:
 
 @app.patch("/campaigns/{campaign_id}")
 async def update_campaign(campaign_id: str, payload: dict) -> dict:
-    return {"id": campaign_id, "updated": True, "payload": payload}
+    # Validate status transitions
+    allowed_statuses = {"draft", "active", "paused", "completed"}
+    new_status = payload.get("status")
+    
+    if new_status and new_status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}. Allowed: {', '.join(allowed_statuses)}")
+    
+    # TODO: Replace with actual database update
+    # For now, return the updated campaign data
+    return {
+        "id": campaign_id,
+        "status": new_status or "draft",
+        "updated_at": datetime.now().isoformat(),
+        "updated": True
+    }
 
 
 @app.post("/campaigns/{campaign_id}/pause")
@@ -2565,6 +2629,37 @@ async def campaign_schedule(campaign_id: str, payload: dict) -> dict:
 @app.get("/campaigns/{campaign_id}/events")
 def campaign_events(campaign_id: str, start: str | None = None, end: str | None = None) -> dict:
     return {"events": []}
+
+
+@app.post("/calendar/events")
+async def create_calendar_event(payload: dict) -> dict:
+    """Create a new calendar event (quick schedule)"""
+    try:
+        # Validate required fields
+        required_fields = ["lead_id", "agent_id", "at"]
+        for field in required_fields:
+            if not payload.get(field):
+                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+        
+        # TODO: Replace with actual database insert
+        event_id = f"evt_{int(datetime.now().timestamp())}"
+        
+        return {
+            "id": event_id,
+            "kind": "scheduled",
+            "title": payload.get("title", "Scheduled call"),
+            "at": payload["at"],
+            "lead_id": payload["lead_id"],
+            "agent_id": payload["agent_id"],
+            "kb_id": payload.get("kb_id"),
+            "from": payload.get("from"),
+            "created_at": datetime.now().isoformat(),
+            "status": "scheduled"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
 
 
 @app.get("/calendar")

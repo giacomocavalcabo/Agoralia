@@ -178,7 +178,8 @@
       "name_placeholder": "Inserisci il nome della campagna",
       "description": "Descrizione (opzionale)",
       "description_placeholder": "Inserisci la descrizione della campagna",
-      "segment": "Segmento di destinazione"
+      "segment": "Segmento di destinazione",
+      "success": "Campagna creata con successo!"
     },
       
       "detail": {

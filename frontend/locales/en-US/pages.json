@@ -192,7 +192,8 @@
       "name_placeholder": "Enter campaign name",
       "description": "Description (optional)",
       "description_placeholder": "Enter campaign description",
-      "segment": "Target segment"
+      "segment": "Target segment",
+      "success": "Campaign created successfully!"
     },
 
     "detail": {

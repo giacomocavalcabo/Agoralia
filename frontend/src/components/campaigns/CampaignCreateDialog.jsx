@@ -3,10 +3,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import FilterBuilder from '../filters/FilterBuilder';
+import { useToast } from '../ToastProvider';
 
 export default function CampaignCreateDialog({ open, onClose }) {
   const { t } = useTranslation('pages');
   const qc = useQueryClient();
+  const { toast } = useToast();
   const [form, setForm] = useState({ name: '', description: '', segment: { all: [] } });
 
   const mutation = useMutation({
@@ -15,12 +17,18 @@ export default function CampaignCreateDialog({ open, onClose }) {
       return (await api.post('/campaigns', { 
         name: form.name, 
         status: 'draft', 
-        segment: form.segment 
+        segment: form.segment,
+        description: form.description || null
       })).data;
     },
-    onSuccess: () => { 
+    onSuccess: (data) => { 
       qc.invalidateQueries(['campaigns']); 
       onClose?.(); 
+      toast.success(t('campaigns.create.success'));
+      // Redirect to the created campaign
+      if (data?.id) {
+        window.location.href = `/campaigns/${data.id}`;
+      }
     }
   });
 
