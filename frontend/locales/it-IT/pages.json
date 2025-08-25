@@ -605,7 +605,7 @@
       "status": { "any":"Qualsiasi stato", "new":"Nuovo", "contacted":"Contattato", "qualified":"Qualificato", "lost":"Perso" },
       "stage":  { "any":"Qualsiasi stadio", "cold":"Freddo", "warm":"Tiepido", "hot":"Caldo" },
       "class":  { "any":"Qualsiasi classe", "b2b":"B2B", "b2c":"B2C", "unknown":"Sconosciuta" },
-      "category": { "any":"Qualsiasi categoria", "allowed":"Consentito", "conditional":"Condizionato", "blocked":"Vietato" }
+      "category": { "any":"Qualsiasi categoria", "allowed":"Consentito", "conditional":"Condizionato", "blocked":"Vietato", "unknown":"Sconosciuto" }
     },
     "status": { "new": "Nuovo", "contacted": "Contattato", "qualified": "Qualificato", "lost": "Perso" },
     "stage": { "cold": "Freddo", "warm": "Tiepido", "hot": "Caldo" },
@@ -628,7 +628,9 @@
     "delete": { "title": "Eliminare il lead?", "message": "Questa azione non può essere annullata." },
     "dialogs": {
       "delete": { "title": "Elimina lead", "body": "Questa azione non può essere annullata.", "confirm": "Elimina", "cancel": "Annulla" },
-      "assign": { "title": "Assegna lead", "agent": "Agente", "confirm": "Assegna", "cancel": "Annulla" }
+      "assign": { "title": "Assegna lead", "agent": "Agente", "confirm": "Assegna", "cancel": "Annulla" },
+      "bulk_delete": { "title": "Elimina lead selezionati", "body": "Sei sicuro di voler eliminare i lead selezionati? Questa azione non può essere annullata.", "confirm": "Elimina", "cancel": "Annulla" },
+      "bulk_assign": { "title": "Assegna lead selezionati", "body": "Scegli un agente per assegnare i lead selezionati.", "confirm": "Assegna", "cancel": "Annulla" }
     },
     "table": {
       "columns": {
@@ -679,6 +681,8 @@
     }
   },
   "numbers": {
+    "title": "I miei numeri",
+    "description": "Gestisci numeri telefonici e instradamento",
     "agent_id": "ID Agente",
     "business_hours": "Orari Lavorativi",
     "buy_number": "Compra un numero",
@@ -689,7 +693,54 @@
     "route": "Instrada",
     "route_number": "Instrada Numero",
     "use_my_number": "Usa il mio numero",
-    "voicemail_message": "Messaggio Segreteria"
+    "voicemail_message": "Messaggio Segreteria",
+    "toolbar": {
+      "search_placeholder": "Cerca numeri…",
+      "open_filters": "Filtri",
+      "clear_filters": "Pulisci filtri",
+      "bulk": {
+        "assign": "Assegna",
+        "release": "Rilascia",
+        "export": "Esporta CSV"
+      }
+    },
+    "columns": {
+      "number": "Numero",
+      "country": "Paese",
+      "provider": "Provider",
+      "capabilities": "Capacità",
+      "status": "Stato",
+      "assigned_to": "Assegnato a",
+      "created": "Creato",
+      "actions": "Azioni"
+    },
+    "actions": {
+      "view": "Vedi",
+      "configure": "Configura",
+      "assign": "Assegna",
+      "release": "Rilascia"
+    },
+    "dialogs": {
+      "release": {
+        "title": "Rilasciare il numero?",
+        "body": "Questa azione è definitiva. Le chiamate verso questo numero non verranno più instradate.",
+        "confirm": "Rilascia",
+        "cancel": "Annulla",
+        "success": "Numero rilasciato",
+        "error": "Rilascio non riuscito"
+      }
+    },
+    "empty": {
+      "title": "Nessun numero",
+      "description": "Acquista o porta numeri per iniziare a chiamare."
+    },
+    "error": {
+      "title": "Caricamento numeri non riuscito",
+      "description": "Riprova o verifica la connessione."
+    },
+    "toast": {
+      "copied": "Numero copiato"
+    }
   },
   "settings": {
     "account": "Account",

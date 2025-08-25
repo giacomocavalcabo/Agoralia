@@ -4,6 +4,7 @@ import { Card } from '../ui/Card';
 import RichTextEditor from './RichTextEditor';
 import { useAutosave } from '../../lib/useAutosave';
 import { trackKbEvent, KB_EVENTS } from '../../lib/telemetry';
+import ConfirmDialog from '../ConfirmDialog';
 import { 
   DocumentTextIcon, EyeIcon, EyeSlashIcon, 
   CheckIcon, ClockIcon, ArchiveBoxIcon 
@@ -20,6 +21,7 @@ export default function SectionEditor({
   const [content, setContent] = useState(section?.content || '');
   const [isEditing, setIsEditing] = useState(!section?.id);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Autosave per titolo e contenuto
   const titleAutosave = useAutosave(section?.id, 'title', title);
@@ -66,21 +68,19 @@ export default function SectionEditor({
   const handleDelete = async () => {
     if (!section?.id) return;
     
-    if (confirm('Sei sicuro di voler eliminare questa sezione?')) {
-      try {
-        await onDelete(section.id);
-        trackKbEvent(KB_EVENTS.SECTION_DELETE, {
-          section_id: section.id,
-          success: true
-        });
-      } catch (error) {
-        console.error('Error deleting section:', error);
-        trackKbEvent(KB_EVENTS.SECTION_DELETE, {
-          section_id: section.id,
-          success: false,
-          error: error.message
-        });
-      }
+    try {
+      await onDelete(section.id);
+      trackKbEvent(KB_EVENTS.SECTION_DELETE, {
+        section_id: section.id,
+        success: true
+      });
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      trackKbEvent(KB_EVENTS.SECTION_DELETE, {
+        section_id: section.id,
+        success: false,
+        error: error.message
+      });
     }
   };
 
@@ -171,7 +171,7 @@ export default function SectionEditor({
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        onClick={handleDelete}
+                        onClick={() => setShowDeleteConfirm(true)}
                       >
                         Elimina
                       </Button>
@@ -228,6 +228,20 @@ export default function SectionEditor({
           </div>
         )}
       </div>
+      
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Elimina sezione"
+        body="Sei sicuro di voler eliminare questa sezione? Questa azione non può essere annullata."
+        confirmLabel="Elimina"
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          setShowDeleteConfirm(false);
+          handleDelete();
+        }}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
     </Card>
   );
 }

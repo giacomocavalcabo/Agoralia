@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../ui/button.jsx'
 import { Input } from '../ui/Input.jsx'
+import FilterBuilder from '../filters/FilterBuilder'
 
 export default function NumbersToolbar({
   value,
@@ -10,7 +11,7 @@ export default function NumbersToolbar({
   onBulkAssign,
   onBulkRelease,
   onExport,
-  data = [] // aggiungo i dati per popolare i filtri
+  data = []
 }) {
   const { t } = useTranslation('pages')
   const navigate = useNavigate()
@@ -24,9 +25,14 @@ export default function NumbersToolbar({
     return Array.from(new Set(list)).sort()
   }, [data])
 
-  const statuses = useMemo(() => {
-    const list = data.map(n => n.status).filter(Boolean)
+  const providers = useMemo(() => {
+    const list = data.map(n => n.provider).filter(Boolean)
     return Array.from(new Set(list)).sort()
+  }, [data])
+
+  const capabilities = useMemo(() => {
+    const allCaps = data.flatMap(n => n.capabilities || [])
+    return Array.from(new Set(allCaps)).sort()
   }, [data])
 
   // debounce search
@@ -36,60 +42,48 @@ export default function NumbersToolbar({
   }, [local.q, local.filters, local.pageSize]) // eslint-disable-line
 
   return (
-    <div className="mt-4 mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between overflow-visible">
-      <div className="flex items-center gap-3 flex-1">
-        <Input
-          data-testid="numbers-search"
-          className="w-full md:w-80"
-          placeholder={t('numbers.toolbar.search_placeholder')}
-          value={local.q}
-          onChange={(e) => setLocal(v => ({ ...v, q: e.target.value }))}
-        />
-        <select
-          data-testid="filter-country"
-          value={local.filters.country ?? ''}
-          onChange={(e) => setLocal(v => ({ ...v, filters: { ...v.filters, country: e.target.value || undefined } }))}
-          className="rounded-xl border bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary-300"
-          aria-label={t('numbers.toolbar.filters.country')}
-        >
-          <option value="">{t('numbers.toolbar.filters.country')}</option>
-          {countries.map(iso => (
-            <option key={iso} value={iso}>{iso}</option>
-          ))}
-        </select>
-                         <select
-          value={local.filters.status ?? ''}
-          onChange={(e) => setLocal(v => ({ ...v, filters: { ...v.filters, status: e.target.value || undefined } }))}
-          className="rounded-xl border bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-primary-300"
-          aria-label={t('numbers.toolbar.filters.status')}
-          data-testid="filter-status"
-          disabled={!statuses.length}
-        >
-          <option value="">{t('numbers.toolbar.filters.status')}</option>
-          {statuses.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <Button
-          data-testid="clear-all-filters"
-          variant="ghost"
-          onClick={() => setLocal(v => ({ ...v, q: '', filters: {} }))}
-        >
-          {t('numbers.toolbar.clear_all')}
-        </Button>
+    <div className="mt-4 mb-4 flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1">
+          <Input
+            data-testid="numbers-search"
+            className="w-full md:w-80"
+            placeholder={t('numbers.toolbar.search_placeholder')}
+            value={local.q}
+            onChange={(e) => setLocal(v => ({ ...v, q: e.target.value }))}
+          />
+          <Button
+            data-testid="clear-all-filters"
+            variant="ghost"
+            onClick={() => setLocal(v => ({ ...v, q: '', filters: {} }))}
+          >
+            {t('numbers.toolbar.clear_filters')}
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <LeadsShortcuts t={t} />
+          <Button data-testid="bulk-assign" variant="secondary" onClick={onBulkAssign}>
+            {t('numbers.toolbar.bulk.assign')}
+          </Button>
+          <Button data-testid="bulk-release" variant="outline" onClick={onBulkRelease}>
+            {t('numbers.toolbar.bulk.release')}
+          </Button>
+          <Button data-testid="bulk-export" variant="outline" onClick={onExport}>
+            {t('numbers.toolbar.bulk.export')}
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <LeadsShortcuts t={t} />
-        <Button data-testid="bulk-assign" variant="secondary" onClick={onBulkAssign}>
-          {t('numbers.toolbar.bulk.assign')}
-        </Button>
-        <Button data-testid="bulk-release" variant="outline" onClick={onBulkRelease}>
-          {t('numbers.toolbar.bulk.release')}
-        </Button>
-        <Button data-testid="bulk-export" variant="outline" onClick={onExport}>
-          {t('numbers.toolbar.bulk.export')}
-        </Button>
-      </div>
+
+      <FilterBuilder
+        value={local.filters?.rules || []}
+        onChange={(rules) => setLocal(v => ({ ...v, filters: { ...v.filters, rules } }))}
+        fields={[
+          { key: 'country_iso', type: 'select', label: t('numbers.columns.country'), options: countries },
+          { key: 'provider', type: 'select', label: t('numbers.columns.provider'), options: providers },
+          { key: 'capabilities', type: 'multiselect', label: t('numbers.columns.capabilities'), options: capabilities },
+          { key: 'created_at', type: 'date', label: t('numbers.columns.created') }
+        ]}
+      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { Card } from './ui/Card'
 import { Button } from './ui/button'
 import { Badge } from './ui/Badge'
+import ConfirmDialog from './ConfirmDialog'
 
 export function AssignmentsManager() {
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -51,10 +52,10 @@ export function AssignmentsManager() {
     await createAssignmentMutation.mutateAsync(newAssignment)
   }
   
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  
   const handleDeleteAssignment = async (id) => {
-    if (confirm('Are you sure you want to delete this assignment?')) {
-      await deleteAssignmentMutation.mutateAsync(id)
-    }
+    await deleteAssignmentMutation.mutateAsync(id)
   }
   
   const scopeOptions = [
@@ -272,7 +273,7 @@ export function AssignmentsManager() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteAssignment(assignment.id)}
+                            onClick={() => setDeleteConfirmId(assignment.id)}
                             className="text-red-600 hover:text-red-800"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -287,6 +288,20 @@ export function AssignmentsManager() {
           )}
         </div>
       </Card>
+      
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        title="Delete Assignment"
+        body="Are you sure you want to delete this assignment? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          handleDeleteAssignment(deleteConfirmId);
+          setDeleteConfirmId(null);
+        }}
+        onClose={() => setDeleteConfirmId(null)}
+      />
     </div>
   )
 }

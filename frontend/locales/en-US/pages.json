@@ -369,7 +369,7 @@
     },
     "paste": {
       "label": "[Label]",
-      "placeholder": "[Placeholder]",
+      "placeholder": "Paste your CSV data here (with headers)...",
       "process": "[Process]",
       "processing": "[Processing]"
     },
@@ -618,7 +618,7 @@
       "status": { "any":"Any status", "new":"New", "contacted":"Contacted", "qualified":"Qualified", "lost":"Lost" },
       "stage":  { "any":"Any stage", "cold":"Cold", "warm":"Warm", "hot":"Hot" },
       "class":  { "any":"Any class", "b2b":"B2B", "b2c":"B2C", "unknown":"Unknown" },
-      "category": { "any":"Any category", "allowed":"Allowed", "conditional":"Conditional", "blocked":"Blocked" }
+      "category": { "any":"Any category", "allowed":"Allowed", "conditional":"Conditional", "blocked":"Blocked", "unknown":"Unknown" }
     },
     "status": { "new": "New", "contacted": "Contacted", "qualified": "Qualified", "lost": "Lost" },
     "stage": { "cold": "Cold", "warm": "Warm", "hot": "Hot" },
@@ -641,7 +641,9 @@
     "delete": { "title": "Delete lead?", "message": "This action cannot be undone." },
     "dialogs": {
       "delete": { "title": "Delete lead", "body": "This action cannot be undone.", "confirm": "Delete", "cancel": "Cancel" },
-      "assign": { "title": "Assign leads", "agent": "Agent", "confirm": "Assign", "cancel": "Cancel" }
+      "assign": { "title": "Assign leads", "agent": "Agent", "confirm": "Assign", "cancel": "Cancel" },
+      "bulk_delete": { "title": "Delete selected leads", "body": "Are you sure you want to delete the selected leads? This action cannot be undone.", "confirm": "Delete", "cancel": "Cancel" },
+      "bulk_assign": { "title": "Assign selected leads", "body": "Choose an agent to assign the selected leads to.", "confirm": "Assign", "cancel": "Cancel" }
     },
     "table": {
       "columns": {
@@ -692,6 +694,8 @@
     }
   },
   "numbers": {
+    "title": "My Numbers",
+    "description": "Manage phone numbers and routing",
     "agent_id": "Agent ID",
     "business_hours": "Business Hours",
     "buy_number": "Buy a number",
@@ -702,7 +706,54 @@
     "route": "Route",
     "route_number": "Route Number",
     "use_my_number": "Use my number",
-    "voicemail_message": "Voicemail Message"
+    "voicemail_message": "Voicemail Message",
+    "toolbar": {
+      "search_placeholder": "Search numbers…",
+      "open_filters": "Filters",
+      "clear_filters": "Clear filters",
+      "bulk": {
+        "assign": "Assign",
+        "release": "Release",
+        "export": "Export CSV"
+      }
+    },
+    "columns": {
+      "number": "Number",
+      "country": "Country",
+      "provider": "Provider",
+      "capabilities": "Capabilities",
+      "status": "Status",
+      "assigned_to": "Assigned to",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "configure": "Configure",
+      "assign": "Assign",
+      "release": "Release"
+    },
+    "dialogs": {
+      "release": {
+        "title": "Release number?",
+        "body": "This action is permanent. Calls to this number will stop routing.",
+        "confirm": "Release",
+        "cancel": "Cancel",
+        "success": "Number released",
+        "error": "Release failed"
+      }
+    },
+    "empty": {
+      "title": "No numbers yet",
+      "description": "Buy or port numbers to start calling."
+    },
+    "error": {
+      "title": "Couldn't load numbers",
+      "description": "Please retry or check your connection."
+    },
+    "toast": {
+      "copied": "Number copied"
+    }
   },
   "settings": {
     "account": "Account",

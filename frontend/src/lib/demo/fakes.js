@@ -224,16 +224,15 @@ export const makeNumbers = (params = {}) => {
   for (let i = 1; i <= total; i++) {
     numbers.push({
       id: `num_${i}`,
-      e164: `+39${String(300000000 + i).slice(0, 9)}`,
-      country: 'IT',
+      e164: `+39${String(320000000 + i).slice(0, 9)}`,
+      country_iso: 'IT',
+      provider: 'DemoProvider',
       capabilities: ['voice', 'sms'],
-      status: i % 3 === 0 ? 'suspended' : 'active',
-      assigned_to: i % 4 === 0 ? 'Campaign A' : null,
-      purchased_at: new Date(Date.now() - i * 86400000).toISOString(),
-      carrier: 'Retell',
+      created_at: new Date(Date.now() - i * 86400000).toISOString(),
       source: 'agoralia',
       verified: true,
       can_inbound: true
+      // No status/assigned_to to avoid FE/BE mismatch
     })
   }
   

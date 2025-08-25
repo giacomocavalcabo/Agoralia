@@ -31,7 +31,7 @@ export default function Numbers() {
   const bulkAssign = () => {
     if (isDemo) {
       if (import.meta.env.DEV) console.debug('[numbers] demo bulk assign')
-      toast?.success?.('Assignment simulated')
+      toast?.success?.(t('numbers.toast.copied')) // Placeholder, will be updated
       return
     }
     // TODO: implement real bulk assign
@@ -39,14 +39,14 @@ export default function Numbers() {
   const bulkRelease = () => {
     if (isDemo) {
       if (import.meta.env.DEV) console.debug('[numbers] demo bulk release')
-      toast?.success?.('Release simulated')
+      toast?.success?.(t('numbers.toast.copied')) // Placeholder, will be updated
       return
     }
   }
   const bulkExport = () => {
     // always safe to export dummy CSV client-side
-    const header = ['number','country','status','carrier']
-    const rows = data.map(x => [x.e164, x.country, x.status, x.carrier].join(','))
+    const header = ['number','country','provider','capabilities']
+    const rows = data.map(x => [x.e164, x.country_iso, x.provider, (x.capabilities || []).join(';')].join(','))
     const csv = [header.join(','), ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -87,7 +87,6 @@ export default function Numbers() {
         sorting={{ column: state.sortBy, dir: state.sortDir }}
         onSortingChange={onSortingChange}
         onAssign={rowAssign}
-        onRelease={rowRelease}
         onConfigure={rowConfigure}
         onDetails={rowDetails}
       />

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useI18n } from '../../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { formatDateSafe } from '../../lib/format'
 import NumbersRowActions from './NumbersRowActions.jsx'
 import ServerDataTable from '../ServerDataTable.jsx'
@@ -10,54 +10,61 @@ export default function NumbersTable({
   sorting, onSortingChange,
   onAssign, onRelease, onConfigure, onDetails
 }) {
-  const { i18n, t } = useI18n('pages')
-
-  // Generate status options from actual data
-  const statusOptions = useMemo(() => {
-    const statuses = Array.from(new Set(data.map(r => r.status).filter(Boolean)));
-    return statuses.length > 0 ? statuses : [];
-  }, [data]);
+  const { t } = useTranslation('pages')
 
   const columns = useMemo(() => [
     {
       id: 'e164',
-      header: t('numbers.table.columns.number'),
-      accessorKey: 'e164',
-      meta: { testid: 'header-number' }
+      header: t('numbers.columns.number'),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{row.original.e164 || '—'}</span>
+          <button
+            className="text-xs underline text-blue-600 hover:text-blue-800"
+            aria-label={t('numbers.toast.copied')}
+            onClick={() => {
+              navigator.clipboard.writeText(row.original.e164)
+                .then(() => {
+                  // Toast will be handled by parent component
+                  if (window.toast) {
+                    window.toast.success(t('numbers.toast.copied'))
+                  }
+                })
+                .catch(() => {})
+            }}
+          >
+            copy
+          </button>
+        </div>
+      )
     },
     {
       id: 'country',
-      header: t('numbers.table.columns.country'),
-      accessorKey: 'country'
+      header: t('numbers.columns.country'),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{row.original.country_iso || '—'}</span>
+        </div>
+      )
+    },
+    {
+      id: 'provider',
+      header: t('numbers.columns.provider'),
+      accessorKey: 'provider'
     },
     {
       id: 'capabilities',
-      header: t('numbers.table.columns.capabilities'),
-      cell: ({ row }) => (row.original.capabilities || []).join(', ')
+      header: t('numbers.columns.capabilities'),
+      cell: ({ row }) => (row.original.capabilities || []).join(', ') || '—'
     },
     {
-      id: 'status',
-      header: t('numbers.table.columns.status'),
-      accessorKey: 'status'
-    },
-    {
-      id: 'assigned_to',
-      header: t('numbers.table.columns.assigned_to'),
-      accessorKey: 'assigned_to'
-    },
-    {
-      id: 'purchased_at',
-      header: t('numbers.table.columns.purchased_at'),
-      cell: ({ row }) => formatDateSafe(row.original.purchased_at, i18n.language)
-    },
-    {
-      id: 'carrier',
-      header: t('numbers.table.columns.carrier'),
-      accessorKey: 'carrier'
+      id: 'created_at',
+      header: t('numbers.columns.created'),
+      cell: ({ row }) => formatDateSafe(row.original.created_at) || '—'
     },
     {
       id: 'actions',
-      header: t('numbers.table.columns.actions'),
+      header: t('numbers.columns.actions'),
       cell: ({ row }) => (
         <NumbersRowActions
           row={row.original}
@@ -68,7 +75,7 @@ export default function NumbersTable({
         />
       )
     }
-  ], [i18n.language, t, onAssign, onRelease, onConfigure, onDetails])
+  ], [t, onAssign, onRelease, onConfigure, onDetails])
 
   return (
     <ServerDataTable
@@ -78,25 +85,25 @@ export default function NumbersTable({
       isLoading={loading}
       isError={error}
       page={page}
-      pageSize={pageSize}
+      pageSize={onPageSizeChange}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      sort={sorting?.sortBy}
-      dir={sorting?.sortDir}
+      sort={sorting?.column}
+      dir={sorting?.dir}
       onSort={onSortingChange}
       onRetry={() => window.location.reload()}
       // i18n props
-      errorTitle={t('numbers.table.error.title')}
-      errorDescription={t('numbers.table.error.description')}
-      retryLabel={t('numbers.table.error.retry')}
-      emptyTitle={t('numbers.table.empty.title')}
-      emptyDescription={t('numbers.table.empty.description')}
-      emptyCtaImport={t('numbers.table.empty.cta_import')}
-      emptyCtaAdd={t('numbers.table.empty.cta_new')}
-      loadingLabel={t('numbers.table.loading')}
-      sortAscLabel={t('numbers.table.sorting.asc')}
-      sortDescLabel={t('numbers.table.sorting.desc')}
-      selectAllLabel={t('numbers.table.select_all')}
+      errorTitle={t('numbers.error.title')}
+      errorDescription={t('numbers.error.description')}
+      retryLabel={t('common.retry')}
+      emptyTitle={t('numbers.empty.title')}
+      emptyDescription={t('numbers.empty.description')}
+      emptyCtaImport={t('common.import')}
+      emptyCtaAdd={t('common.add')}
+      loadingLabel={t('common.loading')}
+      sortAscLabel={t('common.sort')}
+      sortDescLabel={t('common.sort')}
+      selectAllLabel={t('common.select')}
     />
   )
 }
