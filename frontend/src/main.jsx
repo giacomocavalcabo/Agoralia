@@ -1,5 +1,7 @@
 // Importa e inizializza i18n PRIMA del render
+console.log('[main] About to import i18n.jsx...')
 import './lib/i18n.jsx'
+console.log('[main] i18n.jsx imported successfully')
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'

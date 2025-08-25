@@ -1,4 +1,6 @@
 // Unica sorgente di verità per i18n (react-i18next)
+console.log('[i18n] File i18n.jsx is loading...')
+
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 

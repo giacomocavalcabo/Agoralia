@@ -1,13 +1,14 @@
 # nixpacks.toml - Ottimizzato per Railway
 [phases.setup]
 # Pacchetti minimi per non invalidare cache
-nixPkgs = ["python313", "gcc"]
+nixPkgs = ["python312", "gcc"]
 
 [variables]
 # Hint per pip: usa cache persistita tra build
 PIP_CACHE_DIR = "/root/.cache/pip"
 PYTHONDONTWRITEBYTECODE = "1"
 PYTHONUNBUFFERED = "1"
+NIXPACKS_PYTHON_VERSION = "3.12"
 
 [phases.install]
 # Importante: installa SOLO dal file di req del backend (non tutta la repo)
