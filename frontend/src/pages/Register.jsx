@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useI18n } from '../lib/i18n.jsx';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 export default function Register() {
-  const { t } = useI18n('auth');
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -32,13 +32,13 @@ export default function Register() {
     try {
       const data = await api.post('/auth/register', formData);
 
-      setMessage(t('auth.register_success') || 'Account created successfully! You are now logged in.');
+      setMessage(t('register_success') || 'Account created successfully! You are now logged in.');
       // Redirect to dashboard after successful registration
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
     } catch (err) {
-      setError(t('auth.network_error') || 'Network error. Please check your connection.');
+      setError(t('network_error') || 'Network error. Please check your connection.');
     } finally {
       setIsLoading(false);
     }
@@ -49,10 +49,10 @@ export default function Register() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {t('auth.register_title') || 'Create your account'}
+            {t('register_title') || 'Create your account'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {t('auth.register_subtitle') || 'Join Agoralia and start managing your campaigns'}
+            {t('register_subtitle') || 'Join Agoralia and start managing your campaigns'}
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export default function Register() {
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                {t('auth.full_name') || 'Full Name'}
+                {t('full_name') || 'Full Name'}
               </label>
               <div className="mt-1">
                 <input
@@ -72,14 +72,14 @@ export default function Register() {
                   value={formData.name}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  placeholder={t('auth.enter_name') || 'Enter your full name'}
+                  placeholder={t('enter_name') || 'Enter your full name'}
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                {t('auth.email_address')}
+                {t('email_address')}
               </label>
               <div className="mt-1">
                 <input
@@ -91,14 +91,14 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  placeholder={t('auth.enter_email')}
+                  placeholder={t('enter_email')}
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                {t('auth.password')}
+                {t('password')}
               </label>
               <div className="mt-1">
                 <input
@@ -110,11 +110,11 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  placeholder={t('auth.enter_password')}
+                  placeholder={t('enter_password')}
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                {t('auth.password_requirements') || 'Password must be at least 8 characters with uppercase, lowercase, digit, and special character'}
+                {t('password_requirements') || 'Password must be at least 8 characters with uppercase, lowercase, digit, and special character'}
               </p>
             </div>
           </div>
@@ -143,16 +143,16 @@ export default function Register() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : null}
-              {isLoading ? t('auth.creating_account') || 'Creating account...' : t('auth.create_account') || 'Create account'}
+              {isLoading ? t('creating_account') || 'Creating account...' : t('create_account') || 'Create account'}
             </button>
           </div>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
           <p>
-            {t('auth.already_have_account') || 'Already have an account?'}{' '}
+            {t('already_have_account') || 'Already have an account?'}{' '}
             <a href="/login" className="text-green-600 hover:text-green-500 font-medium">
-              {t('auth.sign_in')}
+              {t('sign_in')}
             </a>
           </p>
         </div>
