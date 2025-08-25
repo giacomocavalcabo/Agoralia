@@ -149,6 +149,8 @@
       "completed": "Completed"
     },
     "actions": {
+      "create": "Create Campaign",
+      "import": "Import Campaign",
       "activate": "Activate",
       "pause": "Pause",
       "resume": "Resume",
@@ -168,6 +170,14 @@
     "error": {
       "title": "Error loading campaigns",
       "description": "Unable to load campaigns. Please try again."
+    },
+    "create": {
+      "title": "New Campaign"
+    },
+    "import": {
+      "title": "Import Campaign from JSON",
+      "file_label": "Select JSON file",
+      "format_title": "Expected format"
     },
     "detail": {
       "not_found": "Campaign not found.",
@@ -195,16 +205,9 @@
       }
     },
     "fields": {
-      "name": { "label": "Name", "placeholder": "Summer RFQ suppliers" },
-      "goal": { "label": "Objective",
-        "options": { "rfq": "RFQ", "survey": "Survey", "nps": "NPS", "custom": "Custom" } },
-      "role": { "label": "Role",
-        "options": { "supplier": "Supplier", "customer": "Customer" } },
-      "language": { "label": "Call language (default)" },
-      "agent": { "label": "Agent", "placeholder": "Search agent..." },
-      "caller_id": { "label": "Caller ID (from)", "placeholder": "+12025550123" },
-      "knowledge_base": { "label": "Knowledge base", "placeholder": "Search knowledge base..." },
-      "template": { "label": "Template", "placeholder": "Select a template" }
+      "name": "Name",
+      "status": "Status",
+      "segment": "Segment (JSON)"
     },
     "actions": { 
       "save": "Save", 
@@ -564,6 +567,8 @@
       "compliance": "Compliance",
       "status": "Status",
       "stage": "Stage",
+      "category": "Category",
+      "updated": "Updated",
       "owner": "Owner",
       "last_contact": "Last contact",
       "score": "Score",
@@ -584,7 +589,11 @@
       "class":  { "any":"Any class", "b2b":"B2B", "b2c":"B2C", "unknown":"Unknown" },
       "category": { "any":"Any category", "allowed":"Allowed", "conditional":"Conditional", "blocked":"Blocked" }
     },
+    "status": { "new": "New", "contacted": "Contacted", "qualified": "Qualified", "lost": "Lost" },
+    "stage": { "cold": "Cold", "warm": "Warm", "hot": "Hot" },
     "actions": { "view":"View", "edit":"Edit", "delete":"Delete", "confirm_delete":"Delete this lead? This cannot be undone." },
+    "details": { "error": { "title": "Lead not available", "description": "This lead could not be loaded." } },
+    "delete": { "title": "Delete lead?", "message": "This action cannot be undone." },
     "table": {
       "columns": {
         "name": "Name",
@@ -684,6 +693,11 @@
     "add": "Add",
     "remove": "Remove",
     "clear": "Clear",
+    "create": "Create",
+    "confirm": "Confirm",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "importing": "Importing...",
     "saving": "Saving...",
     "connecting": "Connecting...",
     "testing": "Testing...",

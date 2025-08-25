@@ -41,6 +41,29 @@ export function useCampaigns(params = {}) {
   });
 }
 
+export function useCreateCampaign() {
+  const qc = useQueryClient();
+  const isDemo = useDemoData();
+  return useMutation({
+    mutationFn: async (payload) => {
+      if (isDemo) {
+        // Simula il POST in demo
+        const newCampaign = {
+          id: `demo_${Date.now()}`,
+          ...payload,
+          created_at: new Date().toISOString()
+        };
+        return newCampaign;
+      }
+      const { data } = await api.post('/campaigns', payload);
+      return adapt(data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['campaigns'] });
+    }
+  });
+}
+
 export function usePatchCampaign() {
   const qc = useQueryClient();
   const isDemo = useDemoData();

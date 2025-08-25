@@ -97,6 +97,21 @@ export default function Campaigns(){
           <option value="paused">{t('campaigns.status.paused')}</option>
           <option value="completed">{t('campaigns.status.completed')}</option>
         </select>
+        
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+            onClick={() => navigate('/campaigns/import')}
+          >
+            {t('campaigns.actions.import')}
+          </button>
+          <button
+            className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+            onClick={() => navigate('/campaigns/new')}
+          >
+            {t('campaigns.actions.create')}
+          </button>
+        </div>
       </div>
 
       <ServerDataTable

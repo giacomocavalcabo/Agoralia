@@ -134,6 +134,8 @@
       "completed": "Completed"
     },
     "actions": {
+      "create": "Crea campagna",
+      "import": "Importa campagna",
       "activate": "Attiva",
       "pause": "Metti in pausa",
       "resume": "Riprendi",
@@ -153,6 +155,14 @@
           "error": {
         "title": "Errore nel caricamento delle campagne",
         "description": "Impossibile caricare le campagne. Riprova."
+      },
+      "create": {
+        "title": "Nuova campagna"
+      },
+      "import": {
+        "title": "Importa campagna da JSON",
+        "file_label": "Seleziona file JSON",
+        "format_title": "Formato atteso"
       },
       "detail": {
       "not_found": "Campagna non trovata.",
@@ -180,16 +190,9 @@
       }
     },
     "fields": {
-      "name": { "label": "Nome", "placeholder": "Fornitori RFQ estivi" },
-      "goal": { "label": "Obiettivo",
-        "options": { "rfq": "RFQ", "survey": "Sondaggio", "nps": "NPS", "custom": "Personalizzato" } },
-      "role": { "label": "Ruolo",
-        "options": { "supplier": "Fornitore", "customer": "Cliente" } },
-      "language": { "label": "Lingua chiamata (predefinita)" },
-      "agent": { "label": "Agente", "placeholder": "Cerca agente..." },
-      "caller_id": { "label": "ID chiamante (da)", "placeholder": "+12025550123" },
-      "knowledge_base": { "label": "Base di conoscenza", "placeholder": "Cerca base di conoscenza..." },
-      "template": { "label": "Modello", "placeholder": "Seleziona un modello" }
+      "name": "Nome",
+      "status": "Stato",
+      "segment": "Segmento (JSON)"
     },
     "actions": { 
       "save": "Salva", 
@@ -550,6 +553,8 @@
       "compliance": "Compliance",
       "status": "Stato",
       "stage": "Stadio",
+      "category": "Categoria",
+      "updated": "Aggiornato",
       "owner": "Owner",
       "last_contact": "Ultimo contatto",
       "score": "Punteggio",
@@ -570,7 +575,11 @@
       "class":  { "any":"Qualsiasi classe", "b2b":"B2B", "b2c":"B2C", "unknown":"Sconosciuta" },
       "category": { "any":"Qualsiasi categoria", "allowed":"Consentito", "conditional":"Condizionato", "blocked":"Vietato" }
     },
+    "status": { "new": "Nuovo", "contacted": "Contattato", "qualified": "Qualificato", "lost": "Perso" },
+    "stage": { "cold": "Freddo", "warm": "Tiepido", "hot": "Caldo" },
     "actions": { "view":"Apri", "edit":"Modifica", "delete":"Elimina", "confirm_delete":"Eliminare questo lead? L'azione è irreversibile." },
+    "details": { "error": { "title": "Lead non disponibile", "description": "Impossibile caricare il lead." } },
+    "delete": { "title": "Eliminare il lead?", "message": "Questa azione non può essere annullata." },
     "table": {
       "columns": {
         "name": "Nome",
@@ -670,6 +679,11 @@
     "add": "Aggiungi",
     "remove": "Rimuovi",
     "clear": "Pulisci",
+    "create": "Crea",
+    "confirm": "Conferma",
+    "retry": "Riprova",
+    "loading": "Caricamento...",
+    "importing": "Importazione...",
     "saving": "Salvataggio...",
     "connecting": "Connessione...",
     "testing": "Test in corso...",

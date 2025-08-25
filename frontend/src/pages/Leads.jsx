@@ -79,15 +79,20 @@ export default function Leads() {
       id: 'status', 
       header: t('leads.columns.status'), 
       accessorKey: 'status',
-      cell: (r) => t(`leads.filters.status.${String(r.status || '').toLowerCase()}`, String(r.status || '—'))
+      cell: ({ getValue }) => t(`leads.status.${getValue()}`, getValue() || '—')
     },
     { 
       id: 'stage', 
       header: t('leads.columns.stage'), 
       accessorKey: 'stage',
-      cell: (r) => t(`leads.filters.stage.${String(r.stage || '').toLowerCase()}`, String(r.stage || '—'))
+      cell: ({ getValue }) => t(`leads.stage.${getValue()}`, getValue() || '—')
     },
     { id: 'owner', header: t('leads.columns.owner'), accessorKey: 'owner' },
+    { 
+      id: 'category',
+      header: t('leads.columns.category'),
+      cell: ({ row }) => <ComplianceChip value={row.original?.compliance_category}/> 
+    },
     {
       id: 'last_contact',
       header: t('leads.columns.updated'),
