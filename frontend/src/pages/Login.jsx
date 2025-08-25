@@ -16,7 +16,7 @@ export default function Login() {
   
   const navigate = useNavigate();
   const { login, loginWithOAuth } = useAuth();
-  const { t } = useTranslation(['pages','common']);
+  const { t } = useTranslation(['pages','common','auth']);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
