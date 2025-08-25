@@ -227,11 +227,25 @@ export const demo = {
 // Additional demo generators needed by demoGate.js
 export const makeLeads = generateDemoLeads;
 export const makeDashboardSummary = generateDemoMetrics;
-export const makeCampaigns = () => [
-  { id: 1, name: 'Summer Campaign', status: 'active', budget: 5000, spent: 1875 },
-  { id: 2, name: 'Launch Campaign', status: 'paused', budget: 3000, spent: 1200 },
-  { id: 3, name: 'Retarget Campaign', status: 'active', budget: 2000, spent: 800 }
-];
+
+export function generateDemoCampaigns(n = 16) {
+  const statuses = ['draft','active','paused','completed'];
+  return Array.from({ length: n }).map((_, i) => ({
+    id: `c_${i+1}`,
+    name: `Campaign ${i+1}`,
+    status: statuses[i % statuses.length],
+    created_at: new Date(Date.now() - i*86400000).toISOString(),
+    // segmento semplice di esempio (riusato in CampaignDetail → Leads)
+    segment: i % 3 === 0 ? { compliance_category: 'allowed' } :
+             i % 3 === 1 ? { compliance_category: 'conditional' } :
+                           { compliance_category: 'blocked' }
+  }));
+}
+
+export const makeCampaigns = (params = {}) => {
+  const total = params.total || 12;
+  return generateDemoCampaigns(total);
+};
 export const makeNumbers = (params = {}) => {
   const total = params.total || 25
   const numbers = []

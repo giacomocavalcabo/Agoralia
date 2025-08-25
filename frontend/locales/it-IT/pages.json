@@ -120,18 +120,44 @@
   },
   "campaigns": {
     "title": "Campagne",
-    "description": "Gestisci campagne, pacing e performance",
+    "description": "Gestisci campagne, ritmo e performance",
+    "columns": {
+      "name": "Nome",
+      "status": "Stato",
+      "created_at": "Creata",
+      "actions": "Azioni",
+      "budget_cap": "Budget",
+      "budget_spent": "Speso"
+    },
     "status": {
+      "draft": "Bozza",
       "active": "Attiva",
       "paused": "In pausa",
-      "completed": "Completata",
-      "draft": "Bozza"
+      "completed": "Completata"
+    },
+    "actions": {
+      "pause": "Metti in pausa",
+      "resume": "Riprendi",
+      "activate": "Attiva",
+      "view": "Dettagli"
+    },
+    "toolbar": {
+      "search_placeholder": "Cerca campagne…",
+      "search_aria": "Cerca campagne",
+      "status_any": "Qualsiasi stato"
+    },
+    "empty": "Nessuna campagna trovata.",
+    "error": "Impossibile caricare le campagne.",
+    "detail": {
+      "not_found": "Campagna non trovata.",
+      "subtitle": "Panoramica e pubblico",
+      "leads_tab": "Leads"
     },
     "table": {
       "columns": {
         "name": "Nome",
         "status": "Stato",
-        "pacing": "Pacing",
+        "pacing": "Ritmo",
         "budget": "Budget",
         "created_at": "Creata"
       },
@@ -141,7 +167,7 @@
       },
       "error": {
         "title": "Errore di caricamento",
-        "description": "Impossibile caricare le campagne. Riprova."
+        "description": "Non riusciamo a caricare le campagne. Riprova."
       },
       "pagination": {
         "page_size": "Righe per pagina"
@@ -156,13 +182,13 @@
       "language": { "label": "Lingua chiamata (predefinita)" },
       "agent": { "label": "Agente", "placeholder": "Cerca agente..." },
       "caller_id": { "label": "ID chiamante (da)", "placeholder": "+12025550123" },
-      "knowledge_base": { "label": "Base conoscenza", "placeholder": "Cerca base conoscenza..." },
-      "template": { "label": "Template", "placeholder": "Seleziona un template" }
+      "knowledge_base": { "label": "Base di conoscenza", "placeholder": "Cerca base di conoscenza..." },
+      "template": { "label": "Modello", "placeholder": "Seleziona un modello" }
     },
     "actions": { 
       "save": "Salva", 
-      "next": "Successivo",
-      "create_schedule": "Crea e Pianifica" 
+      "next": "Avanti",
+      "create_schedule": "Crea e programma" 
     },
     "states": { 
       "loading": "Caricamento…", 
@@ -173,15 +199,15 @@
       "required": "Questo campo è obbligatorio",
       "caller_id": "Inserisci un numero di telefono valido in formato E.164"
     },
-    "compliance": "Compliance",
-    "compliance_disclosure": "Testo disclosure…",
+    "compliance": "Conformità",
+    "compliance_disclosure": "Testo di divulgazione…",
     "compliance_record": "Consenso registrazione…",
     "step": "Passo {s}",
     "steps": {
-      "audience": "Pubblico e Ritmo",
-      "details": "Dettagli Campagna",
-      "review": "Revisione e Creazione",
-      "windows": "Finestre e Compliance"
+      "audience": "Pubblico e ritmo",
+      "details": "Dettagli campagna",
+      "review": "Rivedi e crea",
+      "windows": "Finestre e conformità"
     },
     "toasts": {
       "created": "Campagna {id} creata con successo"

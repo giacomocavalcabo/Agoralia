@@ -1,93 +1,127 @@
-import React from 'react';
-// ⚠️ Non usare AppShell/GlobalSearch qui: già provvede il layout.
-import { PageHeader } from '../components/ui/FormPrimitives';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useCampaigns, usePatchCampaign } from '../lib/useCampaigns';
 import ServerDataTable from '../components/ServerDataTable';
-import { useI18n } from '../lib/i18n.jsx';
-import { useCampaigns } from '../lib/useCampaigns';
-import { formatDateSafe, formatNumberSafe } from '../lib/format';
+import { formatDateSafe } from '../lib/format';
+import { useNavigate } from 'react-router-dom';
 
-export default function Campaigns() {
-  const { t } = useI18n('pages');
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(25);
-  const [q, setQ] = React.useState('');
-  const [sort, setSort] = React.useState('created_at');
-  const [dir, setDir] = React.useState('desc');
+export default function Campaigns(){
+  const { t } = useTranslation('pages');
+  const navigate = useNavigate();
+  const [q, setQ] = useState('');
+  const [status, setStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const perPage = 25;
+  const { data, isLoading, isError } = useCampaigns({ page, perPage, q, status });
+  const patch = usePatchCampaign();
 
-  const { data, total, loading, error, refetch } =
-    useCampaigns({ page, pageSize, q, sortBy: sort, sortDir: dir });
-
-  const columns = React.useMemo(() => ([
-    { 
-      id: 'name', 
-      header: t('campaigns.table.columns.name'), 
-      accessorKey: 'name'
+  const columns = [
+    { id: 'name', header: t('campaigns.columns.name'), accessorKey: 'name',
+      cell: ({ row }) =>
+        <button
+          className="text-primary-600 hover:underline"
+          onClick={() => navigate(`/campaigns/${row?.original?.id}`)}
+        >
+          {row?.original?.name || '—'}
+        </button>
     },
-    { 
-      id: 'status', 
-      header: t('campaigns.table.columns.status'), 
-      accessorKey: 'status',
-      cell: (r) => t(`campaigns.status.${r.status || 'draft'}`)
+    { id: 'status', header: t('campaigns.columns.status'),
+      cell: ({ row }) => {
+        const s = row?.original?.status || 'draft';
+        const map = {
+          draft:  t('campaigns.status.draft'),
+          active: t('campaigns.status.active'),
+          paused: t('campaigns.status.paused'),
+          completed: t('campaigns.status.completed')
+        };
+        const tone = s === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                   : s === 'paused' ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                   : s === 'completed' ? 'bg-gray-50 text-gray-700 ring-gray-200'
+                   : 'bg-sky-50 text-sky-700 ring-sky-200';
+        return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1 ${tone}`}>{map[s]}</span>;
+      }
     },
-    { 
-      id: 'pacing', 
-      header: t('campaigns.table.columns.pacing'), 
-      accessorKey: 'pacing',
-      cell: (r) => formatNumberSafe(r.pacing) || '-'
+    { id: 'created_at', header: t('campaigns.columns.created_at'),
+      cell: ({ row }) => <span className="tabular-nums">{formatDateSafe(row?.original?.created_at)}</span>
     },
-    { 
-      id: 'budget', 
-      header: t('campaigns.table.columns.budget'), 
-      accessorKey: 'budget',
-      cell: (r) => formatNumberSafe(r.budget) || '-'
-    },
-    { 
-      id: 'created_at', 
-      header: t('campaigns.table.columns.created_at'), 
-      accessorKey: 'created_at',
-      cell: (r) => formatDateSafe(r.created_at) || '-'
+    { id: 'actions', header: t('campaigns.columns.actions'),
+      cell: ({ row }) => {
+        const c = row?.original;
+        const next = c?.status === 'active' ? 'paused'
+                   : c?.status === 'paused' ? 'active'
+                   : c?.status === 'draft' ? 'active'
+                   : 'paused';
+        const btnLabel = c?.status === 'active' ? t('campaigns.actions.pause')
+                       : c?.status === 'paused' ? t('campaigns.actions.resume')
+                       : c?.status === 'draft' ? t('campaigns.actions.activate')
+                       : t('campaigns.actions.pause');
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              className="rounded-lg border px-2 py-1 text-xs hover:bg-gray-50"
+              onClick={() => patch.mutate({ id: c.id, patch: { status: next } })}
+              aria-label={btnLabel}
+            >
+              {btnLabel}
+            </button>
+            <button
+              className="rounded-lg border px-2 py-1 text-xs hover:bg-gray-50"
+              onClick={() => navigate(`/campaigns/${c.id}`)}
+            >
+              {t('campaigns.actions.view')}
+            </button>
+          </div>
+        );
+      }
     }
-  ]), [t]);
+  ];
 
   return (
-    <div className="px-6 lg:px-8 py-6">
-      <PageHeader
-        title={t('campaigns.title')}
-        description={t('campaigns.description')}
-      />
+    <div className="px-6 lg:px-8 py-6 space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          className="w-64 rounded-lg border px-3 py-2 text-sm"
+          placeholder={t('campaigns.toolbar.search_placeholder')}
+          aria-label={t('campaigns.toolbar.search_aria')}
+          value={q}
+          onChange={(e)=>{ setPage(1); setQ(e.target.value) }}
+        />
+        <select
+          className="rounded-lg border px-3 py-2 text-sm"
+          value={status}
+          onChange={(e)=>{ setPage(1); setStatus(e.target.value) }}
+        >
+          <option value="">{t('campaigns.toolbar.status_any')}</option>
+          <option value="draft">{t('campaigns.status.draft')}</option>
+          <option value="active">{t('campaigns.status.active')}</option>
+          <option value="paused">{t('campaigns.status.paused')}</option>
+          <option value="completed">{t('campaigns.status.completed')}</option>
+        </select>
+      </div>
+
       <ServerDataTable
         columns={columns}
-        rows={data}
-        total={total}
-        page={page}
-        pageSize={pageSize}
+        rows={data?.results || []}
+        total={data?.total || 0}
+        page={data?.page || page}
+        pageSize={data?.per_page || perPage}
         onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-        sort={sort}
-        dir={dir}
-        onSort={(column) => {
-          if (sort !== column) {
-            setSort(column);
-            setDir('asc');
-            } else {
-            setDir(dir === 'asc' ? 'desc' : 'asc');
-          }
-        }}
-        isLoading={loading}
-        isError={error}
-        onRetry={refetch}
+        onPageSizeChange={() => {}} // Non implementato per ora
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={() => {}} // Non implementato per ora
         // i18n props
-        errorTitle={t('campaigns.table.error.title')}
-        errorDescription={t('campaigns.table.error.description')}
-        retryLabel={t('campaigns.table.error.retry')}
-        emptyTitle={t('campaigns.table.empty.title')}
-        emptyDescription={t('campaigns.table.empty.description')}
-        emptyCtaImport={t('campaigns.table.empty.cta_import')}
-        emptyCtaAdd={t('campaigns.table.empty.cta_new')}
-        loadingLabel={t('campaigns.table.loading')}
-        sortAscLabel={t('campaigns.table.sorting.asc')}
-        sortDescLabel={t('campaigns.table.sorting.desc')}
-        selectAllLabel={t('campaigns.table.select_all')}
+        errorTitle={t('campaigns.error')}
+        errorDescription={t('campaigns.error')}
+        retryLabel="Retry"
+        emptyTitle={t('campaigns.empty')}
+        emptyDescription={t('campaigns.empty')}
+        emptyCtaImport="Import"
+        emptyCtaAdd="Add New"
+        loadingLabel="Loading..."
+        sortAscLabel="Sort ascending"
+        sortDescLabel="Sort descending"
+        selectAllLabel="Select all"
       />
     </div>
   );

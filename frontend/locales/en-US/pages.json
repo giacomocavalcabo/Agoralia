@@ -136,11 +136,37 @@
   "campaigns": {
     "title": "Campaigns",
     "description": "Manage campaigns, pacing and performance",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "created_at": "Created",
+      "actions": "Actions",
+      "budget_cap": "Budget cap",
+      "budget_spent": "Spent"
+    },
     "status": {
+      "draft": "Draft",
       "active": "Active",
       "paused": "Paused",
-      "completed": "Completed",
-      "draft": "Draft"
+      "completed": "Completed"
+    },
+    "actions": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "activate": "Activate",
+      "view": "View"
+    },
+    "toolbar": {
+      "search_placeholder": "Search campaigns…",
+      "search_aria": "Search campaigns",
+      "status_any": "Any status"
+    },
+    "empty": "No campaigns found.",
+    "error": "Unable to load campaigns.",
+    "detail": {
+      "not_found": "Campaign not found.",
+      "subtitle": "Overview and audience",
+      "leads_tab": "Leads"
     },
     "table": {
       "columns": {

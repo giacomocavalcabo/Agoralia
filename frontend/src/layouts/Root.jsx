@@ -20,6 +20,7 @@ const LeadsImport = React.lazy(() => import('../pages/LeadsImport'))
 const LeadsNew = React.lazy(() => import('../pages/LeadsNew'))
 const Numbers = React.lazy(() => import('../pages/Numbers'))
 import Campaigns from '../pages/Campaigns.jsx'
+import CampaignDetail from '../pages/CampaignDetail.jsx'
 const Calendar = React.lazy(() => import('../pages/Calendar'))
 const Settings = React.lazy(() => import('../pages/Settings'))
 const SettingsCompany = React.lazy(() => import('../pages/SettingsCompany'))
@@ -89,6 +90,7 @@ export default function Root() {
                     <Route path="leads/new" element={<LeadsNew />} />
                     <Route path="numbers" element={<Numbers />} />
                     <Route path="campaigns" element={<Campaigns />} />
+                    <Route path="campaigns/:id" element={<CampaignDetail />} />
                     <Route path="calendar" element={<Calendar />} />
                     
                     {/* Settings routes with nested layout */}
