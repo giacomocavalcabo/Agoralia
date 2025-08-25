@@ -11,7 +11,7 @@ const OPS = {
   between: 'between',
 };
 
-export default function FilterBuilder({ schema, value, onChange, i18n, onClear, onApply }) {
+export default function FilterBuilder({ schema, value, onChange, i18n }) {
   const [editing, setEditing] = useState({ field: '', op: 'is', v: '' });
   const filters = value?.all || [];
 
@@ -32,32 +32,7 @@ export default function FilterBuilder({ schema, value, onChange, i18n, onClear, 
     return 'text';
   };
   
-  // Segment save/load functionality
-  const saveSegment = () => {
-    if (filters.length === 0) return;
-    const name = prompt(i18n.save_prompt || 'Enter segment name:');
-    if (name) {
-      const saved = JSON.parse(localStorage.getItem('filterSegments') || '{}');
-      saved[name] = { filters, created: new Date().toISOString() };
-      localStorage.setItem('filterSegments', JSON.stringify(saved));
-      alert(i18n.save_success || 'Segment saved!');
-    }
-  };
-  
-  const loadSegment = () => {
-    const saved = JSON.parse(localStorage.getItem('filterSegments') || '{}');
-    const names = Object.keys(saved);
-    if (names.length === 0) {
-      alert(i18n.no_saved || 'No saved segments found');
-      return;
-    }
-    
-    const name = prompt(`${i18n.load_prompt || 'Choose segment:'}\n${names.join('\n')}`);
-    if (name && saved[name]) {
-      onChange?.({ all: saved[name].filters });
-      alert(i18n.load_success || 'Segment loaded!');
-    }
-  };
+
 
   function addFilter() {
     if (!editing.field) return;
@@ -168,43 +143,7 @@ export default function FilterBuilder({ schema, value, onChange, i18n, onClear, 
                 onClick={addFilter}>{i18n.add}</button>
       </div>
       
-      {/* Action buttons */}
-      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-        <div className="flex gap-2">
-                      <button 
-              className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-              onClick={saveSegment}
-              disabled={filters.length === 0}
-              aria-label={i18n.save_segment || 'Save filter segment'}
-            >
-              💾 {i18n.save_segment || 'Save'}
-            </button>
-            <button 
-              className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-              onClick={loadSegment}
-              aria-label={i18n.load_segment || 'Load saved filter segment'}
-            >
-              📂 {i18n.load_segment || 'Load'}
-            </button>
-        </div>
-        
-        <div className="flex gap-2">
-          <button 
-            className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-            onClick={onClear}
-            aria-label="Clear all filters"
-          >
-            {i18n.clear || 'Clear'}
-          </button>
-          <button 
-            className="text-xs px-2 py-1 rounded bg-blue-600 text-white px-2 py-1 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-            onClick={onApply}
-            aria-label="Apply current filters"
-          >
-            {i18n.apply || 'Apply'}
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 }

@@ -150,12 +150,30 @@ export default function Calendar(){
             }}
             style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--line)', borderLeft:'1px solid var(--line)' }}
           >
-            <div></div>
+            <div className="bg-blue-50/30 text-blue-700 font-semibold" style={{ padding:8, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>Ora</div>
             {Array.from({ length:7 }).map((_,d)=>{
               const day = new Date(range.start); day.setDate(range.start.getDate()+d)
-              return <div key={d} className="kpi-title" style={{ padding:8, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>{day.toLocaleDateString()}</div>
+              const isToday = day.toDateString() === new Date().toDateString()
+              return (
+                <div 
+                  key={d} 
+                  className={`kpi-title ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-blue-50/30'}`} 
+                  style={{ 
+                    padding:8, 
+                    borderRight:'1px solid var(--line)', 
+                    borderBottom:'1px solid var(--line)',
+                    textAlign: 'center'
+                  }}
+                >
+                  {day.toLocaleDateString('it-IT', { 
+                    weekday: 'short', 
+                    day: 'numeric', 
+                    month: 'short' 
+                  })}
+                </div>
+              )
             })}
-            {Array.from({ length:11 }).map((_,h)=>{
+            {Array.from({ length:13 }).map((_,h)=>{
               const hour = h+8
               return (
                 <div key={`row-${hour}`} style={{ display:'contents' }}>
@@ -235,7 +253,7 @@ export default function Calendar(){
           <div className="grid grid-cols-7 gap-1">
             {/* Header row with day names */}
             {['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'].map(day => (
-              <div key={day} className="text-center text-sm font-semibold text-ink-600 p-2 border-b border-line">
+              <div key={day} className="text-center text-sm font-semibold text-blue-700 p-2 border-b border-line bg-blue-50/30">
                 {day}
               </div>
             ))}
@@ -275,11 +293,11 @@ export default function Calendar(){
                     key={index}
                     className={`h-32 p-1 border border-line ${
                       isCurrentMonth ? 'bg-bg-card' : 'bg-bg-app/50'
-                    } ${isToday ? 'ring-2 ring-brand-500' : ''}`}
+                    } ${isToday ? 'ring-2 ring-brand-500 bg-blue-50' : ''}`}
                   >
                     <div className={`text-xs text-right mb-1 ${
                       isCurrentMonth ? 'text-ink-900' : 'text-ink-400'
-                    } ${isToday ? 'font-bold' : ''}`}>
+                    } ${isToday ? 'font-bold text-blue-700' : ''}`}>
                       {date.getDate()}
                     </div>
                     <div className="space-y-1 max-h-20 overflow-hidden">
