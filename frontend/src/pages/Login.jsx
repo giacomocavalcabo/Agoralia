@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../lib/useAuth.jsx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
@@ -203,9 +203,9 @@ export default function Login() {
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>{t('subtitle')}</p>
             <p className="mt-2">
-              <a href="/register" className="text-blue-600 hover:text-blue-500 font-medium">
+              <Link to="/register" className="text-blue-600 hover:text-blue-500 font-medium">
                 {t('register')}
-              </a>
+              </Link>
             </p>
             <p className="mt-2">
               <a href="mailto:support@agoralia.com" className="text-blue-600 hover:text-blue-500">

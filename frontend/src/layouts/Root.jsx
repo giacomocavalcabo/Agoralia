@@ -6,6 +6,7 @@ import { ToastProvider } from '../components/ToastProvider.jsx'
 import { AuthProvider } from '../lib/useAuth.jsx'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../lib/i18n.jsx'
+import AuthLayout from '../components/AuthLayout'
 
 // Lazy load pages with namespace preloading
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))
@@ -60,10 +61,10 @@ export default function Root() {
         <AuthProvider>
           <ToastProvider>
           <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/login/verify" element={<LoginVerify />} />
-            <Route path="/register" element={<Register />} />
+            {/* Public routes - NIENTE AppShell, NIENTE useAuth */}
+            <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+            <Route path="/login/verify" element={<AuthLayout><LoginVerify /></AuthLayout>} />
+            <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
             
             {/* Protected routes */}
             <Route path="/*" element={
