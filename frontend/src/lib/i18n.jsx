@@ -5,7 +5,9 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
 // Autocarica TUTTE le JSON sotto /locales/<lang>/<ns>.json
+console.log('[i18n] About to execute import.meta.glob...')
 const modules = import.meta.glob('../../locales/*/*.json', { eager: true })
+console.log('[i18n] import.meta.glob executed, modules:', modules)
 
 // Debug: log dei moduli trovati
 if (import.meta.env.DEV) {
@@ -13,6 +15,7 @@ if (import.meta.env.DEV) {
 }
 
 const resources = {}
+console.log('[i18n] Starting to process modules, count:', Object.keys(modules).length)
 for (const [path, mod] of Object.entries(modules)) {
   // path es: ../../locales/en-US/pages.json
   const parts = path.split('/')
@@ -39,6 +42,7 @@ const DEFAULT_NS = 'pages'
 const FALLBACKS = ['en-US', 'it-IT']
 
 if (!i18n.isInitialized) {
+  console.log('[i18n] About to initialize i18n with resources:', resources)
   i18n
     .use(initReactI18next)
     .init({
