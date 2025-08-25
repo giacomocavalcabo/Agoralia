@@ -374,13 +374,25 @@ export default function Dashboard() {
 					</div>
 					<div className="col-span-12 xl:col-span-4" data-card="true">
 						<div className="h-full">
-							<GaugeBudget 
-								spent={summary?.budget_spent_month_cents || 0}
-								cap={summary?.budget_monthly_cents || 0}
-								warnPercent={80}
-								labelPosition="outside"
-								className="h-full"
-							/>
+							{(() => {
+								const demoCap = 500000;     // €5,000
+								const demoSpent = 187500;   // €1,875
+								const cap = showDemoData
+									? (summary?.budget_monthly_cents || demoCap)
+									: (summary?.budget_monthly_cents || 0);
+								const spent = showDemoData
+									? (summary?.budget_spent_month_cents || demoSpent)
+									: (summary?.budget_spent_month_cents || 0);
+								return (
+									<GaugeBudget
+										spent={spent}
+										cap={cap}
+										warnPercent={80}
+										labelPosition="outside"
+										className="h-full"
+									/>
+								)
+							})()}
 						</div>
 					</div>
 				
@@ -388,26 +400,32 @@ export default function Dashboard() {
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.events', 'Event Feed')}</h3>
-							<EventFeed events={events} className="h-full" />
+							<EventFeed events={events} className="h-full" bare />
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.agents.title', 'Top Agents')}</h3>
 							<TopAgentsBar 
 								agents={showDemoData ? topAgents : []}
 								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
 								className="h-full"
+								bare
 							/>
 						</div>
 					</div>
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
+							<h3 className="text-sm font-medium mb-4">{t('dashboard.geo.title', 'Geographic Distribution')}</h3>
 							<MiniMap 
 								data={showDemoData ? geoData : []}
 								onDrillDown={(country) => handleDrillDown('country', country)}
+								bare
 							/>
 						</div>
 					</div>
+				
+					{/* Row 4: Response Time (1/3) + Live Calls (2/3) */}
 					<div className="col-span-12 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
 							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
@@ -417,9 +435,7 @@ export default function Dashboard() {
 							/>
 						</div>
 					</div>
-				
-					{/* Row 4: Live Calls - size="lg" */}
-					<div className="col-span-12 xl:col-span-12" data-card="true">
+					<div className="col-span-12 lg:col-span-8" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 overflow-hidden">
 							<div className="flex items-center justify-between mb-4">
 								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>

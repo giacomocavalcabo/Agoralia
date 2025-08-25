@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 
 export default function EventFeed({ 
 	events = [],
-	className = ''
+	className = '',
+	bare = false,
+	title = 'Event Feed'
 }) {
 	const [filter, setFilter] = useState('all')
 	
@@ -32,7 +34,7 @@ export default function EventFeed({
 		switch (type) {
 			case 'error': return 'border-red-200 bg-red-50'
 			case 'webhook': return 'border-blue-200 bg-blue-50'
-			case 'budget': return 'border-amber-200 bg-amber-50'
+			case 'budget': return 'border-amber-200 bg-blue-50'
 			case 'call.created': return 'border-teal-200 bg-teal-50'
 			case 'call.finished': return 'border-green-200 bg-green-50'
 			default: return 'border-gray-200 bg-gray-50'
@@ -48,12 +50,15 @@ export default function EventFeed({
 		})
 	}
 	
+	const Wrapper = ({children}) => bare ? <>{children}</> :
+		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>{children}</div>;
+	
 	return (
-		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>
-			<div className="flex items-center justify-between mb-4">
+		<Wrapper>
+			{!bare && <div className="flex items-center justify-between mb-4">
 				<div className="text-sm font-semibold text-gray-900">Event Feed</div>
 				<div className="text-xs text-gray-500">{filteredEvents.length} events</div>
-			</div>
+			</div>}
 			
 			{/* Filter tabs */}
 			<div className="flex gap-1 mb-4">
@@ -113,6 +118,6 @@ export default function EventFeed({
 					</div>
 				</div>
 			)}
-		</div>
+		</Wrapper>
 	)
 }

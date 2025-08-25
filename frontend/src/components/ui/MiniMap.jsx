@@ -3,7 +3,9 @@ import { useI18n } from '../../lib/i18n.jsx'
 
 export default function MiniMap({ 
 	data = [],
-	className = ''
+	className = '',
+	bare = false,
+	title = 'Geographic Distribution'
 }) {
 	const { t } = useI18n('pages')
 	// Only show real data, no placeholder data
@@ -11,9 +13,12 @@ export default function MiniMap({
 	
 	const maxCalls = Math.max(...displayData.map(d => d.calls))
 	
+	const Wrapper = ({children}) => bare ? <>{children}</> :
+		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>{children}</div>;
+	
 	return (
-		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>
-			<div className="text-sm font-semibold text-gray-900 mb-4">{t('dashboard.geo.title', 'Geographic Distribution')}</div>
+		<Wrapper>
+			{!bare && <div className="text-sm font-semibold text-gray-900 mb-4">{t('dashboard.geo.title', 'Geographic Distribution')}</div>}
 			
 			{displayData.length === 0 ? (
 				<div className="text-center py-8">
@@ -67,6 +72,6 @@ export default function MiniMap({
 					{t('dashboard.geo.top_country', 'Top country')}: {displayData[0]?.iso2} ({displayData[0]?.calls} {t('dashboard.geo.calls', 'calls')})
 				</div>
 			</div>
-		</div>
+		</Wrapper>
 	)
 }

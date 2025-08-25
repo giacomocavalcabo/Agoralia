@@ -3,7 +3,9 @@ import { useI18n } from '../../lib/i18n.jsx'
 
 export default function TopAgentsBar({ 
 	agents = [],
-	className = ''
+	className = '',
+	bare = false,
+	title = 'Top Agents'
 }) {
 	const { t } = useI18n('pages')
 	// Sort agents by qualified rate
@@ -11,9 +13,12 @@ export default function TopAgentsBar({
 	
 	const maxQualifiedRate = Math.max(...sortedAgents.map(a => a.qualified_rate || 0))
 	
+	const Wrapper = ({children}) => bare ? <>{children}</> :
+		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>{children}</div>;
+	
 	return (
-		<div className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 ${className}`}>
-			<div className="text-sm font-semibold text-gray-900 mb-4">{t('dashboard.agents.title', 'Top Agents')}</div>
+		<Wrapper>
+			{!bare && <div className="text-sm font-semibold text-gray-900 mb-4">{t('dashboard.agents.title', 'Top Agents')}</div>}
 			
 			{agents.length === 0 ? (
 				<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.agents.empty', 'No agent data available')}</div>
@@ -73,6 +78,6 @@ export default function TopAgentsBar({
 					</div>
 				</div>
 			)}
-		</div>
+		</Wrapper>
 	)
 }

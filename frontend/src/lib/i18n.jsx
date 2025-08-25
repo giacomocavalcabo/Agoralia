@@ -73,9 +73,19 @@ if (!i18n.isInitialized) {
 import { useTranslation } from 'react-i18next'
 export function useI18n(ns = DEFAULT_NS) {
   const { t, i18n: inst, ready } = useTranslation(ns)
-  return { t, i18n: inst, ready, locale: inst.language }
+  const setLocale = (lng) => {
+    if (!lng || lng === inst.language) return
+    inst.changeLanguage(lng)
+    try { localStorage.setItem('app.lang', lng) } catch {}
+  }
+  return { t, i18n: inst, ready, locale: inst.language, setLocale }
 }
 
+// restore preferred language on boot
+try {
+  const saved = localStorage.getItem('app.lang')
+  if (saved) i18n.changeLanguage(saved)
+} catch {}
 
 
 export default i18n

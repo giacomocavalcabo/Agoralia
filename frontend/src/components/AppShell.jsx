@@ -171,7 +171,7 @@ export default function AppShell({ children }) {
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={t('common.search') || 'Search...'}
+                  placeholder={t('common.search', 'Search')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-transparent"
                 />
               </div>
@@ -183,7 +183,8 @@ export default function AppShell({ children }) {
               <LanguageSwitcher />
               
               {/* Notifications */}
-              <button className="p-2 text-gray-400 hover:text-gray-500">
+              {/* TODO: Notifications – hidden until wired */}
+              <button className="hidden p-2 text-gray-400 hover:text-gray-500" aria-hidden="true" tabIndex={-1}>
                 <BellIcon className="h-5 w-5" />
               </button>
               
@@ -219,10 +220,12 @@ export default function AppShell({ children }) {
                 
                 {/* Dropdown menu */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
-                      <p className="text-xs text-gray-500">{user?.email}</p>
+                      <p className="text-xs text-gray-500 break-all leading-snug" title={user?.email}>
+                        {user?.email}
+                      </p>
                       {user?.email === 'giacomo.cavalcabo14@gmail.com' && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
                           Admin

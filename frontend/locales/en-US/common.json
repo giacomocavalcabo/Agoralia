@@ -17,5 +17,6 @@
   "agent": "Agent",
   "status": "Status",
   "started": "Started",
-  "duration": "Duration"
+  "duration": "Duration",
+  "search": "Search"
 }
