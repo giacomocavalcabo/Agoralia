@@ -3,44 +3,9 @@
  * Used by useLeads, Dashboard, and other components that need demo data
  */
 
-export const generateDemoLeads = (total = 150) => {
-  const statuses = ['new','contacted','qualified','lost'];
-  const stages   = ['cold','warm','hot'];
-  const owners   = ['Giulia','Marco','Luca','Sara'];
-  const countries = ['IT','FR','DE','ES','GB','US','NL','BE','AT','CH'];
-  const classes = ['b2b','b2c','unknown'];
-  const categories = ['allowed','conditional','blocked'];
-  const rows = [];
-  for (let i=0;i<total;i++){
-    const country_iso = countries[i % countries.length];
-    const contact_class = classes[i % classes.length];
-    const compliance_category = categories[i % categories.length];
-    rows.push({
-      id: `demo-${i+1}`,
-      name: `Demo Lead ${i+1}`,
-      company: i%3===0 ? `Company ${i+1}` : null,
-      email: `lead${i+1}@example.com`,
-      phone_e164: `+39${String(3200000000 + i).slice(0,10)}`, // E.164-like
-      country_iso,
-      contact_class,
-      known: i%4===0,               // relazione esistente
-      opt_in: contact_class==='b2c' ? (i%5===0) : null,
-      national_dnc: contact_class==='b2c' ? (i%6===0 ? 'in':'not_in') : 'unknown',
-      compliance_category,
-      compliance_reasons: compliance_category==='blocked'
-        ? ['Opt-in required not provided'] 
-        : compliance_category==='conditional'
-          ? ['DNC registry present: status unknown']
-          : ['B2B allowed'],
-      status: statuses[i % statuses.length],
-      stage: stages[i % stages.length],
-      campaign: ['Launch','Retarget','Summer'][i % 3],
-      owner: owners[i % owners.length],
-      last_contact: new Date(Date.now() - i*36e5).toISOString(),
-      score: (i % 10) * 10
-    });
-  }
-  return rows;
+export const generateDemoLeads = (total = 0) => {
+  // per ora nessun seed: li inserirai tu quando serve
+  return { results: [], total: 0 };
 };
 
 // --- Billing demo ---------------------------------------------------------
@@ -279,3 +244,24 @@ export const makeKnowledgeBase = () => [
   { id: 2, title: 'Offer Package B', type: 'offer_pack', status: 'draft' },
   { id: 3, title: 'Company Policy C', type: 'company', status: 'published' }
 ];
+
+export function generateDemoCalendarEvents({ start, end }) {
+  // 3 esempi: scheduled (verde), blocked (rosso), warning (giallo)
+  const base = new Date(start);
+  const mk = (d, h, kind, extra = {}) => ({
+    id: `ev_${kind}_${d.toISOString().slice(0,10)}_${h}`,
+    kind, // "scheduled" | "blocked" | "warn_budget" | "warn_concurrency"
+    title: kind === 'scheduled' ? 'Call' : (kind === 'blocked' ? 'Blocked' : 'Warning'),
+    at: new Date(d.getFullYear(), d.getMonth(), d.getDate(), h).toISOString(),
+    ...extra
+  });
+  const d1 = new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1);
+  const d2 = new Date(base.getFullYear(), base.getMonth(), base.getDate() + 2);
+
+  return [
+    mk(d1, 10, 'scheduled'),
+    mk(d1, 12, 'warn_budget', { budget_used_pct: 86 }),
+    mk(d2, 11, 'blocked', { reason: 'quiet_hours' }),
+    mk(d2, 15, 'warn_concurrency', { used: 3, limit: 3 }),
+  ];
+}

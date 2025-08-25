@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCalendarEvents, useQuickSchedule } from '../lib/useCalendar'
+import { runPreflight } from '../lib/compliance'
 import { apiFetch, API_BASE_URL } from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
@@ -11,10 +13,9 @@ function fmt(d){
 }
 
 export default function Calendar(){
-  const { t } = useTranslation('pages')
+  const { t, i18n } = useTranslation('pages')
   const [view, setView] = useState('week')
   const [cursor, setCursor] = useState(new Date())
-  const [events, setEvents] = useState([])
   const { toast } = useToast()
   const [quickOpen, setQuickOpen] = useState(false)
   const [quick, setQuick] = useState({ lead_id:'', agent_id:'', kb_id:'', from:'', at:'' })
@@ -36,20 +37,20 @@ export default function Calendar(){
     return { start: monthStart, end: monthEnd }
   }, [cursor, view])
 
-  async function load(){
-    try{
-      const res = await apiFetch(`/calendar?scope=tenant&start=${range.start.toISOString()}&end=${range.end.toISOString()}`)
-      setEvents(res.events || [])
-    } catch(e){}
-  }
-
-  useEffect(()=>{ load() }, [range.start, range.end])
+  // Usa il nuovo hook invece di load manuale
+  const { data, isLoading, error, refetch } = useCalendarEvents({ 
+    from: range.start, 
+    to: range.end, 
+    scope: 'tenant' 
+  });
+  const events = data?.events || [];
+  const quickMut = useQuickSchedule();
 
   function prev(){ setCursor(d=> view==='week'? new Date(d.getFullYear(), d.getMonth(), d.getDate()-7) : new Date(d.getFullYear(), d.getMonth()-1, 1)) }
   function next(){ setCursor(d=> view==='week'? new Date(d.getFullYear(), d.getMonth(), d.getDate()+7) : new Date(d.getFullYear(), d.getMonth()+1, 1)) }
   function today(){ setCursor(new Date()) }
 
-  const fromStr = fmt(range.start), toStr = fmt(range.end)
+  const fromStr = range.start.toLocaleDateString(i18n.language), toStr = range.end.toLocaleDateString(i18n.language)
 
   function openQuick(date){
     setQuick({ lead_id:'', agent_id:'', kb_id:'', from:'', at: date.toISOString() })
@@ -57,12 +58,35 @@ export default function Calendar(){
   }
 
   async function submitQuick(){
-    try{
-      await apiFetch('/schedule', { method:'POST', body: quick })
+    try {
+      // Preflight (usa il lead selezionato: qui semplifichiamo con iso dal caller ID o dal lead, se disponibile)
+      const pre = await runPreflight({
+        iso: 'IT', contact_class: 'b2c',
+        known_contact: false, local_dt: new Date(quick.at).toISOString(),
+        wants_recording: false
+      });
+      if (pre.decision === 'block') {
+        toast(t('calendar.toasts.blocked', { reason: pre.reasons?.[0] || 'policy' }));
+        return;
+      }
+      if (pre.decision === 'delay') {
+        toast(t('calendar.toasts.delayed', { ts: pre.next_window_at }));
+        return;
+      }
+
+      await quickMut.mutateAsync({
+        lead_id: quick.lead_id,
+        agent_id: quick.agent_id,
+        kb_id: quick.kb_id,
+        from: quick.from,
+        at: new Date(quick.at).toISOString()
+      });
       setQuickOpen(false)
-      toast(t('pages.calendar.quick.submit_done') || 'Scheduled')
-      load()
-    } catch(err){ toast(String(err?.message || err)) }
+      toast(t('calendar.toasts.created'))
+      refetch()
+    } catch(err){ 
+      toast(t('calendar.error.title'))
+    }
   }
 
   return (
@@ -78,15 +102,15 @@ export default function Calendar(){
           <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>Mese</button>
         </div>
       </div>
-      <div className="kpi-title">{t('pages.calendar.range', { fromStr, toStr })}</div>
+      <div className="kpi-title">{t('calendar.range', { from: fromStr, to: toStr })}</div>
       <div className="flex items-center gap-2.5">
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(16,185,129,.25)' }}></span>{t('pages.calendar.legend.scheduled')||'Scheduled'}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)' }}></span>{t('pages.calendar.legend.blocked')||'Blocked'}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(245,158,11,.18)' }}></span>{t('pages.calendar.legend.warn_budget')||'Warn • Budget'}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(239,68,68,.16)' }}></span>{t('pages.calendar.legend.warn_concurrency')||'Warn • Concurrency'}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(16,185,129,.25)' }}></span>{t('calendar.legend.scheduled')}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)' }}></span>{t('calendar.legend.blocked')}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(245,158,11,.18)' }}></span>{t('calendar.legend.warn_budget')}</span>
+        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(239,68,68,.16)' }}></span>{t('calendar.legend.warn_concurrency')}</span>
       </div>
       <div className="panel" style={{ minHeight:300 }}>
-        <div className="kpi-title" style={{ marginBottom:8 }}>{t('pages.calendar.title')}</div>
+        <div className="kpi-title" style={{ marginBottom:8 }}>{t('calendar.title')}</div>
         {view==='week' ? (
           <div
             role="grid"
@@ -138,20 +162,20 @@ export default function Calendar(){
                                   headers:{ 'Content-Type':'application/json' },
                                   body: JSON.stringify({ at: slot.toISOString() })
                                 })
-                                if (resp.ok){ toast('Moved'); load() }
+                                if (resp.ok){ toast(t('calendar.toasts.created')); refetch() }
                                 else if (resp.status===409){
                                   let detail
                                   try { detail = await resp.json() } catch { detail = {} }
                                   const code = String(detail?.code || 'quiet_hours').toLowerCase()
                                   if (code==='concurrency') {
-                                    const msg = `${t('pages.calendar.errors.concurrency')} (${detail.used||0}/${detail.limit||0})`
+                                    const msg = `${t('calendar.errors.concurrency')} (${detail.used||0}/${detail.limit||0})`
                                     toast(msg)
                                   } else if (code==='quiet_hours') {
-                                    toast(t('pages.calendar.errors.quiet_hours', { iso: detail?.iso || '' }))
+                                    toast(t('calendar.errors.quiet_hours', { iso: detail?.iso || '' }))
                                   } else if (code==='budget') {
-                                    toast(t('pages.calendar.errors.budget'))
+                                    toast(t('calendar.errors.budget'))
                                   } else if (code==='rpo') {
-                                    toast(t('pages.calendar.errors.rpo', { iso: detail?.iso || '' }))
+                                    toast(t('calendar.errors.rpo', { iso: detail?.iso || '' }))
                                   } else {
                                     toast(`409: ${code}`)
                                   }
@@ -291,33 +315,33 @@ export default function Calendar(){
         )}
       </div>
 
-      <Modal title={t('pages.calendar.quick.title')} open={quickOpen} onClose={()=> setQuickOpen(false)} footer={
+      <Modal title={t('calendar.quick.title')} open={quickOpen} onClose={()=> setQuickOpen(false)} footer={
         <>
-          <button onClick={()=> setQuickOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla</button>
-          <button onClick={submitQuick} className="btn">Invia</button>
+          <button onClick={()=> setQuickOpen(false)} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.quick.cancel')}</button>
+          <button onClick={submitQuick} className="btn">{t('calendar.quick.submit')}</button>
         </>
       }>
         <div className="grid gap-2.5">
           <label>
-            <div className="kpi-title">Lead</div>
+            <div className="kpi-title">{t('calendar.quick.lead')}</div>
             <input value={quick.lead_id} onChange={e=> setQuick({ ...quick, lead_id:e.target.value })} className="input" />
           </label>
           <div className="grid grid-cols-2 gap-2.5">
             <label>
-              <div className="kpi-title">Agente</div>
+              <div className="kpi-title">{t('calendar.quick.agent')}</div>
               <input value={quick.agent_id} onChange={e=> setQuick({ ...quick, agent_id:e.target.value })} className="input" />
             </label>
             <label>
-              <div className="kpi-title">KB</div>
+              <div className="kpi-title">{t('calendar.quick.kb')}</div>
               <input value={quick.kb_id} onChange={e=> setQuick({ ...quick, kb_id:e.target.value })} className="input" />
             </label>
           </div>
           <label>
-            <div className="kpi-title">Da</div>
+            <div className="kpi-title">{t('calendar.quick.from')}</div>
             <input placeholder={'+12025550123'} value={quick.from} onChange={e=> setQuick({ ...quick, from:e.target.value })} className="input" />
           </label>
           <label>
-            <div className="kpi-title">Data e Ora</div>
+            <div className="kpi-title">{t('calendar.quick.datetime')}</div>
             <input type="datetime-local" value={quick.at ? new Date(quick.at).toISOString().slice(0,16) : ''} onChange={e=> setQuick({ ...quick, at: new Date(e.target.value).toISOString() })} className="input" />
           </label>
         </div>
@@ -367,7 +391,7 @@ export default function Calendar(){
                   <button onClick={async ()=>{
                     try{
                       await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
-                      toast('Annullato'); setDrawerOpen(false); load()
+                      toast(t('calendar.toasts.created')); setDrawerOpen(false); refetch()
                     } catch(err){ toast(String(err?.message || err)) }
                   }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla Evento</button>
                   <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Riprogramma</button>

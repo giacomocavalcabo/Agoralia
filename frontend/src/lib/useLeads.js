@@ -57,7 +57,7 @@ export function useLeads(initial = {}) {
       try {
         if (isDemo) {
           // client-side filtering/paging for demo
-          const all = generateDemoLeads(150).filter((r) => {
+          const all = generateDemoLeads(0).filter((r) => {
             const q = search?.trim().toLowerCase();
             const okQ = !q || r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q) || (r.phone_e164 || r.phone || '').includes(q);
             const okStatus = !filters.status || r.status === filters.status;

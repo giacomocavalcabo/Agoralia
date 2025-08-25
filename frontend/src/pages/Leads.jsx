@@ -66,37 +66,27 @@ export default function Leads() {
       cell: (r) => <CountryFlag iso={r.country_iso} />
     },
     {
-      id: 'compliance',
+      id: 'compliance_category',
       header: t('leads.columns.category'),
-      cell: (r) => (
-        <ComplianceChip
-          value={r.compliance_category}
-          title={(r.compliance_reasons || []).join('; ')}
-        />
-      )
+      cell: ({ row }) => <ComplianceChip value={row.original?.compliance_category} />
     },
     { 
       id: 'status', 
       header: t('leads.columns.status'), 
       accessorKey: 'status',
-      cell: ({ getValue }) => t(`leads.status.${getValue()}`, getValue() || '—')
+      cell: ({ row }) => t(`leads.status.${row.original?.status || 'unknown'}`)
     },
     { 
       id: 'stage', 
       header: t('leads.columns.stage'), 
       accessorKey: 'stage',
-      cell: ({ getValue }) => t(`leads.stage.${getValue()}`, getValue() || '—')
+      cell: ({ row }) => t(`leads.stage.${row.original?.stage || 'unknown'}`)
     },
     { id: 'owner', header: t('leads.columns.owner'), accessorKey: 'owner' },
-    { 
-      id: 'category',
-      header: t('leads.columns.category'),
-      cell: ({ row }) => <ComplianceChip value={row.original?.compliance_category}/> 
-    },
     {
-      id: 'last_contact',
+      id: 'updated_at',
       header: t('leads.columns.updated'),
-      cell: (r) => <span className="tabular-nums">{formatDateSafe(r.last_contact, i18n.language)}</span>
+      cell: ({ row }) => <span className="tabular-nums">{formatDateSafe(row.original?.updated_at, i18n.language)}</span>
     },
     { id: 'score', header: t('leads.columns.score'), accessorKey: 'score' },
     { id: 'actions', header: t('leads.columns.actions'),

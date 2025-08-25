@@ -27,20 +27,48 @@
     }
   },
   "calendar": {
+    "title": "Calendario",
+    "range": "{{from}} → {{to}}",
+    "legend": {
+      "scheduled": "Programmato",
+      "blocked": "Bloccato",
+      "warn_budget": "Budget a rischio",
+      "warn_concurrency": "Concorrenza a rischio"
+    },
+    "quick": {
+      "title": "Programmazione rapida",
+      "lead": "Lead",
+      "agent": "Agente",
+      "kb": "KB",
+      "from": "Da (caller ID)",
+      "datetime": "Data e ora",
+      "cancel": "Annulla",
+      "submit": "Invia"
+    },
+    "empty": "Nessun evento in questo intervallo.",
+    "error": {
+      "title": "Calendario non disponibile",
+      "description": "Non siamo riusciti a caricare gli eventi per il periodo selezionato."
+    },
+    "toasts": {
+      "created": "Chiamata programmata",
+      "blocked": "Programmazione bloccata: {{reason}}",
+      "delayed": "Fuori dagli orari consentiti. Prossima finestra: {{ts}}"
+    },
     "errors": {
-      "budget": "[Bilancio]",
-      "concurrency": "[Concurrency]",
-      "quiet_hours": "Non è possibile programmare durante le ore di silenzio per {iso}",
-      "rpo": "Obiettivo del punto di recupero non raggiunto {iso}"
+      "budget": "[Budget]",
+      "concurrency": "[Concorrenza]",
+      "quiet_hours": "Impossibile programmare durante le ore silenziose per {iso}",
+      "rpo": "Obiettivo di recupero non raggiunto per {iso}"
     },
     "legend": {
       "blocked": "[Bloccato]",
       "scheduled": "[Programmato]",
-      "warn_budget": "[Avvisare il bilancio]",
-      "warn_concurrency": "[Avvertire la concorrenza]"
+      "warn_budget": "[Avviso Budget]",
+      "warn_concurrency": "[Avviso Concorrenza]"
     },
     "quick": {
-      "submit_done": "[Invia Fatto]",
+      "submit_done": "[Inviato]",
       "title": "[Titolo]"
     },
     "range": "Da {fromStr} a {toStr}",
@@ -577,9 +605,27 @@
     },
     "status": { "new": "Nuovo", "contacted": "Contattato", "qualified": "Qualificato", "lost": "Perso" },
     "stage": { "cold": "Freddo", "warm": "Tiepido", "hot": "Caldo" },
-    "actions": { "view":"Apri", "edit":"Modifica", "delete":"Elimina", "confirm_delete":"Eliminare questo lead? L'azione è irreversibile." },
-    "details": { "error": { "title": "Lead non disponibile", "description": "Impossibile caricare il lead." } },
+    "actions": { "view":"Apri", "edit":"Modifica", "delete":"Elimina", "assign":"Assegna", "confirm_delete":"Eliminare questo lead? L'azione è irreversibile." },
+    "details": { 
+      "title": "Lead {{name}}",
+      "description": "Informazioni di base e timeline",
+      "error": { "title": "Lead non disponibile", "description": "Impossibile caricare il lead." },
+      "basic_info": "Informazioni di base",
+      "status_timeline": "Stato e timeline",
+      "fields": { 
+        "email": "Email", 
+        "phone": "Telefono",
+        "status": "Stato", 
+        "created_at": "Creato", 
+        "last_contact": "Ultimo contatto", 
+        "company": "Azienda" 
+      }
+    },
     "delete": { "title": "Eliminare il lead?", "message": "Questa azione non può essere annullata." },
+    "dialogs": {
+      "delete": { "title": "Elimina lead", "body": "Questa azione non può essere annullata.", "confirm": "Elimina", "cancel": "Annulla" },
+      "assign": { "title": "Assegna lead", "agent": "Agente", "confirm": "Assegna", "cancel": "Annulla" }
+    },
     "table": {
       "columns": {
         "name": "Nome",
@@ -682,6 +728,7 @@
     "create": "Crea",
     "confirm": "Conferma",
     "retry": "Riprova",
+    "select": "Seleziona...",
     "loading": "Caricamento...",
     "importing": "Importazione...",
     "saving": "Salvataggio...",

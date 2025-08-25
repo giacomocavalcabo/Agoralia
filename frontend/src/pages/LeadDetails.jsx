@@ -1,40 +1,22 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '../components/ui/FormPrimitives.jsx'
 import { formatDateSafe } from '../lib/format'
-import { useApiWithDemo } from '../lib/demoGate'
+import { api } from '../lib/api'
 
 export default function LeadDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { t } = useTranslation('pages')
-  const { get } = useApiWithDemo()
+  const { t, i18n } = useTranslation('pages')
   
-  const [lead, setLead] = React.useState(null)
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState(null)
+  const { data: lead, error, isLoading } = useQuery({
+    queryKey: ['lead', id],
+    queryFn: async () => (await api.get(`/leads/${id}`)).data
+  })
 
-  React.useEffect(() => {
-    let alive = true
-    
-    ;(async () => {
-      try {
-        const data = await get(`/leads/${id}`)
-        if (!alive) return
-        setLead(data)
-      } catch (e) {
-        if (!alive) return
-        setError(e)
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-
-    return () => { alive = false }
-  }, [id, get])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="px-6 lg:px-8 py-6">
         <div className="animate-pulse">
@@ -49,7 +31,7 @@ export default function LeadDetails() {
     )
   }
 
-  if (error) {
+  if (error || !lead) {
     return (
       <div className="px-6 lg:px-8 py-6">
         <PageHeader
@@ -57,43 +39,25 @@ export default function LeadDetails() {
           description={t('leads.details.error.description') || 'Unable to load lead details'}
         />
         <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error.message || 'Unknown error occurred'}</p>
+          <p className="text-red-800">{error?.message || 'Lead not found'}</p>
           <button 
             onClick={() => navigate('/leads')}
             className="mt-2 text-red-600 hover:text-red-800 underline"
           >
-            {t('common.back_to_leads') || 'Back to Leads'}
+            {t('common.back') || 'Back to Leads'}
           </button>
         </div>
       </div>
     )
   }
 
-  if (!lead) {
-    return (
-      <div className="px-6 lg:px-8 py-6">
-        <PageHeader
-          title={t('leads.details.not_found.title') || 'Lead Not Found'}
-          description={t('leads.details.not_found.description') || 'The requested lead could not be found'}
-        />
-        <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-800">{t('leads.details.not_found.message') || 'Lead not found or you may not have permission to view it.'}</p>
-          <button 
-            onClick={() => navigate('/leads')}
-            className="mt-2 text-yellow-600 hover:text-yellow-800 underline"
-          >
-            {t('common.back_to_leads') || 'Back to Leads'}
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="px-6 lg:px-8 py-6">
       <PageHeader
-        title={lead.name || lead.email || `Lead ${id}`}
-        description={t('leads.details.description') || 'Lead details and information'}
+        title={t('leads.details.title', { name: lead.name || '—' })}
+        description={t('leads.details.description')}
       >
         <div className="flex gap-2">
           <button 
@@ -119,19 +83,15 @@ export default function LeadDetails() {
           </h3>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.name') || 'Name'}</dt>
-              <dd className="text-sm text-gray-900">{lead.name || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.email') || 'Email'}</dt>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.email')}</dt>
               <dd className="text-sm text-gray-900">{lead.email || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.phone') || 'Phone'}</dt>
-              <dd className="text-sm text-gray-900">{lead.phone || '—'}</dd>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.phone')}</dt>
+              <dd className="text-sm text-gray-900">{lead.phone_e164 || lead.phone || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.company') || 'Company'}</dt>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.company')}</dt>
               <dd className="text-sm text-gray-900">{lead.company || '—'}</dd>
             </div>
           </dl>
@@ -144,24 +104,24 @@ export default function LeadDetails() {
           </h3>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.status') || 'Status'}</dt>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.status')}</dt>
               <dd className="text-sm">
                 <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                   lead.status === 'active' ? 'bg-green-100 text-green-800' :
                   lead.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
-                  {lead.status || 'unknown'}
+                  {t(`leads.status.${lead.status || 'unknown'}`)}
                 </span>
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.created_at') || 'Created'}</dt>
-              <dd className="text-sm text-gray-900">{formatDateSafe(lead.created_at)}</dd>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.created_at')}</dt>
+              <dd className="text-sm text-gray-900">{formatDateSafe(lead.created_at, i18n.language)}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">{t('leads.fields.last_contact') || 'Last Contact'}</dt>
-              <dd className="text-sm text-gray-900">{formatDateSafe(lead.last_contact)}</dd>
+              <dt className="text-sm font-medium text-gray-500">{t('leads.details.fields.last_contact')}</dt>
+              <dd className="text-sm text-gray-900">{formatDateSafe(lead.last_contact, i18n.language)}</dd>
             </div>
           </dl>
         </div>

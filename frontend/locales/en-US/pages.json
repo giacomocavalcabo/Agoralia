@@ -27,6 +27,34 @@
     }
   },
   "calendar": {
+    "title": "Calendar",
+    "range": "{{from}} → {{to}}",
+    "legend": {
+      "scheduled": "Scheduled",
+      "blocked": "Blocked",
+      "warn_budget": "Budget at risk",
+      "warn_concurrency": "Concurrency at risk"
+    },
+    "quick": {
+      "title": "Quick schedule",
+      "lead": "Lead",
+      "agent": "Agent",
+      "kb": "Knowledge Base",
+      "from": "From (caller ID)",
+      "datetime": "Date & time",
+      "cancel": "Cancel",
+      "submit": "Submit"
+    },
+    "empty": "No events in this range.",
+    "error": {
+      "title": "Calendar unavailable",
+      "description": "We couldn't load events for the selected period."
+    },
+    "toasts": {
+      "created": "Call scheduled",
+      "blocked": "Scheduling blocked: {{reason}}",
+      "delayed": "Outside legal hours. Next window: {{ts}}"
+    },
     "errors": {
       "budget": "[Budget]",
       "concurrency": "[Concurrency]",
@@ -591,9 +619,27 @@
     },
     "status": { "new": "New", "contacted": "Contacted", "qualified": "Qualified", "lost": "Lost" },
     "stage": { "cold": "Cold", "warm": "Warm", "hot": "Hot" },
-    "actions": { "view":"View", "edit":"Edit", "delete":"Delete", "confirm_delete":"Delete this lead? This cannot be undone." },
-    "details": { "error": { "title": "Lead not available", "description": "This lead could not be loaded." } },
+    "actions": { "view":"View", "edit":"Edit", "delete":"Delete", "assign":"Assign", "confirm_delete":"Delete this lead? This cannot be undone." },
+    "details": { 
+      "title": "Lead {{name}}",
+      "description": "Basic information and timeline",
+      "error": { "title": "Lead not available", "description": "This lead could not be loaded." },
+      "basic_info": "Basic Information",
+      "status_timeline": "Status & Timeline",
+      "fields": { 
+        "email": "Email", 
+        "phone": "Phone",
+        "status": "Status", 
+        "created_at": "Created", 
+        "last_contact": "Last contact", 
+        "company": "Company" 
+      }
+    },
     "delete": { "title": "Delete lead?", "message": "This action cannot be undone." },
+    "dialogs": {
+      "delete": { "title": "Delete lead", "body": "This action cannot be undone.", "confirm": "Delete", "cancel": "Cancel" },
+      "assign": { "title": "Assign leads", "agent": "Agent", "confirm": "Assign", "cancel": "Cancel" }
+    },
     "table": {
       "columns": {
         "name": "Name",
@@ -696,6 +742,7 @@
     "create": "Create",
     "confirm": "Confirm",
     "retry": "Retry",
+    "select": "Select...",
     "loading": "Loading...",
     "importing": "Importing...",
     "saving": "Saving...",

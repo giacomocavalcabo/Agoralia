@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../lib/api';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function LeadsToolbar({
   value = '',
@@ -12,7 +15,29 @@ export default function LeadsToolbar({
   onExport,
 }) {
   const { t } = useTranslation('pages');
+  const qc = useQueryClient();
   const [local, setLocal] = useState(value);
+  const [openAssign, setOpenAssign] = useState(false);
+  const [openBulkDel, setOpenBulkDel] = useState(false);
+  const [agentId, setAgentId] = useState('');
+
+  const bulkAssign = useMutation({
+    mutationFn: () => api.post('/leads/bulk-update', { ids: Object.keys(selection), owner_id: agentId }),
+    onSuccess: () => { 
+      qc.invalidateQueries({ queryKey:['leads'] }); 
+      // TODO: Add toast when available
+      setOpenAssign(false);
+    }
+  });
+  
+  const bulkDelete = useMutation({
+    mutationFn: () => api.post('/leads/bulk-delete', { ids: Object.keys(selection) }),
+    onSuccess: () => { 
+      qc.invalidateQueries({ queryKey:['leads'] }); 
+      // TODO: Add toast when available
+      setOpenBulkDel(false);
+    }
+  });
 
   useEffect(() => setLocal(value), [value]);
   useEffect(() => {
@@ -86,7 +111,7 @@ export default function LeadsToolbar({
         <button
           data-testid="bulk-assign"
           disabled={!selectionCount}
-          onClick={onBulkAssign}
+          onClick={() => setOpenAssign(true)}
           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
         >
           {t('leads.toolbar.bulk.assign')}
@@ -94,7 +119,7 @@ export default function LeadsToolbar({
         <button
           data-testid="bulk-delete"
           disabled={!selectionCount}
-          onClick={onBulkDelete}
+          onClick={() => setOpenBulkDel(true)}
           className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100 disabled:opacity-50"
         >
           {t('leads.toolbar.bulk.delete')}
@@ -106,6 +131,33 @@ export default function LeadsToolbar({
           {t('leads.toolbar.bulk.export')}
         </button>
       </div>
+      
+      <ConfirmDialog
+        open={openAssign}
+        title={t('leads.dialogs.assign.title')}
+        confirmLabel={t('leads.dialogs.assign.confirm')}
+        cancelLabel={t('leads.dialogs.assign.cancel')}
+        onConfirm={() => bulkAssign.mutate()}
+        onClose={() => setOpenAssign(false)}
+      >
+        <label className="block text-sm mb-1">{t('leads.dialogs.assign.agent')}</label>
+        <select className="w-full rounded border px-2 py-1" value={agentId} onChange={e=>setAgentId(e.target.value)}>
+          <option value="">{t('common.select')}</option>
+          {/* TODO: popolare da /agents */}
+          <option value="u_1">Giulia</option>
+          <option value="u_2">Marco</option>
+        </select>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={openBulkDel}
+        title={t('leads.dialogs.delete.title')}
+        body={t('leads.dialogs.delete.body')}
+        confirmLabel={t('leads.dialogs.delete.confirm')}
+        cancelLabel={t('leads.dialogs.delete.cancel')}
+        onConfirm={() => bulkDelete.mutate()}
+        onClose={() => setOpenBulkDel(false)}
+      />
     </div>
   );
 }
