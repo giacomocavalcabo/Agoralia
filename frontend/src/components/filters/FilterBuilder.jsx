@@ -73,7 +73,7 @@ export default function FilterBuilder({ schema, value, onChange, i18n, onClear, 
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3">
+    <div className="rounded-lg border border-gray-200 bg-white p-3 max-w-4xl">
       {/* current pills - right side */}
       <div className="flex flex-wrap gap-2 mb-3">
         {filters.map((f, i) => (

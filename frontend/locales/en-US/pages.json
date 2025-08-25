@@ -818,6 +818,7 @@
     "add": "Add",
     "remove": "Remove",
     "clear": "Clear",
+    "apply": "Apply",
     "create": "Create",
     "confirm": "Confirm",
     "retry": "Retry",
