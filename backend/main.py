@@ -2219,40 +2219,7 @@ def list_leads(
     country_iso: str | None = Query(default=None),
 ) -> dict:
     # TODO: Replace with actual database query
-    items = [
-        {
-            "id": "l_101", 
-            "name": "Mario Rossi", 
-            "company": "Rossi Srl", 
-            "phone_e164": "+390212345678", 
-            "country_iso": "IT", 
-            "lang": "it-IT", 
-            "role": "supplier", 
-            "contact_class": "b2b",
-            "relationship_basis": "existing",
-            "opt_in": None,
-            "national_dnc": "unknown",
-            "compliance_category": "allowed",
-            "compliance_reasons": ["B2B con relazione esistente"],
-            "created_at": "2025-08-17T09:12:00Z"
-        },
-        {
-            "id": "l_102", 
-            "name": "Claire Dubois", 
-            "company": "Dubois SA", 
-            "phone_e164": "+33123456789", 
-            "country_iso": "FR", 
-            "lang": "fr-FR", 
-            "role": "supplied", 
-            "contact_class": "b2c",
-            "relationship_basis": "none",
-            "opt_in": False,
-            "national_dnc": "unknown",
-            "compliance_category": "blocked",
-            "compliance_reasons": ["B2C richiede opt-in ma stato sconosciuto"],
-            "created_at": "2025-08-16T15:02:00Z"
-        },
-    ]
+    items = []
     
     # Apply filters
     if compliance_category:
@@ -2738,10 +2705,7 @@ def history_list(
     offset: int = 0,
     sort: str | None = Query(default="-ts"),
 ) -> dict:
-    items = [
-        {"id": "call_9001", "ts": "2025-08-17T09:22:00Z", "direction": "outbound", "to": "+390212345678", "from": "+390298765432", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified", "duration_sec": 210, "cost_eur": 0.42},
-        {"id": "call_9002", "ts": "2025-08-17T09:25:00Z", "direction": "outbound", "to": "+33123456789", "from": "+33987654321", "company": "Dubois SA", "lang": "fr-FR", "agent": "fr-outbound-a", "outcome": "no_answer", "duration_sec": 0, "cost_eur": 0.0},
-    ]
+    items = []
     reverse = sort.startswith("-") if sort else True
     key = sort.lstrip("-") if sort else "ts"
     try:
@@ -2757,7 +2721,7 @@ def history_brief(call_id: str) -> dict:
     return {
         "id": call_id,
         "ts": "2025-08-17T09:22:00Z",
-        "header": {"phone": "+390212345678", "company": "Rossi Srl", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified"},
+        "header": {"phone": "+390212345678", "company": "Unknown Company", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified"},
         "last_turns": [{"role": "agent", "text": "Hello"}, {"role": "user", "text": "Hi"}],
         "summary": {"bullets": ["Qualified lead", "Requested callback next week"]},
         "cost": {"total_eur": 0.42, "minutes": 3.5},
@@ -2774,7 +2738,7 @@ def history_export_csv(locale: str | None = None) -> Response:
         "ar-EG": ["id","الوقت","الاتجاه","إلى","من","الشركة","النتيجة","المدة_ث","التكلفة_يورو"],
     }
     headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
-    row = ["call_9001","2025-08-17T09:22:00Z","outbound","+390212345678","+390298765432","Rossi Srl","qualified","210","0.42"]
+    row = ["call_9001","2025-08-17T09:22:00Z","outbound","+390212345678","+390298765432","Unknown Company","qualified","210","0.42"]
     return Response(content=headers+",".join(row)+"\n", media_type="text/csv")
 
 
@@ -3047,10 +3011,7 @@ def worker_call_finish() -> dict:
 
 @app.get("/campaigns/{campaign_id}/leads")
 def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
-    items = [
-        {"id":"l_101","name":"Mario Rossi","phone_e164":"+390212345678","status":"pending"},
-        {"id":"l_102","name":"Claire Dubois","phone_e164":"+33123456789","status":"scheduled"},
-    ]
+    items = []
     return {"total": len(items), "items": items}
 
 @app.post("/templates")
