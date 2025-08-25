@@ -43,6 +43,9 @@ const FALLBACKS = ['en-US', 'it-IT']
 
 if (!i18n.isInitialized) {
   console.log('[i18n] About to initialize i18n with resources:', resources)
+  console.log('[i18n] Resources keys:', Object.keys(resources))
+  console.log('[i18n] EN-US namespaces:', Object.keys(resources['en-US'] || {}))
+  console.log('[i18n] IT-IT namespaces:', Object.keys(resources['it-IT'] || {}))
   i18n
     .use(initReactI18next)
     .init({
@@ -54,6 +57,15 @@ if (!i18n.isInitialized) {
       interpolation: { escapeValue: false },
       react: { useSuspense: false }, // niente suspense ⇒ niente bianchi
       debug: import.meta.env.DEV === true,
+    })
+    .then(() => {
+      console.log('[i18n] i18n initialized successfully')
+      console.log('[i18n] Available languages:', i18n.languages)
+      console.log('[i18n] Current language:', i18n.language)
+      console.log('[i18n] Loaded namespaces:', Object.keys(i18n.options.ns || {}))
+    })
+    .catch((error) => {
+      console.error('[i18n] Failed to initialize i18n:', error)
     })
 }
 
