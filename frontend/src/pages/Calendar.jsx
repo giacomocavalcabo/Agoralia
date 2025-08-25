@@ -168,10 +168,9 @@ export default function Calendar(){
                     const warnConcHere = warnHere && warnHere.reason === 'CONCURRENCY'
                     const blockedHere = events.some(e=> e.kind==='blocked' && e.at && e.end && new Date(e.at) <= slot && new Date(e.end) > slot)
                     return (
-                      <button
+                      <div
                         key={`c-${d}-${hour}`}
                         role="gridcell"
-                        onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : null}
                         onMouseDown={()=> { setDragStart(slot); setHoverSlot(slot) }}
                         onMouseEnter={()=> { if (dragStart) setHoverSlot(slot) }}
                         onMouseUp={async ()=>{
@@ -188,10 +187,7 @@ export default function Calendar(){
                                   let detail
                                   try { detail = await resp.json() } catch { detail = {} }
                                   const code = String(detail?.code || 'quiet_hours').toLowerCase()
-                                  if (code==='concurrency') {
-                                    const msg = `${t('calendar.errors.concurrency')} (${detail.used||0}/${detail.limit||0})`
-                                    toast(msg)
-                                  } else if (code==='quiet_hours') {
+                                  if (code==='quiet_hours') {
                                     toast(t('calendar.errors.quiet_hours', { iso: detail?.iso || '' }))
                                   } else if (code==='budget') {
                                     toast(t('calendar.errors.budget'))
@@ -300,16 +296,12 @@ export default function Calendar(){
                         return (
                           <div
                             key={eventIndex}
-                            className={`text-xs p-1 rounded border ${getEventColor(event.kind)} truncate cursor-pointer relative group`}
-                            onClick={() => {
-                              setSelected(event)
-                              setDrawerOpen(true)
-                            }}
+                            className={`text-xs p-1 rounded border ${getEventColor(event.kind)} truncate relative group`}
                             title={`${event.title || ''} ${timeStr}`}
                           >
                             <span className="truncate block">{event.title || event.kind} {timeStr}</span>
                             <button 
-                              className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                              className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-white/80 rounded p-0.5"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelected(event);
