@@ -120,25 +120,23 @@
   },
   "campaigns": {
     "title": "Campagne",
-    "description": "Gestisci campagne, ritmo e performance",
+    "description": "Gestisci le tue campagne outbound",
     "columns": {
       "name": "Nome",
       "status": "Stato",
       "created_at": "Creata",
-      "actions": "Azioni",
-      "budget_cap": "Budget",
-      "budget_spent": "Speso"
+      "actions": "Azioni"
     },
     "status": {
       "draft": "Bozza",
       "active": "Attiva",
       "paused": "In pausa",
-      "completed": "Completata"
+      "completed": "Completed"
     },
     "actions": {
+      "activate": "Attiva",
       "pause": "Metti in pausa",
       "resume": "Riprendi",
-      "activate": "Attiva",
       "view": "Dettagli"
     },
     "toolbar": {
@@ -146,9 +144,17 @@
       "search_aria": "Cerca campagne",
       "status_any": "Qualsiasi stato"
     },
-    "empty": "Nessuna campagna trovata.",
-    "error": "Impossibile caricare le campagne.",
-    "detail": {
+    "empty": {
+      "title": "Nessuna campagna trovata",
+      "description": "Crea la tua prima campagna per iniziare",
+      "cta_import": "Importa Campagna",
+      "cta_add": "Crea Campagna"
+    },
+          "error": {
+        "title": "Errore nel caricamento delle campagne",
+        "description": "Impossibile caricare le campagne. Riprova."
+      },
+      "detail": {
       "not_found": "Campagna non trovata.",
       "subtitle": "Panoramica e pubblico",
       "leads_tab": "Leads"

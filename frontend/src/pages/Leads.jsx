@@ -39,8 +39,7 @@ export default function Leads() {
 
   function onBulkDelete() {
     if (!Object.keys(selection).length) return;
-    if (!confirm(t('leads.dialogs.delete.description'))) return;
-    // Nota: in demo disabilita realmente. Qui solo feedback.
+    // TODO: Implementare ConfirmDialog per bulk delete
     alert(t('leads.dialogs.delete.success'));
     setSelection({});
   }
@@ -76,8 +75,18 @@ export default function Leads() {
         />
       )
     },
-    { id: 'status', header: t('leads.columns.status'), accessorKey: 'status' },
-    { id: 'stage', header: t('leads.columns.stage'), accessorKey: 'stage' },
+    { 
+      id: 'status', 
+      header: t('leads.columns.status'), 
+      accessorKey: 'status',
+      cell: (r) => t(`leads.filters.status.${String(r.status || '').toLowerCase()}`, String(r.status || '—'))
+    },
+    { 
+      id: 'stage', 
+      header: t('leads.columns.stage'), 
+      accessorKey: 'stage',
+      cell: (r) => t(`leads.filters.stage.${String(r.stage || '').toLowerCase()}`, String(r.stage || '—'))
+    },
     { id: 'owner', header: t('leads.columns.owner'), accessorKey: 'owner' },
     {
       id: 'last_contact',

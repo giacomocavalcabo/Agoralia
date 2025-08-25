@@ -14,7 +14,7 @@ export default function Campaign(){
   const [kpi, setKpi] = useState(null)
   const [events, setEvents] = useState([])
   const { toast } = useToast()
-  const [settings, setSettings] = useState({ pacing_npm:'', budget_cap_cents:'', quiet_hours:true })
+  const [settings, setSettings] = useState({ quiet_hours:true })
   const [leads, setLeads] = useState({ total: 0, items: [] })
 
   useEffect(()=>{ (async()=>{
@@ -25,8 +25,6 @@ export default function Campaign(){
   useEffect(()=>{
     if (info){
       setSettings({
-        pacing_npm: String(info.pacing_npm ?? ''),
-        budget_cap_cents: String(info.budget_cap_cents ?? ''),
         quiet_hours: Boolean(info.window?.quiet_hours ?? true)
       })
     }
@@ -79,12 +77,17 @@ export default function Campaign(){
 
       {tab==='leads' && (
         <div className="panel" style={{ overflow:'auto' }}>
+          <div className="kpi-title" style={{ marginBottom:8 }}>Leads filtrati per segmento campagna</div>
+          <div className="text-sm text-gray-600 mb-4">
+            Filtri applicati: {info?.segment ? Object.entries(info.segment).filter(([k,v]) => v && (Array.isArray(v) ? v.length > 0 : true)).map(([k,v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ') : 'Nessun filtro'}
+          </div>
           <table style={{ width:'100%', borderCollapse:'separate', borderSpacing:0 }}>
             <thead>
               <tr>
                 <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Nome</th>
                 <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Telefono</th>
                 <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Stato</th>
+                <th className="kpi-title" style={{ textAlign:'left', padding:10 }}>Compliance</th>
               </tr>
             </thead>
             <tbody>
@@ -93,6 +96,7 @@ export default function Campaign(){
                   <td style={{ padding:10 }}>{it.name}</td>
                   <td style={{ padding:10 }}>{it.phone_e164}</td>
                   <td style={{ padding:10 }}>{it.status}</td>
+                  <td style={{ padding:10 }}>{it.compliance_category || '—'}</td>
                 </tr>
               ))}
             </tbody>

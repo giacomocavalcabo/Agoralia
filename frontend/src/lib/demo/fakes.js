@@ -230,15 +230,21 @@ export const makeDashboardSummary = generateDemoMetrics;
 
 export function generateDemoCampaigns(n = 16) {
   const statuses = ['draft','active','paused','completed'];
+  const names = ['Sales Qualification', 'Customer Support', 'Appointment Booking', 'NPS Survey', 'RFQ Process', 'Follow-up Call'];
   return Array.from({ length: n }).map((_, i) => ({
     id: `c_${i+1}`,
-    name: `Campaign ${i+1}`,
+    name: names[i % names.length] + ` ${i+1}`,
     status: statuses[i % statuses.length],
     created_at: new Date(Date.now() - i*86400000).toISOString(),
-    // segmento semplice di esempio (riusato in CampaignDetail → Leads)
-    segment: i % 3 === 0 ? { compliance_category: 'allowed' } :
-             i % 3 === 1 ? { compliance_category: 'conditional' } :
-                           { compliance_category: 'blocked' }
+    // segmento completo per filtri Leads (riusato in CampaignDetail → Leads)
+    segment: {
+      q: '',
+      status: i % 3 === 0 ? ['new', 'contacted'] : ['qualified'],
+      stage: i % 3 === 1 ? ['cold'] : ['warm', 'hot'],
+      contact_class: i % 2 === 0 ? ['b2b'] : ['b2c'],
+      compliance_category: i % 3 === 0 ? ['allowed'] : i % 3 === 1 ? ['conditional'] : ['blocked'],
+      country_iso: i % 4 === 0 ? ['IT'] : i % 4 === 1 ? ['FR'] : i % 4 === 2 ? ['DE'] : ['ES']
+    }
   }));
 }
 

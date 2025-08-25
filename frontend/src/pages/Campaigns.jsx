@@ -111,17 +111,17 @@ export default function Campaigns(){
         isError={isError}
         onRetry={() => {}} // Non implementato per ora
         // i18n props
-        errorTitle={t('campaigns.error')}
-        errorDescription={t('campaigns.error')}
-        retryLabel="Retry"
-        emptyTitle={t('campaigns.empty')}
-        emptyDescription={t('campaigns.empty')}
-        emptyCtaImport="Import"
-        emptyCtaAdd="Add New"
-        loadingLabel="Loading..."
-        sortAscLabel="Sort ascending"
-        sortDescLabel="Sort descending"
-        selectAllLabel="Select all"
+        errorTitle={t('campaigns.error.title')}
+        errorDescription={t('campaigns.error.description')}
+        retryLabel={t('common.retry')}
+        emptyTitle={t('campaigns.empty.title')}
+        emptyDescription={t('campaigns.empty.description')}
+        emptyCtaImport={t('campaigns.empty.cta_import')}
+        emptyCtaAdd={t('campaigns.empty.cta_add')}
+        loadingLabel={t('common.loading')}
+        sortAscLabel={t('common.sort_asc')}
+        sortDescLabel={t('common.sort_desc')}
+        selectAllLabel={t('common.select_all')}
       />
     </div>
   );

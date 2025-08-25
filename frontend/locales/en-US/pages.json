@@ -135,14 +135,12 @@
   },
   "campaigns": {
     "title": "Campaigns",
-    "description": "Manage campaigns, pacing and performance",
+    "description": "Manage your outbound campaigns",
     "columns": {
       "name": "Name",
       "status": "Status",
       "created_at": "Created",
-      "actions": "Actions",
-      "budget_cap": "Budget cap",
-      "budget_spent": "Spent"
+      "actions": "Actions"
     },
     "status": {
       "draft": "Draft",
@@ -151,9 +149,9 @@
       "completed": "Completed"
     },
     "actions": {
+      "activate": "Activate",
       "pause": "Pause",
       "resume": "Resume",
-      "activate": "Activate",
       "view": "View"
     },
     "toolbar": {
@@ -161,8 +159,16 @@
       "search_aria": "Search campaigns",
       "status_any": "Any status"
     },
-    "empty": "No campaigns found.",
-    "error": "Unable to load campaigns.",
+    "empty": {
+      "title": "No campaigns found",
+      "description": "Create your first campaign to get started",
+      "cta_import": "Import Campaign",
+      "cta_add": "Create Campaign"
+    },
+    "error": {
+      "title": "Error loading campaigns",
+      "description": "Unable to load campaigns. Please try again."
+    },
     "detail": {
       "not_found": "Campaign not found.",
       "subtitle": "Overview and audience",

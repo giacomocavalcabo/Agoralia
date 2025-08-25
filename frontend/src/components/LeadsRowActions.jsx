@@ -8,9 +8,8 @@ export default function LeadsRowActions({ row, onView, onAssign, onDelete }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const handleDelete = () => {
-    if (window.confirm(t('leads.actions.confirm_delete'))) {
-      onDelete?.(row);
-    }
+    // TODO: Implementare ConfirmDialog per delete
+    onDelete?.(row);
   };
   
   return (
