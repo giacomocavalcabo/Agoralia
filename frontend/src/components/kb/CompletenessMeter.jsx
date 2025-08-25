@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ProgressBar } from '../ui/ProgressBar';
 import { Badge } from '../ui/Badge';
 
@@ -7,6 +8,8 @@ export function CompletenessMeter({
   lastUpdated,
   showDetails = true 
 }) {
+  const { t } = useTranslation('pages');
+  
   const getFreshnessColor = (score) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
@@ -14,9 +17,9 @@ export function CompletenessMeter({
   };
 
   const getFreshnessLabel = (score) => {
-    if (score >= 80) return 'Fresh';
-    if (score >= 60) return 'Stale';
-    return 'Outdated';
+    if (score >= 80) return t('kb.quality.fresh');
+    if (score >= 60) return t('kb.quality.stale');
+    return t('kb.quality.outdated');
   };
 
   const getFreshnessDays = (lastUpdated) => {
@@ -39,7 +42,7 @@ export function CompletenessMeter({
     <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Completeness</span>
+          <span className="text-sm font-medium text-gray-700">{t('kb.overview.completeness')}</span>
           <span className="text-lg font-semibold text-gray-900">{completeness}%</span>
         </div>
         <ProgressBar 
@@ -53,7 +56,7 @@ export function CompletenessMeter({
         <>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Freshness</span>
+              <span className="text-sm font-medium text-gray-700">{t('kb.quality.freshness')}</span>
               <Badge status={getFreshnessLabel(freshness).toLowerCase()}>
                 {freshness}/100
               </Badge>
@@ -66,8 +69,8 @@ export function CompletenessMeter({
           </div>
           
           {lastUpdated && (
-            <div className="text-xs text-gray-500">
-              Last updated: {new Date(lastUpdated).toLocaleDateString()}
+                    <div className="text-xs text-gray-500">
+          {t('kb.sources.last_refresh')}: {new Date(lastUpdated).toLocaleDateString()}
               {freshnessDays !== null && (
                 <span className={`ml-2 px-2 py-1 rounded text-xs ${
                   freshnessStatus === 'fresh' ? 'bg-green-100 text-green-800' :

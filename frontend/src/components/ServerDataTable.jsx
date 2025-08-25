@@ -23,7 +23,6 @@ export default function ServerDataTable({
   retryLabel = 'Retry',
   emptyTitle = 'No data available',
   emptyDescription = 'There are no items to display.',
-  emptyCtaImport = 'Import',
   emptyCtaAdd = 'Add New',
   loadingLabel = 'Loading...',
   sortAscLabel = 'Sort ascending',
@@ -81,7 +80,6 @@ export default function ServerDataTable({
         <div className="font-semibold">{emptyTitle}</div>
         <p className="mt-1 text-gray-600">{emptyDescription}</p>
         <div className="mt-4 flex justify-center gap-2">
-          <button className="rounded-lg border px-3 py-2 text-sm">{emptyCtaImport}</button>
           <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white">{emptyCtaAdd}</button>
         </div>
       </div>

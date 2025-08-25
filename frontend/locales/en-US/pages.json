@@ -62,6 +62,127 @@
       "rpo": "Recovery point objective not met for {iso}"
     }
   },
+  "kb": {
+    "title": "Knowledge Base",
+    "overview": {
+      "title": "Overview",
+      "completeness": "Completeness",
+      "next_steps": "Next steps",
+      "no_data": "No content yet. Start by importing a document or adding a source.",
+      "recent_changes": "Recent changes",
+      "sources_count": "{{count}} sources",
+      "documents_count": "{{count}} documents",
+      "chunks_count": "{{count}} chunks"
+    },
+    "sources": {
+      "title": "Sources",
+      "add_source": "Add source",
+      "upload_file": "Upload file",
+      "type": { 
+        "manual": "Manual", 
+        "upload": "Uploaded file", 
+        "url": "Website" 
+      },
+      "status": { 
+        "ready": "Ready", 
+        "processing": "Processing", 
+        "error": "Error" 
+      },
+      "last_refresh": "Last refresh",
+      "refresh": "Refresh",
+      "delete": "Remove",
+      "empty": {
+        "title": "No sources yet",
+        "description": "Add your first source to start building your knowledge base."
+      }
+    },
+    "import": {
+      "title": "Import",
+      "tabs": { 
+        "paste": "Paste", 
+        "file": "File", 
+        "url": "Website" 
+      },
+      "actions": { 
+        "start": "Start import", 
+        "commit": "Commit", 
+        "cancel": "Cancel" 
+      },
+      "progress": { 
+        "parsing": "Parsing...", 
+        "chunking": "Chunking...", 
+        "embedding": "Embedding..." 
+      },
+      "file_upload": {
+        "title": "Upload document",
+        "subtitle": "PDF, DOCX, MD, TXT up to 50 MB",
+        "drag_drop": "Drag & drop your document here",
+        "or_click": "or click to select a file",
+        "supported_formats": "Supported: .pdf, .docx, .md, .txt"
+      },
+      "url_crawl": {
+        "title": "Crawl website",
+        "subtitle": "Enter a URL to crawl and extract content",
+        "placeholder": "https://example.com",
+        "depth": "Crawl depth",
+        "max_pages": "Max pages"
+      }
+    },
+    "chunks": {
+      "title": "Chunks",
+      "filters": { 
+        "query": "Search", 
+        "type": "Type", 
+        "lang": "Language", 
+        "source": "Source", 
+        "document": "Document" 
+      },
+      "columns": { 
+        "text": "Text", 
+        "type": "Type", 
+        "doc": "Document", 
+        "lang": "Lang", 
+        "updated": "Updated", 
+        "actions": "Actions" 
+      },
+      "empty": {
+        "title": "No chunks yet",
+        "description": "Import documents to see chunks here."
+      }
+    },
+    "structure": {
+      "title": "Structured Cards",
+      "tabs": { 
+        "company": "Company", 
+        "contacts": "Contacts", 
+        "products": "Products", 
+        "policies": "Policies", 
+        "faq": "FAQ" 
+      },
+      "actions": { 
+        "regenerate": "Regenerate" 
+      },
+      "empty": {
+        "title": "No structured data yet",
+        "description": "Run structure extraction to generate cards."
+      }
+    },
+    "quality": {
+      "fresh": "Fresh",
+      "stale": "Stale",
+      "outdated": "Outdated",
+      "pii_score": "PII risk",
+      "dedup": "Duplicates",
+      "freshness": "Freshness"
+    },
+    "toasts": { 
+      "import_started": "Import started", 
+      "structure_started": "Regeneration started", 
+      "source_added": "Source added",
+      "source_refreshed": "Source refreshed",
+      "source_deleted": "Source removed"
+    }
+  },
   "import": {
     "title": "Import",
     "steps": {
@@ -95,8 +216,7 @@
       "columns": {
         "name": "Name",
         "phone": "Phone",
-        "email": "Email",
-        "company": "Company"
+        "email": "Company"
       },
       "actions": { "auto": "Auto-map", "reset": "Reset" }
     },

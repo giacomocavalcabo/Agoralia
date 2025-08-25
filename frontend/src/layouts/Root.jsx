@@ -11,6 +11,11 @@ import AuthLayout from '../components/AuthLayout'
 // Lazy load pages with namespace preloading
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))
 const KnowledgeBase = React.lazy(() => import('../pages/KnowledgeBase'))
+const KbOverview = React.lazy(() => import('../pages/kb/KbOverview'))
+const KbSources = React.lazy(() => import('../pages/kb/KbSources'))
+const KbChunks = React.lazy(() => import('../pages/kb/KbChunks'))
+const KbStructuredCards = React.lazy(() => import('../pages/kb/KbStructuredCards'))
+const KbImportWizard = React.lazy(() => import('../pages/kb/KbImportWizard'))
 const KBEditor = React.lazy(() => import('../pages/KnowledgeBase/KBEditor'))
 const Assignments = React.lazy(() => import('../pages/KnowledgeBase/Assignments'))
 const Imports = React.lazy(() => import('../pages/KnowledgeBase/Imports'))
@@ -77,7 +82,11 @@ export default function Root() {
                 </div>}>
                   <Routes>
                     <Route index element={<Dashboard />} />
-                    <Route path="knowledge" element={<KnowledgeBase />} />
+                    <Route path="knowledge" element={<KbOverview />} />
+                    <Route path="knowledge/sources" element={<KbSources />} />
+                    <Route path="knowledge/chunks" element={<KbChunks />} />
+                    <Route path="knowledge/structure" element={<KbStructuredCards />} />
+                    <Route path="knowledge/import" element={<KbImportWizard />} />
                     <Route path="knowledge/company/:id" element={<KBEditor kind="company" />} />
                     <Route path="knowledge/offers/:id" element={<KBEditor kind="offer_pack" />} />
                     <Route path="knowledge/assignments" element={<Assignments />} />

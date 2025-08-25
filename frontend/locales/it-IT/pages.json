@@ -62,6 +62,127 @@
       "rpo": "Obiettivo di recupero non raggiunto per {iso}"
     }
   },
+  "kb": {
+    "title": "Base di Conoscenza",
+    "overview": {
+      "title": "Panoramica",
+      "completeness": "Completezza",
+      "next_steps": "Prossimi passi",
+      "no_data": "Nessun contenuto ancora. Inizia importando un documento o aggiungendo una fonte.",
+      "recent_changes": "Modifiche recenti",
+      "sources_count": "{{count}} fonti",
+      "documents_count": "{{count}} documenti",
+      "chunks_count": "{{count}} chunk"
+    },
+    "sources": {
+      "title": "Fonti",
+      "add_source": "Aggiungi fonte",
+      "upload_file": "Carica file",
+      "type": { 
+        "manual": "Manuale", 
+        "upload": "File caricato", 
+        "url": "Sito web" 
+      },
+      "status": { 
+        "ready": "Pronto", 
+        "processing": "Elaborazione", 
+        "error": "Errore" 
+      },
+      "last_refresh": "Ultimo aggiornamento",
+      "refresh": "Aggiorna",
+      "delete": "Rimuovi",
+      "empty": {
+        "title": "Nessuna fonte ancora",
+        "description": "Aggiungi la tua prima fonte per iniziare a costruire la base di conoscenza."
+      }
+    },
+    "import": {
+      "title": "Importa",
+      "tabs": { 
+        "paste": "Incolla", 
+        "file": "File", 
+        "url": "Sito web" 
+      },
+      "actions": { 
+        "start": "Avvia import", 
+        "commit": "Conferma", 
+        "cancel": "Annulla" 
+      },
+      "progress": { 
+        "parsing": "Analisi...", 
+        "chunking": "Suddivisione...", 
+        "embedding": "Vettorizzazione..." 
+      },
+      "file_upload": {
+        "title": "Carica documento",
+        "subtitle": "PDF, DOCX, MD, TXT fino a 50 MB",
+        "drag_drop": "Trascina qui il tuo documento",
+        "or_click": "oppure clicca per selezionare un file",
+        "supported_formats": "Supportati: .pdf, .docx, .md, .txt"
+      },
+      "url_crawl": {
+        "title": "Crawla sito web",
+        "subtitle": "Inserisci un URL per estrarre contenuti",
+        "placeholder": "https://example.com",
+        "depth": "Profondità crawler",
+        "max_pages": "Max pagine"
+      }
+    },
+    "chunks": {
+      "title": "Chunk",
+      "filters": { 
+        "query": "Cerca", 
+        "type": "Tipo", 
+        "lang": "Lingua", 
+        "source": "Fonte", 
+        "document": "Documento" 
+      },
+      "columns": { 
+        "text": "Testo", 
+        "type": "Tipo", 
+        "doc": "Documento", 
+        "lang": "Lingua", 
+        "updated": "Aggiornato", 
+        "actions": "Azioni" 
+      },
+      "empty": {
+        "title": "Nessun chunk ancora",
+        "description": "Importa documenti per vedere i chunk qui."
+      }
+    },
+    "structure": {
+      "title": "Schede Strutturate",
+      "tabs": { 
+        "company": "Azienda", 
+        "contacts": "Contatti", 
+        "products": "Prodotti", 
+        "policies": "Politiche", 
+        "faq": "FAQ" 
+      },
+      "actions": { 
+        "regenerate": "Rigenera" 
+      },
+      "empty": {
+        "title": "Nessun dato strutturato ancora",
+        "description": "Esegui l'estrazione strutturata per generare le schede."
+      }
+    },
+    "quality": {
+      "fresh": "Fresco",
+      "stale": "Stantio",
+      "outdated": "Obsoleto",
+      "pii_score": "Rischio PII",
+      "dedup": "Duplicati",
+      "freshness": "Freschezza"
+    },
+    "toasts": { 
+      "import_started": "Import avviato", 
+      "structure_started": "Rigenerazione avviata", 
+      "source_added": "Fonte aggiunta",
+      "source_refreshed": "Fonte aggiornata",
+      "source_deleted": "Fonte rimossa"
+    }
+  },
   "import": {
     "title": "Importa",
     "steps": {

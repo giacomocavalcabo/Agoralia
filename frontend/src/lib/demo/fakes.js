@@ -239,9 +239,25 @@ export const makeNumbers = (params = {}) => {
   return numbers
 }
 export const makeKnowledgeBase = () => [
-  { id: 1, title: 'Company Policy A', type: 'company', status: 'published' },
-  { id: 2, title: 'Offer Package B', type: 'offer_pack', status: 'draft' },
-  { id: 3, title: 'Company Policy C', type: 'company', status: 'published' }
+  { id: 1, title: 'Company Policy A', type: 'company', status: 'published', completeness_pct: 85, freshness_score: 90 },
+  { id: 2, title: 'Offer Package B', type: 'offer_pack', status: 'draft', completeness_pct: 60, freshness_score: 95 },
+  { id: 3, title: 'Company Policy C', type: 'company', status: 'published', completeness_pct: 75, freshness_score: 85 },
+  { id: 4, title: 'Product Catalog', type: 'company', status: 'published', completeness_pct: 90, freshness_score: 88 },
+  { id: 5, title: 'Support FAQ', type: 'company', status: 'published', completeness_pct: 70, freshness_score: 92 }
+];
+
+export const makeDemoKbSources = () => [
+  { id: 1, type: 'url', label: 'Company Website', url: 'https://example.com', status: 'ready', last_refresh: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+  { id: 2, type: 'upload', label: 'Terms of Service.pdf', filename: 'tos.pdf', status: 'ready', last_refresh: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
+  { id: 3, type: 'manual', label: 'Product Catalog', status: 'ready', last_refresh: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+];
+
+export const makeDemoKbChunks = () => [
+  { id: 1, text: 'Our company provides innovative solutions for businesses looking to streamline their operations and improve efficiency.', type: 'company', doc: 'Company Profile', lang: 'en', updated: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+  { id: 2, text: 'We offer three pricing tiers: Basic ($29/month), Professional ($79/month), and Enterprise (custom pricing).', type: 'pricing', doc: 'Pricing Page', lang: 'en', updated: new Date(Date.now() - 4 * 60 * 60 * 1000) },
+  { id: 3, text: 'Contact us at support@example.com or call +1-555-0123 for technical assistance.', type: 'contact', doc: 'Contact Page', lang: 'en', updated: new Date(Date.now() - 6 * 60 * 60 * 1000) },
+  { id: 4, text: 'Our refund policy allows customers to request a full refund within 30 days of purchase.', type: 'policy', doc: 'Terms of Service', lang: 'en', updated: new Date(Date.now() - 8 * 60 * 60 * 1000) },
+  { id: 5, text: 'Frequently asked questions about our services and how to get started with our platform.', type: 'faq', doc: 'FAQ Page', lang: 'en', updated: Date.now() - 10 * 60 * 60 * 1000 }
 ];
 
 export function generateDemoCalendarEvents({ start, end }) {

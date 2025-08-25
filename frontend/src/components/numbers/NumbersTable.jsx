@@ -118,7 +118,7 @@ export default function NumbersTable({
       retryLabel={t('common.retry')}
       emptyTitle={t('numbers.empty.title')}
       emptyDescription={t('numbers.empty.description')}
-      emptyCtaImport={t('common.import')}
+      
       emptyCtaAdd={t('common.add')}
       loadingLabel={t('common.loading')}
       sortAscLabel={t('common.sort')}

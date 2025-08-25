@@ -11,7 +11,11 @@ const baseGroups = [
 		{ label:'Numbers', to:'/numbers' }
 	]},
 	{ label: 'Knowledge', items:[
-		{ label:'Knowledge Base', to:'/knowledge' }, 
+		{ label:'Overview', to:'/knowledge' }, 
+		{ label:'Sources', to:'/knowledge/sources' }, 
+		{ label:'Chunks', to:'/knowledge/chunks' }, 
+		{ label:'Structure', to:'/knowledge/structure' }, 
+		{ label:'Import', to:'/knowledge/import' }, 
 		{ label:'Offer Packs', to:'/knowledge/offers' }, 
 		{ label:'Imports', to:'/knowledge/imports' }, 
 		{ label:'Assignments', to:'/knowledge/assignments' }
