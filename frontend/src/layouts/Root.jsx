@@ -104,11 +104,13 @@ export default function Root() {
                     <Route path="history" element={<History />} />
                     <Route path="admin" element={<Admin />} />
                     <Route path="invite" element={<Invite />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Suspense>
               </AppShell>
             } />
+            
+            {/* Catch-all route for unmatched paths */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           </ToastProvider>
         </AuthProvider>
