@@ -693,68 +693,82 @@
       "added": "Lead added"
     }
   },
-  "numbers": {
-    "title": "My Numbers",
-    "description": "Manage phone numbers and routing",
-    "agent_id": "Agent ID",
-    "business_hours": "Business Hours",
-    "buy_number": "Buy a number",
-    "buy_numbers": "Buy Numbers",
-    "default_from": "Default caller ID",
-    "enable_voicemail": "Enable Voicemail",
-    "my_numbers": "My Numbers",
-    "route": "Route",
-    "route_number": "Route Number",
-    "use_my_number": "Use my number",
-    "voicemail_message": "Voicemail Message",
-    "toolbar": {
-      "search_placeholder": "Search numbers…",
-      "open_filters": "Filters",
-      "clear_filters": "Clear filters",
-      "bulk": {
+      "numbers": {
+      "title": "My Numbers",
+      "description": "Manage phone numbers and routing",
+      "agent_id": "Agent ID",
+      "business_hours": "Business Hours",
+      "buy_number": "Buy a number",
+      "buy_numbers": "Buy Numbers",
+      "default_from": "Default caller ID",
+      "enable_voicemail": "Enable Voicemail",
+      "my_numbers": "My Numbers",
+      "route": "Route",
+      "route_number": "Route Number",
+      "use_my_number": "Use my number",
+      "voicemail_message": "Voicemail Message",
+      "filters": {
+        "country": "Country",
+        "provider": "Provider",
+        "capabilities": "Capabilities",
+        "created": "Created",
+        "status": "Status",
+        "empty": "No filters applied",
+        "select_field": "Select a field",
+        "value_placeholder": "Value",
+        "add": "Add",
+        "save_segment": "Save segment",
+        "load_segment": "Load segment",
+        "multiselect_hint": "Separate multiple values with commas"
+      },
+      "toolbar": {
+        "search_placeholder": "Search numbers…",
+        "open_filters": "Filters",
+        "clear_filters": "Clear filters",
+        "bulk": {
+          "assign": "Assign",
+          "release": "Release",
+          "export": "Export CSV"
+        }
+      },
+      "columns": {
+        "number": "Number",
+        "country": "Country",
+        "provider": "Provider",
+        "capabilities": "Capabilities",
+        "status": "Status",
+        "assigned_to": "Assigned to",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "actions": {
+        "view": "View",
+        "configure": "Configure",
         "assign": "Assign",
-        "release": "Release",
-        "export": "Export CSV"
+        "release": "Release"
+      },
+      "dialogs": {
+        "release": {
+          "title": "Release number?",
+          "body": "This action is permanent. Calls to this number will stop routing.",
+          "confirm": "Release",
+          "cancel": "Cancel",
+          "success": "Number released",
+          "error": "Release failed"
+        }
+      },
+      "empty": {
+        "title": "No numbers yet",
+        "description": "Buy or port numbers to start calling."
+      },
+      "error": {
+        "title": "Couldn't load numbers",
+        "description": "Please retry or check your connection."
+      },
+      "toast": {
+        "copied": "Number copied"
       }
     },
-    "columns": {
-      "number": "Number",
-      "country": "Country",
-      "provider": "Provider",
-      "capabilities": "Capabilities",
-      "status": "Status",
-      "assigned_to": "Assigned to",
-      "created": "Created",
-      "actions": "Actions"
-    },
-    "actions": {
-      "view": "View",
-      "configure": "Configure",
-      "assign": "Assign",
-      "release": "Release"
-    },
-    "dialogs": {
-      "release": {
-        "title": "Release number?",
-        "body": "This action is permanent. Calls to this number will stop routing.",
-        "confirm": "Release",
-        "cancel": "Cancel",
-        "success": "Number released",
-        "error": "Release failed"
-      }
-    },
-    "empty": {
-      "title": "No numbers yet",
-      "description": "Buy or port numbers to start calling."
-    },
-    "error": {
-      "title": "Couldn't load numbers",
-      "description": "Please retry or check your connection."
-    },
-    "toast": {
-      "copied": "Number copied"
-    }
-  },
   "settings": {
     "account": "Account",
     "billing": "Billing",

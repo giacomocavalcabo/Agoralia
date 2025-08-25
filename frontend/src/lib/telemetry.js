@@ -165,6 +165,19 @@ class Telemetry {
     this.track('filter.load', metadata);
   }
 
+  // Numbers events
+  trackNumbersRelease(metadata = {}) {
+    this.track('numbers.release', metadata);
+  }
+
+  trackNumbersAssign(metadata = {}) {
+    this.track('numbers.assign', metadata);
+  }
+
+  trackNumbersCopy(metadata = {}) {
+    this.track('numbers.copy', metadata);
+  }
+
   // Get events for debugging/analytics
   getEvents() {
     return [...this.events];

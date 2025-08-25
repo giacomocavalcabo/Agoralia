@@ -693,8 +693,22 @@
     "route": "Instrada",
     "route_number": "Instrada Numero",
     "use_my_number": "Usa il mio numero",
-    "voicemail_message": "Messaggio Segreteria",
-    "toolbar": {
+          "voicemail_message": "Messaggio Segreteria",
+      "filters": {
+        "country": "Paese",
+        "provider": "Provider",
+        "capabilities": "Capacità",
+        "created": "Creato",
+        "status": "Stato",
+        "empty": "Nessun filtro applicato",
+        "select_field": "Seleziona un campo",
+        "value_placeholder": "Valore",
+        "add": "Aggiungi",
+        "save_segment": "Salva segmento",
+        "load_segment": "Carica segmento",
+        "multiselect_hint": "Separa più valori con virgole"
+      },
+      "toolbar": {
       "search_placeholder": "Cerca numeri…",
       "open_filters": "Filtri",
       "clear_filters": "Pulisci filtri",

@@ -23,14 +23,34 @@ export default function NumbersTable({
             className="text-xs underline text-blue-600 hover:text-blue-800"
             aria-label={t('numbers.toast.copied')}
             onClick={() => {
-              navigator.clipboard.writeText(row.original.e164)
-                .then(() => {
-                  // Toast will be handled by parent component
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(row.original.e164)
+                  .then(() => {
+                    // Toast will be handled by parent component
+                    if (window.toast) {
+                      window.toast.success(t('numbers.toast.copied'))
+                    } else {
+                      // Fallback for environments without toast
+                      console.log(t('numbers.toast.copied'))
+                    }
+                  })
+                  .catch(() => {})
+              } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea')
+                textArea.value = row.original.e164
+                document.body.appendChild(textArea)
+                textArea.select()
+                try {
+                  document.execCommand('copy')
                   if (window.toast) {
                     window.toast.success(t('numbers.toast.copied'))
                   }
-                })
-                .catch(() => {})
+                } catch (err) {
+                  console.error('Fallback copy failed:', err)
+                }
+                document.body.removeChild(textArea)
+              }
             }}
           >
             copy

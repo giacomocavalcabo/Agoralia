@@ -2662,6 +2662,71 @@ async def create_calendar_event(payload: dict) -> dict:
         raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
 
 
+@app.get("/numbers")
+def list_numbers(
+    request: Request,
+    query: str | None = Query(default=None),
+    limit: int = Query(default=25),
+    offset: int = Query(default=0),
+    country_iso: str | None = Query(default=None),
+    provider: str | None = Query(default=None),
+    capabilities: str | None = Query(default=None),
+) -> dict:
+    # Check if demo mode is enabled
+    is_demo = DEMO_MODE or request.headers.get("X-Demo") == "1"
+    
+    if is_demo:
+        # Demo mode: return stub data
+        items = [
+            {
+                "id": "n_101",
+                "e164": "+390212345678",
+                "country_iso": "IT",
+                "provider": "Telecom Italia",
+                "capabilities": ["voice", "sms"],
+                "created_at": "2025-08-17T09:12:00Z"
+            },
+            {
+                "id": "n_102",
+                "e164": "+33123456789",
+                "country_iso": "FR",
+                "provider": "Orange",
+                "capabilities": ["voice", "sms", "mms"],
+                "created_at": "2025-08-16T15:02:00Z"
+            }
+        ]
+        
+        # Apply filters to demo data
+        if country_iso:
+            items = [item for item in items if item.get("country_iso") == country_iso.upper()]
+        
+        if provider:
+            items = [item for item in items if provider.lower() in item.get("provider", "").lower()]
+        
+        if capabilities:
+            cap_list = [c.strip() for c in capabilities.split(",")]
+            items = [item for item in items if any(cap in item.get("capabilities", []) for cap in cap_list)]
+        
+        return {"total": len(items), "items": items}
+    
+    # Real mode: return empty array (or actual DB query when implemented)
+    items = []
+    
+    # TODO: Replace with actual database query
+    # Apply filters
+    if country_iso:
+        items = [item for item in items if item.get("country_iso") == country_iso.upper()]
+    
+    if provider:
+        items = [item for item in items if provider.lower() in item.get("provider", "").lower()]
+    
+    if capabilities:
+        cap_list = [c.strip() for c in capabilities.split(",")]
+        items = [item for item in items if any(cap in item.get("capabilities", []) for cap in cap_list)]
+    
+    return {"total": len(items), "items": items}
+
+
 @app.get("/calendar")
 def calendar_events(start: str, end: str, scope: str = "tenant", campaign_id: str | None = None) -> dict:
     # Minimal example data within provided range

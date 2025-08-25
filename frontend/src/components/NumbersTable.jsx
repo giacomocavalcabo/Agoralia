@@ -1,0 +1,135 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatDateSafe } from '../lib/format';
+import NumbersRowActions from './NumbersRowActions';
+
+export default function NumbersTable({ data = [], filters, onFiltersChange, onSearch, onExport }) {
+  const { t, i18n } = useTranslation('pages');
+  
+  // Colonne sicure (solo campi esposti dal BE)
+  const columns = [
+    {
+      id: 'e164',
+      header: t('numbers.columns.number'),
+      cell: ({ row }) => (
+        <div className="font-mono text-sm">
+          {row.original.e164}
+        </div>
+      )
+    },
+    {
+      id: 'country_iso',
+      header: t('numbers.columns.country'),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{getCountryFlag(row.original.country_iso)}</span>
+          <span className="text-sm">{row.original.country_iso}</span>
+        </div>
+      )
+    },
+    {
+      id: 'provider',
+      header: t('numbers.columns.provider'),
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.provider || '—'}
+        </div>
+      )
+    },
+    {
+      id: 'capabilities',
+      header: t('numbers.columns.capabilities'),
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {row.original.capabilities?.map((cap, i) => (
+            <span key={i} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+              {cap}
+            </span>
+          )) || '—'}
+        </div>
+      )
+    },
+    {
+      id: 'created_at',
+      header: t('numbers.columns.created'),
+      cell: ({ row }) => (
+        <div className="text-sm text-gray-600">
+          {formatDateSafe(row.original.created_at, i18n.language)}
+        </div>
+      )
+    },
+    {
+      id: 'actions',
+      header: t('numbers.columns.actions'),
+      cell: ({ row }) => <NumbersRowActions row={row} />
+    }
+  ];
+
+  // Helper per flag paese
+  const getCountryFlag = (iso) => {
+    const flagMap = {
+      'IT': '🇮🇹', 'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
+      'ES': '🇪🇸', 'CA': '🇨🇦', 'AU': '🇦🇺', 'JP': '🇯🇵', 'CN': '🇨🇳'
+    };
+    return flagMap[iso] || '🌍';
+  };
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500 mb-2">📞</div>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
+          {t('numbers.empty.title')}
+        </h3>
+        <p className="text-gray-600">
+          {t('numbers.empty.description')}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <NumbersToolbar
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        onSearch={onSearch}
+        onExport={onExport}
+        selectionCount={0} // TODO: Implement selection
+      />
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {columns.map(column => (
+                <th
+                  key={column.id}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  {column.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.map((row, index) => (
+              <tr key={row.id || index} className="hover:bg-gray-50">
+                {columns.map(column => (
+                  <td key={column.id} className="px-6 py-4 whitespace-nowrap">
+                    {column.cell ? column.cell({ row, getValue: () => row[column.id] }) : row[column.id]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Import NumbersToolbar
+import NumbersToolbar from './NumbersToolbar';
