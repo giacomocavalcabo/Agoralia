@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 export default function Register() {
-  const { t } = useI18n(['auth']);
+  const { t } = useI18n('auth');
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
