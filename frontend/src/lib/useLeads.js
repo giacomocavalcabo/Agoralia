@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDemoData } from './useDemoData';
 import { generateDemoLeads } from './demo/fakes';
+import { leadsSegmentToQuery } from './filters/leadsSegment';
 
 const DEFAULT_SIZE = Number(import.meta.env.VITE_LEADS_PAGE_SIZE_DEFAULT) || 25;
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://service-1-production.up.railway.app';
@@ -85,8 +86,17 @@ export function useLeads(initial = {}) {
           qs.set('sort', sort);
           qs.set('dir', dir);
         }
+        // Apply segment filters using the adapter
+        if (filters.segment) {
+          const segmentQs = leadsSegmentToQuery(filters.segment);
+          for (const [k, v] of segmentQs) {
+            qs.set(k, v);
+          }
+        }
+        
+        // Apply legacy filters for backward compatibility
         Object.entries(filters || {}).forEach(([k, v]) => {
-          if (v != null && v !== '') qs.set(k, String(v));
+          if (k !== 'segment' && v != null && v !== '') qs.set(k, String(v));
         });
 
         const res = await fetch(`${API_BASE}/leads?${qs.toString()}`, {

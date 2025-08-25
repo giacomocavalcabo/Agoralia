@@ -50,7 +50,16 @@ export default function Calendar(){
   function next(){ setCursor(d=> view==='week'? new Date(d.getFullYear(), d.getMonth(), d.getDate()+7) : new Date(d.getFullYear(), d.getMonth()+1, 1)) }
   function today(){ setCursor(new Date()) }
 
-  const fromStr = range.start.toLocaleDateString(i18n.language), toStr = range.end.toLocaleDateString(i18n.language)
+  const fromStr = range.start.toLocaleDateString(i18n.language, { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  const toStr = range.end.toLocaleDateString(i18n.language, { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
 
   function openQuick(date){
     setQuick({ lead_id:'', agent_id:'', kb_id:'', from:'', at: date.toISOString() })
@@ -103,11 +112,23 @@ export default function Calendar(){
         </div>
       </div>
       <div className="kpi-title">{t('calendar.range', { from: fromStr, to: toStr })}</div>
-      <div className="flex items-center gap-2.5">
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(16,185,129,.25)' }}></span>{t('calendar.legend.scheduled')}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0, rgba(0,0,0,.08) 6px, transparent 6px, transparent 12px)' }}></span>{t('calendar.legend.blocked')}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(245,158,11,.18)' }}></span>{t('calendar.legend.warn_budget')}</span>
-        <span className="kpi-title inline-flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background:'rgba(239,68,68,.16)' }}></span>{t('calendar.legend.warn_concurrency')}</span>
+      <div className="mt-4 flex items-center gap-4 text-sm">
+        <span className="inline-flex items-center gap-2">
+          <i className="h-2 w-2 rounded-full bg-green-500"></i>
+          {t('calendar.legend.scheduled')}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <i className="h-2 w-2 rounded-full bg-red-500"></i>
+          {t('calendar.legend.blocked')}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <i className="h-2 w-2 rounded-full bg-amber-500"></i>
+          {t('calendar.legend.warn_budget')}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <i className="h-2 w-2 rounded-full bg-amber-600"></i>
+          {t('calendar.legend.warn_concurrency')}
+        </span>
       </div>
       <div className="panel" style={{ minHeight:300 }}>
         <div className="kpi-title" style={{ marginBottom:8 }}>{t('calendar.title')}</div>
@@ -150,7 +171,7 @@ export default function Calendar(){
                       <button
                         key={`c-${d}-${hour}`}
                         role="gridcell"
-                        onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : openQuick(slot)}
+                        onClick={()=> scheduledHere ? (setSelected(scheduledHere), setDrawerOpen(true)) : null}
                         onMouseDown={()=> { setDragStart(slot); setHoverSlot(slot) }}
                         onMouseEnter={()=> { if (dragStart) setHoverSlot(slot) }}
                         onMouseUp={async ()=>{
@@ -279,14 +300,25 @@ export default function Calendar(){
                         return (
                           <div
                             key={eventIndex}
-                            className={`text-xs p-1 rounded border ${getEventColor(event.kind)} truncate cursor-pointer`}
+                            className={`text-xs p-1 rounded border ${getEventColor(event.kind)} truncate cursor-pointer relative group`}
                             onClick={() => {
                               setSelected(event)
                               setDrawerOpen(true)
                             }}
                             title={`${event.title || ''} ${timeStr}`}
                           >
-                            {event.title || event.kind} {timeStr}
+                            <span className="truncate block">{event.title || event.kind} {timeStr}</span>
+                            <button 
+                              className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelected(event);
+                                setDrawerOpen(true);
+                              }}
+                              aria-label="View"
+                            >
+                              👁️
+                            </button>
                           </div>
                         )
                       })}

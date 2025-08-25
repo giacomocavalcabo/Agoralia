@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCampaigns, usePatchCampaign } from '../lib/useCampaigns';
 import ServerDataTable from '../components/ServerDataTable';
+import CampaignCreateDialog from '../components/campaigns/CampaignCreateDialog';
 import { formatDateSafe } from '../lib/format';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +12,7 @@ export default function Campaigns(){
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [openCreate, setOpenCreate] = useState(false);
   const perPage = 25;
   const { data, isLoading, isError } = useCampaigns({ page, perPage, q, status });
   const patch = usePatchCampaign();
@@ -100,14 +102,8 @@ export default function Campaigns(){
         
         <div className="ml-auto flex items-center gap-2">
           <button
-            className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-            onClick={() => navigate('/campaigns/import')}
-          >
-            {t('campaigns.actions.import')}
-          </button>
-          <button
             className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-            onClick={() => navigate('/campaigns/new')}
+            onClick={() => setOpenCreate(true)}
           >
             {t('campaigns.actions.create')}
           </button>
@@ -137,6 +133,11 @@ export default function Campaigns(){
         sortAscLabel={t('common.sort_asc')}
         sortDescLabel={t('common.sort_desc')}
         selectAllLabel={t('common.select_all')}
+      />
+      
+      <CampaignCreateDialog 
+        open={openCreate} 
+        onClose={() => setOpenCreate(false)} 
       />
     </div>
   );

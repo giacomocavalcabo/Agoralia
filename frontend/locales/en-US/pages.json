@@ -178,7 +178,6 @@
     },
     "actions": {
       "create": "Create Campaign",
-      "import": "Import Campaign",
       "activate": "Activate",
       "pause": "Pause",
       "resume": "Resume",
@@ -200,13 +199,14 @@
       "description": "Unable to load campaigns. Please try again."
     },
     "create": {
-      "title": "New Campaign"
+      "title": "New Campaign",
+      "name": "Name",
+      "name_placeholder": "Enter campaign name",
+      "description": "Description (optional)",
+      "description_placeholder": "Enter campaign description",
+      "segment": "Target segment"
     },
-    "import": {
-      "title": "Import Campaign from JSON",
-      "file_label": "Select JSON file",
-      "format_title": "Expected format"
-    },
+
     "detail": {
       "not_found": "Campaign not found.",
       "subtitle": "Overview and audience",
@@ -612,6 +612,17 @@
       }
     },
     "filters": {
+      "category": "Category",
+      "class": "Class",
+      "status": "Status",
+      "stage": "Stage",
+      "country": "Country",
+      "added": "Added",
+      "updated": "Updated",
+      "empty": "No filters applied",
+      "select_field": "Select a field",
+      "value_placeholder": "Value",
+      "add": "Add",
       "status": { "any":"Any status", "new":"New", "contacted":"Contacted", "qualified":"Qualified", "lost":"Lost" },
       "stage":  { "any":"Any stage", "cold":"Cold", "warm":"Warm", "hot":"Hot" },
       "class":  { "any":"Any class", "b2b":"B2B", "b2c":"B2C", "unknown":"Unknown" },
@@ -727,6 +738,17 @@
       "title": "Something went wrong",
       "description": "An unexpected error occurred. Please try refreshing the page.",
       "retry": "Reload Page"
+    }
+  },
+  "filters": {
+    "ops": {
+      "is": "is",
+      "is_not": "is not",
+      "in": "in",
+      "not_in": "not in",
+      "before": "before",
+      "after": "after",
+      "between": "between"
     }
   },
   "common": {

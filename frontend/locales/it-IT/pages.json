@@ -163,7 +163,7 @@
     },
     "actions": {
       "create": "Crea campagna",
-      "import": "Importa campagna",
+
       "activate": "Attiva",
       "pause": "Metti in pausa",
       "resume": "Riprendi",
@@ -184,14 +184,15 @@
         "title": "Errore nel caricamento delle campagne",
         "description": "Impossibile caricare le campagne. Riprova."
       },
-      "create": {
-        "title": "Nuova campagna"
-      },
-      "import": {
-        "title": "Importa campagna da JSON",
-        "file_label": "Seleziona file JSON",
-        "format_title": "Formato atteso"
-      },
+          "create": {
+      "title": "Nuova campagna",
+      "name": "Nome",
+      "name_placeholder": "Inserisci il nome della campagna",
+      "description": "Descrizione (opzionale)",
+      "description_placeholder": "Inserisci la descrizione della campagna",
+      "segment": "Segmento di destinazione"
+    },
+      
       "detail": {
       "not_found": "Campagna non trovata.",
       "subtitle": "Panoramica e pubblico",
@@ -598,6 +599,17 @@
       }
     },
     "filters": {
+      "category": "Categoria",
+      "class": "Classe",
+      "status": "Stato",
+      "stage": "Stadio",
+      "country": "Paese",
+      "added": "Aggiunto",
+      "updated": "Aggiornato",
+      "empty": "Nessun filtro applicato",
+      "select_field": "Seleziona un campo",
+      "value_placeholder": "Valore",
+      "add": "Aggiungi",
       "status": { "any":"Qualsiasi stato", "new":"Nuovo", "contacted":"Contattato", "qualified":"Qualificato", "lost":"Perso" },
       "stage":  { "any":"Qualsiasi stadio", "cold":"Freddo", "warm":"Tiepido", "hot":"Caldo" },
       "class":  { "any":"Qualsiasi classe", "b2b":"B2B", "b2c":"B2C", "unknown":"Sconosciuta" },
@@ -713,6 +725,17 @@
       "title": "Qualcosa è andato storto",
       "description": "Si è verificato un errore imprevisto. Prova ad aggiornare la pagina.",
       "retry": "Ricarica Pagina"
+    }
+  },
+  "filters": {
+    "ops": {
+      "is": "è",
+      "is_not": "non è",
+      "in": "è in",
+      "not_in": "non è in",
+      "before": "prima",
+      "after": "dopo",
+      "between": "tra"
     }
   },
   "common": {
