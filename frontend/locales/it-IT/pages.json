@@ -509,35 +509,36 @@
     }
   },
   "leads": {
-    "title": "Contatti",
-    "actions": {
-      "add": "Aggiungi",
-      "import": "Importa",
-      "schedule": "Programma"
-    },
-    "add_title": "Aggiungi Contatto",
-    "cols": {
-      "class": "Classe",
-      "company": "Azienda",
-      "compliance": "Compliance",
-      "consent": "Consenso",
-      "country": "Paese",
-      "lang": "Lingua",
+    "title": "Leads",
+    "description": "Gestisci e revisiona i contatti.",
+    "columns": {
       "name": "Nome",
       "phone": "Telefono",
-      "role": "Ruolo"
+      "country": "Paese",
+      "compliance": "Compliance",
+      "status": "Stato",
+      "stage": "Stadio",
+      "owner": "Owner",
+      "last_contact": "Ultimo contatto",
+      "score": "Punteggio",
+      "actions": "Azioni"
     },
-    "empty": {
-      "title": "Nessun contatto",
-      "description": "Inizia importando i tuoi contatti",
-      "cta_import": "Importa Contatti",
-      "cta_add": "Aggiungi Manualmente"
+    "toolbar": {
+      "search_placeholder": "Cerca lead…",
+      "search_aria": "Cerca lead",
+      "bulk": {
+        "assign": "Assegna",
+        "delete": "Elimina",
+        "export": "Esporta"
+      }
     },
-    "error": {
-      "title": "Errore nel caricamento",
-      "description": "Si è verificato un errore nel caricamento dei contatti",
-      "retry": "Riprova"
+    "filters": {
+      "status": { "any":"Qualsiasi stato", "new":"Nuovo", "contacted":"Contattato", "qualified":"Qualificato", "lost":"Perso" },
+      "stage":  { "any":"Qualsiasi stadio", "cold":"Freddo", "warm":"Tiepido", "hot":"Caldo" },
+      "class":  { "any":"Qualsiasi classe", "b2b":"B2B", "b2c":"B2C", "unknown":"Sconosciuta" },
+      "category": { "any":"Qualsiasi categoria", "allowed":"Consentito", "conditional":"Condizionato", "blocked":"Vietato" }
     },
+    "actions": { "view":"Apri", "edit":"Modifica", "delete":"Elimina", "confirm_delete":"Eliminare questo lead? L'azione è irreversibile." },
     "table": {
       "columns": {
         "name": "Nome",

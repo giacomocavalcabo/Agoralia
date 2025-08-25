@@ -1,21 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export default function LeadsRowActions({ row, onView, onAssign, onDelete }) {
   const { t } = useTranslation('pages');
   const navigate = useNavigate();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  const handleDelete = () => {
+    if (window.confirm(t('leads.actions.confirm_delete'))) {
+      onDelete?.(row);
+    }
+  };
   
   return (
     <div className="flex items-center gap-2">
       <button 
-        className="rounded border px-2 py-1 text-xs" 
+        className="rounded border px-2 py-1 text-xs hover:bg-gray-50" 
         onClick={() => navigate(`/leads/${row.id}`)}
       >
-        {t('leads.row_actions.view')}
+        {t('leads.actions.view')}
       </button>
-      <button className="rounded border px-2 py-1 text-xs" onClick={() => onAssign?.(row)}>{t('leads.row_actions.assign')}</button>
-      <button className="rounded bg-red-600 px-2 py-1 text-xs text-white" onClick={() => onDelete?.(row)}>{t('leads.row_actions.delete')}</button>
+      <button className="rounded border px-2 py-1 text-xs hover:bg-gray-50" onClick={() => onAssign?.(row)}>
+        {t('leads.actions.edit')}
+      </button>
+      <button 
+        className="rounded border border-red-300 bg-red-50 px-2 py-1 text-xs text-red-700 hover:bg-red-100" 
+        onClick={handleDelete}
+      >
+        {t('leads.actions.delete')}
+      </button>
     </div>
   );
 }

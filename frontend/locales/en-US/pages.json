@@ -523,45 +523,82 @@
     }
   },
   "leads": {
-    "actions": {
-      "add": "[Add]",
-      "import": "[Import]",
-      "schedule": "[Schedule]"
+    "title": "Leads",
+    "description": "Manage and review your contacts.",
+    "columns": {
+      "name": "Name",
+      "phone": "Phone",
+      "country": "Country",
+      "compliance": "Compliance",
+      "status": "Status",
+      "stage": "Stage",
+      "owner": "Owner",
+      "last_contact": "Last contact",
+      "score": "Score",
+      "actions": "Actions"
     },
-    "add_title": "[Add Title]",
-    "cols": {
-      "class": "[Class]",
-      "company": "[Company]",
-      "compliance": "[Compliance]",
-      "consent": "[Consent]",
-      "country": "[Country]",
-      "lang": "[Lang]",
-      "name": "[Name]",
-      "phone": "[Phone]",
-      "role": "[Role]"
+    "toolbar": {
+      "search_placeholder": "Search leads…",
+      "search_aria": "Search leads",
+      "bulk": {
+        "assign": "Assign",
+        "delete": "Delete",
+        "export": "Export"
+      }
     },
-    "empty": {
-      "desc": "[Desc]",
-      "title": "[Title]"
+    "filters": {
+      "status": { "any":"Any status", "new":"New", "contacted":"Contacted", "qualified":"Qualified", "lost":"Lost" },
+      "stage":  { "any":"Any stage", "cold":"Cold", "warm":"Warm", "hot":"Hot" },
+      "class":  { "any":"Any class", "b2b":"B2B", "b2c":"B2C", "unknown":"Unknown" },
+      "category": { "any":"Any category", "allowed":"Allowed", "conditional":"Conditional", "blocked":"Blocked" }
+    },
+    "actions": { "view":"View", "edit":"Edit", "delete":"Delete", "confirm_delete":"Delete this lead? This cannot be undone." },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "company": "Company",
+        "phone": "Phone",
+        "country": "Country",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Delete leads",
+        "description": "Are you sure you want to delete the selected leads?",
+        "success": "Leads deleted successfully"
+      },
+      "assign": {
+        "title": "Assign leads",
+        "success": "Leads assigned successfully"
+      }
+    },
+    "export": {
+      "starting": "Export starting..."
+    },
+    "new": {
+      "title": "New Lead",
+      "description": "Create a new lead manually",
+      "coming_soon": "Coming soon"
     },
     "errors": {
-      "e164": "[E164]"
+      "e164": "E164 format required"
     },
     "fields": {
-      "company": "[Company]",
-      "consent": "[Consent]",
-      "country": "[Country]",
-      "lang": "[Lang]",
-      "name": "[Name]",
-      "phone": "[Phone]",
-      "role": "[Role]"
+      "company": "Company",
+      "consent": "Consent",
+      "country": "Country",
+      "lang": "Language",
+      "name": "Name",
+      "phone": "Phone",
+      "role": "Role"
     },
     "placeholders": {
-      "e164": "[E164]"
+      "e164": "+1..."
     },
-    "title": "[Title]",
     "toasts": {
-      "added": "[Added]"
+      "added": "Lead added"
     }
   },
   "numbers": {

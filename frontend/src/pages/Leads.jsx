@@ -5,6 +5,8 @@ import LeadsToolbar from '../components/LeadsToolbar.jsx';
 import ServerDataTable from '../components/ServerDataTable.jsx';
 import LeadsRowActions from '../components/LeadsRowActions.jsx';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer.jsx';
+import ComplianceChip from '../components/ui/ComplianceChip.jsx';
+import CountryFlag from '../components/ui/CountryFlag.jsx';
 import { useLeads } from '../lib/useLeads.js';
 import { formatDateSafe } from '../lib/format.js';
 
@@ -52,19 +54,40 @@ export default function Leads() {
   }
 
   const columns = useMemo(() => ([
-    { id: 'name', header: t('leads.table.columns.name') },
-    { id: 'phone', header: t('leads.table.columns.phone') },
-    { id: 'email', header: t('leads.table.columns.email') },
-    { id: 'status', header: t('leads.table.columns.status') },
-    { id: 'campaign', header: t('leads.table.columns.campaign') },
-    { id: 'stage', header: t('leads.table.columns.stage') },
-    { id: 'owner', header: t('leads.table.columns.owner') },
-    { id: 'last_contact', header: t('leads.table.columns.last_contact'),
-      cell: (r) => formatDateSafe(r.last_contact, i18n.language) },
-    { id: 'score', header: t('leads.table.columns.score') },
-    { id: 'actions', header: t('leads.table.columns.actions'),
+    { id: 'name', header: t('leads.columns.name'), accessorKey: 'name' },
+    { 
+      id: 'phone_e164', 
+      header: t('leads.columns.phone'), 
+      accessorKey: 'phone_e164',
+      cell: (r) => <span className="font-mono tabular-nums">{r.phone_e164 || '—'}</span>
+    },
+    {
+      id: 'country',
+      header: t('leads.columns.country'),
+      cell: (r) => <CountryFlag iso={r.country_iso} />
+    },
+    {
+      id: 'compliance',
+      header: t('leads.columns.category'),
+      cell: (r) => (
+        <ComplianceChip
+          value={r.compliance_category}
+          title={(r.compliance_reasons || []).join('; ')}
+        />
+      )
+    },
+    { id: 'status', header: t('leads.columns.status'), accessorKey: 'status' },
+    { id: 'stage', header: t('leads.columns.stage'), accessorKey: 'stage' },
+    { id: 'owner', header: t('leads.columns.owner'), accessorKey: 'owner' },
+    {
+      id: 'last_contact',
+      header: t('leads.columns.updated'),
+      cell: (r) => <span className="tabular-nums">{formatDateSafe(r.last_contact, i18n.language)}</span>
+    },
+    { id: 'score', header: t('leads.columns.score'), accessorKey: 'score' },
+    { id: 'actions', header: t('leads.columns.actions'),
       cell: (r) => <LeadsRowActions row={r} onView={(lead) => { setSelected(lead); setOpen(true); }} onAssign={() => {}} onDelete={() => { alert(t('leads.dialogs.delete.success')); }} /> },
-  ]), [t]);
+  ]), [t, i18n.language]);
 
   return (
     <div className="px-6 lg:px-8 py-6">

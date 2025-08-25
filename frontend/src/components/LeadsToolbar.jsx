@@ -16,7 +16,7 @@ export default function LeadsToolbar({
 
   useEffect(() => setLocal(value), [value]);
   useEffect(() => {
-    const id = setTimeout(() => onSearch?.(local), 450);
+    const id = setTimeout(() => onSearch?.(local), 400);
     return () => clearTimeout(id);
   }, [local]);
 
@@ -29,55 +29,57 @@ export default function LeadsToolbar({
         placeholder={t('leads.toolbar.search_placeholder')}
         value={local}
         onChange={(e) => setLocal(e.target.value)}
+        aria-label={t('leads.toolbar.search_aria')}
       />
 
       {/* Filters */}
       <select
-        aria-label={t('leads.toolbar.filters.status')}
+        aria-label={t('leads.filters.status.any')}
         className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
         value={filters.status || ''}
         onChange={(e) => onFiltersChange({ ...filters, status: e.target.value || '' })}
       >
-        <option value="">{t('leads.toolbar.filters.any')}</option>
-        <option value="new">New</option>
-        <option value="contacted">Contacted</option>
-        <option value="qualified">Qualified</option>
-        <option value="lost">Lost</option>
+        <option value="">{t('leads.filters.status.any')}</option>
+        <option value="new">{t('leads.filters.status.new')}</option>
+        <option value="contacted">{t('leads.filters.status.contacted')}</option>
+        <option value="qualified">{t('leads.filters.status.qualified')}</option>
+        <option value="lost">{t('leads.filters.status.lost')}</option>
       </select>
 
       <select
-        aria-label={t('leads.toolbar.filters.campaign')}
-        className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
-        value={filters.campaign || ''}
-        onChange={(e) => onFiltersChange({ ...filters, campaign: e.target.value || '' })}
-      >
-        <option value="">{t('leads.toolbar.filters.any')}</option>
-        <option value="Summer">Summer</option>
-        <option value="Launch">Launch</option>
-        <option value="Retarget">Retarget</option>
-      </select>
-
-      <select
-        aria-label={t('leads.toolbar.filters.owner')}
-        className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
-        value={filters.owner || ''}
-        onChange={(e) => onFiltersChange({ ...filters, owner: e.target.value || '' })}
-      >
-        <option value="">{t('leads.toolbar.filters.any')}</option>
-        <option value="Giulia">Giulia</option>
-        <option value="Marco">Marco</option>
-      </select>
-
-      <select
-        aria-label={t('leads.toolbar.filters.stage')}
+        aria-label={t('leads.filters.stage.any')}
         className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
         value={filters.stage || ''}
         onChange={(e) => onFiltersChange({ ...filters, stage: e.target.value || '' })}
       >
-        <option value="">{t('leads.toolbar.filters.any')}</option>
-        <option value="cold">Cold</option>
-        <option value="warm">Warm</option>
-        <option value="hot">Hot</option>
+        <option value="">{t('leads.filters.stage.any')}</option>
+        <option value="cold">{t('leads.filters.stage.cold')}</option>
+        <option value="warm">{t('leads.filters.stage.warm')}</option>
+        <option value="hot">{t('leads.filters.stage.hot')}</option>
+      </select>
+
+      <select
+        aria-label={t('leads.filters.class.any')}
+        className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
+        value={filters.contact_class || ''}
+        onChange={(e) => onFiltersChange({ ...filters, contact_class: e.target.value || '' })}
+      >
+        <option value="">{t('leads.filters.class.any')}</option>
+        <option value="b2b">{t('leads.filters.class.b2b')}</option>
+        <option value="b2c">{t('leads.filters.class.b2c')}</option>
+        <option value="unknown">{t('leads.filters.class.unknown')}</option>
+      </select>
+
+      <select
+        aria-label={t('leads.filters.category.any')}
+        className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
+        value={filters.compliance_category || ''}
+        onChange={(e) => onFiltersChange({ ...filters, compliance_category: e.target.value || '' })}
+      >
+        <option value="">{t('leads.filters.category.any')}</option>
+        <option value="allowed">{t('leads.filters.category.allowed')}</option>
+        <option value="conditional">{t('leads.filters.category.conditional')}</option>
+        <option value="blocked">{t('leads.filters.category.blocked')}</option>
       </select>
 
       <div className="ms-auto flex items-center gap-2">
@@ -93,7 +95,7 @@ export default function LeadsToolbar({
           data-testid="bulk-delete"
           disabled={!selectionCount}
           onClick={onBulkDelete}
-          className="rounded-lg bg-red-600 px-3 py-2 text-sm text-white disabled:opacity-50"
+          className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100 disabled:opacity-50"
         >
           {t('leads.toolbar.bulk.delete')}
         </button>
