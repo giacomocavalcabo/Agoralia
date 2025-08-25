@@ -127,7 +127,6 @@ export default function Campaigns(){
         retryLabel={t('common.retry')}
         emptyTitle={t('campaigns.empty.title')}
         emptyDescription={t('campaigns.empty.description')}
-        emptyCtaImport={t('campaigns.empty.cta_import')}
         emptyCtaAdd={t('campaigns.empty.cta_add')}
         loadingLabel={t('common.loading')}
         sortAscLabel={t('common.sort_asc')}

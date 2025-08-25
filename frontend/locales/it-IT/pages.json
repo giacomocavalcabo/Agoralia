@@ -165,7 +165,7 @@
     "empty": {
       "title": "Nessuna campagna trovata",
       "description": "Crea la tua prima campagna per iniziare",
-      "cta_import": "Importa Campagna",
+      
       "cta_add": "Crea Campagna"
     },
           "error": {
