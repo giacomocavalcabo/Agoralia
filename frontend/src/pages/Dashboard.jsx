@@ -28,7 +28,8 @@ import {
 } from '../lib/demo/fakes.js'
 
 export default function Dashboard() {
-	const { t } = useTranslation('pages')
+	const { t: tPages } = useTranslation('pages')
+	const { t: tCommon } = useTranslation('common')
 	const navigate = useNavigate()
 	
 	const abortControllerRef = useRef(null)
@@ -173,8 +174,8 @@ export default function Dashboard() {
 	// Live calls table data
 	const liveCallsData = liveCalls.map(call => ({
 		id: call.id,
-		lead: call.lead_name || t('common.unknown'),
-		agent: call.agent_name || t('common.unknown'),
+		lead: call.lead_name || tCommon('unknown'),
+		agent: call.agent_name || tCommon('unknown'),
 		status: call.status || 'unknown',
 		started: call.started_at ? new Date(call.started_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
 		duration: call.duration_sec ? fmtMMSS(call.duration_sec) : '00:00'
@@ -186,17 +187,16 @@ export default function Dashboard() {
 			<div className="px-6 lg:px-8 py-6">
 				<div className="space-y-6 md:space-y-8">
 					<PageHeader 
-						title={t('dashboard.title')}
-						description={t('dashboard.description')}
+						title={tPages('dashboard.title')}
 					/>
 					<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 text-center py-12">
-						<div className="text-lg font-semibold text-red-600 mb-2">{t('common.error')}</div>
+						<div className="text-lg font-semibold text-red-600 mb-2">{tCommon('error')}</div>
 						<div className="text-gray-600 mb-4">{error}</div>
 						<button 
 							onClick={() => load(abortControllerRef.current?.signal)}
 							className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
 						>
-							{t('common.retry')}
+							{tCommon('retry')}
 						</button>
 					</div>
 				</div>
@@ -210,8 +210,7 @@ export default function Dashboard() {
 			<div className="px-6 lg:px-8 py-6">
 				<div className="space-y-6 md:space-y-8">
 					<PageHeader 
-						title={t('dashboard.title')}
-						description={t('dashboard.description')}
+						title={tPages('dashboard.title')}
 					/>
 					<div className="grid grid-cols-12 gap-4 md:gap-6">
 						{/* KPI Cards Skeletons */}
@@ -255,17 +254,16 @@ export default function Dashboard() {
 			<div className="px-6 lg:px-8 py-6">
 				<div className="space-y-6 md:space-y-8">
 					<PageHeader 
-						title={t('dashboard.title')}
-						description={t('dashboard.description')}
+						title={tPages('dashboard.title')}
 					/>
 					<div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 text-center py-12">
-						<div className="text-lg font-semibold text-gray-900 mb-2">{t('dashboard.empty.title', 'No Dashboard Data')}</div>
-						<div className="text-gray-600 mb-4">{t('dashboard.empty.description', 'Start by creating your first campaign or importing leads.')}</div>
+						<div className="text-lg font-semibold text-gray-900 mb-2">{tPages('dashboard.empty.title', 'No Dashboard Data')}</div>
+						<div className="text-gray-600 mb-4">{tPages('dashboard.empty.description', 'Start by creating your first campaign or importing leads.')}</div>
 						<button 
 							onClick={() => navigate('/campaigns')}
 							className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
 						>
-							{t('dashboard.empty.cta', 'Get Started')}
+							{tPages('dashboard.empty.cta', 'Get Started')}
 						</button>
 					</div>
 				</div>
@@ -277,8 +275,7 @@ export default function Dashboard() {
 		<div className="px-6 lg:px-8 py-6" data-testid="dashboard-loaded">
 			<div className="space-y-6 md:space-y-8">
 				<PageHeader 
-					title={t('dashboard.title')}
-					description={t('dashboard.description')}
+					title={tPages('dashboard.title')}
 				/>
 				
 				{/* Demo Data Banner for Admin */}
@@ -287,20 +284,20 @@ export default function Dashboard() {
 						<div className="flex items-center gap-2">
 							<div className="w-2 h-2 rounded-full bg-amber-500"></div>
 							<span className="text-sm font-medium text-amber-800">
-								{t('admin.demo_data_enabled', 'Demo data enabled - showing sample metrics')}
+								{tPages('admin.demo_data_enabled', 'Demo data enabled - showing sample metrics')}
 							</span>
 						</div>
 					</div>
 				)}
 				
 				{/* 12-Column Grid Layout - righe auto, niente overlap */}
-				<div className="grid grid-cols-12 auto-rows-auto items-stretch gap-4 md:gap-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 auto-rows-auto items-stretch gap-3 sm:gap-4 md:gap-6">
 				
 					{/* Row 1: KPI Cards (3×4) - tutte size="sm" per riga compatta */}
-					<div className="col-span-12 md:col-span-3" data-card="true">
+					<div className="sm:col-span-1 lg:col-span-12 xl:col-span-3" data-card="true">
 						<div className="h-full">
 							<KpiCard 
-								label={t('dashboard.kpi.calls_today')} 
+								label={tPages('dashboard.kpi.calls_today')} 
 								value={summary?.calls_today || 0}
 								delta={showDemoData ? 12 : undefined}
 								state={summary?.calls_today > 50 ? 'warn' : 'normal'}
@@ -309,10 +306,10 @@ export default function Dashboard() {
 							/>
 						</div>
 					</div>
-					<div className="col-span-12 md:col-span-3" data-card="true">
+					<div className="sm:col-span-1 lg:col-span-12 xl:col-span-3" data-card="true">
 						<div className="h-full">
 							<KpiCard 
-								label={t('dashboard.kpi.minutes_month')} 
+								label={tPages('dashboard.kpi.minutes_month')} 
 								value={summary?.minutes_month || 0}
 								delta={showDemoData ? -5 : undefined}
 								trendData={showDemoData ? [120, 135, 142, 138, 156, 148, 162] : undefined}
@@ -320,10 +317,10 @@ export default function Dashboard() {
 							/>
 						</div>
 					</div>
-					<div className="col-span-12 md:col-span-3" data-card="true">
+					<div className="sm:col-span-1 lg:col-span-12 xl:col-span-3" data-card="true">
 						<div className="h-full">
 							<KpiCard 
-								label={t('dashboard.kpi.avg_duration')} 
+								label={tPages('dashboard.kpi.avg_duration')} 
 								value={fmtMMSS(summary?.avg_duration_sec || 0)}
 								delta={showDemoData ? 8 : undefined}
 								trendData={showDemoData ? [120, 125, 118, 132, 128, 135, 142] : undefined}
@@ -331,10 +328,10 @@ export default function Dashboard() {
 							/>
 						</div>
 					</div>
-					<div className="col-span-12 md:col-span-3" data-card="true">
+					<div className="sm:col-span-1 lg:col-span-12 xl:col-span-3" data-card="true">
 						<div className="h-full">
 							<KpiCard 
-								label={t('dashboard.kpi.contact_rate')} 
+								label={tPages('dashboard.kpi.contact_rate')} 
 								value={`${Math.round((summary?.contact_rate || 0) * 100)}%`}
 								delta={showDemoData ? 12 : undefined}
 								state={summary?.contact_rate < 0.2 ? 'danger' : summary?.contact_rate < 0.3 ? 'warn' : 'normal'}
@@ -345,34 +342,34 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 2: CallsHistogram + GaugeBudget - size="lg" e "md" */}
-					<div className="col-span-12 xl:col-span-8" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-12 xl:col-span-8" data-card="true">
 						<div className="h-full rounded-2xl border bg-white overflow-hidden">
-							<div className="flex items-center justify-between p-4">
-								<h3 className="text-sm font-medium">{t('dashboard.widgets.calls_histogram')}</h3>
+							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-3">
+								<h3 className="text-sm font-medium">{tPages('dashboard.widgets.calls_histogram')}</h3>
 								<div className="flex items-center gap-2">
 									<button 
 										onClick={() => setTrendDays(7)} 
 										className={`px-3 py-1 text-xs rounded-lg ${trendDays === 7 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}`}
 									>
-										{t('dashboard.buttons.7d')}
+										{tPages('dashboard.buttons.7d')}
 									</button>
 									<button 
 										onClick={() => setTrendDays(30)} 
 										className={`px-3 py-1 text-xs rounded-lg ${trendDays === 30 ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}`}
 									>
-										{t('dashboard.buttons.30d')}
+										{tPages('dashboard.buttons.30d')}
 									</button>
 								</div>
 							</div>
 							<div className="px-4 pb-4">
 								<CallsHistogram 
 									buckets={trends.created?.map((value, i) => ({ label: `Day ${i+1}`, count: value })) || []}
-									label={t('dashboard.metrics.calls_created')}
+									label={tPages('dashboard.metrics.calls_created')}
 								/>
 							</div>
 						</div>
 					</div>
-					<div className="col-span-12 xl:col-span-4" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-12 xl:col-span-4" data-card="true">
 						<div className="h-full">
 							{(() => {
 								const demoCap = 500000;     // €5,000
@@ -397,15 +394,15 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 3: Event Feed + TopAgents + Geo — tutte alte uguali (320px) e non scrollano */}
-					<div className="col-span-12 lg:col-span-4" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.events', 'Event Feed')}</h3>
+							<h3 className="text-sm font-medium mb-4">{tPages('dashboard.widgets.events', 'Event Feed')}</h3>
 							<EventFeed events={events} className="h-full" bare />
 						</div>
 					</div>
-					<div className="col-span-12 lg:col-span-4" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.agents.title', 'Top Agents')}</h3>
+							<h3 className="text-sm font-medium mb-4">{tPages('dashboard.agents.title', 'Top Agents')}</h3>
 							<TopAgentsBar 
 								agents={showDemoData ? topAgents : []}
 								onDrillDown={(agentId) => handleDrillDown('agent', agentId)}
@@ -414,9 +411,9 @@ export default function Dashboard() {
 							/>
 						</div>
 					</div>
-					<div className="col-span-12 lg:col-span-4" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.geo.title', 'Geographic Distribution')}</h3>
+							<h3 className="text-sm font-medium mb-4">{tPages('dashboard.geo.title', 'Geographic Distribution')}</h3>
 							<MiniMap 
 								data={showDemoData ? geoData : []}
 								onDrillDown={(country) => handleDrillDown('country', country)}
@@ -426,41 +423,41 @@ export default function Dashboard() {
 					</div>
 				
 					{/* Row 4: Response Time (1/3) + Live Calls (2/3) */}
-					<div className="col-span-12 lg:col-span-4" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-4" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 overflow-hidden">
-							<h3 className="text-sm font-medium mb-4">{t('dashboard.widgets.sla')}</h3>
+							<h3 className="text-sm font-medium mb-4">{tPages('dashboard.widgets.sla')}</h3>
 							<SlaSparkline 
 								points={showDemoData ? [120, 95, 180, 150, 200, 160, 140] : [0, 0, 0, 0, 0, 0, 0]} 
 								thresholdMs={5000} 
 							/>
 						</div>
 					</div>
-					<div className="col-span-12 lg:col-span-8" data-card="true">
+					<div className="sm:col-span-2 lg:col-span-8" data-card="true">
 						<div className="h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-6 overflow-hidden">
-							<div className="flex items-center justify-between mb-4">
-								<div className="text-sm font-semibold text-gray-900">{t('dashboard.widgets.live_calls')}</div>
+							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+								<div className="text-sm font-semibold text-gray-900">{tPages('dashboard.widgets.live_calls')}</div>
 								<div className="flex items-center gap-2">
 									<div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
 									<span className="text-xs text-gray-600 tabular-nums">
 										{isConnected
-											? t('common.live_status', { count: liveCalls.length })
-											: t('common.polling_status', { count: liveCalls.length })}
+											? tCommon('live_status', { count: liveCalls.length })
+											: tCommon('polling_status', { count: liveCalls.length })}
 									</span>
 								</div>
 							</div>
 							
 							{liveCalls.length === 0 ? (
-								<div className="text-sm text-gray-500 text-center py-8">{t('dashboard.states.no_calls')}</div>
+								<div className="text-sm text-gray-500 text-center py-8">{tPages('dashboard.states.no_calls')}</div>
 							) : (
 								<div className="max-h-[280px] overflow-y-auto pr-2">
 									<DataTable
 										data={liveCallsData}
 										columns={[
-											{ key: 'lead', label: t('common.lead') },
-											{ key: 'agent', label: t('common.agent') },
-											{ key: 'status', label: t('common.status') },
-											{ key: 'started', label: t('common.started') },
-											{ key: 'duration', label: t('common.duration') }
+											{ key: 'lead', label: tCommon('lead') },
+											{ key: 'agent', label: tCommon('agent') },
+											{ key: 'status', label: tCommon('status') },
+											{ key: 'started', label: tCommon('started') },
+											{ key: 'duration', label: tCommon('duration') },
 										]}
 									/>
 								</div>

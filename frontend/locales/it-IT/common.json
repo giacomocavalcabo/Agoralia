@@ -18,5 +18,7 @@
   "status": "Stato",
   "started": "Iniziata",
   "duration": "Durata",
-  "search": "Cerca"
+  "search": "Cerca",
+  "unknown": "Sconosciuto",
+  "retry": "Riprova"
 }

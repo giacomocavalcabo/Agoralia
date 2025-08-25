@@ -18,5 +18,7 @@
   "status": "Status",
   "started": "Started",
   "duration": "Duration",
-  "search": "Search"
+  "search": "Search",
+  "unknown": "Unknown",
+  "retry": "Retry"
 }

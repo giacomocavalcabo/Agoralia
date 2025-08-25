@@ -106,6 +106,22 @@ export default function GaugeBudget({
 			<div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-center text-sm tabular-nums">
 				{hasCap ? t('dashboard.budget.projected', 'Projected EOM: {{pct}}%', { pct: projectedEom ?? pct }) : '—'}
 			</div>
+			
+			{/* Detailed breakdown below gauge for better UX */}
+			{hasCap && (
+				<div className="mt-4 grid grid-cols-2 gap-3 text-xs text-gray-600 tabular-nums">
+					<div className="text-center p-2 bg-gray-50 rounded-lg">
+						<div className="font-medium text-gray-900">{t('dashboard.budget.spent', 'Spent')}</div>
+						<div className="text-lg font-bold text-ink-900">€{(spent / 100).toFixed(2)}</div>
+						<div className="text-xs text-gray-500">{Math.round(pct)}% of budget</div>
+					</div>
+					<div className="text-center p-2 bg-gray-50 rounded-lg">
+						<div className="font-medium text-gray-900">{t('dashboard.budget.remaining', 'Remaining')}</div>
+						<div className="text-lg font-bold text-ink-900">€{Math.max((cap - spent) / 100, 0).toFixed(2)}</div>
+						<div className="text-xs text-gray-500">{Math.round(100 - pct)}% left</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
