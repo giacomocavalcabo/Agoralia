@@ -31,45 +31,45 @@ export default function FilterBuilder({ schema, value, onChange, i18n }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      {/* current pills */}
-      <div className="flex flex-wrap gap-2 mb-4">
+    <div className="rounded-lg border border-gray-200 bg-white p-3">
+      {/* current pills - right side */}
+      <div className="flex flex-wrap gap-2 mb-3">
         {filters.map((f, i) => (
-          <span key={i} className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm">
-            <span className="font-medium">{schema.find(s=>s.id===f.field)?.label}</span>
-            <span>•</span>
-            <span>{i18n.op[f.op] || f.op}</span>
-            <span>•</span>
-            <span className="text-gray-600">{Array.isArray(f.value) ? f.value.join(', ') : String(f.value)}</span>
-            <button className="ml-1 p-1 hover:text-red-600" onClick={()=>removeFilter(i)} aria-label="Remove">
-              <X size={14}/>
+          <span key={i} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs bg-blue-50 border-blue-200">
+            <span className="font-medium text-blue-800">{schema.find(s=>s.id===f.field)?.label}</span>
+            <span className="text-blue-600">•</span>
+            <span className="text-blue-700">{i18n.op[f.op] || f.op}</span>
+            <span className="text-blue-600">•</span>
+            <span className="text-blue-600">{Array.isArray(f.value) ? f.value.join(', ') : String(f.value)}</span>
+            <button className="ml-1 p-0.5 hover:text-red-600 hover:bg-red-50 rounded" onClick={()=>removeFilter(i)} aria-label="Remove">
+              <X size={12}/>
             </button>
           </span>
         ))}
-        {filters.length === 0 && <span className="text-sm text-gray-500">{i18n.empty}</span>}
+        {filters.length === 0 && <span className="text-xs text-gray-400">{i18n.empty}</span>}
       </div>
 
-      {/* editor row */}
+      {/* editor row - left side, more compact */}
       <div className="grid grid-cols-12 gap-2">
-        <select className="col-span-4 rounded-md border px-3 py-2"
+        <select className="col-span-4 rounded border px-2 py-1.5 text-sm"
                 value={editing.field}
                 onChange={e=>setEditing(s=>({ ...s, field: e.target.value }))}>
           <option value="">{i18n.select_field}</option>
           {schema.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
         </select>
 
-        <select className="col-span-3 rounded-md border px-3 py-2"
+        <select className="col-span-3 rounded border px-2 py-1.5 text-sm"
                 value={editing.op}
                 onChange={e=>setEditing(s=>({ ...s, op: e.target.value }))}>
           {Object.keys(OPS).map(op => <option key={op} value={op}>{i18n.op[op]}</option>)}
         </select>
 
-        <input className="col-span-4 rounded-md border px-3 py-2"
+        <input className="col-span-4 rounded border px-2 py-1.5 text-sm"
                placeholder={i18n.value_placeholder}
                value={editing.v}
                onChange={e=>setEditing(s=>({ ...s, v: e.target.value }))}/>
 
-        <button className="col-span-1 rounded-md bg-primary-600 text-white px-3 py-2"
+        <button className="col-span-1 rounded bg-blue-600 text-white px-2 py-1.5 text-sm hover:bg-blue-700"
                 onClick={addFilter}>{i18n.add}</button>
       </div>
     </div>

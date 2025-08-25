@@ -60,19 +60,7 @@
       "concurrency": "[Concorrenza]",
       "quiet_hours": "Impossibile programmare durante le ore silenziose per {iso}",
       "rpo": "Obiettivo di recupero non raggiunto per {iso}"
-    },
-    "legend": {
-      "blocked": "[Bloccato]",
-      "scheduled": "[Programmato]",
-      "warn_budget": "[Avviso Budget]",
-      "warn_concurrency": "[Avviso Concorrenza]"
-    },
-    "quick": {
-      "submit_done": "[Inviato]",
-      "title": "[Titolo]"
-    },
-    "range": "Da {fromStr} a {toStr}",
-    "title": "[Titolo]"
+    }
   },
   "import": {
     "title": "Importa",

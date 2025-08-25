@@ -60,19 +60,7 @@
       "concurrency": "[Concurrency]",
       "quiet_hours": "Cannot schedule during quiet hours for {iso}",
       "rpo": "Recovery point objective not met for {iso}"
-    },
-    "legend": {
-      "blocked": "[Blocked]",
-      "scheduled": "[Scheduled]",
-      "warn_budget": "[Warn Budget]",
-      "warn_concurrency": "[Warn Concurrency]"
-    },
-    "quick": {
-      "submit_done": "[Submit Done]",
-      "title": "[Title]"
-    },
-    "range": "From {fromStr} to {toStr}",
-    "title": "[Title]"
+    }
   },
   "import": {
     "title": "Import",
@@ -191,7 +179,7 @@
     "empty": {
       "title": "No campaigns found",
       "description": "Create your first campaign to get started",
-      "cta_import": "Import Campaign",
+
       "cta_add": "Create Campaign"
     },
     "error": {
