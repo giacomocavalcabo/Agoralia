@@ -77,6 +77,11 @@ export default function LeadsToolbar({
             select_field: t('leads.filters.select_field'),
             value_placeholder: t('leads.filters.value_placeholder'),
             add: t('leads.filters.add'),
+            save_segment: t('leads.filters.save_segment'),
+            load_segment: t('leads.filters.load_segment'),
+            clear: t('common.clear'),
+            apply: t('common.apply'),
+            multiselect_hint: t('leads.filters.multiselect_hint'),
             op: {
               is: t('filters.ops.is'),
               is_not: t('filters.ops.is_not'),
@@ -87,6 +92,8 @@ export default function LeadsToolbar({
               between: t('filters.ops.between'),
             }
           }}
+          onClear={() => onFiltersChange({ ...filters, segment: { all: [] } })}
+          onApply={() => onFiltersChange(filters)}
         />
       </div>
 
