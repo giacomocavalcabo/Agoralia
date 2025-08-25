@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import ImportDataTable from './ImportDataTable'
 import { classifyContacts, getComplianceStats } from '../../lib/compliance/classifyContact'
+import { useCountryRulesV1, getUniqueISOs } from '../../lib/compliance/useCountryRulesV1'
 
 // Chip colorata per la categoria compliance
 function VerdictChip({ verdict }) {
@@ -31,10 +32,16 @@ function CountryFlag({ countryISO }) {
 export default function LegalReviewStep({ rows, onNext, onBack }) {
   const { t } = useTranslation('pages')
   
+  // Get unique ISO codes from rows
+  const uniqueISOs = useMemo(() => getUniqueISOs(rows), [rows])
+  
+  // Fetch country rules v1
+  const { data: countryRules } = useCountryRulesV1(uniqueISOs)
+  
   // Classifica tutti i contatti
   const classifiedRows = useMemo(() => {
-    return classifyContacts(rows)
-  }, [rows])
+    return classifyContacts(rows, countryRules)
+  }, [rows, countryRules])
   
   // Statistiche compliance
   const stats = useMemo(() => {

@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 from backend.db import Base, engine, get_db
 from backend.logger import logger
 from backend.config import settings
-from backend.routers import crm, auth, auth_microsoft
+from backend.routers import crm, auth, auth_microsoft, compliance
 from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
@@ -510,6 +510,7 @@ logger.info("CRM router included successfully")
 logger.info("Including Auth router...")
 app.include_router(auth.router)
 app.include_router(auth_microsoft.router)
+app.include_router(compliance.router)
 logger.info("Auth router included successfully")
 
 # Session management moved to backend/sessions.py to avoid circular imports
@@ -523,7 +524,23 @@ logger.info("Auth router included successfully")
 
 @app.get("/health")
 def healthcheck() -> dict:
-    return {"status": "ok"}
+    return {
+        "ok": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_sha": GIT_SHA,
+        "git_branch": GIT_BRANCH,
+        "entrypoint": ENTRYPOINT
+    }
+
+@app.get("/test")
+def test_endpoint() -> dict:
+    """Endpoint di test senza autenticazione per verificare il proxy Vercel"""
+    return {
+        "message": "Test endpoint working",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "backend": "FastAPI",
+        "deployment": "Railway"
+    }
 
 
 @app.get("/me/usage")
@@ -4861,7 +4878,7 @@ def _track_prompt_bricks_usage(db: Session, kb_id: str, kind: str, success: bool
         db.rollback()
 
 @app.get("/kb/progress")
-def get_kb_progress(
+async def get_kb_progress(
     request: Request,
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:

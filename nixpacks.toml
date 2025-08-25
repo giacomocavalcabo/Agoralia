@@ -1,7 +1,7 @@
 # nixpacks.toml - Ottimizzato per Railway
 [phases.setup]
 # Pacchetti minimi per non invalidare cache
-nixPkgs = ["python311", "gcc"]
+nixPkgs = ["python313", "gcc"]
 
 [variables]
 # Hint per pip: usa cache persistita tra build

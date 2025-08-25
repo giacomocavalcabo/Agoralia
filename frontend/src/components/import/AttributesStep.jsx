@@ -1,17 +1,23 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import ImportDataTable from './ImportDataTable'
-import { getCountryRules } from '../../lib/compliance/classifyContact'
+import { useCountryRulesV1, getUniqueISOs } from '../../lib/compliance/useCountryRulesV1'
 
 export default function AttributesStep({ rows, selectedIds, onRowChange, onNext, onBack }) {
   const { t } = useTranslation('pages')
   const [bulkField, setBulkField] = useState('')
   const [bulkValue, setBulkValue] = useState('')
 
+  // Get unique ISO codes from rows
+  const uniqueISOs = useMemo(() => getUniqueISOs(rows), [rows])
+  
+  // Fetch country rules v1
+  const { data: countryRules } = useCountryRulesV1(uniqueISOs)
+
   // Enrich rows with default attributes if missing
   const enrichedRows = useMemo(() => {
     return rows.map((row, index) => {
-      const countryRules = getCountryRules(row.country_iso)
+      const rule = countryRules?.[row.country_iso?.toUpperCase()]
       return {
         ...row,
         contact_class: row.contact_class || 'unknown',
@@ -19,10 +25,10 @@ export default function AttributesStep({ rows, selectedIds, onRowChange, onNext,
         opt_in: row.opt_in ?? null,
         national_dnc: row.national_dnc ?? null,
         notes: row.notes || '',
-        _countryRules: countryRules
+        _countryRule: rule
       }
     })
-  }, [rows])
+  }, [rows, countryRules])
 
   const handleBulkSet = () => {
     if (!bulkField || !bulkValue || selectedIds.size === 0) return
@@ -84,9 +90,9 @@ export default function AttributesStep({ rows, selectedIds, onRowChange, onNext,
       label: t('import.attributes.columns.opt_in'),
       width: 'w-1/6',
       render: (value, row, index) => {
-        // Show opt-in only for B2C contacts in opt-in countries
-        const countryRules = row._countryRules
-        if (row.contact_class !== 'b2c' || countryRules.b2c_regime !== 'opt-in') {
+        // Show opt-in only for B2C contacts where consent is required
+        const rule = row._countryRule
+        if (row.contact_class !== 'b2c' || !rule?.flags?.requires_consent_b2c) {
           return <span className="text-gray-400 text-sm">N/A</span>
         }
         
@@ -108,9 +114,9 @@ export default function AttributesStep({ rows, selectedIds, onRowChange, onNext,
       label: t('import.attributes.columns.dnc'),
       width: 'w-1/6',
       render: (value, row, index) => {
-        // Show DNC only if country has a registry
-        const countryRules = row._countryRules
-        if (!countryRules.has_dnc) {
+        // Show DNC only if country requires DNC scrubbing
+        const rule = row._countryRule
+        if (!rule?.flags?.requires_dnc_scrub) {
           return <span className="text-gray-400 text-sm">No registry</span>
         }
         

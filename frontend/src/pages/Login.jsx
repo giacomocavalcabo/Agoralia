@@ -203,7 +203,7 @@ export default function Login() {
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>{t('auth.subtitle')}</p>
             <p className="mt-2">
-              <a href="/auth/register" className="text-blue-600 hover:text-blue-500 font-medium">
+              <a href="/register" className="text-blue-600 hover:text-blue-500 font-medium">
                 {t('auth.register')}
               </a>
             </p>

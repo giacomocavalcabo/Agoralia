@@ -30,23 +30,37 @@ export default function ServerDataTable({
   sortDescLabel = 'Sort descending',
   selectAllLabel = 'Select all'
 }) {
-  // Safety checks - prevent crash on undefined data
-  const safeData = (Array.isArray(rows) ? rows : []).filter(Boolean);
+  // Enhanced safety checks - prevent crash on undefined data
+  const safeData = (Array.isArray(rows) ? rows : []).filter(Boolean).map(row => {
+    // Ensure each row has at least an id property
+    if (row && typeof row === 'object' && !row.id) {
+      console.warn('Row missing id property:', row);
+      return { ...row, id: `temp_${Math.random()}` };
+    }
+    return row;
+  });
   const safeColumns = Array.isArray(columns) ? columns : [];
-  const safeTotal = typeof total === 'number' ? total : 0;
-  const safePage = typeof page === 'number' ? page : 1;
-  const safePageSize = typeof pageSize === 'number' ? pageSize : 25;
+  const safeTotal = typeof total === 'number' && total >= 0 ? total : 0;
+  const safePage = typeof page === 'number' && page >= 1 ? page : 1;
+  const safePageSize = typeof pageSize === 'number' && pageSize >= 1 ? pageSize : 25;
   
   const from = (safePage - 1) * safePageSize + 1;
   const to = Math.min(safePage * safePageSize, safeTotal);
   const pages = Math.max(1, Math.ceil(safeTotal / safePageSize));
 
-  // Safe cell value extractor
+  // Safe cell value extractor with enhanced null checks
   const getCellValue = (row, col) => {
-    if (typeof col.cell === 'function') return col.cell(row);
-    if (col.accessorKey && row?.[col.accessorKey] !== undefined) return row[col.accessorKey];
-    if (col.accessor && typeof col.accessor === 'function') return col.accessor(row);
-    return undefined;
+    if (!row || !col) return undefined;
+    
+    try {
+      if (typeof col.cell === 'function') return col.cell(row);
+      if (col.accessorKey && row?.[col.accessorKey] !== undefined) return row[col.accessorKey];
+      if (col.accessor && typeof col.accessor === 'function') return col.accessor(row);
+      return undefined;
+    } catch (error) {
+      console.warn('Error extracting cell value:', error, { row, col });
+      return undefined;
+    }
   };
 
   if (isError) {

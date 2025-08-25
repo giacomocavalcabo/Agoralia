@@ -1,7 +1,7 @@
 // Robust i18n loader using Vite's import.meta.glob (lazy per locale)
 // No runtime fetch → no broken paths in production
 
-const loaders = import.meta.glob('/src/locales/*/*.json', { import: 'default' });
+const loaders = import.meta.glob('/locales/*/*.json', { import: 'default' });
 
 // Debug: log available loaders
 console.log('[i18n-debug] Available loaders:', Object.keys(loaders));
@@ -10,7 +10,7 @@ console.log('[i18n-debug] Loaders count:', Object.keys(loaders).length);
 const cache = {}; // { 'it-IT': { common: {...}, admin: {...} }, ... }
 
 function pathParts(p) {
-  // ../locales/it-IT/common.json -> { locale:'it-IT', ns:'common' }
+  // /locales/it-IT/common.json -> { locale:'it-IT', ns:'common' }
   const segs = p.split('/');
   const locale = segs[segs.length - 2];
   const ns = segs[segs.length - 1].replace('.json', '');

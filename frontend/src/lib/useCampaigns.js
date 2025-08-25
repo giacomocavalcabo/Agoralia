@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useApiWithDemo } from './demoGate'
 import { useIsDemo } from './useDemoData'
+import { useApiErrorHandler } from './useApiErrorHandler'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_SIZE = 25
@@ -17,6 +18,7 @@ function mapResponseShape(res) {
 export function useCampaigns(params = {}) {
   const isDemo = useIsDemo()
   const { get } = useApiWithDemo()
+  const { handleApiError } = useApiErrorHandler()
 
   const {
     page = DEFAULT_PAGE,
@@ -34,19 +36,27 @@ export function useCampaigns(params = {}) {
   const query = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const search = {
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-        q,
-        sort: sortBy,
-        dir: sortDir,
-        ...filters
+      try {
+        const search = {
+          limit: pageSize,
+          offset: (page - 1) * pageSize,
+          q,
+          sort: sortBy,
+          dir: sortDir,
+          ...filters
+        }
+        const res = await get('/campaigns', search, { signal })
+        return mapResponseShape(res)
+      } catch (error) {
+        // Gestione robusta degli errori API
+        const apiError = handleApiError(error, 'useCampaigns');
+        console.error('[useCampaigns] API call failed:', apiError);
+        throw error; // Rilancia per gestione TanStack Query
       }
-      const res = await get('/campaigns', search, { signal })
-      return mapResponseShape(res)
     },
     staleTime: 60_000,
-    retry: 1
+    retry: 1,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   })
 
   return {

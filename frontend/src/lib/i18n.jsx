@@ -2,11 +2,11 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-// Autocarica TUTTE le JSON sotto /src/locales/<lang>/<ns>.json
-const modules = import.meta.glob('../locales/**/**/*.json', { eager: true })
+// Autocarica TUTTE le JSON sotto /locales/<lang>/<ns>.json
+const modules = import.meta.glob('../../locales/**/**/*.json', { eager: true })
 const resources = {}
 for (const [path, mod] of Object.entries(modules)) {
-  // path es: ../locales/en-US/pages.json
+  // path es: ../../locales/en-US/pages.json
   const parts = path.split('/')
   const lang = parts[parts.length - 2]
   const file = parts[parts.length - 1]            // pages.json

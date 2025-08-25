@@ -2,18 +2,8 @@
  * Contact classification engine for compliance
  */
 
-export const countryRulesByISO = {
-  IT: { b2c_regime: 'opt-in', has_dnc: true },
-  FR: { b2c_regime: 'opt-in', has_dnc: true },
-  DE: { b2c_regime: 'opt-out', has_dnc: true },
-  US: { b2c_regime: 'opt-out', has_dnc: true },
-  GB: { b2c_regime: 'opt-out', has_dnc: true },
-  ES: { b2c_regime: 'opt-in', has_dnc: true },
-  NL: { b2c_regime: 'opt-in', has_dnc: true },
-  BE: { b2c_regime: 'opt-in', has_dnc: true },
-  AT: { b2c_regime: 'opt-out', has_dnc: true },
-  CH: { b2c_regime: 'opt-out', has_dnc: false }
-}
+// Import the hook for dynamic rules loading
+import { getRuleV1, RULES_V1_DEFAULT } from './useCountryRulesV1'
 
 /**
  * Classify a contact based on country rules and contact attributes
@@ -24,11 +14,17 @@ export const countryRulesByISO = {
 export function classifyContact(contact, countryRules) {
   const reasons = []
   
-  // B2B contacts are always allowed (opt-out regime)
+  // B2B contacts
   if (contact.contact_class === 'b2b') {
+    if (countryRules.requires_consent_b2b && contact.existing !== true) {
+      return { 
+        verdict: 'blocked', 
+        reasons: ['B2B consent required but no existing relationship documented'] 
+      }
+    }
     return { 
       verdict: 'allowed', 
-      reasons: ['B2B contacts are always allowed (opt-out regime)'] 
+      reasons: ['B2B contact - allowed by default'] 
     }
   }
   
@@ -40,8 +36,8 @@ export function classifyContact(contact, countryRules) {
     }
   }
   
-  // B2C contacts in opt-in countries require explicit opt-in
-  if (countryRules.b2c_regime === 'opt-in') {
+  // B2C contacts
+  if (countryRules.requires_consent_b2c) {
     if (contact.opt_in === true) {
       return { 
         verdict: 'allowed', 
@@ -51,17 +47,17 @@ export function classifyContact(contact, countryRules) {
     if (contact.opt_in === false) {
       return { 
         verdict: 'blocked', 
-        reasons: ['B2C contact in opt-in country without consent'] 
+        reasons: ['B2C opt-in required but consent not given'] 
       }
     }
     return { 
       verdict: 'conditional', 
-      reasons: ['B2C contact in opt-in country - opt-in status unknown'] 
+      reasons: ['B2C opt-in required but status unknown'] 
     }
   }
   
-  // B2C contacts in opt-out countries (default allowed unless in DNC)
-  if (countryRules.has_dnc) {
+  // Check DNC if required
+  if (countryRules.requires_dnc_scrub) {
     if (contact.national_dnc === 'in') {
       return { 
         verdict: 'blocked', 
@@ -71,7 +67,7 @@ export function classifyContact(contact, countryRules) {
     if (contact.national_dnc === 'not_in') {
       return { 
         verdict: 'allowed', 
-        reasons: ['B2C contact not in DNC registry (opt-out country)'] 
+        reasons: ['B2C contact not in DNC registry'] 
       }
     }
     return { 
@@ -80,33 +76,49 @@ export function classifyContact(contact, countryRules) {
     }
   }
   
-  // No DNC registry - allowed by default
+  // Default: allowed for unspecified countries
   return { 
     verdict: 'allowed', 
-    reasons: ['No national DNC registry exists for this country'] 
+    reasons: ['No specific restrictions apply'] 
   }
 }
 
 /**
- * Get country rules for a given ISO code
+ * Get country rules for a given ISO code using v1 rules
  * @param {string} countryISO - Country ISO code (e.g., 'IT', 'US')
+ * @param {object} rules - Rules data from useCountryRulesV1
  * @returns {Object} Country rules or default rules
  */
-export function getCountryRules(countryISO) {
-  return countryRulesByISO[countryISO?.toUpperCase()] || {
-    b2c_regime: 'opt-out',
-    has_dnc: false
+export function getCountryRules(countryISO, rules = {}) {
+  if (!countryISO || !rules) return RULES_V1_DEFAULT
+  
+  const rule = getRuleV1(rules, countryISO)
+  
+  // Transform v1 format to legacy format for backward compatibility
+  return {
+    b2c_regime: rule.regime_b2c,
+    b2b_regime: rule.regime_b2b,
+    has_dnc: rule.flags.requires_dnc_scrub,
+    requires_consent_b2c: rule.flags.requires_consent_b2c,
+    requires_consent_b2b: rule.flags.requires_consent_b2b,
+    allows_automated: rule.flags.allows_automated,
+    recording_requires_consent: rule.flags.recording_requires_consent,
+    has_quiet_hours: rule.flags.has_quiet_hours,
+    ai_disclosure: rule.ai_disclosure,
+    recording_basis: rule.recording_basis,
+    dnc: rule.dnc
   }
 }
 
 /**
  * Batch classify multiple contacts
  * @param {Array} contacts - Array of contact objects
+ * @param {object} rules - Rules data from useCountryRulesV1
  * @returns {Array} Array of classification results
  */
-export function classifyContacts(contacts) {
+export function classifyContacts(contacts, rules = {}) {
   return contacts.map(contact => {
-    const countryRules = getCountryRules(contact.country_iso)
+    const countryRules = getCountryRules(contact.country_iso, rules)
     const classification = classifyContact(contact, countryRules)
     
     return {
