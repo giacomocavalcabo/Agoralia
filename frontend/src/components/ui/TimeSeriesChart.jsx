@@ -64,7 +64,7 @@ export default function TimeSeriesChart({
                   style={{ backgroundColor: entry.color }}
                 />
                 <span className="text-sm text-foreground">
-                  {entry.name}: {entry.value?.toLocaleString()}
+                  {entry.name}: {formatters.number(entry.value)}
                 </span>
               </div>
             ))}

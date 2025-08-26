@@ -77,7 +77,7 @@
     },
     "events": {
       "title": "Eventi del {{date}}",
-      "more": "+{count} altri"
+      "more": "+{{count}} altri"
     },
     "toasts": {
       "created": "Chiamata programmata",
@@ -143,9 +143,12 @@
       "next_steps": "Prossimi passi",
       "no_data": "Nessun contenuto ancora. Inizia importando un documento o aggiungendo una fonte.",
       "recent_changes": "Modifiche recenti",
-      "sources_count": "{count} fonti",
-      "documents_count": "{count} documenti",
-      "chunks_count": "{count} chunk"
+      "sources_count_one": "{{count}} fonte",
+      "sources_count_other": "{{count}} fonti",
+      "documents_count_one": "{{count}} documento",
+      "documents_count_other": "{{count}} documenti",
+      "chunks_count_one": "{{count}} chunk",
+      "chunks_count_other": "{{count}} chunks"
     },
     "empty": {
       "no_data": "Nessun contenuto ancora",
@@ -301,7 +304,7 @@
     },
     "subset": {
       "title": "Seleziona le righe da importare",
-      "selected": "{count} selezionate",
+      "selected": "{{count}} selezionate",
       "filters": "Filtri",
       "select_all": "Seleziona tutto"
     },
@@ -627,9 +630,12 @@
         "title": "Base di Conoscenza",
         "description": "Gestisci il contenuto e le assegnazioni della knowledge base",
         "subtitle": "Gestisci la tua base di conoscenza e le fonti di dati",
-        "sources_count": "{count} fonti",
-        "documents_count": "{count} documenti",
-        "chunks_count": "{count} frammenti",
+        "sources_count_one": "{{count}} fonte",
+        "sources_count_other": "{{count}} fonti",
+        "documents_count_one": "{{count}} documento",
+        "documents_count_other": "{{count}} documenti",
+        "chunks_count_one": "{{count}} frammento",
+        "chunks_count_other": "{{count}} frammenti",
         "completeness": "Completezza",
         "next_steps": "Prossimi Passi",
         "recent_changes": "Modifiche Recenti",
@@ -663,7 +669,7 @@
         "offer_packs": {
           "title": "Pacchetti Offerta",
           "empty": "Nessun pacchetto offerta disponibile",
-          "available": "{count} pacchetti offerta disponibili",
+          "available": "{{count}} pacchetti offerta disponibili",
           "create_first": "Crea il tuo primo pacchetto offerta",
           "manage": "Gestisci pacchetti offerta"
         },

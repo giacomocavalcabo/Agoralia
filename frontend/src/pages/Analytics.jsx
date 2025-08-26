@@ -22,7 +22,9 @@ export default function Analytics() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["metrics_overview", { days, ...filters }],
     queryFn: () => fetchMetricsOverview({ days, ...filters }),
-    staleTime: 60_000
+    staleTime: 60_000, // 1 minuto
+    gcTime: 300_000,   // 5 minuti
+    refetchOnWindowFocus: false
   });
 
   const handleFiltersChange = (newFilters) => {

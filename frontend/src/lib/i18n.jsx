@@ -6,7 +6,7 @@ import { initReactI18next } from 'react-i18next'
 
 // Autocarica TUTTE le JSON sotto /locales/<lang>/<ns>.json
 console.log('[i18n] About to execute import.meta.glob...')
-const modules = import.meta.glob('../../locales/*/*.json', { eager: true })
+const modules = import.meta.glob('../locales/*/*.json', { eager: true })
 console.log('[i18n] import.meta.glob executed, modules:', modules)
 
 // Debug: log dei moduli trovati

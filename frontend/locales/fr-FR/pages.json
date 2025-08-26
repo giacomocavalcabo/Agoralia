@@ -292,9 +292,9 @@
         "title": "Base de Connaissances",
         "description": "Gérez le contenu et les attributions de votre base de connaissances",
         "subtitle": "Gérez votre base de connaissances et vos sources de données",
-        "sources_count": "{count} sources",
-        "documents_count": "{count} documents",
-        "chunks_count": "{count} fragments",
+        "sources_count": "{{count}} sources",
+        "documents_count": "{{count}} documents",
+        "chunks_count": "{{count}} fragments",
         "completeness": "Complétude",
         "next_steps": "Prochaines Étapes",
         "recent_changes": "Modifications Récentes",
@@ -328,7 +328,7 @@
         "offer_packs": {
           "title": "Packs d'Offres",
           "empty": "Aucun pack d'offre disponible",
-          "available": "{count} packs d'offre disponibles",
+          "available": "{{count}} packs d'offre disponibles",
           "create_first": "Créez votre premier pack d'offre",
           "manage": "Gérer les packs d'offre"
         },

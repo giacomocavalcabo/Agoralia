@@ -292,9 +292,9 @@
         "title": "قاعدة المعرفة",
         "description": "إدارة محتوى قاعدة المعرفة والمهام الموكلة",
         "subtitle": "إدارة قاعدة المعرفة ومصادر البيانات",
-        "sources_count": "{count} مصدر",
-        "documents_count": "{count} مستند",
-        "chunks_count": "{count} جزء",
+        "sources_count": "{{count}} مصدر",
+        "documents_count": "{{count}} مستند",
+        "chunks_count": "{{count}} جزء",
         "completeness": "الاكتمال",
         "next_steps": "الخطوات التالية",
         "recent_changes": "التغييرات الأخيرة",
@@ -328,7 +328,7 @@
         "offer_packs": {
           "title": "حزم العروض",
           "empty": "لا توجد حزم عروض متاحة",
-          "available": "{count} حزمة عروض متاحة",
+          "available": "{{count}} حزمة عروض متاحة",
           "create_first": "أنشئ حزمة العروض الأولى",
           "manage": "إدارة حزم العروض"
         },

@@ -292,9 +292,9 @@
         "title": "Wissensdatenbank",
         "description": "Verwalten Sie den Inhalt und die Zuweisungen Ihrer Wissensdatenbank",
         "subtitle": "Verwalten Sie Ihre Wissensdatenbank und Datenquellen",
-        "sources_count": "{count} Quellen",
-        "documents_count": "{count} Dokumente",
-        "chunks_count": "{count} Chunks",
+        "sources_count": "{{count}} Quellen",
+        "documents_count": "{{count}} Dokumente",
+        "chunks_count": "{{count}} Chunks",
         "completeness": "Vollständigkeit",
         "next_steps": "Nächste Schritte",
         "recent_changes": "Letzte Änderungen",
@@ -328,7 +328,7 @@
         "offer_packs": {
           "title": "Angebotspakete",
           "empty": "Keine Angebotspakete verfügbar",
-          "available": "{count} Angebotspakete verfügbar",
+          "available": "{{count}} Angebotspakete verfügbar",
           "create_first": "Erstellen Sie Ihr erstes Angebotspaket",
           "manage": "Angebotspakete verwalten"
         },

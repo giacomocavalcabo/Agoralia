@@ -52,8 +52,10 @@ export default function ChartCard({
               <button
                 type="button"
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                 aria-label={t("common.actions.export")}
+                aria-expanded={showMenu}
+                aria-haspopup="true"
               >
                 <EllipsisVerticalIcon className="h-4 w-4" />
               </button>
@@ -82,7 +84,7 @@ export default function ChartCard({
       </div>
       
       {/* Chart content */}
-      <div className="min-h-[200px]">
+      <div className="min-h-[200px]" role="region" aria-label={`${title} chart`}>
         {children}
       </div>
       

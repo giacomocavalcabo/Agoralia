@@ -292,9 +292,9 @@
         "title": "Base de Conocimiento",
         "description": "Gestiona el contenido y las asignaciones de tu base de conocimiento",
         "subtitle": "Gestiona tu base de conocimiento y fuentes de datos",
-        "sources_count": "{count} fuentes",
-        "documents_count": "{count} documentos",
-        "chunks_count": "{count} fragmentos",
+        "sources_count": "{{count}} fuentes",
+        "documents_count": "{{count}} documentos",
+        "chunks_count": "{{count}} fragmentos",
         "completeness": "Completitud",
         "next_steps": "Próximos Pasos",
         "recent_changes": "Cambios Recientes",
@@ -328,7 +328,7 @@
         "offer_packs": {
           "title": "Paquetes de Ofertas",
           "empty": "No hay paquetes de ofertas disponibles",
-          "available": "{count} paquetes de ofertas disponibles",
+          "available": "{{count}} paquetes de ofertas disponibles",
           "create_first": "Crea tu primer paquete de ofertas",
           "manage": "Gestionar paquetes de ofertas"
         },

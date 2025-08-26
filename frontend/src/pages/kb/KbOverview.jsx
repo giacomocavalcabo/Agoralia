@@ -9,7 +9,7 @@ import { useKbList } from '../../lib/kbApi';
 import { useIsDemo } from '../../lib/useDemoData';
 
 export default function KbOverview() {
-  const { t } = useTranslation('pages');
+  const { t } = useTranslation('pages', { keyPrefix: 'kb.overview' });
   const navigate = useNavigate();
   const isDemo = useIsDemo();
   
@@ -86,7 +86,7 @@ export default function KbOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="flex flex-col md:flex-row gap-6" style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem' }}>
+      <div className="flex flex-row gap-6 flex-wrap">
         <Card>
           <div className="p-6 text-center">
             <DocumentTextIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />

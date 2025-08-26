@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Cell 
 } from 'recharts';
+import { createNumberFormatter } from '../../lib/format';
 
 const COLORS = {
   reached: '#3b82f6',      // Blue
@@ -18,7 +19,8 @@ const COLORS = {
 };
 
 export default function FunnelChart({ data, className = "" }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const formatters = createNumberFormatter(i18n.language, 'EUR');
   
   if (!data) {
     return (
@@ -61,13 +63,13 @@ export default function FunnelChart({ data, className = "" }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      const percentage = total > 0 ? ((data.value / total) * 100).toFixed(1) : 0;
+      const percentage = total > 0 ? ((data.value / total) * 100) : 0;
       
       return (
         <div className="bg-popover border rounded-lg p-3 shadow-lg">
           <p className="font-medium text-foreground">{label}</p>
           <p className="text-sm text-muted-foreground">
-            {data.value.toLocaleString()} ({percentage}%)
+            {formatters.number(data.value)} ({formatters.percent(percentage)})
           </p>
         </div>
       );
@@ -78,7 +80,7 @@ export default function FunnelChart({ data, className = "" }) {
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={chartData} layout="horizontal">
+        <BarChart data={chartData} layout="horizontal" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
           <XAxis 
             type="number" 
