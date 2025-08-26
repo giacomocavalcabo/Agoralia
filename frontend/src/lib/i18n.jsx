@@ -4,9 +4,9 @@ console.log('[i18n] File i18n.jsx is loading...')
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-// Autocarica TUTTE le JSON sotto /locales/<lang>/<ns>.json
-console.log('[i18n] About to execute import.meta.glob...')
-const modules = import.meta.glob('../locales/*/*.json', { eager: true })
+// Autocarica TUTTE le JSON sotto /locales/<lang>/<ns>.json (assoluto da root Vite)
+console.log('[i18n] About to execute import.meta.glob (absolute /locales/**/*.{json})...')
+const modules = import.meta.glob('/locales/**/*.{json}', { eager: true, import: 'default' })
 console.log('[i18n] import.meta.glob executed, modules:', modules)
 
 // Debug: log dei moduli trovati
