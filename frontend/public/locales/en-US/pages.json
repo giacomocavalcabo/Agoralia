@@ -1407,5 +1407,49 @@
     "hide": "Hide",
     "show": "Show",
     "no_data": "No data available"
+  },
+  "knowledgeBase": {
+    "title": "Knowledge Base",
+    "overview": "Overview",
+    "documents": "Documents",
+    "chunks": "Chunks",
+    "structuredCards": "Structured Cards",
+    "sources": "Sources",
+    "imports": "Imports",
+    "assignments": "Assignments",
+    "completeness": "Completeness",
+    "uploadDocument": "Upload Document",
+    "createSource": "Create Source",
+    "startImport": "Start Import",
+    "manageAssignments": "Manage Assignments",
+    "viewCompleteness": "View Completeness"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "dashboard": "Dashboard",
+    "reports": "Reports",
+    "insights": "Insights",
+    "performance": "Performance",
+    "trends": "Trends",
+    "metrics": "Metrics",
+    "data": "Data",
+    "export": "Export",
+    "filters": "Filters",
+    "dateRange": "Date Range",
+    "comparison": "Comparison"
+  },
+  "history": {
+    "title": "History",
+    "recent": "Recent",
+    "activities": "Activities",
+    "events": "Events",
+    "logs": "Logs",
+    "audit": "Audit Trail",
+    "changes": "Changes",
+    "timeline": "Timeline",
+    "details": "Details",
+    "export": "Export History",
+    "filter": "Filter History",
+    "search": "Search History"
   }
 }
