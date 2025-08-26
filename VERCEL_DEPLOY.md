@@ -2,7 +2,7 @@
 
 ## ✅ Configurazione corretta implementata
 
-Il file `vercel.json` è già configurato correttamente per evitare il problema **"Expected JavaScript but got text/html"**.
+Il file `vercel.json` è ora posizionato correttamente in `frontend/` per evitare il problema **"Expected JavaScript but got text/html"**.
 
 ### 🔑 Punti chiave della configurazione:
 
@@ -29,9 +29,9 @@ grep -o 'src="/assets/[^"]*"' dist/index.html
 ### 3. Deploy su Vercel
 - **Importa** il repository GitHub
 - **Framework Preset**: Vite (se richiesto)
-- **Build Command**: `npm --prefix frontend ci && npm --prefix frontend run build`
-- **Output Directory**: `frontend/dist`
-- **Root Directory**: `/` (root del repo)
+- **Build Command**: `npm ci && npm run build`
+- **Output Directory**: `dist`
+- **Root Directory**: `frontend` (IMPORTANTE!)
 
 ### 4. Test post-deploy
 ```bash
