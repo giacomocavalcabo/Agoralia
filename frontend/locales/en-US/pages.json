@@ -1220,14 +1220,28 @@
     },
     "kpi": {
       "reached": "Reached",
+      "reached_one": "{{count}} call reached",
+      "reached_other": "{{count}} calls reached",
       "connected": "Connected",
+      "connected_one": "{{count}} call connected",
+      "connected_other": "{{count}} calls connected",
       "qualified": "Qualified",
-      "booked": "Booked"
+      "qualified_one": "{{count}} call qualified",
+      "qualified_other": "{{count}} calls qualified",
+      "booked": "Booked",
+      "booked_one": "{{count}} appointment booked",
+      "booked_other": "{{count}} appointments booked"
     },
     "metrics": {
       "qualified_rate": "Qualification rate",
       "connected_rate": "Connection rate",
-      "avg_duration": "Avg duration"
+      "avg_duration": "Avg duration",
+      "avg_duration_one": "{{count}} minute",
+      "avg_duration_other": "{{count}} minutes",
+      "calls_one": "{{count}} call",
+      "calls_other": "{{count}} calls",
+      "agents_one": "{{count}} agent",
+      "agents_other": "{{count}} agents"
     },
     "charts": {
       "funnel": "Conversion funnel",
@@ -1245,12 +1259,64 @@
       "heatmap_desc": "Call activity by day of week and hour",
       "heatmap_info": "Darker colors indicate higher call volumes. Working hours (Mon-Fri, 9-18) typically show highest activity.",
       "outcomes": "Call outcomes",
-      "outcomes_desc": "Breakdown of call results and performance metrics"
+      "outcomes_desc": "Breakdown of call results and performance metrics",
+      "qa_language": "QA Language Metrics",
+      "qa_language_desc": "Call quality and conversation analysis",
+      "qa_language_info": "Analyzes talk ratio, sentiment, interruptions, and top objections from call transcripts"
     },
     "empty": {
       "title": "No data available",
       "description": "No analytics data found for the selected filters. Try adjusting your date range or filters.",
       "cta": "Reset filters"
+    },
+    "shadow": {
+      "title": "Shadow Mode Status",
+      "loading": "Checking data stability...",
+      "stable_message": "Data is stable and ready for rollout",
+      "unstable_message": "Data shows significant variance, rollout not recommended",
+      "stability": "Stability Score",
+      "funnel_deltas": "Funnel Deltas",
+      "notes": "Notes",
+      "rollout_status": "Rollout Status",
+      "ready_for_rollout": "Ready for Rollout",
+      "not_ready": "Not Ready"
+    },
+    "outcomes": {
+      "reasons": {
+        "price": "Price",
+        "timing": "Timing",
+        "need": "Need",
+        "authority": "Authority",
+        "competitor": "Competitor",
+        "other": "Other"
+      },
+      "booked": "Booked",
+      "qualified": "Qualified",
+      "failed": "Failed",
+      "by_reason": "By Reason",
+      "totals": "Totals"
+    },
+    "qa": {
+      "quality_metrics": "Quality Metrics",
+      "current": "Current",
+      "target": "Target",
+      "talk_ratio": "Talk Ratio",
+      "sentiment_agent": "Agent Sentiment",
+      "interruptions": "Interruptions",
+      "top_objections": "Top Objections",
+      "no_objections": "No objections found",
+      "avg_talk_ratio": "Avg Talk Ratio",
+      "avg_dead_air": "Avg Dead Air",
+      "avg_interruptions": "Avg Interruptions",
+      "avg_sentiment": "Avg Sentiment",
+      "objections": {
+        "price": "Price",
+        "timing": "Timing",
+        "need": "Need",
+        "authority": "Authority",
+        "competitor": "Competitor",
+        "other": "Other"
+      }
     },
     "error": {
       "title": "Analytics error",
@@ -1302,6 +1368,10 @@
     "back_to_leads": "Back to Leads",
     "toasts": {
       "invite_accepted": "Invite accepted"
-    }
+    },
+    "refresh": "Refresh",
+    "hide": "Hide",
+    "show": "Show",
+    "no_data": "No data available"
   }
 }

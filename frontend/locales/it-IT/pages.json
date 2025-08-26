@@ -1188,14 +1188,28 @@
     },
     "kpi": {
       "reached": "Raggiunti",
+      "reached_one": "{{count}} chiamata raggiunta",
+      "reached_other": "{{count}} chiamate raggiunte",
       "connected": "Connessi",
+      "connected_one": "{{count}} chiamata connessa",
+      "connected_other": "{{count}} chiamate connesse",
       "qualified": "Qualificati",
-      "booked": "Appuntamenti"
+      "qualified_one": "{{count}} chiamata qualificata",
+      "qualified_other": "{{count}} chiamate qualificate",
+      "booked": "Appuntamenti",
+      "booked_one": "{{count}} appuntamento prenotato",
+      "booked_other": "{{count}} appuntamenti prenotati"
     },
     "metrics": {
       "qualified_rate": "Tasso qualificazione",
       "connected_rate": "Tasso connessione",
-      "avg_duration": "Durata media"
+      "avg_duration": "Durata media",
+      "avg_duration_one": "{{count}} minuto",
+      "avg_duration_other": "{{count}} minuti",
+      "calls_one": "{{count}} chiamata",
+      "calls_other": "{{count}} chiamate",
+      "agents_one": "{{count}} agente",
+      "agents_other": "{{count}} agenti"
     },
     "charts": {
       "funnel": "Funnel di conversione",

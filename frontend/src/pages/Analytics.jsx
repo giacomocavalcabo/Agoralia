@@ -8,6 +8,9 @@ import FunnelChart from "../components/ui/FunnelChart";
 import TimeSeriesChart from "../components/ui/TimeSeriesChart";
 import HeatmapChart from "../components/ui/HeatmapChart";
 import TopList from "../components/ui/TopList";
+import OutcomesChart from "../components/ui/OutcomesChart";
+import QaLanguageChart from "../components/ui/QaLanguageChart";
+import ShadowModeStatus from "../components/ui/ShadowModeStatus";
 import AnalyticsFilters from "../components/ui/AnalyticsFilters";
 
 export default function Analytics() {
@@ -56,6 +59,14 @@ export default function Analytics() {
       <AnalyticsFilters 
         filters={filters}
         onFiltersChange={handleFiltersChange}
+        className="bg-card border rounded-lg p-4"
+      />
+
+      {/* Shadow Mode Status */}
+      <ShadowModeStatus 
+        days={days}
+        campaign_id={filters.campaign_id}
+        agent_id={filters.agent_id}
         className="bg-card border rounded-lg p-4"
       />
 
@@ -176,26 +187,17 @@ export default function Analytics() {
               title={t("pages.analytics.charts.outcomes")}
               subtitle={t("pages.analytics.charts.outcomes_desc")}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(data.outcomes || []).map((outcome, index) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h5 className="font-medium text-foreground">{outcome.label}</h5>
-                      <span className="text-sm text-muted-foreground">
-                        {formatters.percent(outcome.rate)}
-                      </span>
-                    </div>
-                    <div className="text-2xl font-semibold tabular-nums">
-                      {formatters.number(outcome.count)}
-                    </div>
-                    {outcome.avg_handle_sec > 0 && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Avg: {formatters.number(outcome.avg_handle_sec)}s
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <OutcomesChart data={data.outcomes} />
+            </ChartCard>
+
+            {/* QA Language Metrics */}
+            <ChartCard 
+              title={t("pages.analytics.charts.qa_language")}
+              subtitle={t("pages.analytics.charts.qa_language_desc")}
+              showInfo={true}
+              infoContent={t("pages.analytics.charts.qa_language_info")}
+            >
+              <QaLanguageChart data={data.qa_language} />
             </ChartCard>
           </section>
         </>

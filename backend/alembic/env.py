@@ -3,8 +3,12 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
 
-from backend.db import Base, _database_url
-import backend.models  # noqa: F401
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from db import Base, _database_url
+import models  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", _database_url()))

@@ -28,7 +28,10 @@ class Settings(BaseSettings):
     CORS_DEBUG: bool = True
 
     # Demo mode configuration
-    DEMO_ADMIN_EMAILS: str = "giacomo.cavalcabo14@gmail.com"
+    DEMO_ADMIN_EMAILE: str = "giacomo.cavalcabo14@gmail.com"
+
+    # Gamma Analytics Feature Flag
+    ANALYTICS_GAMMA: bool = False
 
     # OAuth Google
     OAUTH_GOOGLE_CLIENT_ID: str = ""

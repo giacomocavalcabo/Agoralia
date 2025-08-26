@@ -42,6 +42,12 @@ import time
 import httpx
 from fastapi import BackgroundTasks
 
+# Import services for Gamma
+from services.call_service import CallService
+from services.ai_service import AIService
+from services.shadow_analytics import ShadowAnalyticsService
+from ai_client import OpenAIClient
+
 # ===================== Utility comuni: workspace & response adapter =====================
 DEMO_MODE: bool = bool(int(os.getenv("DEMO_MODE", "0")))  # 1 abilita demo BE
 
@@ -7345,4 +7351,122 @@ def root():
         "version": "0.1.0",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+# ===================== GAMMA: Retell Webhook Integration =====================
+
+@app.post("/webhooks/retell")
+async def retell_webhook(
+    request: Request,
+    body: Dict[str, Any] = Body(...)
+):
+    """Process Retell webhook events for call analytics"""
+    try:
+        # Extract workspace ID from webhook signature or header
+        workspace_id = get_workspace_id(request, fallback="ws_1")
+        
+        # TODO: Verify webhook signature for security
+        # if Retell:
+        #     signature = request.headers.get("X-Retell-Signature")
+        #     if not Retell.verify_webhook_signature(body, signature):
+        #         raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        # Process webhook with CallService
+        with next(get_db()) as db:
+            # Initialize services
+            openai_client = OpenAIClient() if os.getenv("OPENAI_API_KEY") else None
+            ai_service = AIService(db, openai_client) if openai_client else None
+            call_service = CallService(db, ai_service)
+            
+            # Process the webhook
+            success = call_service.process_retell_webhook(workspace_id, body)
+            
+            if success:
+                return {"status": "processed", "workspace_id": workspace_id}
+            else:
+                raise HTTPException(status_code=500, detail="Failed to process webhook")
+                
+    except Exception as e:
+        logger.error(f"Error processing Retell webhook: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/analytics/ai-cache-stats")
+async def get_ai_cache_stats(
+    request: Request,
+    _guard: None = Depends(require_role("viewer"))
+):
+    """Get AI objection classification cache statistics"""
+    try:
+        workspace_id = get_workspace_id(request, required=True)
+        
+        with next(get_db()) as db:
+            openai_client = OpenAIClient() if os.getenv("OPENAI_API_KEY") else None
+            ai_service = AIService(db, openai_client) if openai_client else None
+            
+            if ai_service:
+                stats = ai_service.get_cache_stats(workspace_id)
+                return {
+                    "workspace_id": workspace_id,
+                    "cache_stats": stats,
+                    "ai_enabled": True
+                }
+            else:
+                return {
+                    "workspace_id": workspace_id,
+                    "cache_stats": {},
+                    "ai_enabled": False,
+                    "message": "OpenAI API key not configured"
+                }
+                
+    except Exception as e:
+        logger.error(f"Error getting AI cache stats: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/metrics/shadow")
+async def get_shadow_mode_status(
+    request: Request,
+    days: int = Query(30, ge=1, le=90),
+    campaign_id: Optional[str] = Query(None),
+    agent_id: Optional[str] = Query(None),
+    lang: Optional[str] = Query(None),
+    country: Optional[str] = Query(None),
+    _guard: None = Depends(require_role("admin"))
+):
+    """Get shadow mode comparison between real and mock data"""
+    try:
+        workspace_id = get_workspace_id(request, required=True)
+        
+        # Check if Gamma is enabled
+        if not settings.ANALYTICS_GAMMA:
+            return {
+                "ok": False,
+                "mode": "off",
+                "message": "Gamma analytics not enabled"
+            }
+        
+        with next(get_db()) as db:
+            shadow_service = ShadowAnalyticsService(db)
+            
+            # Run comparison with timeout protection
+            comparison = await shadow_service.compare_mock_vs_real_async(
+                workspace_id, days, campaign_id, agent_id, lang, country
+            )
+            
+            # Log the result
+            if comparison.get("ok"):
+                shadow_service.log_stability_check(workspace_id, comparison)
+            
+            return comparison
+                
+    except Exception as e:
+        logger.error(f"Error in shadow mode comparison: {e}")
+        # Return graceful error, don't fail the endpoint
+        return {
+            "ok": False,
+            "mode": "error",
+            "error": "Internal error",
+            "timestamp": datetime.utcnow().isoformat()
+        }
 

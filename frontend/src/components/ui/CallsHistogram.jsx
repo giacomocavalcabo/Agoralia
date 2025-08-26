@@ -52,7 +52,7 @@ export default function CallsHistogram({
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={chartData}>
+        <BarChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis 
             dataKey="day" 
