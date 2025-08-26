@@ -6,6 +6,7 @@ from typing import Optional, List, Dict
 from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends, File, UploadFile, Form
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
 
@@ -47,6 +48,89 @@ from services.call_service import CallService
 from services.ai_service import AIService
 from services.shadow_analytics import ShadowAnalyticsService
 from ai_client import OpenAIClient
+
+# ===================== Delta Models & Helpers =====================
+class SegmentFilters(BaseModel):
+    days: int = 30
+    campaign_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    lang: Optional[str] = None
+    country: Optional[str] = None
+
+class CompareRequest(BaseModel):
+    left: SegmentFilters
+    right: SegmentFilters
+
+class GoalRule(BaseModel):
+    metric: str  # e.g. booked_rate|qualified_rate|cost_per_min|connect_rate|dead_air
+    op: str      # "<" | ">" | "<=" | ">=" | "==" | "!="
+    threshold: float
+    window_days: int = 7
+    filters: SegmentFilters
+
+class AlertCheckResponse(BaseModel):
+    checks: List[Dict[str, Any]]
+    filters: Dict[str, Any]
+
+# Helper functions for Delta
+import operator
+
+OPS = {"<": operator.lt, ">": operator.gt, "<=": operator.le, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
+
+def _delta(a: Optional[float], b: Optional[float]) -> Optional[float]:
+    if a is None or b is None:
+        return None
+    return round(a - b, 6)
+
+def _safe_op(op: str):
+    return OPS.get(op)
+
+async def _build_metrics_overview(
+    days: int = 30,
+    campaign_id: str | None = None,
+    agent_id: str | None = None,
+    lang: str | None = "en-US",
+    country: str | None = None,
+) -> Dict[str, Any]:
+    """
+    Helper function to build metrics overview payload.
+    Reuses existing mock generators for consistency.
+    """
+    funnel = await get_funnel_metrics(days=days)
+    agents = await get_top_agents(days=days, limit=10)
+    geo = await get_geo_metrics(days=days)
+    cost = await get_cost_series(days=days)
+    
+    # Generate timeseries data
+    timeseries = await get_timeseries_data(
+        days=days, 
+        campaign_id=campaign_id, 
+        agent_id=agent_id, 
+        lang=lang, 
+        country=country
+    )
+    
+    # Generate heatmap data
+    heatmap = await get_heatmap_data(days=days)
+    
+    # Generate outcomes data
+    outcomes = await get_outcomes_data(
+        days=days, 
+        campaign_id=campaign_id, 
+        agent_id=agent_id, 
+        lang=lang, 
+        country=country
+    )
+    
+    return {
+        "funnel": funnel,
+        "agents_top": agents,
+        "geo": geo,
+        "cost_series": cost,
+        "timeseries": timeseries,
+        "heatmap": heatmap,
+        "outcomes": outcomes
+    }
 
 # ===================== Utility comuni: workspace & response adapter =====================
 DEMO_MODE: bool = bool(int(os.getenv("DEMO_MODE", "0")))  # 1 abilita demo BE
@@ -6820,31 +6904,8 @@ async def get_metrics_overview(
     Per ora usa i generatori mock già presenti in /metrics/*.
     Accetta parametri standard che potremo usare quando colleghiamo Retell.
     """
-    funnel = await get_funnel_metrics(days=days)
-    agents = await get_top_agents(days=days, limit=10)
-    geo = await get_geo_metrics(days=days)
-    cost = await get_cost_series(days=days)
-    
-    # Generate timeseries data
-    timeseries = await get_timeseries_data(
-        days=days, 
-        campaign_id=campaign_id, 
-        agent_id=agent_id, 
-        lang=lang, 
-        country=country
-    )
-    
-    # Generate heatmap data
-    heatmap = await get_heatmap_data(days=days)
-    
-    # Generate outcomes data
-    outcomes = await get_outcomes_data(
-        days=days, 
-        campaign_id=campaign_id, 
-        agent_id=agent_id, 
-        lang=lang, 
-        country=country
-    )
+    # Use helper function for consistency
+    overview_data = await _build_metrics_overview(days, campaign_id, agent_id, lang, country)
     
     # Normalize params to snake_case and add currency
     params = {
@@ -6858,17 +6919,11 @@ async def get_metrics_overview(
     
     # Generate ETag for caching (hash of params + payload)
     import hashlib
-    payload_str = str(funnel) + str(agents) + str(geo) + str(cost) + str(timeseries) + str(heatmap) + str(outcomes)
+    payload_str = str(overview_data)
     etag = hashlib.md5(f"{str(params)}{payload_str}".encode()).hexdigest()
     
     return {
-        "funnel": funnel,
-        "agents_top": agents,
-        "geo": geo,
-        "cost_series": cost,
-        "timeseries": timeseries,
-        "heatmap": heatmap,
-        "outcomes": outcomes,
+        **overview_data,
         "params": params,
         "etag": etag
     }
@@ -7469,4 +7524,240 @@ async def get_shadow_mode_status(
             "error": "Internal error",
             "timestamp": datetime.utcnow().isoformat()
         }
+
+
+# ===================== Delta Endpoints =====================
+
+@app.post("/metrics/compare")
+async def metrics_compare(req: CompareRequest, request: Request):
+    """Compare two segments of data"""
+    try:
+        workspace_id = get_workspace_id(request, required=True)
+        
+        # Build metrics for both segments using existing generators
+        left = await _build_metrics_overview(
+            days=req.left.days,
+            campaign_id=req.left.campaign_id,
+            agent_id=req.left.agent_id,
+            lang=req.left.lang,
+            country=req.left.country
+        )
+        
+        right = await _build_metrics_overview(
+            days=req.right.days,
+            campaign_id=req.right.campaign_id,
+            agent_id=req.right.agent_id,
+            lang=req.right.lang,
+            country=req.right.country
+        )
+
+        def pick_kpi(x):
+            f = x["funnel"]
+            cost = x.get("cost_series", {}).get("avg_cost_per_min")
+            return {
+                "booked_rate": f.get("booked_rate"),
+                "qualified_rate": f.get("qualified_rate"),
+                "connect_rate": f.get("connect_rate"),
+                "cost_per_min": cost
+            }
+
+        left_kpi = pick_kpi(left)
+        right_kpi = pick_kpi(right)
+        delta = {k: _delta(left_kpi.get(k), right_kpi.get(k)) for k in left_kpi.keys()}
+
+        # Heuristic "significance" (demo): change to "likely" if difference > 3pp on 200+ calls
+        significance = {}
+        for k in left_kpi.keys():
+            # Use reached/connected as volume base
+            vol = max(left["funnel"].get("reached", 0), right["funnel"].get("reached", 0))
+            significance[k] = "likely" if abs(delta.get(k) or 0) >= 0.03 and vol >= 200 else "unclear"
+
+        return {
+            "left": {"label": "Left", "kpi": left_kpi},
+            "right": {"label": "Right", "kpi": right_kpi},
+            "delta": delta,
+            "significance": significance
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in metrics comparison: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/metrics/alerts", response_model=AlertCheckResponse)
+async def metrics_alerts(
+    metric: str,
+    op: str,
+    threshold: float,
+    window_days: int = 7,
+    campaign_id: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    lang: Optional[str] = None,
+    country: Optional[str] = None,
+):
+    """Check if a metric meets alert conditions"""
+    try:
+        rule = GoalRule(
+            metric=metric, op=op, threshold=threshold, window_days=window_days,
+            filters=SegmentFilters(days=window_days, campaign_id=campaign_id, agent_id=agent_id, lang=lang, country=country)
+        )
+        
+        overview = await _build_metrics_overview(
+            days=rule.window_days,
+            campaign_id=rule.filters.campaign_id,
+            agent_id=rule.filters.agent_id,
+            lang=rule.filters.lang,
+            country=rule.filters.country
+        )
+        
+        f = overview["funnel"]
+        current = {
+            "booked_rate": f.get("booked_rate"),
+            "qualified_rate": f.get("qualified_rate"),
+            "connect_rate": f.get("connect_rate"),
+            "cost_per_min": overview.get("cost_series", {}).get("avg_cost_per_min"),
+            "dead_air": overview.get("qa", {}).get("dead_air_rate")
+        }.get(rule.metric)
+
+        op_fn = _safe_op(rule.op)
+        status = "ALERT" if (op_fn and current is not None and op_fn(current, rule.threshold)) else "OK"
+
+        return {
+            "checks": [{
+                "metric": rule.metric,
+                "value": current,
+                "op": rule.op,
+                "threshold": rule.threshold,
+                "status": status,
+                "window_days": rule.window_days
+            }],
+            "filters": rule.filters.model_dump()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in metrics alerts: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/analytics/insights")
+async def analytics_insights(
+    request: Request,
+    days: int = 7,
+    campaign_id: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    lang: Optional[str] = None,
+    country: Optional[str] = None
+):
+    """Get AI-generated insights for coaching"""
+    try:
+        workspace_id = get_workspace_id(request, required=True)
+        filters = SegmentFilters(days=days, campaign_id=campaign_id, agent_id=agent_id, lang=lang, country=country)
+        overview = await _build_metrics_overview(
+            days=filters.days,
+            campaign_id=filters.campaign_id,
+            agent_id=filters.agent_id,
+            lang=filters.lang,
+            country=filters.country
+        )
+
+        if DEMO_MODE:
+            return {
+                "period": f"{days}d",
+                "highlights": ["+12% connect nella prima ora", "IT script: accorcia l'intro di ~8s"],
+                "risks": ["Dead air >7s nel 22% delle call"],
+                "actions": ["A/B opener breve", "Coaching su obiezione prezzo", "Filtro mobile-only 10–12"],
+                "top_objections": [{"key":"price","share":0.28},{"key":"timing","share":0.22},{"key":"need","share":0.17}]
+            }
+
+        # Production: use gpt-4o-mini with few-shot prompt and cache
+        # (pseudocode, reuse your centralized OpenAI client)
+        text = {
+            "booked_rate": overview["funnel"].get("booked_rate"),
+            "qualified_rate": overview["funnel"].get("qualified_rate"),
+            "connect_rate": overview["funnel"].get("connect_rate"),
+            "dead_air": overview.get("qa", {}).get("dead_air_rate"),
+            "cost_per_min": overview.get("cost_series", {}).get("avg_cost_per_min"),
+        }
+        insights = _ai_generate_insights(text, filters)  # implement with economic model and 24h cache
+        return insights
+        
+    except Exception as e:
+        logger.error(f"Error in analytics insights: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/metrics/export")
+async def metrics_export(
+    scope: str = "overview",
+    format: str = "csv",
+    days: int = 30,
+    campaign_id: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    lang: Optional[str] = None,
+    country: Optional[str] = None
+):
+    """Export metrics data in CSV or JSON format"""
+    try:
+        filters = SegmentFilters(days=days, campaign_id=campaign_id, agent_id=agent_id, lang=lang, country=country)
+        
+        if scope == "overview":
+            data = await _build_metrics_overview(
+                days=filters.days,
+                campaign_id=filters.campaign_id,
+                agent_id=filters.agent_id,
+                lang=filters.lang,
+                country=filters.country
+            )
+        elif scope == "timeseries":
+            data = await get_timeseries_data(
+                days=filters.days,
+                campaign_id=filters.campaign_id,
+                agent_id=filters.agent_id,
+                lang=filters.lang,
+                country=filters.country
+            )
+        elif scope == "outcomes":
+            data = await get_outcomes_data(
+                days=filters.days,
+                campaign_id=filters.campaign_id,
+                agent_id=filters.agent_id,
+                lang=filters.lang,
+                country=filters.country
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Invalid scope")
+
+        if format == "json":
+            return data
+
+        # CSV minimal (flatten top-level keys)
+        import csv
+        import io
+        
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        
+        if scope == "overview":
+            f = data["funnel"]
+            writer.writerow(["reached","connected","qualified","booked","connect_rate","qualified_rate","booked_rate","avg_cost_per_min"])
+            writer.writerow([
+                f.get("reached"), f.get("connected"), f.get("qualified"), f.get("booked"),
+                f.get("connect_rate"), f.get("qualified_rate"), f.get("booked_rate"),
+                data.get("cost_series",{}).get("avg_cost_per_min")
+            ])
+        elif scope == "timeseries":
+            writer.writerow(["date","reached","connected","qualified","booked","cost_per_min","spend_cents"])
+            for p in data.get("series", []):
+                writer.writerow([p.get("date"), p.get("reached"), p.get("connected"), p.get("qualified"), p.get("booked"), p.get("cost_per_min"), p.get("spend_cents")])
+        elif scope == "outcomes":
+            writer.writerow(["reason","count"])
+            for r in data.get("by_reason", []):
+                writer.writerow([r.get("key"), r.get("count")])
+
+        buf.seek(0)
+        return StreamingResponse(iter([buf.read()]), media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="{scope}.csv"'})
+        
+    except Exception as e:
+        logger.error(f"Error in metrics export: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 

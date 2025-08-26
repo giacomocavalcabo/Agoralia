@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { fetchMetricsOverview } from "../lib/metricsApi";
 import { createNumberFormatter, createDateFormatter } from "../lib/format";
+import { featureFlags } from "../lib/featureFlags";
 import ChartCard from "../components/ui/ChartCard";
 import FunnelChart from "../components/ui/FunnelChart";
 import TimeSeriesChart from "../components/ui/TimeSeriesChart";
@@ -12,6 +13,11 @@ import OutcomesChart from "../components/ui/OutcomesChart";
 import QaLanguageChart from "../components/ui/QaLanguageChart";
 import ShadowModeStatus from "../components/ui/ShadowModeStatus";
 import AnalyticsFilters from "../components/ui/AnalyticsFilters";
+// Delta components
+import ComparePanel from "../components/ui/ComparePanel";
+import GoalsPanel from "../components/ui/GoalsPanel";
+import InsightsPanel from "../components/ui/InsightsPanel";
+import ExportPanel from "../components/ui/ExportPanel";
 
 export default function Analytics() {
   const { t, i18n } = useTranslation();
@@ -200,6 +206,16 @@ export default function Analytics() {
               <QaLanguageChart data={data.qa_language} />
             </ChartCard>
           </section>
+
+          {/* Delta Analytics Components */}
+          {featureFlags.ANALYTICS_GAMMA && (
+            <>
+              <ComparePanel />
+              <GoalsPanel />
+              <InsightsPanel days={days} />
+              <ExportPanel filters={{ days, ...filters }} />
+            </>
+          )}
         </>
       )}
     </div>

@@ -1325,6 +1325,40 @@
     "actions": {
       "export_csv": "Export CSV",
       "export_json": "Export JSON"
+    },
+    "compare": {
+      "title": "Compare",
+      "left": "Left segment",
+      "right": "Right segment",
+      "add": "Add comparison",
+      "remove": "Remove comparison",
+      "no_selection": "Select two segments to compare",
+      "delta": "Δ vs"
+    },
+    "goals": {
+      "title": "Goals & Alerts",
+      "add": "Add goal",
+      "metric": "Metric",
+      "condition": "Condition",
+      "threshold": "Threshold",
+      "window": "Window",
+      "status_ok": "OK",
+      "status_alert": "ALERT",
+      "last_check": "Last check"
+    },
+    "insights": {
+      "title": "Coach Insights",
+      "actions": "Actions",
+      "continue": "Keep doing",
+      "risks": "Risks",
+      "top_objections": "Top objections"
+    },
+    "export": {
+      "title": "Export & Share",
+      "csv": "Export CSV",
+      "json": "Export JSON",
+      "snapshot": "Copy snapshot link",
+      "copied": "Snapshot link copied"
     }
   },
   "common": {
