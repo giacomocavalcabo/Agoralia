@@ -5,7 +5,7 @@ import { fetchHistory, exportHistoryCsv } from '../lib/historyApi'
 import { useToast } from '../components/ToastProvider.jsx'
 
 export default function History() {
-  const { t, i18n } = useTranslation('pages')
+  const { t, i18n } = useTranslation()
   const { toast } = useToast()
   const [page, setPage] = useState(1)
   const [pageSize] = useState(50)
@@ -31,22 +31,22 @@ export default function History() {
   const total = data?.total ?? 0
 
   return (
-    <section className="space-y-4" aria-label={t("pages.history.title")}>
-      <header className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{t("pages.history.title")}</h1>
+          <section className="space-y-4" aria-label={t("history.title")}>
+        <header className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold">{t("history.title")}</h1>
         <div className="flex gap-2">
           <input
-            placeholder={t("pages.history.search_placeholder")}
+            placeholder={t("history.search_placeholder")}
             value={q}
             onChange={(e)=>{ setPage(1); setQ(e.target.value); }}
             className="input input-bordered w-64"
-            aria-label={t("pages.history.search_aria")}
+            aria-label={t("history.search_aria")}
           />
           <button
             onClick={()=>exportHistoryCsv({ page, pageSize, q, filters })}
             className="btn bg-primary-500 hover:bg-primary-600 text-white border-primary-500"
           >
-            {t("pages.history.export_csv")}
+            {t("history.export_csv")}
           </button>
         </div>
       </header>
@@ -59,7 +59,7 @@ export default function History() {
           aria-label={t("pages.history.filters.campaign")}
           className="select select-bordered"
         >
-          <option value="">{t("pages.history.filters.all_campaigns")}</option>
+          <option value="">{t("history.filters.all_campaigns")}</option>
           {/* TODO: popola da API campagne */}
         </select>
 

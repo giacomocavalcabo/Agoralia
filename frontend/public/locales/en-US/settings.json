@@ -66,6 +66,45 @@
     "numbers": "[Numbers]"
   },
   
+  "nav": {
+    "telephony": "Telephony",
+    "telephony_desc": "Manage phone numbers and routing"
+  },
+  
+  "pages": {
+    "settings": {
+      "nav": { "telephony": "Telephony" },
+      "telephony": {
+        "title": "Telephony",
+        "subtitle": "Manage phone numbers, providers and routing.",
+        "numbers": "Phone numbers",
+        "buy": {
+          "title": "Buy number (Retell)",
+          "country": "Country",
+          "type": "Type",
+          "area_code": "Area code (optional)",
+          "cta": "Purchase"
+        },
+        "byo": {
+          "title": "Bring your own",
+          "provider": "Provider",
+          "e164": "Phone (E.164)",
+          "cta": "Link number",
+          "code": "Confirmation code",
+          "confirm": "Confirm"
+        },
+        "route": {
+          "title": "Routing",
+          "number": "Number",
+          "select": "Select a number",
+          "inbound": "Inbound agent",
+          "outbound": "Outbound agent",
+          "save": "Save routing"
+        }
+      }
+    }
+  },
+  
   "workspace": {
     "accepting": "[Accepting]",
     "domain": "[Domain]",

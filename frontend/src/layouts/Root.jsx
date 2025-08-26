@@ -29,8 +29,9 @@ import CampaignForm from '../pages/CampaignForm.jsx'
 
 import CampaignDetail from '../pages/CampaignDetail.jsx'
 const Calendar = React.lazy(() => import('../pages/Calendar'))
-const Settings = React.lazy(() => import('../pages/Settings'))
-const SettingsCompany = React.lazy(() => import('../pages/SettingsCompany'))
+const Settings = React.lazy(() => import('../pages/Settings.jsx'))
+const SettingsCompany = React.lazy(() => import('../pages/SettingsCompany.jsx'))
+const SettingsTelephony = React.lazy(() => import('../pages/SettingsTelephony.jsx'))
 const SettingsLayout = React.lazy(() => import('../components/SettingsLayout'))
 const Integrations = React.lazy(() => import('../pages/Settings/Integrations'))
 const Billing = React.lazy(() => import('../pages/Billing'))
@@ -111,6 +112,7 @@ export default function Root() {
                       <Route index element={<Navigate to="profile" replace />} />
                       <Route path="profile" element={<Settings />} />
                       <Route path="company" element={<Settings />} />
+                      <Route path="telephony" element={<SettingsTelephony />} />
                       <Route path="integrations" element={<Integrations />} />
                       <Route path="billing" element={<Billing />} />
                     </Route>

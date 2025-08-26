@@ -42,6 +42,13 @@ const settingsNavigation = [
     href: 'billing', 
     icon: CreditCardIcon,
     description: 'settings.nav.billing_desc'
+  },
+  { 
+    id: 'telephony', 
+    name: 'settings.nav.telephony',
+    href: 'telephony', 
+    icon: PhoneIcon,
+    description: 'settings.nav.telephony_desc'
   }
 ]
 

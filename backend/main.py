@@ -3677,6 +3677,83 @@ async def numbers_verify_caller_id(payload: dict, db: Session = Depends(get_db))
     }
 
 
+# ===================== Settings Telephony Proxies =====================
+# These endpoints provide a clean /settings/telephony/* interface that maps to existing /numbers/* endpoints
+
+@app.get("/settings/telephony/numbers")
+async def settings_list_numbers(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """List phone numbers for the current workspace (proxy to /numbers)"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    
+    # Reuse the same logic as /numbers endpoint
+    rows = db.query(Number).filter(Number.workspace_id == wsid).all()
+    items = [{
+        "id": n.id, "e164": n.e164, "country_iso": n.country_iso, "source": n.source,
+        "capabilities": n.capabilities or [], "verified": bool(n.verified), "provider": n.provider,
+        "can_inbound": bool(n.can_inbound),
+    } for n in rows]
+    
+    return {"items": items}
+
+
+@app.post("/settings/telephony/retell/purchase")
+async def settings_purchase_retell(
+    payload: dict, 
+    db: Session = Depends(get_db)
+) -> dict:
+    """Purchase phone number from Retell (proxy to /numbers/retell/provision)"""
+    # Transform payload to match the expected format
+    transformed_payload = {
+        "country_iso": payload.get("country"),
+        "type": payload.get("type", "geographic"),
+        "capabilities": ["outbound", "inbound"] if payload.get("type") != "tollfree" else ["outbound"]
+    }
+    
+    # Call the existing function
+    return await numbers_retell_provision(transformed_payload, db)
+
+
+@app.post("/settings/telephony/import")
+async def settings_import_number(
+    payload: dict, 
+    db: Session = Depends(get_db)
+) -> dict:
+    """Import phone number (proxy to /numbers/byo)"""
+    # Transform payload to match the expected format
+    transformed_payload = {
+        "e164": payload.get("e164"),
+        "method": "voice"  # Default to voice verification
+    }
+    
+    # Call the existing function
+    return await numbers_byo(transformed_payload, db)
+
+
+@app.post("/settings/telephony/bind")
+async def settings_bind_number(
+    payload: dict, 
+    db: Session = Depends(get_db)
+) -> dict:
+    """Bind number to agent (proxy to /numbers/{id}/route)"""
+    number_id = payload.get("number_id")
+    if not number_id:
+        raise HTTPException(status_code=400, detail="Number ID required")
+    
+    # Transform payload to match the expected format
+    route_payload = {
+        "agent_id": payload.get("inbound_agent_id") or payload.get("outbound_agent_id"),
+        "hours_json": {},  # Default 24/7
+        "voicemail": True,
+        "transcript": True
+    }
+    
+    # Call the existing function
+    return await numbers_route(number_id, route_payload, db)
+
+
 # ===================== Sprint 6: Outcomes & CRM =====================
 
 @app.post("/calls/{call_id}/outcome")

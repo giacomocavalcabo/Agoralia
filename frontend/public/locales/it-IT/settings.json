@@ -15,7 +15,9 @@
     "integrations": "Integrazioni",
     "integrations_desc": "Connetti servizi esterni",
     "billing": "Fatturazione",
-    "billing_desc": "Gestisci fatturazione e abbonamenti"
+    "billing_desc": "Gestisci fatturazione e abbonamenti",
+    "telephony": "Telefonia",
+    "telephony_desc": "Gestisci numeri di telefono e instradamento"
   },
   
   "account": {
@@ -64,6 +66,40 @@
   "telephony": {
     "buy_number": "[Numero di acquisto]",
     "numbers": "[Numeri]"
+  },
+  
+  "pages": {
+    "settings": {
+      "nav": { "telephony": "Telefonia" },
+      "telephony": {
+        "title": "Telefonia",
+        "subtitle": "Gestisci numeri, provider e instradamento chiamate.",
+        "numbers": "Numeri di telefono",
+        "buy": {
+          "title": "Acquista numero (Retell)",
+          "country": "Paese",
+          "type": "Tipologia",
+          "area_code": "Prefisso (opzionale)",
+          "cta": "Acquista"
+        },
+        "byo": {
+          "title": "Porta il tuo numero",
+          "provider": "Provider",
+          "e164": "Numero (E.164)",
+          "cta": "Collega numero",
+          "code": "Codice di conferma",
+          "confirm": "Conferma"
+        },
+        "route": {
+          "title": "Instradamento",
+          "number": "Numero",
+          "select": "Seleziona un numero",
+          "inbound": "Agente inbound",
+          "outbound": "Agente outbound",
+          "save": "Salva instradamento"
+        }
+      }
+    }
   },
   
   "workspace": {
