@@ -107,12 +107,17 @@ def chunk_job(doc_id: str, chunk_size: int = 400) -> Dict[str, Any]:
 
 
 @dramatiq.actor(queue_name="kb_processing")
-def embed_job(doc_id: str, model: str = "text-embedding-3-small") -> Dict[str, Any]:
+def embed_job(doc_id: str, model: str = None) -> Dict[str, Any]:
     """
     Generate embeddings for chunks using OpenAI or local model
     """
     try:
         logger.info(f"Starting embedding generation for document {doc_id}")
+        
+        # Use low-cost model from config
+        if not model:
+            from backend.config.settings import settings
+            model = settings.OPENAI_EMBED_MODEL
         
         # TODO: Implement actual embedding generation
         # For now, simulate embedding process
@@ -122,10 +127,11 @@ def embed_job(doc_id: str, model: str = "text-embedding-3-small") -> Dict[str, A
         time.sleep(5)
         
         # TODO: Implement embedding:
-        # - Use OpenAI text-embedding-3-small (1536 dims)
+        # - Use OpenAI text-embedding-3-small (1536 dims) - low cost
         # - Batch process chunks for efficiency
         # - Store in pgvector if available, JSON as fallback
         # - Update chunk status to 'completed'
+        # - Check daily budget cap
         
         logger.info(f"Embedding generation completed for document {doc_id}")
         
@@ -241,11 +247,16 @@ def extract_company_profile_job(kb_id: str) -> Dict[str, Any]:
     try:
         logger.info(f"Starting company profile extraction for KB {kb_id}")
         
+        # Use low-cost model from config
+        from backend.config.settings import settings
+        model = settings.OPENAI_EXTRACT_MODEL
+        
         # TODO: Implement company profile extraction:
         # - Company name, description, industry
         # - Mission, vision, values
         # - Company size, location, founded year
         # - Create KbStructuredCard with card_type="company"
+        # - Use gpt-4o-mini for cost control
         
         # Simulate processing time
         import time
@@ -257,6 +268,7 @@ def extract_company_profile_job(kb_id: str) -> Dict[str, Any]:
             "status": "completed",
             "kb_id": kb_id,
             "card_type": "company",
+            "model_used": model,
             "message": "Company profile extracted successfully"
         }
         

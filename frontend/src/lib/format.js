@@ -79,3 +79,59 @@ export function formatPercentageSafe(value, locale = navigator.language) {
     return '—';
   }
 }
+
+// Centralized formatters for i18n consistency
+export const createNumberFormatter = (locale = 'en-US', currency = 'EUR') => {
+  const numberFormatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+  
+  const currencyFormatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  const percentFormatter = new Intl.NumberFormat(locale, {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  });
+  
+  return {
+    number: (value) => numberFormatter.format(value || 0),
+    currency: (cents) => currencyFormatter.format((cents || 0) / 100),
+    percent: (value) => percentFormatter.format(value || 0),
+    compact: (value) => new Intl.NumberFormat(locale, { notation: 'compact' }).format(value || 0)
+  };
+};
+
+export const createDateFormatter = (locale = 'en-US') => {
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+  
+  const timeFormatter = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  const relativeFormatter = new Intl.RelativeTimeFormat(locale, {
+    numeric: 'auto'
+  });
+  
+  return {
+    date: (date) => dateFormatter.format(new Date(date)),
+    time: (date) => timeFormatter.format(new Date(date)),
+    relative: (days) => {
+      if (days === 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days === -1) return 'tomorrow';
+      return relativeFormatter.format(days, 'day');
+    }
+  };
+};

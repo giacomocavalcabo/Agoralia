@@ -623,17 +623,31 @@
       "description": "Impossibile caricare i dati della knowledge base. Riprova.",
       "retry": "Riprova"
     },
-    "overview": {
-      "title": "Base di Conoscenza",
-      "description": "Gestisci il contenuto e le assegnazioni della knowledge base",
-      "subtitle": "Gestisci la tua base di conoscenza e le fonti di dati",
-      "sources_count": "{count} fonti",
-      "documents_count": "{count} documenti",
-      "chunks_count": "{count} frammenti",
-      "completeness": "Completezza",
-      "next_steps": "Prossimi Passi",
-      "recent_changes": "Modifiche Recenti",
-      "no_data": "Nessun dato disponibile",
+          "overview": {
+        "title": "Base di Conoscenza",
+        "description": "Gestisci il contenuto e le assegnazioni della knowledge base",
+        "subtitle": "Gestisci la tua base di conoscenza e le fonti di dati",
+        "sources_count": "{count} fonti",
+        "documents_count": "{count} documenti",
+        "chunks_count": "{count} frammenti",
+        "completeness": "Completezza",
+        "next_steps": "Prossimi Passi",
+        "recent_changes": "Modifiche Recenti",
+        "no_data": "Nessun dato disponibile",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Aggiungi informazioni aziendali",
+            "description": "Crea la knowledge base della tua azienda"
+          },
+          "import_documents": {
+            "title": "Importa documenti",
+            "description": "Carica PDF, DOCX o crawla siti web"
+          },
+          "add_sources": {
+            "title": "Aggiungi fonti",
+            "description": "Connetti fonti di dati esterne"
+          }
+        },
       "actions": {
         "import_documents": "Importa documenti",
         "add_source": "Aggiungi fonte",
@@ -821,6 +835,20 @@
         "confirm": "Conferma",
         "cancel": "Annulla"
       }
+    },
+    "quality": {
+      "freshness": "Freschezza",
+      "fresh": "Fresco",
+      "stale": "Stantio",
+      "outdated": "Obsoleto"
+    },
+    "cards": {
+      "company": "Azienda",
+      "products": "Prodotti",
+      "policies": "Politiche",
+      "pricing": "Prezzi",
+      "contacts": "Contatti",
+      "faq": "FAQ"
     }
   },
   "integrations": {

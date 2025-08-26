@@ -288,17 +288,31 @@
       "description": "Nous n'avons pas pu charger les données de la base de connaissances. Veuillez réessayer.",
       "retry": "Réessayer"
     },
-    "overview": {
-      "title": "Base de Connaissances",
-      "description": "Gérez le contenu et les attributions de votre base de connaissances",
-      "subtitle": "Gérez votre base de connaissances et vos sources de données",
-      "sources_count": "{count} sources",
-      "documents_count": "{count} documents",
-      "chunks_count": "{count} fragments",
-      "completeness": "Complétude",
-      "next_steps": "Prochaines Étapes",
-      "recent_changes": "Modifications Récentes",
-      "no_data": "Aucune donnée disponible",
+          "overview": {
+        "title": "Base de Connaissances",
+        "description": "Gérez le contenu et les attributions de votre base de connaissances",
+        "subtitle": "Gérez votre base de connaissances et vos sources de données",
+        "sources_count": "{count} sources",
+        "documents_count": "{count} documents",
+        "chunks_count": "{count} fragments",
+        "completeness": "Complétude",
+        "next_steps": "Prochaines Étapes",
+        "recent_changes": "Modifications Récentes",
+        "no_data": "Aucune donnée disponible",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Ajouter des informations d'entreprise",
+            "description": "Créez votre base de connaissances d'entreprise"
+          },
+          "import_documents": {
+            "title": "Importer des documents",
+            "description": "Téléchargez des PDF, DOCX ou explorez des sites web"
+          },
+          "add_sources": {
+            "title": "Ajouter des sources",
+            "description": "Connectez des sources de données externes"
+          }
+        },
       "actions": {
         "import_documents": "Importer des documents",
         "add_source": "Ajouter une source",
@@ -486,6 +500,20 @@
         "confirm": "Confirmer",
         "cancel": "Annuler"
       }
+    },
+    "quality": {
+      "freshness": "Fraîcheur",
+      "fresh": "Frais",
+      "stale": "Rassis",
+      "outdated": "Obsolète"
+    },
+    "cards": {
+      "company": "Entreprise",
+      "products": "Produits",
+      "policies": "Politiques",
+      "pricing": "Prix",
+      "contacts": "Contacts",
+      "faq": "FAQ"
     }
   }
 }

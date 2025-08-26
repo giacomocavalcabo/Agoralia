@@ -256,7 +256,17 @@
       "outdated": "Outdated",
       "pii_score": "PII risk",
       "dedup": "Duplicates",
-      "freshness": "Freshness"
+      "freshness": "Freshness",
+      "breakdown": "Quality Breakdown",
+      "suggestions": "Improvement Suggestions"
+    },
+    "cards": {
+      "company": "Company Profile",
+      "products": "Products",
+      "policies": "Policies",
+      "pricing": "Pricing",
+      "contacts": "Contacts",
+      "faq": "FAQ"
     },
     "toasts": { 
       "import_started": "Import started", 
@@ -635,17 +645,31 @@
       "description": "We couldn't load knowledge base data. Please retry.",
       "retry": "Retry"
     },
-    "overview": {
-      "title": "Knowledge Base",
-      "description": "Manage your knowledge base content and assignments",
-      "subtitle": "Manage your knowledge base and data sources",
-      "sources_count": "{count} sources",
-      "documents_count": "{count} documents",
-      "chunks_count": "{count} chunks",
-      "completeness": "Completeness",
-      "next_steps": "Next Steps",
-      "recent_changes": "Recent Changes",
-      "no_data": "No data available",
+          "overview": {
+        "title": "Knowledge Base",
+        "description": "Manage your knowledge base content and assignments",
+        "subtitle": "Manage your knowledge base and data sources",
+        "sources_count": "{count} sources",
+        "documents_count": "{count} documents",
+        "chunks_count": "{count} chunks",
+        "completeness": "Completeness",
+        "next_steps": "Next Steps",
+        "recent_changes": "Recent Changes",
+        "no_data": "No data available",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Add company information",
+            "description": "Create your company knowledge base"
+          },
+          "import_documents": {
+            "title": "Import documents",
+            "description": "Upload PDFs, DOCX, or crawl websites"
+          },
+          "add_sources": {
+            "title": "Add sources",
+            "description": "Connect external data sources"
+          }
+        },
       "actions": {
         "import_documents": "Import documents",
         "add_source": "Add source",
@@ -833,6 +857,20 @@
         "confirm": "Confirm",
         "cancel": "Cancel"
       }
+    },
+    "quality": {
+      "freshness": "Freshness",
+      "fresh": "Fresh",
+      "stale": "Stale",
+      "outdated": "Outdated"
+    },
+    "cards": {
+      "company": "Company",
+      "products": "Products",
+      "policies": "Policies",
+      "pricing": "Pricing",
+      "contacts": "Contacts",
+      "faq": "FAQ"
     }
   },
   "integrations": {

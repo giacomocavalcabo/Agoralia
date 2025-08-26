@@ -33,9 +33,9 @@ export default function KbOverview() {
   ] : [];
   
   const nextSteps = [
-    { id: 1, title: t('kb.overview.next_steps'), description: 'Add company information', action: 'add_company', icon: PlusIcon },
-    { id: 2, title: 'Import documents', description: 'Upload PDFs, DOCX, or crawl websites', action: 'import', icon: CloudArrowUpIcon },
-    { id: 3, title: 'Add sources', description: 'Connect external data sources', action: 'add_sources', icon: GlobeAltIcon }
+    { id: 1, title: t('kb.overview.next_steps_items.add_company.title'), description: t('kb.overview.next_steps_items.add_company.description'), action: 'add_company', icon: PlusIcon },
+    { id: 2, title: t('kb.overview.next_steps_items.import_documents.title'), description: t('kb.overview.next_steps_items.import_documents.description'), action: 'import', icon: CloudArrowUpIcon },
+    { id: 3, title: t('kb.overview.next_steps_items.add_sources.title'), description: t('kb.overview.next_steps_items.add_sources.description'), action: 'add_sources', icon: GlobeAltIcon }
   ];
 
   const handleAction = (action) => {

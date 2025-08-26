@@ -288,17 +288,31 @@
       "description": "No pudimos cargar los datos de la base de conocimiento. Por favor, inténtalo de nuevo.",
       "retry": "Reintentar"
     },
-    "overview": {
-      "title": "Base de Conocimiento",
-      "description": "Gestiona el contenido y las asignaciones de tu base de conocimiento",
-      "subtitle": "Gestiona tu base de conocimiento y fuentes de datos",
-      "sources_count": "{count} fuentes",
-      "documents_count": "{count} documentos",
-      "chunks_count": "{count} fragmentos",
-      "completeness": "Completitud",
-      "next_steps": "Próximos Pasos",
-      "recent_changes": "Cambios Recientes",
-      "no_data": "No hay datos disponibles",
+          "overview": {
+        "title": "Base de Conocimiento",
+        "description": "Gestiona el contenido y las asignaciones de tu base de conocimiento",
+        "subtitle": "Gestiona tu base de conocimiento y fuentes de datos",
+        "sources_count": "{count} fuentes",
+        "documents_count": "{count} documentos",
+        "chunks_count": "{count} fragmentos",
+        "completeness": "Completitud",
+        "next_steps": "Próximos Pasos",
+        "recent_changes": "Cambios Recientes",
+        "no_data": "No hay datos disponibles",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Agregar información de la empresa",
+            "description": "Crea la base de conocimiento de tu empresa"
+          },
+          "import_documents": {
+            "title": "Importar documentos",
+            "description": "Sube PDF, DOCX o explora sitios web"
+          },
+          "add_sources": {
+            "title": "Agregar fuentes",
+            "description": "Conecta fuentes de datos externas"
+          }
+        },
       "actions": {
         "import_documents": "Importar documentos",
         "add_source": "Agregar fuente",

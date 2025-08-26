@@ -288,17 +288,31 @@
       "description": "Wir konnten die Wissensdatenbank-Daten nicht laden. Bitte versuchen Sie es erneut.",
       "retry": "Wiederholen"
     },
-    "overview": {
-      "title": "Wissensdatenbank",
-      "description": "Verwalten Sie den Inhalt und die Zuweisungen Ihrer Wissensdatenbank",
-      "subtitle": "Verwalten Sie Ihre Wissensdatenbank und Datenquellen",
-      "sources_count": "{count} Quellen",
-      "documents_count": "{count} Dokumente",
-      "chunks_count": "{count} Chunks",
-      "completeness": "Vollständigkeit",
-      "next_steps": "Nächste Schritte",
-      "recent_changes": "Letzte Änderungen",
-      "no_data": "Keine Daten verfügbar",
+          "overview": {
+        "title": "Wissensdatenbank",
+        "description": "Verwalten Sie den Inhalt und die Zuweisungen Ihrer Wissensdatenbank",
+        "subtitle": "Verwalten Sie Ihre Wissensdatenbank und Datenquellen",
+        "sources_count": "{count} Quellen",
+        "documents_count": "{count} Dokumente",
+        "chunks_count": "{count} Chunks",
+        "completeness": "Vollständigkeit",
+        "next_steps": "Nächste Schritte",
+        "recent_changes": "Letzte Änderungen",
+        "no_data": "Keine Daten verfügbar",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Unternehmensinformationen hinzufügen",
+            "description": "Erstellen Sie Ihre Unternehmens-Wissensdatenbank"
+          },
+          "import_documents": {
+            "title": "Dokumente importieren",
+            "description": "PDFs, DOCX hochladen oder Websites crawlen"
+          },
+          "add_sources": {
+            "title": "Quellen hinzufügen",
+            "description": "Externe Datenquellen verbinden"
+          }
+        },
       "actions": {
         "import_documents": "Dokumente importieren",
         "add_source": "Quelle hinzufügen",
@@ -486,6 +500,20 @@
         "confirm": "Bestätigen",
         "cancel": "Abbrechen"
       }
+    },
+    "quality": {
+      "freshness": "Aktualität",
+      "fresh": "Aktuell",
+      "stale": "Veraltet",
+      "outdated": "Veraltet"
+    },
+    "cards": {
+      "company": "Unternehmen",
+      "products": "Produkte",
+      "policies": "Richtlinien",
+      "pricing": "Preise",
+      "contacts": "Kontakte",
+      "faq": "FAQ"
     }
   }
 }

@@ -6,7 +6,9 @@ export function CompletenessMeter({
   completeness, 
   freshness, 
   lastUpdated,
-  showDetails = true 
+  showDetails = true,
+  breakdown = null,
+  suggestions = []
 }) {
   const { t } = useTranslation('pages');
   
@@ -37,6 +39,16 @@ export function CompletenessMeter({
 
   const freshnessDays = getFreshnessDays(lastUpdated);
   const freshnessStatus = getFreshnessStatus(freshnessDays);
+
+  // Category weights for visual representation
+  const categoryWeights = {
+    company: { weight: 20, label: t('kb.cards.company') },
+    products: { weight: 25, label: t('kb.cards.products') },
+    policies: { weight: 20, label: t('kb.cards.policies') },
+    pricing: { weight: 15, label: t('kb.cards.pricing') },
+    contacts: { weight: 10, label: t('kb.cards.contacts') },
+    faq: { weight: 10, label: t('kb.cards.faq') }
+  };
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
@@ -69,8 +81,8 @@ export function CompletenessMeter({
           </div>
           
           {lastUpdated && (
-                    <div className="text-xs text-gray-500">
-          {t('kb.sources.last_refresh')}: {new Date(lastUpdated).toLocaleDateString()}
+            <div className="text-xs text-gray-500">
+              {t('kb.sources.last_refresh')}: {new Date(lastUpdated).toLocaleDateString()}
               {freshnessDays !== null && (
                 <span className={`ml-2 px-2 py-1 rounded text-xs ${
                   freshnessStatus === 'fresh' ? 'bg-green-100 text-green-800' :
@@ -83,6 +95,49 @@ export function CompletenessMeter({
             </div>
           )}
         </>
+      )}
+
+      {/* Category Breakdown */}
+      {breakdown && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-gray-700">{t('kb.quality.breakdown')}</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(categoryWeights).map(([key, config]) => {
+              const score = breakdown[`${key}_score`] || 0;
+              return (
+                <div key={key} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">{config.label}</span>
+                    <span className="font-medium">{score}%</span>
+                  </div>
+                  <ProgressBar 
+                    value={score} 
+                    size="sm"
+                    color={score >= 80 ? 'green' : score >= 60 ? 'yellow' : 'red'}
+                  />
+                  <div className="text-xs text-gray-500">
+                    Weight: {config.weight}%
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Improvement Suggestions */}
+      {suggestions.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-700">{t('kb.quality.suggestions')}</h4>
+          <ul className="space-y-1">
+            {suggestions.map((suggestion, index) => (
+              <li key={index} className="text-xs text-gray-600 flex items-start">
+                <span className="text-blue-500 mr-2">•</span>
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

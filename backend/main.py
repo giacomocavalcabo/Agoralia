@@ -5895,7 +5895,7 @@ def get_structured_card(
         }
 
 
-@app.get("/kb/completeness/{kb_id}")
+@app.get("/kb/{kb_id}/completeness")
 def get_kb_completeness(
     kb_id: str,
     request: Request = None,
@@ -5930,6 +5930,15 @@ def get_kb_completeness(
         # Get chunks for this KB
         chunks = db.query(KbChunk).filter(
             KbChunk.kb_id == kb_id
+        ).all()
+        
+        # Get sections and fields for this KB
+        sections = db.query(KbSection).filter(
+            KbSection.kb_id == kb_id
+        ).all()
+        
+        fields = db.query(KbField).filter(
+            KbField.kb_id == kb_id
         ).all()
         
         # Calculate completeness by category with weights
@@ -5979,9 +5988,15 @@ def get_kb_completeness(
             for category, score in category_scores.items()
         )
         
-        # Calculate freshness score
-        if chunks:
-            latest_update = max(chunk.updated_at for chunk in chunks if chunk.updated_at)
+        # Calculate freshness score from ALL sources
+        timestamps = []
+        timestamps += [chunk.updated_at for chunk in chunks if chunk.updated_at]
+        timestamps += [card.updated_at for card in cards if card.updated_at]
+        timestamps += [section.updated_at for section in sections if section.updated_at]
+        timestamps += [field.updated_at for field in fields if field.updated_at]
+        
+        if timestamps:
+            latest_update = max(timestamps)
             days_old = (datetime.utcnow() - latest_update).days
             if days_old <= 7:
                 freshness_score = 100.0
@@ -5992,7 +6007,7 @@ def get_kb_completeness(
             else:
                 freshness_score = 25.0
         else:
-            freshness_score = 0.0
+            freshness_score = 0.0  # No content = 0 freshness
         
         # Generate improvement suggestions
         suggestions = []
@@ -6005,8 +6020,18 @@ def get_kb_completeness(
         if freshness_score < 50:
             suggestions.append("Update content to improve freshness")
         
-        if not chunks:
+        if not chunks and not cards and not sections and not fields:
             suggestions.append("Upload documents to start building your knowledge base")
+        
+        # Update KB cache field (best-effort)
+        try:
+            kb.completeness_pct = int(overall_score)
+            kb.freshness_score = int(freshness_score)
+            kb.updated_at = datetime.utcnow()
+            db.commit()
+        except Exception as e:
+            # Log but don't fail the API
+            logger.warning(f"Failed to update KB cache fields: {e}")
         
         return {
             "kb_id": kb_id,
@@ -6026,9 +6051,65 @@ def get_kb_completeness(
             "stats": {
                 "total_cards": len(cards),
                 "total_chunks": len(chunks),
+                "total_sections": len(sections),
+                "total_fields": len(fields),
                 "card_types_present": list(card_counts.keys())
             }
         }
+
+
+@app.get("/kb/completeness")
+def get_workspace_completeness(
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get workspace-level KB completeness overview"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Get all KBs for this workspace
+        kbs = db.query(KnowledgeBase).filter(
+            KnowledgeBase.workspace_id == workspace_id
+        ).all()
+        
+        workspace_stats = {
+            "total_kbs": len(kbs),
+            "total_score": 0.0,
+            "avg_score": 0.0,
+            "kbs": []
+        }
+        
+        if kbs:
+            for kb in kbs:
+                # Get basic stats for each KB
+                cards_count = db.query(KbStructuredCard).filter(
+                    KbStructuredCard.kb_id == kb.id
+                ).count()
+                
+                chunks_count = db.query(KbChunk).filter(
+                    KbChunk.kb_id == kb.id
+                ).count()
+                
+                kb_summary = {
+                    "id": kb.id,
+                    "name": kb.name,
+                    "kind": kb.kind,
+                    "completeness_pct": kb.completeness_pct or 0,
+                    "freshness_score": kb.freshness_score or 0,
+                    "total_cards": cards_count,
+                    "total_chunks": chunks_count,
+                    "created_at": kb.created_at,
+                    "updated_at": kb.updated_at
+                }
+                
+                workspace_stats["kbs"].append(kb_summary)
+                workspace_stats["total_score"] += kb.completeness_pct or 0
+            
+            workspace_stats["avg_score"] = round(
+                workspace_stats["total_score"] / len(kbs), 1
+            )
+        
+        return workspace_stats
 
 
 @app.post("/kb/imports/{job_id}/cancel")
@@ -6230,15 +6311,29 @@ async def get_metrics_overview(
     agents = await get_top_agents(days=days, limit=10)
     geo = await get_geo_metrics(days=days)
     cost = await get_cost_series(days=days)
+    
+    # Normalize params to snake_case and add currency
+    params = {
+        "days": days,
+        "campaign_id": campaign_id,
+        "agent_id": agent_id,
+        "lang": lang,
+        "country": country,
+        "currency": "EUR"  # Default currency
+    }
+    
+    # Generate ETag for caching (hash of params + payload)
+    import hashlib
+    payload_str = str(funnel) + str(agents) + str(geo) + str(cost)
+    etag = hashlib.md5(f"{str(params)}{payload_str}".encode()).hexdigest()
+    
     return {
         "funnel": funnel,
         "agents_top": agents,
         "geo": geo,
         "cost_series": cost,
-        "params": {
-            "days": days, "campaign_id": campaign_id,
-            "agent_id": agent_id, "lang": lang, "country": country
-        }
+        "params": params,
+        "etag": etag
     }
 
 @app.post("/webhook/retell")

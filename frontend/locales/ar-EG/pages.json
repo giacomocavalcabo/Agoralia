@@ -288,17 +288,31 @@
       "description": "لا يمكننا تحميل بيانات قاعدة المعرفة. يرجى المحاولة مرة أخرى.",
       "retry": "إعادة المحاولة"
     },
-    "overview": {
-      "title": "قاعدة المعرفة",
-      "description": "إدارة محتوى قاعدة المعرفة والمهام الموكلة",
-      "subtitle": "إدارة قاعدة المعرفة ومصادر البيانات",
-      "sources_count": "{count} مصدر",
-      "documents_count": "{count} مستند",
-      "chunks_count": "{count} جزء",
-      "completeness": "الاكتمال",
-      "next_steps": "الخطوات التالية",
-      "recent_changes": "التغييرات الأخيرة",
-      "no_data": "لا توجد بيانات متاحة",
+          "overview": {
+        "title": "قاعدة المعرفة",
+        "description": "إدارة محتوى قاعدة المعرفة والمهام الموكلة",
+        "subtitle": "إدارة قاعدة المعرفة ومصادر البيانات",
+        "sources_count": "{count} مصدر",
+        "documents_count": "{count} مستند",
+        "chunks_count": "{count} جزء",
+        "completeness": "الاكتمال",
+        "next_steps": "الخطوات التالية",
+        "recent_changes": "التغييرات الأخيرة",
+        "no_data": "لا توجد بيانات متاحة",
+        "next_steps_items": {
+          "add_company": {
+            "title": "إضافة معلومات الشركة",
+            "description": "إنشاء قاعدة المعرفة لشركتك"
+          },
+          "import_documents": {
+            "title": "استيراد المستندات",
+            "description": "رفع PDF أو DOCX أو استكشاف المواقع"
+          },
+          "add_sources": {
+            "title": "إضافة مصادر",
+            "description": "ربط مصادر البيانات الخارجية"
+          }
+        },
       "actions": {
         "import_documents": "استيراد المستندات",
         "add_source": "إضافة مصدر",

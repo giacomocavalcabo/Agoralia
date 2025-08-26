@@ -57,6 +57,14 @@ class Settings(BaseSettings):
         emails = [email.strip().lower() for email in self.DEMO_ADMIN_EMAILS.split(",")]
         return [email for email in emails if email]
 
+    # AI/OpenAI Configuration (low-cost defaults)
+    OPENAI_API_KEY: str = ""
+    OPENAI_EMBED_MODEL: str = "text-embedding-3-small"  # Low-cost embeddings
+    OPENAI_EXTRACT_MODEL: str = "gpt-4o-mini"  # Low-cost extraction
+    OPENAI_BUDGET_MAX_USD: float = 10.0  # Daily budget cap
+    OPENAI_MAX_TOKENS: int = 4000
+    OPENAI_TEMPERATURE: float = 0.7
+
 
 settings = Settings()
 

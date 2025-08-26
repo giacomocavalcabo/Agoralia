@@ -2,10 +2,15 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { fetchMetricsOverview } from "../lib/metricsApi";
+import { createNumberFormatter, createDateFormatter } from "../lib/format";
 
 export default function Analytics() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [days, setDays] = useState(30);
+  
+  // Centralized formatters
+  const formatters = createNumberFormatter(i18n.language, data?.params?.currency || 'EUR');
+  const dateFormatters = createDateFormatter(i18n.language);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["metrics_overview", { days }],
@@ -44,7 +49,20 @@ export default function Analytics() {
       {isLoading ? (
         <div className="animate-pulse h-40 rounded bg-muted" />
       ) : !data ? (
-        <div className="text-sm text-muted-foreground">{t("pages.analytics.empty")}</div>
+        <div className="rounded border p-6 text-center">
+          <div className="text-lg font-medium text-muted-foreground mb-2">
+            {t("pages.analytics.empty.title")}
+          </div>
+          <div className="text-sm text-muted-foreground mb-4">
+            {t("pages.analytics.empty.description")}
+          </div>
+          <button 
+            onClick={() => setDays(30)} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            {t("pages.analytics.empty.cta")}
+          </button>
+        </div>
       ) : (
         <>
           {/* KPI strip */}
