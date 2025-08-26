@@ -4,8 +4,8 @@
 
 ### 1. Test asset JavaScript
 ```bash
-# Sostituisci XXXXX con l'hash reale dal tuo index.html
-curl -I https://<tuo-dominio>/assets/index-XXXXX.js
+# Test specifico per il tuo dominio
+curl -I https://app.agoralia.app/assets/index-EYeWI_ea.js
 
 # ✅ RISULTATO ATTESO:
 # HTTP/2 200 
