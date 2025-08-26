@@ -182,7 +182,11 @@ class KbChunkSearch(BaseModel):
     doc_id: Optional[str] = Field(None, description="Filter by document ID")
     type: Optional[ChunkType] = Field(None, description="Filter by chunk type")
     lang: Optional[str] = Field(None, description="Filter by language")
-    top_k: int = Field(20, description="Maximum number of results")
+    semantic_type: Optional[str] = Field(None, description="Filter by semantic type")
+    min_quality: Optional[float] = Field(None, ge=0.0, le=1.0, description="Minimum quality score")
+    max_pii: Optional[float] = Field(None, ge=0.0, le=1.0, description="Maximum PII score")
+    top_k: int = Field(20, ge=1, le=100, description="Maximum results")
+    use_semantic: bool = Field(True, description="Use semantic search if available")
 
 
 class KbChunkSearchResponse(BaseModel):

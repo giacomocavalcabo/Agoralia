@@ -5769,6 +5769,68 @@ def commit_import_job(
         }
 
 
+@app.get("/kb/jobs/{job_id}/status")
+def get_kb_job_status(
+    request: Request,
+    job_id: str,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get KB job processing status and progress"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Verify job exists and belongs to workspace
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id,
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "JOB_NOT_FOUND",
+                    "KB job not found",
+                    {"job_id": job_id, "workspace_id": workspace_id},
+                    "Verify the job ID and ensure it belongs to your workspace"
+                )
+            )
+        
+        # Get related chunks processing status
+        chunks = db.query(KbChunk).filter(
+            KbChunk.job_id == job_id
+        ).all()
+        
+        # Calculate processing statistics
+        total_chunks = len(chunks)
+        pending_chunks = len([c for c in chunks if c.processing_status == "pending"])
+        processing_chunks = len([c for c in chunks if c.processing_status == "processing"])
+        completed_chunks = len([c for c in chunks if c.processing_status == "completed"])
+        failed_chunks = len([c for c in chunks if c.processing_status == "failed"])
+        
+        # Overall progress
+        if total_chunks > 0:
+            progress_pct = int((completed_chunks / total_chunks) * 100)
+        else:
+            progress_pct = 0
+        
+        return {
+            "job_id": job_id,
+            "status": job.status,
+            "progress_pct": progress_pct,
+            "chunks": {
+                "total": total_chunks,
+                "pending": pending_chunks,
+                "processing": processing_chunks,
+                "completed": completed_chunks,
+                "failed": failed_chunks
+            },
+            "created_at": job.created_at,
+            "updated_at": job.updated_at,
+            "completed_at": job.completed_at
+        }
+
+
 @app.post("/kb/imports/{job_id}/cancel")
 def cancel_import_job(
     request: Request,
@@ -6256,13 +6318,20 @@ async def kb_upload_document(
         
         db.commit()
         
-        # TODO: Start parse_file_job
-        # parse_file_job.send(doc_id)
+        # Start KB processing pipeline
+        try:
+            from backend.workers.kb_jobs import start_kb_processing_pipeline
+            start_kb_processing_pipeline(doc_id)
+            processing_status = "pipeline_started"
+        except ImportError:
+            # Fallback if workers not available
+            processing_status = "queued_no_workers"
         
         return {
             "doc_id": doc_id,
             "status": "queued",
-            "message": "Document uploaded and queued for processing"
+            "message": "Document uploaded and queued for processing",
+            "processing_status": processing_status
         }
 
 
@@ -6320,7 +6389,11 @@ def kb_search_chunks(
     doc_id: Optional[str] = Query(None, description="Filter by document ID"),
     type: Optional[str] = Query(None, description="Filter by chunk type"),
     lang: Optional[str] = Query(None, description="Filter by language"),
+    semantic_type: Optional[str] = Query(None, description="Filter by semantic type"),
+    min_quality: Optional[float] = Query(None, ge=0.0, le=1.0, description="Minimum quality score"),
+    max_pii: Optional[float] = Query(None, ge=0.0, le=1.0, description="Maximum PII score"),
     top_k: int = Query(20, ge=1, le=100, description="Maximum results"),
+    use_semantic: bool = Query(True, description="Use semantic search if available"),
     request: Request = None,
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
@@ -6344,13 +6417,37 @@ def kb_search_chunks(
             )
         if lang:
             query_builder = query_builder.filter(KbChunk.lang == lang)
+        if semantic_type:
+            query_builder = query_builder.filter(KbChunk.semantic_type == semantic_type)
+        if min_quality is not None:
+            query_builder = query_builder.filter(KbChunk.quality_score >= min_quality)
+        if max_pii is not None:
+            query_builder = query_builder.filter(KbChunk.pii_score <= max_pii)
         
-        # Apply search query
+        # Apply search query with hybrid approach
         if query:
-            # Simple text search for now (LIKE)
-            # TODO: Add semantic search with pgvector when available
-            query_builder = query_builder.filter(
-                KbChunk.text.ilike(f"%{query}%")
+            if use_semantic and hasattr(KbChunk, 'embedding_vector'):
+                # TODO: Implement semantic search with pgvector
+                # For now, use text search + quality boost
+                query_builder = query_builder.filter(
+                    KbChunk.text.ilike(f"%{query}%")
+                ).order_by(
+                    KbChunk.quality_score.desc(),
+                    KbChunk.text.ilike(f"%{query}%").desc()
+                )
+            else:
+                # Full-text search with quality boost
+                query_builder = query_builder.filter(
+                    KbChunk.text.ilike(f"%{query}%")
+                ).order_by(
+                    KbChunk.quality_score.desc(),
+                    KbChunk.text.ilike(f"%{query}%").desc()
+                )
+        else:
+            # No query: order by quality and recency
+            query_builder = query_builder.order_by(
+                KbChunk.quality_score.desc(),
+                KbChunk.updated_at.desc()
             )
         
         # Get results
@@ -6364,6 +6461,11 @@ def kb_search_chunks(
                     "text": chunk.text,
                     "lang": chunk.lang,
                     "tokens": chunk.tokens,
+                    "semantic_type": chunk.semantic_type,
+                    "quality_score": chunk.quality_score,
+                    "pii_score": chunk.pii_score,
+                    "duplicate_score": chunk.duplicate_score,
+                    "semantic_tags": chunk.semantic_tags,
                     "meta_json": chunk.meta_json,
                     "created_at": chunk.created_at,
                     "updated_at": chunk.updated_at
@@ -6371,7 +6473,8 @@ def kb_search_chunks(
                 for chunk in chunks
             ],
             "total": len(chunks),
-            "query": query
+            "query": query,
+            "search_type": "hybrid" if use_semantic else "text_only"
         }
 
 

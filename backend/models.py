@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey, Text, JSON, Enum, UniqueConstraint
+from sqlalchemy import Column, String, Boolean, Integer, BigInteger, DateTime, ForeignKey, Text, JSON, Enum, UniqueConstraint, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.db import Base
@@ -572,8 +572,26 @@ class KbChunk(Base):
     text = Column(Text, nullable=False)
     lang = Column(String, default="en-US")
     tokens = Column(Integer, default=0)
-    meta_json = Column(JSON)  # type, section, url, pii_score, quality_score
-    embedding = Column(JSON)  # pgvector will be added via migration
+    
+    # Quality metrics
+    quality_score = Column(Float, default=1.0)  # Overall quality (0.0-1.0)
+    pii_score = Column(Float, default=0.0)      # PII risk (0.0-1.0)
+    duplicate_score = Column(Float, default=0.0) # Duplicate probability (0.0-1.0)
+    
+    # Semantic metadata
+    semantic_type = Column(String)  # company, product, policy, faq, general
+    semantic_tags = Column(JSON)    # Additional semantic tags
+    
+    # Job tracking
+    job_id = Column(String, ForeignKey("kb_import_jobs.id"), nullable=True)
+    processing_status = Column(String, default="pending")  # pending, processing, completed, failed
+    processing_error = Column(Text, nullable=True)
+    
+    # Embeddings (dual support: pgvector + JSON fallback)
+    embedding = Column(JSON)  # Legacy JSON embedding (fallback)
+    # embedding_vector will be added via migration (pgvector)
+    
+    meta_json = Column(JSON)  # Additional metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
