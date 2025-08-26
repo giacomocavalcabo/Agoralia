@@ -145,6 +145,44 @@ async def _log_origin(request: Request, call_next):
     return await call_next(request)
 
 logger.info("CORS middleware configured successfully")
+
+# ===================== Static Files & SPA Configuration =====================
+import os
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+# Percorso assoluto alla build Vite (frontend/dist)
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+
+# Verifica che la directory esista
+if os.path.exists(FRONTEND_DIR):
+    logger.info(f"Frontend build directory found: {FRONTEND_DIR}")
+    
+    # Monta gli assets separatamente (MOLTO IMPORTANTE: prima del fallback!)
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+    logger.info("Assets directory mounted at /assets")
+    
+    # Index per root
+    @app.get("/", include_in_schema=False)
+    def serve_index():
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    
+    # Fallback SPA: serve index.html solo per path SENZA estensione
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa_fallback(full_path: str):
+        # Se l'URL ha un punto, è un asset → lascia fare alle altre route/404
+        if "." in full_path:
+            raise HTTPException(status_code=404)
+        # Evita di inglobare le tue API
+        if full_path.startswith(("kb", "metrics", "webhook", "auth", "api", "i18n", "health", "_whoami", "debug", "db")):
+            raise HTTPException(status_code=404)
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    
+    logger.info("SPA fallback configured for frontend routes")
+else:
+    logger.warning(f"Frontend build directory not found: {FRONTEND_DIR}")
+    logger.warning("Static file serving and SPA fallback disabled")
+
 logger.info("FastAPI app created successfully")
 
 # ===================== Health check endpoint =====================
