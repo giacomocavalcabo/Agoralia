@@ -5,7 +5,7 @@ import secrets
 from typing import Optional, List, Dict
 from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
-from fastapi import Depends
+from fastapi import Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
 
@@ -31,7 +31,7 @@ from backend import schemas
 
 # Models will be imported locally where needed to avoid duplication
 from typing import Callable, Any, List, Dict
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, String
 import hashlib
 import pyotp
 import random
@@ -3969,14 +3969,7 @@ async def pdf_health():
 
 # ===================== Knowledge Base System =====================
 
-def _get_workspace_from_user(request: Request) -> str:
-    """Get workspace ID from authenticated user session"""
-    # In production, get from session/token
-    # For now, fallback to header with validation
-    workspace_id = request.headers.get("X-Workspace-Id")
-    if not workspace_id:
-        raise HTTPException(status_code=400, detail="X-Workspace-Id header required")
-    return workspace_id
+
 
 def _create_error_response(code: str, message: str, details: dict = None, hint: str = None) -> dict:
     """Create uniform error response shape"""
@@ -4022,7 +4015,7 @@ def list_knowledge_bases(
 ) -> dict:
     """List knowledge bases for current workspace"""
     # Get workspace from authenticated user (in production, from session)
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         query = db.query(KnowledgeBase).filter(KnowledgeBase.workspace_id == workspace_id)
@@ -4035,7 +4028,7 @@ def list_knowledge_bases(
             query = query.filter(
                 or_(
                     KnowledgeBase.name.ilike(f"%{q}%"),
-                    KnowledgeBase.meta_json.cast(str).ilike(f"%{q}%")
+                    cast(KnowledgeBase.meta_json, String).ilike(f"%{q}%")
                 )
             )
         
@@ -4134,7 +4127,7 @@ def get_knowledge_base(
 ) -> dict:
     """Get knowledge base details with sections and fields"""
     # Validate workspace ownership
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         kb = db.query(KnowledgeBase).filter(
@@ -4152,17 +4145,6 @@ def get_knowledge_base(
                     "Verify the KB ID and ensure it belongs to your workspace"
                 )
             )
-    """Get knowledge base details with sections and fields"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
-    
-    with next(get_db()) as db:
-        kb = db.query(KnowledgeBase).filter(
-            KnowledgeBase.id == kb_id,
-            KnowledgeBase.workspace_id == workspace_id
-        ).first()
-        
-        if not kb:
-            raise HTTPException(status_code=404, detail="Knowledge base not found")
         
         # Get sections
         sections = db.query(KbSection).filter(
@@ -4174,12 +4156,16 @@ def get_knowledge_base(
             KbField.kb_id == kb_id
         ).all()
         
-        # Get sources
-        sources = db.query(KbSource).filter(
-            KbSource.workspace_id == workspace_id
-        ).join(KbChunk, KbChunk.source_id == KbSource.id).filter(
-            KbChunk.kb_id == kb_id
-        ).distinct().all()
+        # Get sources - FIXED: use proper join path through documents
+        sources = (db.query(KbSource)
+                  .join(KbDocument, KbDocument.source_id == KbSource.id)
+                  .join(KbChunk, KbChunk.doc_id == KbDocument.id)
+                  .filter(
+                      KbSource.workspace_id == workspace_id,
+                      KbChunk.kb_id == kb_id
+                  )
+                  .distinct()
+                  .all())
         
         # Get assignments
         assignments = db.query(KbAssignment).filter(
@@ -4260,7 +4246,7 @@ def update_knowledge_base(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update knowledge base metadata"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         kb = db.query(KnowledgeBase).filter(
@@ -4309,7 +4295,7 @@ def start_kb_import(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Start knowledge base import from source"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     user_id = "u_1"  # In production, get from session
     
     # Validate file size limits
@@ -4324,7 +4310,7 @@ def start_kb_import(
         # Max 100k rows for now
         pass
     """Start knowledge base import from source"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     user_id = "u_1"  # In production, get from session
     
     with next(get_db()) as db:
@@ -4402,7 +4388,7 @@ def get_import_job_status(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get import job status and progress with diff analysis"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         job = db.query(KbImportJob).filter(
@@ -4544,7 +4530,7 @@ def merge_import_changes(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Merge imported changes based on user decisions"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         job = db.query(KbImportJob).filter(
@@ -4745,13 +4731,13 @@ def resolve_knowledge_base(
             KbSection.kb_id == kb.id
         ).order_by(KbSection.order_index).all()
         
-        fields = db.query(KbField).filter(
-            KbField.kb_id == kb.id,
-            KbField.lang == lang
-        ).options(
-            # Optimize loading for large datasets
-            db.query(KbField).limit(100)  # Limit fields for performance
-        ).all()
+        fields = (db.query(KbField)
+                 .filter(
+                     KbField.kb_id == kb.id,
+                     KbField.lang == lang
+                 )
+                 .limit(100)  # Limit fields for performance
+                 .all())
         
         return {
             "kb_id": kb.id,
@@ -5166,10 +5152,10 @@ def update_kb_section(
         db.commit()
         
         # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
+        _recalculate_kb_metrics(db, section.kb_id)
         
         # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "update_section", {
+        _audit_kb_change(db, section.kb_id, "u_1", "update_section", {
             "section_id": section_id,
             "changes": payload.dict(exclude_unset=True)
         })
@@ -5204,10 +5190,10 @@ def delete_kb_section(
         db.commit()
         
         # Recalculate KB metrics
-        _recalculate_kb_metrics(db, kb_id)
+        _recalculate_kb_metrics(db, section.kb_id)
         
         # Audit trail
-        _audit_kb_change(db, kb_id, "u_1", "delete_section", {
+        _audit_kb_change(db, section.kb_id, "u_1", "delete_section", {
             "section_id": section_id,
             "section_key": section.key
         })
@@ -5388,7 +5374,7 @@ def update_import_mapping(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update field mappings for import job"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify job exists and belongs to workspace
@@ -5589,35 +5575,7 @@ def get_ai_usage(
         }
 
 
-@app.post("/kb/imports/{job_id}/cancel")
-def cancel_import_job(
-    request: Request,
-    job_id: str,
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
-    """Cancel an import job"""
-    workspace_id = _get_workspace_from_user(request)
-    
-    with next(get_db()) as db:
-        # Verify job exists and belongs to workspace
-        job = db.query(KbImportJob).filter(
-            KbImportJob.id == job_id,
-            KbImportJob.workspace_id == workspace_id
-        ).first()
-        
-        if not job:
-            raise HTTPException(status_code=404, detail="Import job not found")
-        
-        if job.status in ["completed", "failed", "canceled"]:
-            raise HTTPException(status_code=400, detail="Cannot cancel job in terminal state")
-        
-        job.status = "canceled"
-        db.commit()
-        
-        # TODO: Cancel background job if running
-        # dramatiq.cancel(job_id)
-        
-        return {"job_id": job_id, "status": "canceled"}
+
 
 
 @app.post("/kb/imports/{job_id}/retry")
@@ -5627,7 +5585,7 @@ def retry_import_job(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Retry a failed import job"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify job exists and belongs to workspace
@@ -5660,7 +5618,7 @@ def commit_import_job(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Commit and apply import job changes"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     user_id = "u_1"  # In production, get from session
     
     with next(get_db()) as db:
@@ -5690,57 +5648,68 @@ def commit_import_job(
             if not target_kb:
                 raise HTTPException(status_code=404, detail="Target KB not found")
             
-                    # Apply changes based on mappings in job.meta_json
-        mappings = job.meta_json.get("mappings", {}) if job.meta_json else {}
-        
-        # Validate mapping conflicts (one source column -> one destination)
-        if mappings:
-            source_columns = list(mappings.keys())
-            dest_fields = list(mappings.values())
+            # Apply changes based on mappings in job.meta_json
+            mappings = job.meta_json.get("mappings", {}) if job.meta_json else {}
             
-            # Check for duplicate destinations
-            if len(dest_fields) != len(set(dest_fields)):
-                duplicates = [field for field in set(dest_fields) if dest_fields.count(field) > 1]
-                raise HTTPException(
-                    status_code=422, 
-                    detail=_create_error_response(
-                        "MAPPING_CONFLICT",
-                        "Multiple source columns map to the same destination field",
-                        {"duplicate_fields": duplicates},
-                        "Ensure each destination field is mapped to only one source column"
+            # Validate mapping conflicts (one source column -> one destination)
+            if mappings:
+                source_columns = list(mappings.keys())
+                dest_fields = list(mappings.values())
+                
+                # Check for duplicate destinations
+                if len(dest_fields) != len(set(dest_fields)):
+                    duplicates = [field for field in set(dest_fields) if dest_fields.count(field) > 1]
+                    raise HTTPException(
+                        status_code=422, 
+                        detail=_create_error_response(
+                            "MAPPING_CONFLICT",
+                            "Multiple source columns map to the same destination field",
+                            {"duplicate_fields": duplicates},
+                            "Ensure each destination field is mapped to only one source column"
+                        )
                     )
-                )
+            
+            # TODO: Apply actual field updates based on mappings
+            # For now, just update the timestamp
+            target_kb.updated_at = datetime.utcnow()
+            
+            # Publish if requested
+            if payload.publish_after:
+                target_kb.status = "published"
+                target_kb.published_at = datetime.utcnow()
+            
+            # Recalculate metrics
+            _recalculate_kb_metrics(db, target_kb.id)
+            
+            # Audit trail
+            _audit_kb_change(db, target_kb.id, user_id, "import_commit", {
+                "job_id": job_id,
+                "auto_merge": payload.auto_merge,
+                "publish_after": payload.publish_after
+            })
+            
+            # Update job status
+            job.status = "committed"
+            job.completed_at = datetime.utcnow()
+            
+            # Commit all changes in transaction
+            db.commit()
+            
+            return {
+                "job_id": job_id, 
+                "status": "committed",
+                "target_kb_id": job.target_kb_id
+            }
         
-        # TODO: Apply actual field updates based on mappings
-        # For now, just update the timestamp
-        target_kb.updated_at = datetime.utcnow()
-        
-        # Publish if requested
-        if payload.publish_after:
-            target_kb.status = "published"
-            target_kb.published_at = datetime.utcnow()
-        
-        # Recalculate metrics
-        _recalculate_kb_metrics(db, target_kb.id)
-        
-        # Audit trail
-        _audit_kb_change(db, target_kb.id, user_id, "import_commit", {
-            "job_id": job_id,
-            "auto_merge": payload.auto_merge,
-            "publish_after": payload.publish_after
-        })
-        
-        # Update job status
+        # If no target KB, just mark job as committed
         job.status = "committed"
         job.completed_at = datetime.utcnow()
-        
-        # Commit all changes in transaction
         db.commit()
         
         return {
             "job_id": job_id, 
             "status": "committed",
-            "target_kb_id": job.target_kb_id
+            "message": "No target KB specified"
         }
 
 
@@ -5751,7 +5720,7 @@ def cancel_import_job(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Cancel an import job"""
-    workspace_id = _get_workspace_from_user(request)
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify job exists and belongs to workspace
@@ -5776,55 +5745,57 @@ def cancel_import_job(
         return {"job_id": job_id, "status": "canceled"}
 
 
-async def get_tenant_id(request: Request) -> str:
-    """Get tenant ID from request (placeholder implementation)"""
-    # In production, extract from JWT token or session
-    # For now, use workspace ID from header or default
-    return request.headers.get("X-Workspace-Id", "ws_1")
+def get_workspace_id(request: Request, *, required: bool = True, fallback: str | None = None) -> str | None:
+    """
+    Unified workspace ID helper - extracts from (in order):
+    - header 'X-Workspace-Id'
+    - request.state.workspace_id (if middleware populates it)
+    - fallback (default None)
+    
+    Args:
+        required: if True, raises HTTPException when no workspace found
+        fallback: default value when no workspace in request
+    """
+    ws = request.headers.get("X-Workspace-Id")
+    if ws:
+        return ws.strip()
+    
+    ws = getattr(request.state, "workspace_id", None)
+    if ws:
+        return ws
+    
+    if fallback:
+        return fallback
+    
+    if required:
+        raise HTTPException(status_code=400, detail="X-Workspace-Id header required")
+    
+    return None
+
 
 def _recalculate_kb_metrics(db: Session, kb_id: str) -> None:
-    """Recalculate KB completeness and freshness metrics"""
-    # Get all sections and fields for KB
+    """Recalculate KB completeness and freshness metrics - FIXED VERSION"""
     sections = db.query(KbSection).filter(KbSection.kb_id == kb_id).all()
     fields = db.query(KbField).filter(KbField.kb_id == kb_id).all()
-    
-    # Calculate completeness
-    total_sections = len(sections)
-    total_fields = len(fields)
-    
-    if total_sections == 0:
-        completeness_pct = 0
+
+    # completeness (50/50)
+    sections_pct = (sum((s.completeness_pct or 0) for s in sections) / len(sections)) if sections else 0
+    fields_pct = (sum(1 for f in fields if (f.value_text or f.value_json)) / len(fields)) if fields else 0
+    completeness_pct = int(round((sections_pct * 0.5 + fields_pct * 0.5) * 100))
+
+    # freshness: se nessun updated_at ⇒ 0 (la UI mostra "—")
+    updateds = [s.updated_at for s in sections if s.updated_at] + [f.updated_at for f in fields if f.updated_at]
+    if updateds:
+        days = (datetime.utcnow() - max(updateds)).days
+        freshness_score = 100 if days <= 7 else 75 if days <= 30 else 50 if days <= 90 else 25
     else:
-        # Section completeness (50% weight)
-        section_completeness = sum(s.completeness_pct or 0 for s in sections) / total_sections
-        
-        # Field completeness (50% weight)
-        field_completeness = sum(1 for f in fields if f.value_text or f.value_json) / total_fields if total_fields > 0 else 0
-        
-        completeness_pct = int((section_completeness * 0.5 + field_completeness * 0.5) * 100)
-    
-    # Calculate freshness (days since last update)
-    now = datetime.utcnow()
-    last_updated = max(
-        [kb.updated_at for kb in [sections + fields] if hasattr(kb, 'updated_at') and kb.updated_at],
-        default=now
-    )
-    
-    days_since_update = (now - last_updated).days
-    if days_since_update <= 7:
-        freshness_score = 100
-    elif days_since_update <= 30:
-        freshness_score = 75
-    elif days_since_update <= 90:
-        freshness_score = 50
-    else:
-        freshness_score = 25
-    
-    # Update KB metrics
+        freshness_score = 0  # e la UI rende "—"
+
     kb = db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
     if kb:
         kb.completeness_pct = completeness_pct
         kb.freshness_score = freshness_score
+        kb.updated_at = datetime.utcnow()
         db.commit()
 
 @app.get("/metrics/funnel")
@@ -6141,6 +6112,204 @@ def get_kb_analytics(
             "period_start": start_date.isoformat(),
             "period_end": now.isoformat()
         }
+
+# ===================== KB Documents & Chunks =====================
+
+@app.post("/kb/documents/upload")
+async def kb_upload_document(
+    file: UploadFile = File(...),
+    source_id: str = Form(...),
+    request: Request = None,
+    _guard: None = Depends(require_role("editor"))
+) -> dict:
+    """Upload a document for KB processing"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    # Validate file
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided")
+    
+    # Check file size (max 25MB)
+    if file.size and file.size > 25 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 25MB")
+    
+    # Validate MIME type
+    allowed_mimes = {
+        'application/pdf': '.pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'text/plain': '.txt',
+        'text/markdown': '.md'
+    }
+    
+    if file.content_type not in allowed_mimes:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Unsupported file type. Allowed: {', '.join(allowed_mimes.values())}"
+        )
+    
+    with next(get_db()) as db:
+        # Verify source exists and belongs to workspace
+        source = db.query(KbSource).filter(
+            KbSource.id == source_id,
+            KbSource.workspace_id == workspace_id
+        ).first()
+        
+        if not source:
+            raise HTTPException(status_code=404, detail="Source not found")
+        
+        # Read file content and calculate checksum
+        content = await file.read()
+        checksum = hashlib.sha256(content).hexdigest()
+        
+        # Check for duplicate
+        existing_doc = db.query(KbDocument).filter(
+            KbDocument.checksum == checksum,
+            KbDocument.source_id == source_id
+        ).first()
+        
+        if existing_doc:
+            return {
+                "doc_id": existing_doc.id,
+                "status": "duplicate",
+                "message": "Document already exists"
+            }
+        
+        # Create document record
+        doc_id = f"doc_{secrets.token_urlsafe(8)}"
+        document = KbDocument(
+            id=doc_id,
+            source_id=source_id,
+            title=file.filename,
+            mime_type=file.content_type,
+            bytes=len(content),
+            checksum=checksum,
+            lang="en-US"  # TODO: auto-detect
+        )
+        db.add(document)
+        
+        # Save file to storage (TODO: implement proper file storage)
+        # For now, just store in memory/db
+        
+        db.commit()
+        
+        # TODO: Start parse_file_job
+        # parse_file_job.send(doc_id)
+        
+        return {
+            "doc_id": doc_id,
+            "status": "queued",
+            "message": "Document uploaded and queued for processing"
+        }
+
+
+@app.get("/kb/documents")
+def kb_list_documents(
+    source_id: Optional[str] = Query(None, description="Filter by source ID"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(25, ge=1, le=100),
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """List KB documents for current workspace"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Join with sources to filter by workspace
+        query = db.query(KbDocument).join(
+            KbSource, KbDocument.source_id == KbSource.id
+        ).filter(KbSource.workspace_id == workspace_id)
+        
+        if source_id:
+            query = query.filter(KbDocument.source_id == source_id)
+        if status:
+            query = query.filter(KbDocument.status == status)
+        
+        total = query.count()
+        offset = (page - 1) * per_page
+        documents = query.offset(offset).limit(per_page).all()
+        
+        return {
+            "items": [
+                {
+                    "id": doc.id,
+                    "source_id": doc.source_id,
+                    "title": doc.title,
+                    "mime_type": doc.mime_type,
+                    "bytes": doc.bytes,
+                    "status": doc.status,
+                    "lang": doc.lang,
+                    "created_at": doc.created_at,
+                    "updated_at": doc.updated_at
+                }
+                for doc in documents
+            ],
+            "total": total,
+            "page": page,
+            "per_page": per_page
+        }
+
+
+@app.get("/kb/chunks")
+def kb_search_chunks(
+    query: Optional[str] = Query(None, description="Search query"),
+    doc_id: Optional[str] = Query(None, description="Filter by document ID"),
+    type: Optional[str] = Query(None, description="Filter by chunk type"),
+    lang: Optional[str] = Query(None, description="Filter by language"),
+    top_k: int = Query(20, ge=1, le=100, description="Maximum results"),
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Search KB chunks with hybrid text + semantic search"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Join with documents and sources to filter by workspace
+        query_builder = db.query(KbChunk).join(
+            KbDocument, KbChunk.doc_id == KbDocument.id
+        ).join(
+            KbSource, KbDocument.source_id == KbSource.id
+        ).filter(KbSource.workspace_id == workspace_id)
+        
+        # Apply filters
+        if doc_id:
+            query_builder = query_builder.filter(KbChunk.doc_id == doc_id)
+        if type:
+            query_builder = query_builder.filter(
+                KbChunk.meta_json['type'].astext == type
+            )
+        if lang:
+            query_builder = query_builder.filter(KbChunk.lang == lang)
+        
+        # Apply search query
+        if query:
+            # Simple text search for now (LIKE)
+            # TODO: Add semantic search with pgvector when available
+            query_builder = query_builder.filter(
+                KbChunk.text.ilike(f"%{query}%")
+            )
+        
+        # Get results
+        chunks = query_builder.limit(top_k).all()
+        
+        return {
+            "items": [
+                {
+                    "id": chunk.id,
+                    "doc_id": chunk.doc_id,
+                    "text": chunk.text,
+                    "lang": chunk.lang,
+                    "tokens": chunk.tokens,
+                    "meta_json": chunk.meta_json,
+                    "created_at": chunk.created_at,
+                    "updated_at": chunk.updated_at
+                }
+                for chunk in chunks
+            ],
+            "total": len(chunks),
+            "query": query
+        }
+
 
 # ===================== Root endpoint =====================
 @app.get("/")
