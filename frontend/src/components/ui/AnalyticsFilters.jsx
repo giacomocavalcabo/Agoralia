@@ -16,26 +16,26 @@ export default function AnalyticsFilters({
   const quickFilters = [
     {
       id: 'working_hours',
-      label: t("pages.analytics.filters.working_hours"),
-      description: t("pages.analytics.filters.working_hours_desc"),
+      label: t("analytics.filters.working_hours"),
+      description: t("analytics.filters.working_hours_desc"),
       icon: null
     },
     {
       id: 'exclude_weekends',
-      label: t("pages.analytics.filters.exclude_weekends"),
-      description: t("pages.analytics.filters.exclude_weekends_desc"),
+      label: t("analytics.filters.exclude_weekends"),
+      description: t("analytics.filters.exclude_weekends_desc"),
       icon: null
     },
     {
       id: 'mobile_only',
-      label: t("pages.analytics.filters.mobile_only"),
-      description: t("pages.analytics.filters.mobile_only_desc"),
+      label: t("analytics.filters.mobile_only"),
+      description: t("analytics.filters.mobile_only_desc"),
       icon: null
     },
     {
       id: 'high_volume',
-      label: t("pages.analytics.filters.high_volume"),
-      description: t("pages.analytics.filters.high_volume_desc"),
+      label: t("analytics.filters.high_volume"),
+      description: t("analytics.filters.high_volume_desc"),
       icon: null
     }
   ];
@@ -80,10 +80,10 @@ export default function AnalyticsFilters({
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-3">
             <h4 className="text-sm font-medium text-foreground">
-              {t("pages.analytics.filters.quick_filters")}
+              {t("analytics.filters.quick_filters")}
             </h4>
             <span className="text-xs text-muted-foreground">
-              {t("pages.analytics.filters.click_to_apply")}
+              {t("analytics.filters.click_to_apply")}
             </span>
           </div>
           
@@ -108,13 +108,13 @@ export default function AnalyticsFilters({
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <h4 className="text-sm font-medium text-foreground">
-              {t("pages.analytics.filters.active_filters")}
+              {t("analytics.filters.active_filters")}
             </h4>
             <button
               onClick={() => onFiltersChange({})}
               className="text-xs text-muted-foreground hover:text-foreground underline"
             >
-              {t("pages.analytics.filters.clear_all")}
+              {t("analytics.filters.clear_all")}
             </button>
           </div>
           
@@ -147,8 +147,8 @@ export default function AnalyticsFilters({
           className="text-sm text-muted-foreground hover:text-foreground underline"
         >
           {showAdvanced 
-            ? t("pages.analytics.filters.hide_advanced")
-            : t("pages.analytics.filters.show_advanced")
+            ? t("analytics.filters.hide_advanced")
+            : t("analytics.filters.show_advanced")
           }
         </button>
       </div>
@@ -160,19 +160,19 @@ export default function AnalyticsFilters({
             filters={filters}
             onFiltersChange={onFiltersChange}
             schema={{
-              campaign_id: { type: 'string', label: t("pages.analytics.filters.campaign") },
-              agent_id: { type: 'string', label: t("pages.analytics.filters.agent") },
-              country: { type: 'string', label: t("pages.analytics.filters.country") },
-              lang: { type: 'string', label: t("pages.analytics.filters.language") },
-              min_calls: { type: 'number', label: t("pages.analytics.filters.min_calls") },
-              max_calls: { type: 'number', label: t("pages.analytics.filters.max_calls") },
+              campaign_id: { type: 'string', label: t("analytics.filters.campaign") },
+              agent_id: { type: 'string', label: t("analytics.filters.agent") },
+              country: { type: 'string', label: t("analytics.filters.country") },
+              lang: { type: 'string', label: t("analytics.filters.language") },
+              min_calls: { type: 'number', label: t("analytics.filters.min_calls") },
+              max_calls: { type: 'number', label: t("analytics.filters.max_calls") },
               phone_type: { 
                 type: 'select', 
-                label: t("pages.analytics.filters.phone_type"),
+                label: t("analytics.filters.phone_type"),
                 options: [
-                  { value: 'mobile', label: t("pages.analytics.filters.mobile") },
-                  { value: 'landline', label: t("pages.analytics.filters.landline") },
-                  { value: 'all', label: t("pages.analytics.filters.all_types") }
+                  { value: 'mobile', label: t("analytics.filters.mobile") },
+                  { value: 'landline', label: t("analytics.filters.landline") },
+                  { value: 'all', label: t("analytics.filters.all_types") }
                 ]
               }
             }}

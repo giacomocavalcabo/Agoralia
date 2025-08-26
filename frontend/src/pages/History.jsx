@@ -69,17 +69,17 @@ export default function History() {
           aria-label={t("pages.history.filters.next_step")}
           className="select select-bordered"
         >
-          <option value="">{t("pages.history.filters.all_steps")}</option>
-          <option value="callback">{t("pages.history.steps.callback")}</option>
-          <option value="email">{t("pages.history.steps.email")}</option>
-          <option value="meeting">{t("pages.history.steps.meeting")}</option>
+          <option value="">{t("history.filters.all_steps")}</option>
+          <option value="callback">{t("history.steps.callback")}</option>
+          <option value="email">{t("history.steps.email")}</option>
+          <option value="meeting">{t("history.steps.meeting")}</option>
         </select>
 
         <input 
           type="number" 
           min="0" 
           max="100" 
-          placeholder={t("pages.history.filters.score_min")}
+          placeholder={t("history.filters.score_min")}
           value={filters.score_min}
           onChange={(e)=>{ setPage(1); setFilters(f=>({...f, score_min: e.target.value })); }}
           className="input input-bordered"
@@ -88,7 +88,7 @@ export default function History() {
           type="number" 
           min="0" 
           max="100" 
-          placeholder={t("pages.history.filters.score_max")}
+          placeholder={t("history.filters.score_max")}
           value={filters.score_max}
           onChange={(e)=>{ setPage(1); setFilters(f=>({...f, score_max: e.target.value })); }}
           className="input input-bordered"
@@ -96,9 +96,9 @@ export default function History() {
       </div>
 
       <div role="region" aria-live="polite" className="card p-4">
-        {isLoading && <div>{t("pages.history.loading")}</div>}
-        {isError && <div className="text-error">{t("pages.history.error")}</div>}
-        {!isLoading && items.length === 0 && <div>{t("pages.history.empty")}</div>}
+        {isLoading && <div>{t("history.loading")}</div>}
+        {isError && <div className="text-error">{t("history.error")}</div>}
+                  {!isLoading && items.length === 0 && <div>{t("history.empty")}</div>}
 
         {items.length > 0 && (
           <div className="overflow-x-auto">

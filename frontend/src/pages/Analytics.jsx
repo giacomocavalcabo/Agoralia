@@ -44,19 +44,19 @@ export default function Analytics() {
     <div className="p-6 space-y-4">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{t("pages.analytics.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("pages.analytics.description")}</p>
+          <h1 className="text-2xl font-semibold">{t("analytics.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("analytics.description")}</p>
         </div>
         <div className="flex items-center gap-2">
           <select
-            aria-label={t("pages.analytics.filters.range")}
+            aria-label={t("analytics.filters.range")}
             className="border rounded px-3 py-2 text-sm"
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
           >
-            <option value={7}>{t("pages.analytics.filters.last_7d")}</option>
-            <option value={30}>{t("pages.analytics.filters.last_30d")}</option>
-            <option value={90}>{t("pages.analytics.filters.last_90d")}</option>
+            <option value={7}>{t("analytics.filters.last_7d")}</option>
+            <option value={30}>{t("analytics.filters.last_30d")}</option>
+            <option value={90}>{t("analytics.filters.last_90d")}</option>
           </select>
         </div>
       </header>
@@ -78,8 +78,8 @@ export default function Analytics() {
 
       {isError && (
         <div className="rounded border p-3 bg-red-50 text-red-700">
-          <strong>{t("pages.analytics.error.title")}.</strong>{" "}
-          {t("pages.analytics.error.description")}
+          <strong>{t("analytics.error.title")}.</strong>{" "}
+          {t("analytics.error.description")}
         </div>
       )}
 
@@ -92,16 +92,16 @@ export default function Analytics() {
       ) : !data ? (
         <div className="rounded-lg border p-6 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
-            {t("pages.analytics.empty.title")}
+            {t("analytics.empty.title")}
           </div>
           <div className="text-sm text-muted-foreground mb-4">
-            {t("pages.analytics.empty.description")}
+            {t("analytics.empty.description")}
           </div>
           <button 
             onClick={() => setDays(30)} 
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
           >
-            {t("pages.analytics.empty.cta")}
+            {t("analytics.empty.cta")}
           </button>
         </div>
       ) : (
@@ -129,26 +129,26 @@ export default function Analytics() {
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Funnel Chart */}
             <ChartCard 
-              title={t("pages.analytics.charts.funnel")}
-              subtitle={t("pages.analytics.charts.funnel_desc")}
+              title={t("analytics.charts.funnel")}
+              subtitle={t("analytics.charts.funnel_desc")}
               showInfo={true}
-              infoContent={t("pages.analytics.charts.funnel_info")}
+              infoContent={t("analytics.charts.funnel_info")}
             >
               <FunnelChart data={data.funnel} />
             </ChartCard>
 
             {/* Time Series Chart */}
             <ChartCard 
-              title={t("pages.analytics.charts.timeseries")}
-              subtitle={t("pages.analytics.charts.timeseries_desc")}
+              title={t("analytics.charts.timeseries")}
+              subtitle={t("analytics.charts.timeseries_desc")}
             >
               <TimeSeriesChart data={data.timeseries} showArea={true} />
             </ChartCard>
 
             {/* Top Agents */}
             <ChartCard 
-              title={t("pages.analytics.charts.agents_top")}
-              subtitle={t("pages.analytics.charts.agents_top_desc")}
+              title={t("analytics.charts.agents_top")}
+              subtitle={t("analytics.charts.agents_top_desc")}
             >
               <TopList 
                 data={data.agents_top || []}
@@ -161,10 +161,10 @@ export default function Analytics() {
 
             {/* Geographic Distribution */}
             <ChartCard 
-              title={t("pages.analytics.charts.geo")}
-              subtitle={t("pages.analytics.charts.geo_desc")}
+              title={t("analytics.charts.geo")}
+              subtitle={t("analytics.charts.geo_desc")}
               showInfo={true}
-              infoContent={t("pages.analytics.charts.geo_info")}
+              infoContent={t("analytics.charts.geo_info")}
             >
               <TopList 
                 data={data.geo || []}
@@ -180,28 +180,28 @@ export default function Analytics() {
           <section className="space-y-6">
             {/* Heatmap */}
             <ChartCard 
-              title={t("pages.analytics.charts.heatmap")}
-              subtitle={t("pages.analytics.charts.heatmap_desc")}
+              title={t("analytics.charts.heatmap")}
+              subtitle={t("analytics.charts.heatmap_desc")}
               showInfo={true}
-              infoContent={t("pages.analytics.charts.heatmap_info")}
+              infoContent={t("analytics.charts.heatmap_info")}
             >
               <HeatmapChart data={data.heatmap} />
             </ChartCard>
 
             {/* Outcomes Breakdown */}
             <ChartCard 
-              title={t("pages.analytics.charts.outcomes")}
-              subtitle={t("pages.analytics.charts.outcomes_desc")}
+              title={t("analytics.charts.outcomes")}
+              subtitle={t("analytics.charts.outcomes_desc")}
             >
               <OutcomesChart data={data.outcomes} />
             </ChartCard>
 
             {/* QA Language Metrics */}
             <ChartCard 
-              title={t("pages.analytics.charts.qa_language")}
-              subtitle={t("pages.analytics.charts.qa_language_desc")}
+              title={t("analytics.charts.qa_language")}
+              subtitle={t("analytics.charts.qa_language_desc")}
               showInfo={true}
-              infoContent={t("pages.analytics.charts.qa_language_info")}
+              infoContent={t("analytics.charts.qa_language_info")}
             >
               <QaLanguageChart data={data.qa_language} />
             </ChartCard>
