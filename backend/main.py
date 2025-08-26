@@ -25,7 +25,7 @@ from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
     KbSectionUpdate, KbFieldCreate, KbFieldUpdate, ImportMappingRequest,
-    ImportReviewRequest, KbUsageTrackRequest
+    ImportReviewRequest, KbUsageTrackRequest, KbCrawlStart, KbCrawlStartResponse, KbCrawlStatus
 )
 from backend import schemas
 
@@ -6306,34 +6306,7 @@ def kb_source_refresh(
 
 
 # ===================== Crawl & Web Scraping Schemas =====================
-
-class KbCrawlStart(BaseModel):
-    seed_url: AnyHttpUrl
-    depth: int = Field(1, ge=0, le=3)
-    max_pages: int = Field(15, ge=1, le=200)
-    include: Optional[List[str]] = None  # regex allow list
-    exclude: Optional[List[str]] = None  # regex block list
-    same_domain_only: bool = True
-    target_kb_id: Optional[str] = None
-    user_agent: Optional[str] = "ColdAI-KB-Crawler/1.0 (+https://coldai.example)"
-
-
-class KbCrawlStartResponse(BaseModel):
-    job_id: str
-    source_id: str
-    status: str
-
-
-class KbCrawlStatus(BaseModel):
-    job_id: str
-    source_id: str
-    status: str
-    pages_enqueued: int
-    pages_processed: int
-    pages_failed: int
-    last_error: Optional[str] = None
-    started_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+# Models are now imported from backend.schemas
 
 
 # ===================== Crawl Helper Functions =====================

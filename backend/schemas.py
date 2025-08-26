@@ -622,3 +622,33 @@ class KbAnalyticsResponse(BaseModel):
     kb_stats: Dict[str, Dict[str, Any]]
     period_start: str
     period_end: str
+
+
+# Crawl schemas
+class KbCrawlStart(BaseModel):
+    seed_url: AnyHttpUrl = Field(..., description="Starting URL for crawling")
+    depth: int = Field(1, ge=0, le=3, description="Crawl depth (0-3)")
+    max_pages: int = Field(15, ge=1, le=200, description="Maximum pages to crawl")
+    include: Optional[List[str]] = Field(None, description="Regex patterns to include")
+    exclude: Optional[List[str]] = Field(None, description="Regex patterns to exclude")
+    same_domain_only: bool = Field(True, description="Only crawl same domain")
+    target_kb_id: Optional[str] = Field(None, description="Target Knowledge Base ID")
+    user_agent: Optional[str] = Field("ColdAI-KB-Crawler/1.0 (+https://coldai.example)", description="Custom user agent")
+
+
+class KbCrawlStartResponse(BaseModel):
+    job_id: str = Field(..., description="Crawl job ID")
+    source_id: str = Field(..., description="Source ID")
+    status: str = Field("pending", description="Job status")
+
+
+class KbCrawlStatus(BaseModel):
+    job_id: str = Field(..., description="Crawl job ID")
+    source_id: str = Field(..., description="Source ID")
+    status: str = Field(..., description="Job status")
+    pages_enqueued: int = Field(0, description="Pages enqueued for processing")
+    pages_processed: int = Field(0, description="Pages successfully processed")
+    pages_failed: int = Field(0, description="Pages that failed processing")
+    last_error: Optional[str] = Field(None, description="Last error message")
+    started_at: Optional[datetime] = Field(None, description="Job start time")
+    updated_at: Optional[datetime] = Field(None, description="Last update time")
