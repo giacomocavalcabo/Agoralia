@@ -29,6 +29,27 @@
   "calendar": {
     "title": "Calendar",
     "range": "{{from}} → {{to}}",
+    "navigation": {
+      "previous": "Previous",
+      "today": "Today",
+      "next": "Next"
+    },
+    "view": {
+      "week": "Week",
+      "month": "Month"
+    },
+    "time": {
+      "now": "Time"
+    },
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
     "legend": {
       "scheduled": "Scheduled",
       "blocked": "Blocked",
@@ -49,6 +70,14 @@
     "error": {
       "title": "Calendar unavailable",
       "description": "We couldn't load events for the selected period."
+    },
+    "actions": {
+      "cancel_event": "Cancel Event",
+      "reschedule": "Reschedule"
+    },
+    "events": {
+      "title": "Events for {{date}}",
+      "more": "+{{count}} more"
     },
     "toasts": {
       "created": "Call scheduled",

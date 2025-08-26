@@ -544,18 +544,38 @@ class KbSource(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class KbDocument(Base):
+    __tablename__ = "kb_documents"
+    id = Column(String, primary_key=True)
+    source_id = Column(String, ForeignKey("kb_sources.id"), nullable=False)
+    title = Column(String)
+    mime_type = Column(String)  # application/pdf, text/plain, etc.
+    bytes = Column(BigInteger)  # Dimensione file
+    checksum = Column(String)  # SHA256 per dedup
+    version = Column(Integer, default=1)
+    lang = Column(String, default="en-US")
+    parsed_text = Column(Text)  # Testo estratto
+    outline_json = Column(JSON)  # Struttura (titoli, sezioni)
+    status = Column(String, default="pending")  # pending, processing, ready, error
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
 class KbChunk(Base):
     __tablename__ = "kb_chunks"
     id = Column(String, primary_key=True)
-    kb_id = Column(String, ForeignKey("knowledge_bases.id"))
+    doc_id = Column(String, ForeignKey("kb_documents.id"), nullable=False)  # Link diretto al documento
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"))  # Mantengo per compatibilità
     section_id = Column(String, ForeignKey("kb_sections.id"))
     source_id = Column(String, ForeignKey("kb_sources.id"))
-    sha256 = Column(String, nullable=False)
+    idx = Column(Integer, nullable=False)  # Ordine nel documento
     text = Column(Text, nullable=False)
     lang = Column(String, default="en-US")
     tokens = Column(Integer, default=0)
+    meta_json = Column(JSON)  # type, section, url, pii_score, quality_score
     embedding = Column(JSON)  # pgvector will be added via migration
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 class KbAssignment(Base):

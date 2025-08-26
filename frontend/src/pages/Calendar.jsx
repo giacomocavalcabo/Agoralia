@@ -102,13 +102,13 @@ export default function Calendar(){
     <div className="grid gap-3">
       <div className="flex items-center gap-2">
         <div className="flex gap-1.5">
-          <button onClick={prev} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Precedente</button>
-          <button onClick={today} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Oggi</button>
-          <button onClick={next} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Successivo</button>
+                  <button onClick={prev} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.navigation.previous')}</button>
+        <button onClick={today} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.navigation.today')}</button>
+        <button onClick={next} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.navigation.next')}</button>
         </div>
         <div className="ml-auto flex gap-1.5">
-          <button aria-pressed={view==='week'} onClick={()=> setView('week')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='week'?'bg-bg-app':''}`}>Settimana</button>
-          <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>Mese</button>
+          <button aria-pressed={view==='week'} onClick={()=> setView('week')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='week'?'bg-bg-app':''}`}>{t('calendar.view.week')}</button>
+          <button aria-pressed={view==='month'} onClick={()=> setView('month')} className={`rounded-lg border border-line px-2.5 py-1.5 ${view==='month'?'bg-bg-app':''}`}>{t('calendar.view.month')}</button>
         </div>
       </div>
       <div className="kpi-title">{t('calendar.range', { from: fromStr, to: toStr })}</div>
@@ -150,7 +150,7 @@ export default function Calendar(){
             }}
             style={{ display:'grid', gridTemplateColumns:'64px repeat(7, 1fr)', borderTop:'1px solid var(--line)', borderLeft:'1px solid var(--line)' }}
           >
-            <div className="bg-blue-50/30 text-blue-700 font-semibold" style={{ padding:8, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>Ora</div>
+            <div className="bg-blue-50/30 text-blue-700 font-semibold" style={{ padding:8, borderRight:'1px solid var(--line)', borderBottom:'1px solid var(--line)' }}>{t('calendar.time.now')}</div>
             {Array.from({ length:7 }).map((_,d)=>{
               const day = new Date(range.start); day.setDate(range.start.getDate()+d)
               const isToday = day.toDateString() === new Date().toDateString()
@@ -165,7 +165,7 @@ export default function Calendar(){
                     textAlign: 'center'
                   }}
                 >
-                  {day.toLocaleDateString('it-IT', { 
+                  {day.toLocaleDateString(i18n.language, { 
                     weekday: 'short', 
                     day: 'numeric', 
                     month: 'short' 
@@ -252,9 +252,9 @@ export default function Calendar(){
         ) : (
           <div className="grid grid-cols-7 gap-1">
             {/* Header row with day names */}
-            {['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'].map(day => (
+            {['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => (
               <div key={day} className="text-center text-sm font-semibold text-blue-700 p-2 border-b border-line bg-blue-50/30">
-                {day}
+                {t(`calendar.days.${day}`)}
               </div>
             ))}
             
@@ -303,7 +303,7 @@ export default function Calendar(){
                     <div className="space-y-1 max-h-20 overflow-hidden">
                       {dayEvents.slice(0, 3).map((event, eventIndex) => {
                         const eventDate = new Date(event.at)
-                        const timeStr = eventDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+                        const timeStr = eventDate.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })
                         const getEventColor = (kind) => {
                           if (kind === 'scheduled') return 'bg-success/20 text-success border-success/30'
                           if (kind === 'blocked') return 'bg-ink-600/20 text-ink-600 border-ink-600/30'
@@ -338,14 +338,14 @@ export default function Calendar(){
                           onClick={() => {
                             // Show all events for this day in a modal/drawer
                             setSelected({ 
-                              title: `Eventi del ${date.toLocaleDateString('it-IT')}`, 
+                              title: t('calendar.events.title', { date: date.toLocaleDateString(i18n.language) }), 
                               events: dayEvents,
                               date: date 
                             })
                             setDrawerOpen(true)
                           }}
                         >
-                          +{dayEvents.length - 3} altri
+                          {t('calendar.events.more', { count: dayEvents.length - 3 })}
                         </button>
                       )}
                     </div>
@@ -396,7 +396,7 @@ export default function Calendar(){
               // Multiple events for a day
               <div>
                 <div className="text-sm text-ink-600 mb-3">
-                  {selected.date?.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  {selected.date?.toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
                 <div className="space-y-2">
                   {selected.events.map((event, index) => (
@@ -409,7 +409,7 @@ export default function Calendar(){
                         }`}></span>
                         <span className="font-semibold text-ink-900">{event.title || event.kind}</span>
                         <span className="text-sm text-ink-600">
-                          {new Date(event.at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(event.at).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                       {event.reason && <div className="text-sm text-ink-600">{event.reason}</div>}
@@ -435,8 +435,8 @@ export default function Calendar(){
                       await apiFetch(`/schedule/${selected.id}`, { method:'PATCH', body:{ cancel: true } })
                       toast(t('calendar.toasts.created')); setDrawerOpen(false); refetch()
                     } catch(err){ toast(String(err?.message || err)) }
-                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Annulla Evento</button>
-                  <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">Riprogramma</button>
+                  }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.actions.cancel_event')}</button>
+                  <button onClick={()=>{ setQuick({ ...quick, at: selected.at }); setQuickOpen(true); }} className="rounded-lg border border-line bg-bg-app px-2.5 py-1.5">{t('calendar.actions.reschedule')}</button>
                 </div>
               </>
             )}

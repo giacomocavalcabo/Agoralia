@@ -29,6 +29,27 @@
   "calendar": {
     "title": "Calendario",
     "range": "{{from}} → {{to}}",
+    "navigation": {
+      "previous": "Precedente",
+      "today": "Oggi",
+      "next": "Successivo"
+    },
+    "view": {
+      "week": "Settimana",
+      "month": "Mese"
+    },
+    "time": {
+      "now": "Ora"
+    },
+    "days": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Gio",
+      "fri": "Ven",
+      "sat": "Sab"
+    },
     "legend": {
       "scheduled": "Programmato",
       "blocked": "Bloccato",
@@ -49,6 +70,14 @@
     "error": {
       "title": "Calendario non disponibile",
       "description": "Non siamo riusciti a caricare gli eventi per il periodo selezionato."
+    },
+    "actions": {
+      "cancel_event": "Annulla Evento",
+      "reschedule": "Riprogramma"
+    },
+    "events": {
+      "title": "Eventi del {{date}}",
+      "more": "+{{count}} altri"
     },
     "toasts": {
       "created": "Chiamata programmata",

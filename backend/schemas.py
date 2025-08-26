@@ -73,6 +73,25 @@ class SourceKind(str, Enum):
     CSV = "csv"
     FILE = "file"
     URL = "url"
+    MANUAL = "manual"
+    UPLOAD = "upload"
+
+
+class DocumentStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    READY = "ready"
+    ERROR = "error"
+
+
+class ChunkType(str, Enum):
+    COMPANY = "company"
+    PRODUCT = "product"
+    PRICING = "pricing"
+    CONTACT = "contact"
+    POLICY = "policy"
+    FAQ = "faq"
+    GENERAL = "general"
 
 
 class ImportJobStatus(str, Enum):
@@ -95,6 +114,109 @@ class KbSectionBase(BaseModel):
     order_index: int = Field(0, description="Order for display")
     content_md: Optional[str] = Field(None, description="Markdown content")
     content_json: Optional[Dict[str, Any]] = Field(None, description="Structured content")
+
+
+# ===================== Document & Chunk Schemas =====================
+
+class KbDocumentBase(BaseModel):
+    """Base schema for KB documents"""
+    title: Optional[str] = Field(None, description="Document title")
+    mime_type: str = Field(..., description="MIME type of the document")
+    bytes: int = Field(..., description="File size in bytes")
+    checksum: str = Field(..., description="SHA256 checksum")
+    lang: str = Field("en-US", description="Document language (BCP-47)")
+    status: DocumentStatus = Field(DocumentStatus.PENDING, description="Processing status")
+
+
+class KbDocumentCreate(KbDocumentBase):
+    """Schema for creating a new KB document"""
+    source_id: str = Field(..., description="Source ID that this document belongs to")
+
+
+class KbDocumentResponse(KbDocumentBase):
+    """Schema for KB document responses"""
+    id: str
+    source_id: str
+    version: int
+    parsed_text: Optional[str] = None
+    outline_json: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class KbChunkBase(BaseModel):
+    """Base schema for KB chunks"""
+    text: str = Field(..., description="Chunk text content")
+    lang: str = Field("en-US", description="Chunk language")
+    tokens: int = Field(0, description="Number of tokens")
+    meta_json: Optional[Dict[str, Any]] = Field(None, description="Metadata (type, section, etc.)")
+
+
+class KbChunkCreate(KbChunkBase):
+    """Schema for creating a new KB chunk"""
+    doc_id: str = Field(..., description="Document ID this chunk belongs to")
+    idx: int = Field(..., description="Chunk index in document")
+
+
+class KbChunkResponse(KbChunkBase):
+    """Schema for KB chunk responses"""
+    id: str
+    doc_id: str
+    kb_id: Optional[str] = None
+    section_id: Optional[str] = None
+    source_id: Optional[str] = None
+    embedding: Optional[List[float]] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class KbChunkSearch(BaseModel):
+    """Schema for chunk search requests"""
+    query: Optional[str] = Field(None, description="Search query")
+    doc_id: Optional[str] = Field(None, description="Filter by document ID")
+    type: Optional[ChunkType] = Field(None, description="Filter by chunk type")
+    lang: Optional[str] = Field(None, description="Filter by language")
+    top_k: int = Field(20, description="Maximum number of results")
+
+
+class KbChunkSearchResponse(BaseModel):
+    """Schema for chunk search responses"""
+    items: List[KbChunkResponse]
+    total: int
+    query: Optional[str] = None
+
+
+# ===================== Source Management Schemas =====================
+
+class KbSourceCreate(BaseModel):
+    """Schema for creating a new KB source"""
+    type: SourceKind = Field(..., description="Source type")
+    label: str = Field(..., description="Human-readable label")
+    url: Optional[str] = Field(None, description="URL for web sources")
+    meta_json: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class KbSourceResponse(BaseModel):
+    """Schema for KB source responses"""
+    id: str
+    workspace_id: str
+    type: SourceKind
+    label: str
+    url: Optional[str] = None
+    filename: Optional[str] = None
+    sha256: str
+    meta_json: Optional[Dict[str, Any]] = None
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 
 class KbFieldBase(BaseModel):
