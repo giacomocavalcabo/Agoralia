@@ -1158,7 +1158,27 @@
       "campaign": "Campagna",
       "agent": "Agente",
       "country": "Paese",
-      "language": "Lingua"
+      "language": "Lingua",
+      "quick_filters": "Filtri rapidi",
+      "click_to_apply": "Clicca per applicare",
+      "working_hours": "Orari lavorativi",
+      "working_hours_desc": "Filtra per orari business (Lun-Ven, 9-18)",
+      "exclude_weekends": "Escludi weekend",
+      "exclude_weekends_desc": "Mostra solo dati giorni feriali",
+      "mobile_only": "Solo mobile",
+      "mobile_only_desc": "Filtra per numeri di telefono mobile",
+      "high_volume": "Alto volume",
+      "high_volume_desc": "Mostra solo campagne/agenti ad alto volume",
+      "active_filters": "Filtri attivi",
+      "clear_all": "Cancella tutto",
+      "show_advanced": "Mostra filtri avanzati",
+      "hide_advanced": "Nascondi filtri avanzati",
+      "min_calls": "Min chiamate",
+      "max_calls": "Max chiamate",
+      "phone_type": "Tipo telefono",
+      "mobile": "Mobile",
+      "landline": "Fisso",
+      "all_types": "Tutti i tipi"
     },
     "kpi": {
       "reached": "Raggiunti",
@@ -1166,11 +1186,28 @@
       "qualified": "Qualificati",
       "booked": "Appuntamenti"
     },
+    "metrics": {
+      "qualified_rate": "Tasso qualificazione",
+      "connected_rate": "Tasso connessione",
+      "avg_duration": "Durata media"
+    },
     "charts": {
       "funnel": "Funnel di conversione",
+      "funnel_desc": "Progressione lead attraverso la pipeline di vendita",
+      "funnel_info": "Mostra i tassi di conversione tra ogni fase del funnel",
       "agents_top": "Agenti top",
+      "agents_top_desc": "Migliori agenti per volume chiamate e tasso qualificazione",
       "geo": "Per paese",
-      "cost": "Costi nel tempo"
+      "geo_desc": "Distribuzione chiamate e performance per regione geografica",
+      "geo_info": "Basato su localizzazione chiamante e targeting campagna",
+      "cost": "Costi nel tempo",
+      "timeseries": "Performance nel tempo",
+      "timeseries_desc": "Trend giornalieri volume chiamate e risultati",
+      "heatmap": "Heatmap volume chiamate",
+      "heatmap_desc": "Attività chiamate per giorno settimana e ora",
+      "heatmap_info": "Colori più scuri indicano volumi chiamate più alti. Orari lavorativi (Lun-Ven, 9-18) tipicamente mostrano attività più alta.",
+      "outcomes": "Risultati chiamate",
+      "outcomes_desc": "Breakdown risultati chiamate e metriche performance"
     },
     "empty": {
       "title": "Nessun dato disponibile",

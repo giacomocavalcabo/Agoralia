@@ -795,6 +795,16 @@
       "last_refresh": "Last refreshed",
       "refresh": "Refresh",
       "delete": "Delete",
+      "seed_url": "Seed URL",
+      "depth": "Depth",
+      "max_pages": "Max pages",
+      "same_domain_only": "Same domain only",
+      "include_patterns": "Include (regex, comma-separated)",
+      "exclude_patterns": "Exclude (regex, comma-separated)",
+      "start_crawl": "Start crawl",
+      "status": "Status",
+      "pages": "pages",
+      "refresh_crawl": "Refresh crawl",
       "empty": {
         "title": "No sources yet",
         "description": "Get started by adding your first data source"
@@ -1180,7 +1190,27 @@
       "campaign": "Campaign",
       "agent": "Agent",
       "country": "Country",
-      "language": "Language"
+      "language": "Language",
+      "quick_filters": "Quick filters",
+      "click_to_apply": "Click to apply",
+      "working_hours": "Working hours",
+      "working_hours_desc": "Filter to business hours (Mon-Fri, 9-18)",
+      "exclude_weekends": "Exclude weekends",
+      "exclude_weekends_desc": "Show only weekday data",
+      "mobile_only": "Mobile only",
+      "mobile_only_desc": "Filter to mobile phone numbers",
+      "high_volume": "High volume",
+      "high_volume_desc": "Show only high-volume campaigns/agents",
+      "active_filters": "Active filters",
+      "clear_all": "Clear all",
+      "show_advanced": "Show advanced filters",
+      "hide_advanced": "Hide advanced filters",
+      "min_calls": "Min calls",
+      "max_calls": "Max calls",
+      "phone_type": "Phone type",
+      "mobile": "Mobile",
+      "landline": "Landline",
+      "all_types": "All types"
     },
     "kpi": {
       "reached": "Reached",
@@ -1188,11 +1218,28 @@
       "qualified": "Qualified",
       "booked": "Booked"
     },
+    "metrics": {
+      "qualified_rate": "Qualification rate",
+      "connected_rate": "Connection rate",
+      "avg_duration": "Avg duration"
+    },
     "charts": {
       "funnel": "Conversion funnel",
+      "funnel_desc": "Lead progression through the sales pipeline",
+      "funnel_info": "Shows conversion rates between each stage of the funnel",
       "agents_top": "Top agents",
+      "agents_top_desc": "Best performing agents by call volume and qualification rate",
       "geo": "By country",
-      "cost": "Costs over time"
+      "geo_desc": "Call distribution and performance by geographic region",
+      "geo_info": "Based on caller location and campaign targeting",
+      "cost": "Costs over time",
+      "timeseries": "Performance over time",
+      "timeseries_desc": "Daily trends in call volume and outcomes",
+      "heatmap": "Call volume heatmap",
+      "heatmap_desc": "Call activity by day of week and hour",
+      "heatmap_info": "Darker colors indicate higher call volumes. Working hours (Mon-Fri, 9-18) typically show highest activity.",
+      "outcomes": "Call outcomes",
+      "outcomes_desc": "Breakdown of call results and performance metrics"
     },
     "empty": {
       "title": "No data available",

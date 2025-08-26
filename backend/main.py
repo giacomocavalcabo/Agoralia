@@ -35,6 +35,12 @@ from sqlalchemy import or_, cast, String
 import hashlib
 import pyotp
 import random
+from pydantic import BaseModel, AnyHttpUrl, Field
+from urllib.parse import urlparse
+import re
+import time
+import httpx
+from fastapi import BackgroundTasks
 
 # ===================== Utility comuni: workspace & response adapter =====================
 DEMO_MODE: bool = bool(int(os.getenv("DEMO_MODE", "0")))  # 1 abilita demo BE
@@ -6110,6 +6116,234 @@ def get_workspace_completeness(
             )
         
         return workspace_stats
+
+
+# ===================== Crawl & Web Scraping Endpoints =====================
+
+@app.post("/kb/crawl/start", response_model=KbCrawlStartResponse)
+def kb_crawl_start(
+    request: Request,
+    payload: KbCrawlStart,
+    _guard: None = Depends(require_role("editor"))
+):
+    """Start a new crawl job for a website"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Create KbSource(type='url') and KbImportJob(kind='crawl')
+        source_id = f"source_{secrets.token_urlsafe(8)}"
+        source = KbSource(
+            id=source_id,
+            workspace_id=workspace_id,
+            kind="url",
+            url=str(payload.seed_url),
+            filename=None,
+            sha256=None,
+            status="processing",
+            meta_json={
+                "depth": payload.depth,
+                "max_pages": payload.max_pages,
+                "include": payload.include or [],
+                "exclude": payload.exclude or [],
+                "same_domain_only": payload.same_domain_only,
+                "user_agent": payload.user_agent,
+                "target_kb_id": payload.target_kb_id,
+            },
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        db.add(source)
+
+        job_id = f"job_{secrets.token_urlsafe(8)}"
+        job = KbImportJob(
+            id=job_id,
+            workspace_id=workspace_id,
+            user_id="u_1",
+            source_id=source_id,
+            target_kb_id=payload.target_kb_id,
+            template="generic",
+            status="pending",
+            progress_pct=0,
+            progress_json={
+                "phase": "crawl", 
+                "pages_enqueued": 0, 
+                "pages_processed": 0, 
+                "pages_failed": 0
+            }
+        )
+        db.add(job)
+        db.commit()
+
+        # Start worker
+        try:
+            from backend.workers.crawl_job import crawl_site_job
+            crawl_site_job.send(
+                job_id=job_id,
+                source_id=source_id,
+                seed_url=str(payload.seed_url),
+                depth=payload.depth,
+                max_pages=payload.max_pages,
+                include=payload.include or [],
+                exclude=payload.exclude or [],
+                same_domain_only=payload.same_domain_only,
+                user_agent=payload.user_agent or "ColdAI-KB-Crawler/1.0",
+                workspace_id=workspace_id,
+            )
+        except ImportError:
+            # Fallback if workers not available
+            logger.warning("Crawl workers not available, job queued but not started")
+        
+        return {"job_id": job_id, "source_id": source_id, "status": "queued"}
+
+
+@app.get("/kb/crawl/{job_id}", response_model=KbCrawlStatus)
+def kb_crawl_status(
+    request: Request,
+    job_id: str,
+    _guard: None = Depends(require_role("viewer"))
+):
+    """Get crawl job status and progress"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        job = db.query(KbImportJob).filter(
+            KbImportJob.id == job_id, 
+            KbImportJob.workspace_id == workspace_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "CRAWL_JOB_NOT_FOUND",
+                    "Crawl job not found",
+                    {"job_id": job_id},
+                    "Verify the job ID and ensure it belongs to your workspace"
+                )
+            )
+
+        progress = job.progress_json or {}
+        return {
+            "job_id": job.id,
+            "source_id": job.source_id,
+            "status": job.status,
+            "pages_enqueued": int(progress.get("pages_enqueued", 0)),
+            "pages_processed": int(progress.get("pages_processed", 0)),
+            "pages_failed": int(progress.get("pages_failed", 0)),
+            "last_error": progress.get("last_error"),
+            "started_at": job.created_at,
+            "updated_at": job.updated_at,
+        }
+
+
+@app.post("/kb/sources/{source_id}/refresh")
+def kb_source_refresh(
+    request: Request,
+    source_id: str,
+    _guard: None = Depends(require_role("editor"))
+):
+    """Refresh/restart crawl for an existing URL source"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        src = db.query(KbSource).filter(
+            KbSource.id == source_id, 
+            KbSource.workspace_id == workspace_id
+        ).first()
+        
+        if not src or src.kind != "url":
+            raise HTTPException(
+                status_code=404,
+                detail=_create_error_response(
+                    "URL_SOURCE_NOT_FOUND",
+                    "URL source not found",
+                    {"source_id": source_id},
+                    "Verify the source ID and ensure it's a URL source"
+                )
+            )
+
+        job_id = f"job_{secrets.token_urlsafe(8)}"
+        job = KbImportJob(
+            id=job_id,
+            workspace_id=workspace_id,
+            user_id="u_1",
+            source_id=source_id,
+            target_kb_id=src.meta_json.get("target_kb_id"),
+            template="generic",
+            status="pending",
+            progress_pct=0,
+            progress_json={
+                "phase": "crawl", 
+                "pages_enqueued": 0, 
+                "pages_processed": 0, 
+                "pages_failed": 0
+            }
+        )
+        src.status = "processing"
+        src.updated_at = datetime.utcnow()
+        db.add(job)
+        db.commit()
+
+        # Start worker
+        try:
+            from backend.workers.crawl_job import crawl_site_job
+            crawl_site_job.send(
+                job_id=job_id,
+                source_id=source_id,
+                seed_url=src.url,
+                depth=int(src.meta_json.get("depth", 1)),
+                max_pages=int(src.meta_json.get("max_pages", 15)),
+                include=src.meta_json.get("include", []),
+                exclude=src.meta_json.get("exclude", []),
+                same_domain_only=bool(src.meta_json.get("same_domain_only", True)),
+                user_agent=src.meta_json.get("user_agent") or "ColdAI-KB-Crawler/1.0",
+                workspace_id=workspace_id,
+            )
+        except ImportError:
+            logger.warning("Crawl workers not available, refresh job queued but not started")
+        
+        return {"job_id": job_id, "source_id": source_id, "status": "queued"}
+
+
+# ===================== Crawl & Web Scraping Schemas =====================
+
+class KbCrawlStart(BaseModel):
+    seed_url: AnyHttpUrl
+    depth: int = Field(1, ge=0, le=3)
+    max_pages: int = Field(15, ge=1, le=200)
+    include: Optional[List[str]] = None  # regex allow list
+    exclude: Optional[List[str]] = None  # regex block list
+    same_domain_only: bool = True
+    target_kb_id: Optional[str] = None
+    user_agent: Optional[str] = "ColdAI-KB-Crawler/1.0 (+https://coldai.example)"
+
+
+class KbCrawlStartResponse(BaseModel):
+    job_id: str
+    source_id: str
+    status: str
+
+
+class KbCrawlStatus(BaseModel):
+    job_id: str
+    source_id: str
+    status: str
+    pages_enqueued: int
+    pages_processed: int
+    pages_failed: int
+    last_error: Optional[str] = None
+    started_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+# ===================== Crawl Helper Functions =====================
+
+def _host(url: str) -> str:
+    """Extract normalized host from URL"""
+    try:
+        return urlparse(url).netloc.lower()
+    except:
+        return ""
 
 
 @app.post("/kb/imports/{job_id}/cancel")
