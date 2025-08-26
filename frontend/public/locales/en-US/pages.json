@@ -1361,39 +1361,9 @@
       "copied": "Snapshot link copied"
     }
   },
-  "history": {
-    "title": "Call History & Outcomes",
-    "search_placeholder": "Search by ID, contact, notes…",
-    "search_aria": "Search in history",
-    "export_csv": "Export CSV",
-    "loading": "Loading history…",
-    "error": "Couldn't load history.",
-    "empty": "No outcomes found",
-    "filters": {
-      "campaign": "Campaign",
-      "all_campaigns": "All campaigns",
-      "next_step": "Next Step",
-      "all_steps": "All steps",
-      "score_min": "Score Min",
-      "score_max": "Score Max"
-    },
-    "steps": { "callback": "Callback", "email": "Send Email", "meeting": "Book Meeting" },
-    "table": {
-      "call_id": "Call ID",
-      "campaign": "Campaign",
-      "outcome": "Outcome",
-      "score": "Score",
-      "next_step": "Next Step",
-      "sentiment": "Sentiment",
-      "actions": "Actions",
-      "view": "View"
-    },
-    "pagination": { "total": "{{count}} outcomes" }
-  },
   "common": {
     "back": "Back",
     "next": "Next",
-    "prev": "Prev",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",

@@ -2951,28 +2951,74 @@ def legacy_analytics_export_csv():
 
 @app.get("/history")
 def history_list(
-    from_: str | None = Query(default=None, alias="from"),
-    to: str | None = Query(default=None),
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    sort: str = Query("-created_at"),
     q: str | None = Query(default=None),
-    lang: str | None = Query(default=None),
+    campaign_id: str | None = Query(default=None),
+    next_step: str | None = Query(default=None),
+    score_min: int | None = Query(default=None),
+    score_max: int | None = Query(default=None),
     country: str | None = Query(default=None),
-    agent: str | None = Query(default=None),
-    outcome: str | None = Query(default=None),
-    direction: str | None = Query(default=None),
-    group_by: str | None = Query(default=None),
-    limit: int = 25,
-    offset: int = 0,
-    sort: str | None = Query(default="-ts"),
+    lang: str | None = Query(default=None),
+    agent_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
 ) -> dict:
-    items = []
-    reverse = sort.startswith("-") if sort else True
-    key = sort.lstrip("-") if sort else "ts"
-    try:
-        items.sort(key=lambda x: x.get(key, ""), reverse=reverse)
-    except Exception:
-        pass
-    total = len(items)
-    return {"total": total, "items": items[offset: offset+limit]}
+    """List call history with pagination, filtering and sorting"""
+    
+    # In DEMO_MODE, generate mock data
+    if DEMO_MODE:
+        # Generate deterministic mock data based on parameters
+        seed = hash(f"history:{page}:{page_size}:{sort}:{q}:{campaign_id}:{next_step}:{score_min}:{score_max}:{country}:{lang}:{agent_id}:{date_from}:{date_to}")
+        random.seed(seed)
+        
+        # Generate mock items
+        items = []
+        for i in range(page_size):
+            item_id = f"call_{random.randint(1000, 9999)}"
+            score = random.randint(0, 100)
+            next_step = random.choice(["callback", "email", "meeting", "qualified", "disqualified"])
+            outcome = "qualified" if next_step in ["callback", "email", "meeting"] else "reached"
+            sentiment = round(random.uniform(-1, 1), 2)
+            
+            items.append({
+                "id": item_id,
+                "campaign_name": f"Campaign {random.choice(['A', 'B', 'C'])}",
+                "outcome": outcome,
+                "score": score,
+                "next_step": next_step,
+                "sentiment": sentiment,
+                "created_at": (datetime.now() - timedelta(days=random.randint(0, 30))).isoformat(),
+                "duration_sec": random.randint(30, 600),
+                "cost_cents": random.randint(50, 5000)
+            })
+        
+        # Apply sorting
+        reverse = sort.startswith("-")
+        key = sort.lstrip("-")
+        items.sort(key=lambda x: x.get(key, "created_at"), reverse=reverse)
+        
+        # Simulate total count
+        total = random.randint(100, 1000)
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+    
+    # TODO: Implement real database query when not in DEMO_MODE
+    # This would use SQLAlchemy to query the calls table with proper filtering
+    # For now, return empty result
+    return {
+        "items": [],
+        "total": 0,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @app.get("/history/{call_id}/brief")
@@ -2988,17 +3034,75 @@ def history_brief(call_id: str) -> dict:
 
 
 @app.get("/history/export.csv")
-def history_export_csv(locale: str | None = None) -> Response:
+def history_export_csv(
+    locale: str | None = Query(default=None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    sort: str = Query("-created_at"),
+    q: str | None = Query(default=None),
+    campaign_id: str | None = Query(default=None),
+    next_step: str | None = Query(default=None),
+    score_min: int | None = Query(default=None),
+    score_max: int | None = Query(default=None),
+    country: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    agent_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+) -> Response:
+    """Export call history as CSV with same filters as list endpoint"""
+    
+    # Get data using the same logic as list endpoint
+    data = history_list(
+        request=Request(scope={"type": "http", "method": "GET"}),
+        page=page,
+        page_size=page_size,
+        sort=sort,
+        q=q,
+        campaign_id=campaign_id,
+        next_step=next_step,
+        score_min=score_min,
+        score_max=score_max,
+        country=country,
+        lang=lang,
+        agent_id=agent_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    
+    # CSV headers based on locale
     head_map = {
-        "en-US": ["id","time","direction","to","from","company","outcome","duration_sec","cost_eur"],
-        "it-IT": ["id","ora","direzione","a","da","azienda","esito","durata_sec","costo_eur"],
-        "fr-FR": ["id","heure","direction","à","de","société","résultat","durée_sec","coût_eur"],
-        "hi-IN": ["id","समय","दिशा","को","से","कंपनी","परिणाम","अवधि_सेक","लागत_यूरो"],
-        "ar-EG": ["id","الوقت","الاتجاه","إلى","من","الشركة","النتيجة","المدة_ث","التكلفة_يورو"],
+        "en-US": ["id","campaign","outcome","score","next_step","sentiment","created_at","duration_sec","cost_cents"],
+        "it-IT": ["id","campagna","esito","punteggio","prossimo_passo","sentiment","creato","durata_sec","costo_centesimi"],
+        "fr-FR": ["id","campagne","résultat","score","prochaine_étape","sentiment","créé","durée_sec","coût_centimes"],
+        "hi-IN": ["id","अभियान","परिणाम","स्कोर","अगला_कदम","भावना","बनाया_गया","अवधि_सेक","लागत_सेंट"],
+        "ar-EG": ["id","حملة","نتيجة","نتيجة","الخطوة_التالي","مشاعر","تم_إنشاؤه","المدة_ث","التكلفة_سنت"],
     }
     headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
-    row = ["call_9001","2025-08-17T09:22:00Z","outbound","+390212345678","+390298765432","Unknown Company","qualified","210","0.42"]
-    return Response(content=headers+",".join(row)+"\n", media_type="text/csv")
+    
+    # Generate CSV rows
+    csv_rows = []
+    for item in data.get("items", []):
+        row = [
+            item.get("id", ""),
+            item.get("campaign_name", ""),
+            item.get("outcome", ""),
+            str(item.get("score", "")),
+            item.get("next_step", ""),
+            str(item.get("sentiment", "")),
+            item.get("created_at", ""),
+            str(item.get("duration_sec", "")),
+            str(item.get("cost_cents", ""))
+        ]
+        csv_rows.append(",".join(row))
+    
+    csv_content = headers + "\n".join(csv_rows)
+    
+    return Response(
+        content=csv_content, 
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=history.csv"}
+    )
 
 
 # ===================== Compliance & Call Settings =====================
