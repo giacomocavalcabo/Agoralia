@@ -93,8 +93,52 @@
   },
   "kb": {
     "title": "Knowledge Base",
+    "demo": "Demo Mode",
+    "auth": {
+      "title": "Authentication Required",
+      "description": "Please log in to access the knowledge base."
+    },
     "overview": {
-      "title": "Overview",
+      "title": "Knowledge Base",
+      "subtitle": "Centralize sources and documents. More data = better prepared agents.",
+      "actions": {
+        "import_documents": "Import Documents",
+        "add_source": "Add Source",
+        "open": "Open",
+        "edit": "Edit"
+      },
+      "kpi": {
+        "company": {
+          "title": "Company Profile",
+          "description": "Create your company knowledge base",
+          "create": "Create Company KB"
+        },
+        "offer_packs": {
+          "title": "Offer Packs",
+          "empty": "No offer packs created yet",
+          "available": "Offer packs available",
+          "create_first": "Create first",
+          "manage": "Manage"
+        },
+        "assignments": {
+          "title": "Assignments",
+          "description": "Configure KB for numbers, campaigns and agents"
+        },
+        "documents": {
+          "title": "Documents",
+          "complete": "Complete"
+        }
+      },
+      "table": {
+        "title": "Knowledge Bases",
+        "columns": {
+          "name": "Name",
+          "type": "Type",
+          "status": "Status",
+          "progress": "Progress",
+          "actions": "Actions"
+        }
+      },
       "completeness": "Completeness",
       "next_steps": "Next steps",
       "no_data": "No content yet. Start by importing a document or adding a source.",
@@ -102,6 +146,16 @@
       "sources_count": "{{count}} sources",
       "documents_count": "{{count}} documents",
       "chunks_count": "{{count}} chunks"
+    },
+    "empty": {
+      "no_data": "No content yet",
+      "how_to_start": "Start by importing a document or adding a source.",
+      "import": "Import Documents"
+    },
+    "error": {
+      "title": "Error loading knowledge base",
+      "description": "We couldn't load the knowledge base data. Please try again.",
+      "retry": "Retry"
     },
     "sources": {
       "title": "Sources",

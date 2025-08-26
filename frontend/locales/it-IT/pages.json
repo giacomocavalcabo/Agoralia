@@ -93,8 +93,52 @@
   },
   "kb": {
     "title": "Base di Conoscenza",
+    "demo": "Modalità Demo",
+    "auth": {
+      "title": "Autenticazione Richiesta",
+      "description": "Effettua il login per accedere alla knowledge base."
+    },
     "overview": {
-      "title": "Panoramica",
+      "title": "Base di Conoscenza",
+      "subtitle": "Centralizza fonti e documenti. Più dati = agenti più preparati.",
+      "actions": {
+        "import_documents": "Importa Documenti",
+        "add_source": "Aggiungi Fonte",
+        "open": "Apri",
+        "edit": "Modifica"
+      },
+      "kpi": {
+        "company": {
+          "title": "Profilo Aziendale",
+          "description": "Crea la knowledge base della tua azienda",
+          "create": "Crea Company KB"
+        },
+        "offer_packs": {
+          "title": "Pacchetti Offerta",
+          "empty": "Nessun pacchetto offerta creato",
+          "available": "Pacchetti offerta disponibili",
+          "create_first": "Crea il primo",
+          "manage": "Gestisci"
+        },
+        "assignments": {
+          "title": "Assegnazioni",
+          "description": "Configura la KB per numeri, campagne e agenti"
+        },
+        "documents": {
+          "title": "Documenti",
+          "complete": "Completo"
+        }
+      },
+      "table": {
+        "title": "Basi di Conoscenza",
+        "columns": {
+          "name": "Nome",
+          "type": "Tipo",
+          "status": "Stato",
+          "progress": "Progresso",
+          "actions": "Azioni"
+        }
+      },
       "completeness": "Completezza",
       "next_steps": "Prossimi passi",
       "no_data": "Nessun contenuto ancora. Inizia importando un documento o aggiungendo una fonte.",
@@ -102,6 +146,16 @@
       "sources_count": "{{count}} fonti",
       "documents_count": "{{count}} documenti",
       "chunks_count": "{{count}} chunk"
+    },
+    "empty": {
+      "no_data": "Nessun contenuto ancora",
+      "how_to_start": "Inizia importando un documento o aggiungendo una fonte.",
+      "import": "Importa Documenti"
+    },
+    "error": {
+      "title": "Errore nel caricamento della knowledge base",
+      "description": "Non siamo riusciti a caricare i dati della knowledge base. Riprova.",
+      "retry": "Riprova"
     },
     "sources": {
       "title": "Fonti",
