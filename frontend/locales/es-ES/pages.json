@@ -271,5 +271,221 @@
     "team": "Equipo",
     "title": "Ajustes",
     "unsaved": "[Sin guardar]"
+  },
+  "kb": {
+    "/": "Base de Conocimiento con {params}",
+    "title": "Base de Conocimiento",
+    "index": "Base de Conocimiento",
+    "auth": {
+      "title": "Inicio de sesión requerido",
+      "description": "Inicia sesión para ver tu base de conocimiento y el progreso de ingestión"
+    },
+    "empty": {
+      "workspace_blocked": "Espacio de trabajo no disponible en modo demo"
+    },
+    "error": {
+      "title": "Error de carga",
+      "description": "No pudimos cargar los datos de la base de conocimiento. Por favor, inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "overview": {
+      "title": "Base de Conocimiento",
+      "description": "Gestiona el contenido y las asignaciones de tu base de conocimiento",
+      "subtitle": "Gestiona tu base de conocimiento y fuentes de datos",
+      "sources_count": "{count} fuentes",
+      "documents_count": "{count} documentos",
+      "chunks_count": "{count} fragmentos",
+      "completeness": "Completitud",
+      "next_steps": "Próximos Pasos",
+      "recent_changes": "Cambios Recientes",
+      "no_data": "No hay datos disponibles",
+      "actions": {
+        "import_documents": "Importar documentos",
+        "add_source": "Agregar fuente",
+        "open": "Abrir",
+        "edit": "Editar"
+      },
+      "kpi": {
+        "company": {
+          "title": "Información de la Empresa",
+          "description": "Detalles básicos de la empresa e información de contacto",
+          "create": "Crear Empresa"
+        },
+        "offer_packs": {
+          "title": "Paquetes de Ofertas",
+          "empty": "No hay paquetes de ofertas disponibles",
+          "available": "{count} paquetes de ofertas disponibles",
+          "create_first": "Crea tu primer paquete de ofertas",
+          "manage": "Gestionar paquetes de ofertas"
+        },
+        "documents": {
+          "title": "Documentos",
+          "complete": "Completo"
+        },
+        "assignments": {
+          "title": "Asignaciones",
+          "description": "Gestionar las asignaciones de la base de conocimiento"
+        }
+      },
+      "table": {
+        "title": "Elementos de la Base de Conocimiento",
+        "empty": {
+          "title": "No hay elementos de base de conocimiento",
+          "description": "Crea tu primer elemento de base de conocimiento para comenzar",
+          "cta_new": "Crear Base de Conocimiento"
+        },
+        "error": {
+          "title": "Error de carga",
+          "description": "No pudimos cargar los datos de la base de conocimiento",
+          "retry": "Reintentar"
+        },
+        "columns": {
+          "name": "Nombre",
+          "type": "Tipo",
+          "status": "Estado",
+          "progress": "Progreso",
+          "actions": "Acciones",
+          "title": "Título",
+          "category": "Categoría", 
+          "status": "Estado",
+          "updated_at": "Actualizado",
+          "owner": "Propietario"
+        }
+      },
+      "toolbar": {
+        "search_placeholder": "Buscar en la base de conocimiento...",
+        "filter": {
+          "all": "Todos",
+          "published": "Publicados",
+          "drafts": "Borradores",
+          "archived": "Archivados"
+        },
+        "bulk": {
+          "assign": "Asignar",
+          "import": "Importar",
+          "new_offer_pack": "Nuevo Paquete de Oferta",
+          "delete": "Eliminar",
+          "export": "Exportar"
+        }
+      }
+    },
+    "import": {
+      "title": "Importar Documentos",
+      "tabs": {
+        "paste": "Pegar Texto",
+        "file": "Subir Archivo",
+        "url": "Explorar URL"
+      },
+      "file_upload": {
+        "title": "Subir Archivos",
+        "subtitle": "Sube PDFs, DOCX u otros formatos de documento",
+        "drag_drop": "Arrastra y suelta archivos aquí, o haz clic para seleccionar",
+        "or_click": "o haz clic para explorar",
+        "supported_formats": "Formatos soportados: PDF, DOCX, TXT"
+      },
+      "url_crawl": {
+        "title": "Explorar Sitio Web",
+        "subtitle": "Extraer contenido de páginas web",
+        "placeholder": "Ingresa la URL del sitio web (ej. https://example.com)",
+        "depth": "Profundidad de Exploración",
+        "max_pages": "Páginas Máximas"
+      },
+      "progress": {
+        "parsing": "Analizando documentos...",
+        "chunking": "Creando fragmentos...",
+        "embedding": "Generando embeddings..."
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "start": "Iniciar Importación",
+        "commit": "Confirmar Importación"
+      }
+    },
+    "sources": {
+      "title": "Fuentes de Datos",
+      "add_source": "Agregar Fuente",
+      "upload_file": "Subir Archivo",
+      "last_refresh": "Última actualización",
+      "refresh": "Actualizar",
+      "delete": "Eliminar",
+      "empty": {
+        "title": "Aún no hay fuentes",
+        "description": "Comienza agregando tu primera fuente de datos"
+      },
+      "type": {
+        "manual": "Entrada Manual",
+        "url": "Exploración de URL"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "error": "Error",
+        "processing": "Procesando"
+      }
+    },
+    "imports": {
+      "title": "Importaciones de Base de Conocimiento",
+      "description": "Importa y gestiona contenido de base de conocimiento desde fuentes externas",
+      "actions": {
+        "new_import": "Nueva Importación"
+      },
+      "empty": {
+        "title": "No hay importaciones",
+        "description": "Inicia tu primera importación de base de conocimiento"
+      },
+      "download_errors": "Descargar errores CSV",
+      "add_field": "[Agregar Campo]",
+      "apply_merge": "[Aplicar Fusión]",
+      "conflicts": "[Conflictos]",
+      "existing_fields": "[Campos Existentes]",
+      "existing_value": "[Valor Existente]",
+      "field_changes": "[Cambios de Campo]",
+      "field_new": "[Campo Nuevo]",
+      "field_update": "[Actualización de Campo]",
+      "field_value": "[Valor de Campo]",
+      "imported_fields": "[Campos Importados]",
+      "keep_existing": "[Mantener Existente]",
+      "merge_strategy": "[Estrategia de Fusión]",
+      "merge_summary": "[Resumen de Fusión]",
+      "merge_values": "[Fusionar Valores]",
+      "merged_preview": "[Vista Previa de Fusión]",
+      "merging": "[Fusión]",
+      "new_fields": "[Campos Nuevos]",
+      "new_value": "[Nuevo Valor]",
+      "no_diff_available": "[No Hay Diferencia Disponible]",
+      "no_value": "[Sin Valor]",
+      "ready_to_merge": "[Listo para Fusionar]",
+      "strategy_auto_merge": "[Estrategia Auto-Fusión]",
+      "strategy_auto_new": "[Estrategia Auto-Nuevo]",
+      "strategy_manual": "[Estrategia Manual]",
+      "updated": "[Actualizado]",
+      "use_new": "[Usar Nuevo]"
+    },
+    "editor": {
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "publish": "Publicar",
+        "unpublish": "Despublicar"
+      },
+      "fields": {
+        "title": "Título",
+        "category": "Categoría",
+        "description": "Descripción"
+      },
+      "messages": {
+        "unsaved_guard": "Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?"
+      }
+    },
+    "assignments": {
+      "title": "Asignaciones de Base de Conocimiento",
+      "description": "Asigna elementos de base de conocimiento a agentes y campañas",
+      "confirm": {
+        "assign_title": "Asignar Base de Conocimiento",
+        "assign_desc": "¿Estás seguro de que quieres asignar este elemento de base de conocimiento?",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+      }
+    }
   }
 }

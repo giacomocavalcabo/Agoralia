@@ -615,6 +615,32 @@ class KbHistory(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class KbStructuredCard(Base):
+    __tablename__ = "kb_structured_cards"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    card_type = Column(String, nullable=False)  # company, product, contact, policy, faq
+    title = Column(String, nullable=False)
+    content_json = Column(JSON, nullable=False)  # Structured content
+    confidence = Column(Float, default=1.0)  # AI confidence (0.0-1.0)
+    source_chunks = Column(JSON)  # Array of chunk IDs that contributed
+    lang = Column(String, default="en-US")
+    meta_json = Column(JSON)  # Additional metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KbQuality(Base):
+    __tablename__ = "kb_quality"
+    id = Column(String, primary_key=True)
+    kb_id = Column(String, ForeignKey("knowledge_bases.id"), nullable=False)
+    metric_type = Column(String, nullable=False)  # completeness, freshness, accuracy, coverage
+    score = Column(Float, default=0.0)  # 0.0-100.0
+    breakdown_json = Column(JSON)  # Detailed breakdown
+    last_calculated = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class KbImportJob(Base):
     __tablename__ = "kb_import_jobs"
     id = Column(String, primary_key=True)

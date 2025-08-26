@@ -271,5 +271,221 @@
     "team": "الفريق",
     "title": "الإعدادات",
     "unsaved": "[غير محفوظة]"
+  },
+  "kb": {
+    "/": "قاعدة المعرفة مع {params}",
+    "title": "قاعدة المعرفة",
+    "index": "قاعدة المعرفة",
+    "auth": {
+      "title": "تسجيل الدخول مطلوب",
+      "description": "سجل الدخول لعرض قاعدة المعرفة وتقدم الابتلاع"
+    },
+    "empty": {
+      "workspace_blocked": "مساحة العمل غير متاحة في الوضع التجريبي"
+    },
+    "error": {
+      "title": "خطأ في التحميل",
+      "description": "لا يمكننا تحميل بيانات قاعدة المعرفة. يرجى المحاولة مرة أخرى.",
+      "retry": "إعادة المحاولة"
+    },
+    "overview": {
+      "title": "قاعدة المعرفة",
+      "description": "إدارة محتوى قاعدة المعرفة والمهام الموكلة",
+      "subtitle": "إدارة قاعدة المعرفة ومصادر البيانات",
+      "sources_count": "{count} مصدر",
+      "documents_count": "{count} مستند",
+      "chunks_count": "{count} جزء",
+      "completeness": "الاكتمال",
+      "next_steps": "الخطوات التالية",
+      "recent_changes": "التغييرات الأخيرة",
+      "no_data": "لا توجد بيانات متاحة",
+      "actions": {
+        "import_documents": "استيراد المستندات",
+        "add_source": "إضافة مصدر",
+        "open": "فتح",
+        "edit": "تعديل"
+      },
+      "kpi": {
+        "company": {
+          "title": "معلومات الشركة",
+          "description": "تفاصيل الشركة الأساسية ومعلومات الاتصال",
+          "create": "إنشاء شركة"
+        },
+        "offer_packs": {
+          "title": "حزم العروض",
+          "empty": "لا توجد حزم عروض متاحة",
+          "available": "{count} حزمة عروض متاحة",
+          "create_first": "أنشئ حزمة العروض الأولى",
+          "manage": "إدارة حزم العروض"
+        },
+        "documents": {
+          "title": "المستندات",
+          "complete": "مكتمل"
+        },
+        "assignments": {
+          "title": "المهام الموكلة",
+          "description": "إدارة المهام الموكلة لقاعدة المعرفة"
+        }
+      },
+      "table": {
+        "title": "عناصر قاعدة المعرفة",
+        "empty": {
+          "title": "لا توجد عناصر قاعدة معرفة",
+          "description": "أنشئ أول عنصر قاعدة معرفة للبدء",
+          "cta_new": "إنشاء قاعدة المعرفة"
+        },
+        "error": {
+          "title": "خطأ في التحميل",
+          "description": "لا يمكننا تحميل بيانات قاعدة المعرفة",
+          "retry": "إعادة المحاولة"
+        },
+        "columns": {
+          "name": "الاسم",
+          "type": "النوع",
+          "status": "الحالة",
+          "progress": "التقدم",
+          "actions": "الإجراءات",
+          "title": "العنوان",
+          "category": "الفئة", 
+          "status": "الحالة",
+          "updated_at": "محدث",
+          "owner": "المالك"
+        }
+      },
+      "toolbar": {
+        "search_placeholder": "البحث في قاعدة المعرفة...",
+        "filter": {
+          "all": "الكل",
+          "published": "منشور",
+          "drafts": "مسودات",
+          "archived": "مؤرشف"
+        },
+        "bulk": {
+          "assign": "تعيين",
+          "import": "استيراد",
+          "new_offer_pack": "حزمة عروض جديدة",
+          "delete": "حذف",
+          "export": "تصدير"
+        }
+      }
+    },
+    "import": {
+      "title": "استيراد المستندات",
+      "tabs": {
+        "paste": "لصق النص",
+        "file": "رفع ملف",
+        "url": "استكشاف الرابط"
+      },
+      "file_upload": {
+        "title": "رفع الملفات",
+        "subtitle": "رفع ملفات PDF أو DOCX أو تنسيقات مستندات أخرى",
+        "drag_drop": "اسحب وأفلت الملفات هنا، أو انقر للاختيار",
+        "or_click": "أو انقر للتصفح",
+        "supported_formats": "التنسيقات المدعومة: PDF، DOCX، TXT"
+      },
+      "url_crawl": {
+        "title": "استكشاف موقع الويب",
+        "subtitle": "استخراج المحتوى من صفحات الويب",
+        "placeholder": "أدخل رابط موقع الويب (مثال: https://example.com)",
+        "depth": "عمق الاستكشاف",
+        "max_pages": "الحد الأقصى للصفحات"
+      },
+      "progress": {
+        "parsing": "تحليل المستندات...",
+        "chunking": "إنشاء الأجزاء...",
+        "embedding": "إنشاء التضمينات..."
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "start": "بدء الاستيراد",
+        "commit": "تأكيد الاستيراد"
+      }
+    },
+    "sources": {
+      "title": "مصادر البيانات",
+      "add_source": "إضافة مصدر",
+      "upload_file": "رفع ملف",
+      "last_refresh": "آخر تحديث",
+      "refresh": "تحديث",
+      "delete": "حذف",
+      "empty": {
+        "title": "لا توجد مصادر بعد",
+        "description": "ابدأ بإضافة أول مصدر بيانات"
+      },
+      "type": {
+        "manual": "إدخال يدوي",
+        "url": "استكشاف الرابط"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "error": "خطأ",
+        "processing": "معالجة"
+      }
+    },
+    "imports": {
+      "title": "استيرادات قاعدة المعرفة",
+      "description": "استيراد وإدارة محتوى قاعدة المعرفة من مصادر خارجية",
+      "actions": {
+        "new_import": "استيراد جديد"
+      },
+      "empty": {
+        "title": "لا توجد استيرادات",
+        "description": "ابدأ أول استيراد قاعدة معرفة"
+      },
+      "download_errors": "تحميل أخطاء CSV",
+      "add_field": "[إضافة حقل]",
+      "apply_merge": "[تطبيق الدمج]",
+      "conflicts": "[التعارضات]",
+      "existing_fields": "[الحقول الموجودة]",
+      "existing_value": "[القيمة الموجودة]",
+      "field_changes": "[تغييرات الحقل]",
+      "field_new": "[حقل جديد]",
+      "field_update": "[تحديث الحقل]",
+      "field_value": "[قيمة الحقل]",
+      "imported_fields": "[الحقول المستوردة]",
+      "keep_existing": "[الحفاظ على الموجود]",
+      "merge_strategy": "[استراتيجية الدمج]",
+      "merge_summary": "[ملخص الدمج]",
+      "merge_values": "[دمج القيم]",
+      "merged_preview": "[معاينة الدمج]",
+      "merging": "[الدمج]",
+      "new_fields": "[الحقول الجديدة]",
+      "new_value": "[قيمة جديدة]",
+      "no_diff_available": "[لا يوجد فرق متاح]",
+      "no_value": "[لا توجد قيمة]",
+      "ready_to_merge": "[جاهز للدمج]",
+      "strategy_auto_merge": "[استراتيجية الدمج التلقائي]",
+      "strategy_auto_new": "[استراتيجية الجديد التلقائي]",
+      "strategy_manual": "[استراتيجية يدوية]",
+      "updated": "[محدث]",
+      "use_new": "[استخدام الجديد]"
+    },
+    "editor": {
+      "actions": {
+        "save": "حفظ",
+        "saving": "حفظ...",
+        "publish": "نشر",
+        "unpublish": "إلغاء النشر"
+      },
+      "fields": {
+        "title": "العنوان",
+        "category": "الفئة",
+        "description": "الوصف"
+      },
+      "messages": {
+        "unsaved_guard": "لديك تغييرات غير محفوظة. هل أنت متأكد من أنك تريد المغادرة؟"
+      }
+    },
+    "assignments": {
+      "title": "المهام الموكلة لقاعدة المعرفة",
+      "description": "تعيين عناصر قاعدة المعرفة للوكلاء والحملات",
+      "confirm": {
+        "assign_title": "تعيين قاعدة المعرفة",
+        "assign_desc": "هل أنت متأكد من أنك تريد تعيين عنصر قاعدة المعرفة هذا؟",
+        "confirm": "تأكيد",
+        "cancel": "إلغاء"
+      }
+    }
   }
 }

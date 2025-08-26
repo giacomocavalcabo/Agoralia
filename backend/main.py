@@ -2797,57 +2797,22 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
 # ===================== Sprint 4 stubs =====================
 
 @app.get("/analytics/overview")
-def analytics_overview(
-    range: str | None = None,
-    scope: str | None = None,
-    lang: str | None = None,
-    agent: str | None = None,
-    country: str | None = None,
-    outcome: str | None = None,
-    direction: str | None = None,
-) -> dict:
-    return {
-        "kpi": {
-            "calls": 1240,
-            "connected_rate": 0.62,
-            "qualified_rate": 0.28,
-            "avg_duration_sec": 146,
-            "cost_per_min_eur": 0.12,
-            "p95_ms": 540,
-        },
-        "charts": {
-            "calls_over_time": [{"ts": "2025-08-01", "attempted": 120, "connected": 70, "finished": 68}],
-            "outcomes_over_time": [{"ts": "2025-08-01", "qualified": 20, "not_interested": 18, "callback": 5, "voicemail": 10, "no_answer": 12, "failed": 5}],
-            "lang_distribution": [{"lang": "it-IT", "calls": 420}, {"lang": "en-US", "calls": 360}, {"lang": "fr-FR", "calls": 210}],
-            "agent_perf": [{"agent": "it-outbound-a", "qualified_rate": 0.31, "avg_duration_sec": 152}],
-            "cost_minutes_over_time": [{"ts": "2025-08-01", "minutes": 220, "eur": 26.4}],
-        },
-        "tables": {
-            "by_campaign": [{"id": "c_1", "name": "RFQ IT", "calls": 580, "qualified_rate": 0.29, "avg_duration_sec": 150, "cost_per_min_eur": 0.12, "p95_ms": 520}],
-            "by_agent": [{"id": "a_1", "name": "it-outbound-a", "lang": "it-IT", "calls": 320, "qualified_rate": 0.31, "avg_duration_sec": 152, "cost_per_min_eur": 0.12, "p95_ms": 530}],
-            "by_country": [{"iso": "IT", "calls": 600, "connected_rate": 0.66, "quiet_violations": 2, "rpo_blocks": 5}],
-        },
-    }
+def legacy_analytics_overview():
+    # 410 GONE con hint chiaro per evitare doppi codici
+    raise HTTPException(
+        status_code=410,
+        detail={"code":"DEPRECATED","message":"Use /metrics/overview instead"}
+    )
 
 
 @app.get("/analytics/export.json")
-def analytics_export_json(locale: str | None = None, range: str | None = None, scope: str | None = None) -> dict:
-    return analytics_overview(range=range, scope=scope)
+def legacy_analytics_export_json():
+    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
 
 
 @app.get("/analytics/export.csv")
-def analytics_export_csv(locale: str | None = None) -> Response:
-    sep = ","
-    head_map = {
-        "en-US": ["metric", "value"],
-        "it-IT": ["metrica", "valore"],
-        "fr-FR": ["métrique", "valeur"],
-        "hi-IN": ["मेट्रिक", "मान"],
-        "ar-EG": ["المعيار", "القيمة"],
-    }
-    headers = sep.join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
-    body = sep.join(["calls", "1240"]) + "\n" + sep.join(["connected_rate", "0.62"]) + "\n"
-    return Response(content=headers + body, media_type="text/csv")
+def legacy_analytics_export_csv():
+    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
 
 
 @app.get("/history")
@@ -6011,6 +5976,35 @@ async def get_cost_series(days: int = 30):
 	except Exception as e:
 		logger.error(f"Error getting cost series: {e}")
 		raise HTTPException(status_code=500, detail="Failed to get cost series")
+
+# --- NEW: unified overview endpoint ---
+@app.get("/metrics/overview")
+async def get_metrics_overview(
+    days: int = 30,
+    campaign_id: str | None = None,
+    agent_id: str | None = None,
+    lang: str | None = "en-US",
+    country: str | None = None,
+):
+    """
+    Overview unificata per la pagina /analytics.
+    Per ora usa i generatori mock già presenti in /metrics/*.
+    Accetta parametri standard che potremo usare quando colleghiamo Retell.
+    """
+    funnel = await get_funnel_metrics(days=days)
+    agents = await get_top_agents(days=days, limit=10)
+    geo = await get_geo_metrics(days=days)
+    cost = await get_cost_series(days=days)
+    return {
+        "funnel": funnel,
+        "agents_top": agents,
+        "geo": geo,
+        "cost_series": cost,
+        "params": {
+            "days": days, "campaign_id": campaign_id,
+            "agent_id": agent_id, "lang": lang, "country": country
+        }
+    }
 
 @app.post("/webhook/retell")
 def retell_webhook(

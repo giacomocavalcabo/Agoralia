@@ -271,5 +271,221 @@
     "team": "L'équipe",
     "title": "Paramètres",
     "unsaved": "[Non sauvegardé]"
+  },
+  "kb": {
+    "/": "Base de connaissances avec {params}",
+    "title": "Base de Connaissances",
+    "index": "Base de Connaissances",
+    "auth": {
+      "title": "Connexion requise",
+      "description": "Connectez-vous pour voir votre base de connaissances et la progression de l'ingestion"
+    },
+    "empty": {
+      "workspace_blocked": "Espace de travail non disponible en mode démo"
+    },
+    "error": {
+      "title": "Erreur de chargement",
+      "description": "Nous n'avons pas pu charger les données de la base de connaissances. Veuillez réessayer.",
+      "retry": "Réessayer"
+    },
+    "overview": {
+      "title": "Base de Connaissances",
+      "description": "Gérez le contenu et les attributions de votre base de connaissances",
+      "subtitle": "Gérez votre base de connaissances et vos sources de données",
+      "sources_count": "{count} sources",
+      "documents_count": "{count} documents",
+      "chunks_count": "{count} fragments",
+      "completeness": "Complétude",
+      "next_steps": "Prochaines Étapes",
+      "recent_changes": "Modifications Récentes",
+      "no_data": "Aucune donnée disponible",
+      "actions": {
+        "import_documents": "Importer des documents",
+        "add_source": "Ajouter une source",
+        "open": "Ouvrir",
+        "edit": "Modifier"
+      },
+      "kpi": {
+        "company": {
+          "title": "Informations de l'Entreprise",
+          "description": "Détails de base de l'entreprise et informations de contact",
+          "create": "Créer une Entreprise"
+        },
+        "offer_packs": {
+          "title": "Packs d'Offres",
+          "empty": "Aucun pack d'offre disponible",
+          "available": "{count} packs d'offre disponibles",
+          "create_first": "Créez votre premier pack d'offre",
+          "manage": "Gérer les packs d'offre"
+        },
+        "documents": {
+          "title": "Documents",
+          "complete": "Complet"
+        },
+        "assignments": {
+          "title": "Attributions",
+          "description": "Gérer les attributions de la base de connaissances"
+        }
+      },
+      "table": {
+        "title": "Éléments de la Base de Connaissances",
+        "empty": {
+          "title": "Aucun élément de base de connaissances",
+          "description": "Créez votre premier élément de base de connaissances pour commencer",
+          "cta_new": "Créer une Base de Connaissances"
+        },
+        "error": {
+          "title": "Erreur de chargement",
+          "description": "Nous n'avons pas pu charger les données de la base de connaissances",
+          "retry": "Réessayer"
+        },
+        "columns": {
+          "name": "Nom",
+          "type": "Type",
+          "status": "Statut",
+          "progress": "Progrès",
+          "actions": "Actions",
+          "title": "Titre",
+          "category": "Catégorie", 
+          "status": "Statut",
+          "updated_at": "Mis à jour",
+          "owner": "Propriétaire"
+        }
+      },
+      "toolbar": {
+        "search_placeholder": "Rechercher dans la base de connaissances...",
+        "filter": {
+          "all": "Tous",
+          "published": "Publiés",
+          "drafts": "Brouillons",
+          "archived": "Archivés"
+        },
+        "bulk": {
+          "assign": "Attribuer",
+          "import": "Importer",
+          "new_offer_pack": "Nouveau Pack d'Offre",
+          "delete": "Supprimer",
+          "export": "Exporter"
+        }
+      }
+    },
+    "import": {
+      "title": "Importer des Documents",
+      "tabs": {
+        "paste": "Coller du Texte",
+        "file": "Télécharger un Fichier",
+        "url": "Explorer l'URL"
+      },
+      "file_upload": {
+        "title": "Télécharger des Fichiers",
+        "subtitle": "Téléchargez des PDF, DOCX ou d'autres formats de document",
+        "drag_drop": "Glissez et déposez les fichiers ici, ou cliquez pour sélectionner",
+        "or_click": "ou cliquez pour parcourir",
+        "supported_formats": "Formats supportés : PDF, DOCX, TXT"
+      },
+      "url_crawl": {
+        "title": "Explorer un Site Web",
+        "subtitle": "Extraire le contenu des pages web",
+        "placeholder": "Entrez l'URL du site web (ex. https://example.com)",
+        "depth": "Profondeur d'Exploration",
+        "max_pages": "Pages Maximum"
+      },
+      "progress": {
+        "parsing": "Analyse des documents...",
+        "chunking": "Création de fragments...",
+        "embedding": "Génération d'embeddings..."
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "start": "Démarrer l'Import",
+        "commit": "Valider l'Import"
+      }
+    },
+    "sources": {
+      "title": "Sources de Données",
+      "add_source": "Ajouter une Source",
+      "upload_file": "Télécharger un Fichier",
+      "last_refresh": "Dernière actualisation",
+      "refresh": "Actualiser",
+      "delete": "Supprimer",
+      "empty": {
+        "title": "Aucune source pour le moment",
+        "description": "Commencez par ajouter votre première source de données"
+      },
+      "type": {
+        "manual": "Saisie Manuelle",
+        "url": "Exploration d'URL"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif",
+        "error": "Erreur",
+        "processing": "Traitement"
+      }
+    },
+    "imports": {
+      "title": "Importations de Base de Connaissances",
+      "description": "Importer et gérer le contenu de la base de connaissances à partir de sources externes",
+      "actions": {
+        "new_import": "Nouvelle Importation"
+      },
+      "empty": {
+        "title": "Aucune importation",
+        "description": "Démarrez votre première importation de base de connaissances"
+      },
+      "download_errors": "Télécharger les erreurs CSV",
+      "add_field": "[Ajouter un Champ]",
+      "apply_merge": "[Appliquer la Fusion]",
+      "conflicts": "[Conflits]",
+      "existing_fields": "[Champs Existants]",
+      "existing_value": "[Valeur Existante]",
+      "field_changes": "[Modifications de Champ]",
+      "field_new": "[Champ Nouveau]",
+      "field_update": "[Mise à Jour de Champ]",
+      "field_value": "[Valeur de Champ]",
+      "imported_fields": "[Champs Importés]",
+      "keep_existing": "[Conserver l'Existant]",
+      "merge_strategy": "[Stratégie de Fusion]",
+      "merge_summary": "[Résumé de la Fusion]",
+      "merge_values": "[Fusionner les Valeurs]",
+      "merged_preview": "[Aperçu de la Fusion]",
+      "merging": "[Fusion]",
+      "new_fields": "[Nouveaux Champs]",
+      "new_value": "[Nouvelle Valeur]",
+      "no_diff_available": "[Aucune Différence Disponible]",
+      "no_value": "[Aucune Valeur]",
+      "ready_to_merge": "[Prêt à Fusionner]",
+      "strategy_auto_merge": "[Stratégie Auto-Fusion]",
+      "strategy_auto_new": "[Stratégie Auto-Nouveau]",
+      "strategy_manual": "[Stratégie Manuelle]",
+      "updated": "[Mis à Jour]",
+      "use_new": "[Utiliser le Nouveau]"
+    },
+    "editor": {
+      "actions": {
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "publish": "Publier",
+        "unpublish": "Dépublier"
+      },
+      "fields": {
+        "title": "Titre",
+        "category": "Catégorie",
+        "description": "Description"
+      },
+      "messages": {
+        "unsaved_guard": "Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir partir ?"
+      }
+    },
+    "assignments": {
+      "title": "Attributions de Base de Connaissances",
+      "description": "Attribuer des éléments de base de connaissances aux agents et aux campagnes",
+      "confirm": {
+        "assign_title": "Attribuer la Base de Connaissances",
+        "assign_desc": "Êtes-vous sûr de vouloir attribuer cet élément de base de connaissances ?",
+        "confirm": "Confirmer",
+        "cancel": "Annuler"
+      }
+    }
   }
 }

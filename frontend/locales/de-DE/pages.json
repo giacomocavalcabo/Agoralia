@@ -271,5 +271,221 @@
     "team": "Team",
     "title": "Einstellungen",
     "unsaved": "[Ungesichert]"
+  },
+  "kb": {
+    "/": "Wissensdatenbank mit {params}",
+    "title": "Wissensdatenbank",
+    "index": "Wissensdatenbank",
+    "auth": {
+      "title": "Anmeldung erforderlich",
+      "description": "Melden Sie sich an, um Ihre Wissensdatenbank und den Ingestionsfortschritt anzuzeigen"
+    },
+    "empty": {
+      "workspace_blocked": "Arbeitsbereich im Demo-Modus nicht verfügbar"
+    },
+    "error": {
+      "title": "Ladefehler",
+      "description": "Wir konnten die Wissensdatenbank-Daten nicht laden. Bitte versuchen Sie es erneut.",
+      "retry": "Wiederholen"
+    },
+    "overview": {
+      "title": "Wissensdatenbank",
+      "description": "Verwalten Sie den Inhalt und die Zuweisungen Ihrer Wissensdatenbank",
+      "subtitle": "Verwalten Sie Ihre Wissensdatenbank und Datenquellen",
+      "sources_count": "{count} Quellen",
+      "documents_count": "{count} Dokumente",
+      "chunks_count": "{count} Chunks",
+      "completeness": "Vollständigkeit",
+      "next_steps": "Nächste Schritte",
+      "recent_changes": "Letzte Änderungen",
+      "no_data": "Keine Daten verfügbar",
+      "actions": {
+        "import_documents": "Dokumente importieren",
+        "add_source": "Quelle hinzufügen",
+        "open": "Öffnen",
+        "edit": "Bearbeiten"
+      },
+      "kpi": {
+        "company": {
+          "title": "Unternehmensinformationen",
+          "description": "Grundlegende Unternehmensdetails und Kontaktinformationen",
+          "create": "Unternehmen erstellen"
+        },
+        "offer_packs": {
+          "title": "Angebotspakete",
+          "empty": "Keine Angebotspakete verfügbar",
+          "available": "{count} Angebotspakete verfügbar",
+          "create_first": "Erstellen Sie Ihr erstes Angebotspaket",
+          "manage": "Angebotspakete verwalten"
+        },
+        "documents": {
+          "title": "Dokumente",
+          "complete": "Vollständig"
+        },
+        "assignments": {
+          "title": "Zuweisungen",
+          "description": "Verwalten Sie Wissensdatenbank-Zuweisungen"
+        }
+      },
+      "table": {
+        "title": "Wissensdatenbank-Elemente",
+        "empty": {
+          "title": "Keine Wissensdatenbank-Elemente",
+          "description": "Erstellen Sie Ihr erstes Wissensdatenbank-Element, um zu beginnen",
+          "cta_new": "Wissensdatenbank erstellen"
+        },
+        "error": {
+          "title": "Ladefehler",
+          "description": "Wir konnten die Wissensdatenbank-Daten nicht laden",
+          "retry": "Wiederholen"
+        },
+        "columns": {
+          "name": "Name",
+          "type": "Typ",
+          "status": "Status",
+          "progress": "Fortschritt",
+          "actions": "Aktionen",
+          "title": "Titel",
+          "category": "Kategorie", 
+          "status": "Status",
+          "updated_at": "Aktualisiert",
+          "owner": "Besitzer"
+        }
+      },
+      "toolbar": {
+        "search_placeholder": "In der Wissensdatenbank suchen...",
+        "filter": {
+          "all": "Alle",
+          "published": "Veröffentlicht",
+          "drafts": "Entwürfe",
+          "archived": "Archiviert"
+        },
+        "bulk": {
+          "assign": "Zuweisen",
+          "import": "Importieren",
+          "new_offer_pack": "Neues Angebotspaket",
+          "delete": "Löschen",
+          "export": "Exportieren"
+        }
+      }
+    },
+    "import": {
+      "title": "Dokumente importieren",
+      "tabs": {
+        "paste": "Text einfügen",
+        "file": "Datei hochladen",
+        "url": "URL crawlen"
+      },
+      "file_upload": {
+        "title": "Dateien hochladen",
+        "subtitle": "Laden Sie PDFs, DOCX oder andere Dokumentformate hoch",
+        "drag_drop": "Dateien hierher ziehen und ablegen, oder klicken Sie zum Auswählen",
+        "or_click": "oder klicken Sie zum Durchsuchen",
+        "supported_formats": "Unterstützte Formate: PDF, DOCX, TXT"
+      },
+      "url_crawl": {
+        "title": "Website crawlen",
+        "subtitle": "Inhalt von Webseiten extrahieren",
+        "placeholder": "Website-URL eingeben (z.B. https://example.com)",
+        "depth": "Crawl-Tiefe",
+        "max_pages": "Maximale Seiten"
+      },
+      "progress": {
+        "parsing": "Dokumente werden analysiert...",
+        "chunking": "Chunks werden erstellt...",
+        "embedding": "Embeddings werden generiert..."
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "start": "Import starten",
+        "commit": "Import bestätigen"
+      }
+    },
+    "sources": {
+      "title": "Datenquellen",
+      "add_source": "Quelle hinzufügen",
+      "upload_file": "Datei hochladen",
+      "last_refresh": "Zuletzt aktualisiert",
+      "refresh": "Aktualisieren",
+      "delete": "Löschen",
+      "empty": {
+        "title": "Noch keine Quellen",
+        "description": "Beginnen Sie mit dem Hinzufügen Ihrer ersten Datenquelle"
+      },
+      "type": {
+        "manual": "Manuelle Eingabe",
+        "url": "URL-Crawling"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "error": "Fehler",
+        "processing": "Verarbeitung"
+      }
+    },
+    "imports": {
+      "title": "Wissensdatenbank-Importe",
+      "description": "Importieren und verwalten Sie Wissensdatenbank-Inhalte aus externen Quellen",
+      "actions": {
+        "new_import": "Neuer Import"
+      },
+      "empty": {
+        "title": "Keine Importe",
+        "description": "Starten Sie Ihren ersten Wissensdatenbank-Import"
+      },
+      "download_errors": "Fehler CSV herunterladen",
+      "add_field": "[Feld hinzufügen]",
+      "apply_merge": "[Zusammenführung anwenden]",
+      "conflicts": "[Konflikte]",
+      "existing_fields": "[Bestehende Felder]",
+      "existing_value": "[Bestehender Wert]",
+      "field_changes": "[Feldänderungen]",
+      "field_new": "[Neues Feld]",
+      "field_update": "[Feldaktualisierung]",
+      "field_value": "[Feldwert]",
+      "imported_fields": "[Importierte Felder]",
+      "keep_existing": "[Bestehendes beibehalten]",
+      "merge_strategy": "[Zusammenführungsstrategie]",
+      "merge_summary": "[Zusammenfassung der Zusammenführung]",
+      "merge_values": "[Werte zusammenführen]",
+      "merged_preview": "[Vorschau der Zusammenführung]",
+      "merging": "[Zusammenführung]",
+      "new_fields": "[Neue Felder]",
+      "new_value": "[Neuer Wert]",
+      "no_diff_available": "[Kein Unterschied verfügbar]",
+      "no_value": "[Kein Wert]",
+      "ready_to_merge": "[Bereit zur Zusammenführung]",
+      "strategy_auto_merge": "[Strategie Auto-Zusammenführung]",
+      "strategy_auto_new": "[Strategie Auto-Neu]",
+      "strategy_manual": "[Manuelle Strategie]",
+      "updated": "[Aktualisiert]",
+      "use_new": "[Neues verwenden]"
+    },
+    "editor": {
+      "actions": {
+        "save": "Speichern",
+        "saving": "Speichern...",
+        "publish": "Veröffentlichen",
+        "unpublish": "Veröffentlichung aufheben"
+      },
+      "fields": {
+        "title": "Titel",
+        "category": "Kategorie",
+        "description": "Beschreibung"
+      },
+      "messages": {
+        "unsaved_guard": "Sie haben ungespeicherte Änderungen. Sind Sie sicher, dass Sie gehen möchten?"
+      }
+    },
+    "assignments": {
+      "title": "Wissensdatenbank-Zuweisungen",
+      "description": "Weisen Sie Wissensdatenbank-Elemente Agenten und Kampagnen zu",
+      "confirm": {
+        "assign_title": "Wissensdatenbank zuweisen",
+        "assign_desc": "Sind Sie sicher, dass Sie dieses Wissensdatenbank-Element zuweisen möchten?",
+        "confirm": "Bestätigen",
+        "cancel": "Abbrechen"
+      }
+    }
   }
 }

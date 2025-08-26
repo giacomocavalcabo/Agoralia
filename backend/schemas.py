@@ -196,6 +196,60 @@ class KbChunkSearchResponse(BaseModel):
     query: Optional[str] = None
 
 
+# ===================== Structured Cards Schemas =====================
+
+class KbStructuredCardBase(BaseModel):
+    """Base schema for structured cards"""
+    card_type: str = Field(..., description="Card type: company, product, contact, policy, faq")
+    title: str = Field(..., description="Card title")
+    content_json: Dict[str, Any] = Field(..., description="Structured content")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="AI confidence score")
+    lang: str = Field("en-US", description="Language code")
+
+
+class KbStructuredCardCreate(KbStructuredCardBase):
+    """Schema for creating structured cards"""
+    kb_id: str = Field(..., description="Knowledge Base ID")
+    source_chunks: Optional[List[str]] = Field(None, description="Source chunk IDs")
+    meta_json: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class KbStructuredCardResponse(KbStructuredCardBase):
+    """Schema for structured card responses"""
+    id: str
+    kb_id: str
+    source_chunks: Optional[List[str]] = None
+    meta_json: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+# ===================== Quality Metrics Schemas =====================
+
+class KbQualityBreakdown(BaseModel):
+    """Schema for quality metric breakdown"""
+    company_score: float = Field(0.0, ge=0.0, le=100.0, description="Company profile completeness")
+    contacts_score: float = Field(0.0, ge=0.0, le=100.0, description="Contacts completeness")
+    products_score: float = Field(0.0, ge=0.0, le=100.0, description="Products completeness")
+    pricing_score: float = Field(0.0, ge=0.0, le=100.0, description="Pricing completeness")
+    policies_score: float = Field(0.0, ge=0.0, le=100.0, description="Policies completeness")
+    faq_score: float = Field(0.0, ge=0.0, le=100.0, description="FAQ completeness")
+    freshness_score: float = Field(0.0, ge=0.0, le=100.0, description="Content freshness")
+    accuracy_score: float = Field(0.0, ge=0.0, le=100.0, description="Content accuracy")
+
+
+class KbQualityResponse(BaseModel):
+    """Schema for quality metrics response"""
+    kb_id: str
+    overall_score: float = Field(0.0, ge=0.0, le=100.0, description="Overall quality score")
+    breakdown: KbQualityBreakdown
+    last_calculated: datetime
+    suggestions: List[str] = Field(default_factory=list, description="Improvement suggestions")
+
+
 # ===================== Source Management Schemas =====================
 
 class KbSourceCreate(BaseModel):

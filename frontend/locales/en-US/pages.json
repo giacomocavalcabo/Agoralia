@@ -620,6 +620,9 @@
     }
   },
   "kb": {
+    "/": "Knowledge Base with {params}",
+    "title": "Knowledge Base",
+    "index": "Knowledge Base",
     "auth": {
       "title": "Sign in required",
       "description": "Sign in to view your knowledge base and ingestion progress"
@@ -635,7 +638,44 @@
     "overview": {
       "title": "Knowledge Base",
       "description": "Manage your knowledge base content and assignments",
+      "subtitle": "Manage your knowledge base and data sources",
+      "sources_count": "{count} sources",
+      "documents_count": "{count} documents",
+      "chunks_count": "{count} chunks",
+      "completeness": "Completeness",
+      "next_steps": "Next Steps",
+      "recent_changes": "Recent Changes",
+      "no_data": "No data available",
+      "actions": {
+        "import_documents": "Import documents",
+        "add_source": "Add source",
+        "open": "Open",
+        "edit": "Edit"
+      },
+      "kpi": {
+        "company": {
+          "title": "Company Information",
+          "description": "Basic company details and contact information",
+          "create": "Create Company"
+        },
+        "offer_packs": {
+          "title": "Offer Packs",
+          "empty": "No offer packs available",
+          "available": "{count} offer packs available",
+          "create_first": "Create your first offer pack",
+          "manage": "Manage offer packs"
+        },
+        "documents": {
+          "title": "Documents",
+          "complete": "Complete"
+        },
+        "assignments": {
+          "title": "Assignments",
+          "description": "Manage knowledge base assignments"
+        }
+      },
       "table": {
+        "title": "Knowledge Base Items",
         "empty": {
           "title": "No knowledge base items",
           "description": "Create your first knowledge base item to get started",
@@ -647,6 +687,11 @@
           "retry": "Retry"
         },
         "columns": {
+          "name": "Name",
+          "type": "Type",
+          "status": "Status",
+          "progress": "Progress",
+          "actions": "Actions",
           "title": "Title",
           "category": "Category", 
           "status": "Status",
@@ -655,19 +700,19 @@
         }
       },
       "toolbar": {
-        "bulk": {
-          "import": "Import",
-          "new_offer_pack": "New Offer Pack",
-          "assign": "Assign",
-          "delete": "Delete",
-          "export": "Export"
-        },
         "search_placeholder": "Search knowledge base...",
         "filter": {
           "all": "All",
           "published": "Published",
           "drafts": "Drafts",
           "archived": "Archived"
+        },
+        "bulk": {
+          "assign": "Assign",
+          "import": "Import",
+          "new_offer_pack": "New Offer Pack",
+          "delete": "Delete",
+          "export": "Export"
         }
       }
     },
@@ -687,6 +732,60 @@
         "unsaved_guard": "You have unsaved changes. Are you sure you want to leave?"
       }
     },
+    "import": {
+      "title": "Import Documents",
+      "tabs": {
+        "paste": "Paste Text",
+        "file": "Upload File",
+        "url": "Crawl URL"
+      },
+      "file_upload": {
+        "title": "Upload Files",
+        "subtitle": "Upload PDFs, DOCX, or other document formats",
+        "drag_drop": "Drag and drop files here, or click to select",
+        "or_click": "or click to browse",
+        "supported_formats": "Supported formats: PDF, DOCX, TXT"
+      },
+      "url_crawl": {
+        "title": "Crawl Website",
+        "subtitle": "Extract content from web pages",
+        "placeholder": "Enter website URL (e.g., https://example.com)",
+        "depth": "Crawl Depth",
+        "max_pages": "Maximum Pages"
+      },
+      "progress": {
+        "parsing": "Parsing documents...",
+        "chunking": "Creating chunks...",
+        "embedding": "Generating embeddings..."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "start": "Start Import",
+        "commit": "Commit Import"
+      }
+    },
+    "sources": {
+      "title": "Data Sources",
+      "add_source": "Add Source",
+      "upload_file": "Upload File",
+      "last_refresh": "Last refreshed",
+      "refresh": "Refresh",
+      "delete": "Delete",
+      "empty": {
+        "title": "No sources yet",
+        "description": "Get started by adding your first data source"
+      },
+      "type": {
+        "manual": "Manual Entry",
+        "url": "URL Crawl"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "error": "Error",
+        "processing": "Processing"
+      }
+    },
     "imports": {
       "title": "Knowledge Base Imports",
       "description": "Import and manage knowledge base content from external sources",
@@ -697,7 +796,33 @@
         "title": "No imports",
         "description": "Start your first knowledge base import"
       },
-      "download_errors": "Download errors CSV"
+      "download_errors": "Download errors CSV",
+      "add_field": "[Add Field]",
+      "apply_merge": "[Apply Merge]",
+      "conflicts": "[Conflicts]",
+      "existing_fields": "[Existing Fields]",
+      "existing_value": "[Existing Value]",
+      "field_changes": "[Field Changes]",
+      "field_new": "[Field New]",
+      "field_update": "[Field Update]",
+      "field_value": "[Field Value]",
+      "imported_fields": "[Imported Fields]",
+      "keep_existing": "[Keep Existing]",
+      "merge_strategy": "[Merge Strategy]",
+      "merge_summary": "[Merge Summary]",
+      "merge_values": "[Merge Values]",
+      "merged_preview": "[Merged Preview]",
+      "merging": "[Merging]",
+      "new_fields": "[New Fields]",
+      "new_value": "[New Value]",
+      "no_diff_available": "[No Diff Available]",
+      "no_value": "[No Value]",
+      "ready_to_merge": "[Ready To Merge]",
+      "strategy_auto_merge": "[Strategy Auto Merge]",
+      "strategy_auto_new": "[Strategy Auto New]",
+      "strategy_manual": "[Strategy Manual]",
+      "updated": "[Updated]",
+      "use_new": "[Use New]"
     },
     "assignments": {
       "title": "Knowledge Base Assignments",
@@ -1004,6 +1129,41 @@
       "before": "before",
       "after": "after",
       "between": "between"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Monitor campaigns, agents and outcomes to improve performance.",
+    "filters": {
+      "range": "Date range",
+      "last_7d": "Last 7 days",
+      "last_30d": "Last 30 days",
+      "last_90d": "Last 90 days",
+      "campaign": "Campaign",
+      "agent": "Agent",
+      "country": "Country",
+      "language": "Language"
+    },
+    "kpi": {
+      "reached": "Reached",
+      "connected": "Connected",
+      "qualified": "Qualified",
+      "booked": "Booked"
+    },
+    "charts": {
+      "funnel": "Conversion funnel",
+      "agents_top": "Top agents",
+      "geo": "By country",
+      "cost": "Costs over time"
+    },
+    "empty": "No data available for the selected filters.",
+    "error": {
+      "title": "Analytics error",
+      "description": "We couldn't load analytics. Please try again."
+    },
+    "actions": {
+      "export_csv": "Export CSV",
+      "export_json": "Export JSON"
     }
   },
   "common": {
