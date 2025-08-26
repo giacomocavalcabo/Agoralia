@@ -99,9 +99,10 @@
       "description": "Please log in to access the knowledge base."
     },
     "overview": {
-      "title": "Knowledge Base",
-      "subtitle": "Centralize sources and documents. More data = better prepared agents.",
-      "actions": {
+      "kb": {
+        "title": "Knowledge Base",
+        "subtitle": "Centralize sources and documents. More data = better prepared agents.",
+        "actions": {
         "import_documents": "Import Documents",
         "add_source": "Add Source",
         "open": "Open",
@@ -147,8 +148,26 @@
       "sources_count_other": "{{count}} sources",
       "documents_count_one": "{{count}} document",
       "documents_count_other": "{{count}} documents",
-      "chunks_count_one": "{{count}} chunk",
-      "chunks_count_other": "{{count}} chunks"
+        "chunks_count_one": "{{count}} chunk",
+        "chunks_count_other": "{{count}} chunks",
+        "next_steps_items": {
+          "add_company": {
+            "title": "Add company information",
+            "description": "Create your company knowledge base"
+          },
+          "import_documents": {
+            "title": "Import documents",
+            "description": "Upload PDFs, DOCX, or crawl websites"
+          },
+          "add_sources": {
+            "title": "Add sources",
+            "description": "Connect external data sources"
+          }
+        },
+        "import": {
+          "title": "Import Documents"
+        }
+      }
     },
     "empty": {
       "no_data": "No content yet",
@@ -552,7 +571,33 @@
     "welcome": "Welcome back"
   },
   "history": {
-    "title": "Call History & Outcomes"
+    "title": "Call History & Outcomes",
+    "search_placeholder": "Search by ID, contact, notes…",
+    "search_aria": "Search in history",
+    "export_csv": "Export CSV",
+    "loading": "Loading history…",
+    "error": "Couldn't load history.",
+    "empty": "No outcomes found",
+    "filters": {
+      "campaign": "Campaign",
+      "all_campaigns": "All campaigns",
+      "next_step": "Next Step",
+      "all_steps": "All steps",
+      "score_min": "Score Min",
+      "score_max": "Score Max"
+    },
+    "steps": { "callback": "Callback", "email": "Send Email", "meeting": "Book Meeting" },
+    "table": {
+      "call_id": "Call ID",
+      "campaign": "Campaign",
+      "outcome": "Outcome",
+      "score": "Score",
+      "next_step": "Next Step",
+      "sentiment": "Sentiment",
+      "actions": "Actions",
+      "view": "View"
+    },
+    "pagination": { "total": "{{count}} outcomes" }
   },
   "import": {
     "dedupe": {
@@ -1364,6 +1409,7 @@
   "common": {
     "back": "Back",
     "next": "Next",
+    "prev": "Prev",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
