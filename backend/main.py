@@ -4068,7 +4068,7 @@ def create_knowledge_base(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     user_id = "u_1"  # In production, get from session
     
     with next(get_db()) as db:
@@ -4481,7 +4481,7 @@ def assign_knowledge_base(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Assign knowledge base to scope (number, campaign, agent, or workspace default)"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Check if KB exists and belongs to workspace
@@ -4673,7 +4673,7 @@ def resolve_knowledge_base(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Resolve knowledge base for runtime use (campaign > number > agent > workspace default)"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     # Cache key for performance
     cache_key = f"kb_resolve:{workspace_id}:{campaign_id}:{number_id}:{agent_id}:{lang}"
@@ -4777,7 +4777,7 @@ def generate_prompt_bricks(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Generate prompt bricks (rules/style/voice/facts) from a resolved KB"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     lang = payload.lang or "en-US"
     
     with next(get_db()) as db:
@@ -5074,7 +5074,7 @@ def create_kb_section(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new section in knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify KB exists and belongs to workspace
@@ -5126,7 +5126,7 @@ def update_kb_section(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update a knowledge base section"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify section exists and belongs to workspace
@@ -5136,7 +5136,15 @@ def update_kb_section(
         ).first()
         
         if not section:
-            raise HTTPException(status_code=404, detail="Section not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "SECTION_NOT_FOUND",
+                    "Section not found",
+                    {"section_id": section_id, "workspace_id": workspace_id},
+                    "Verify the section ID and ensure it belongs to your workspace"
+                )
+            )
         
         # Update fields
         if payload.title is not None:
@@ -5170,7 +5178,7 @@ def delete_kb_section(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Delete a knowledge base section"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify section exists and belongs to workspace
@@ -5180,7 +5188,15 @@ def delete_kb_section(
         ).first()
         
         if not section:
-            raise HTTPException(status_code=404, detail="Section not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "SECTION_NOT_FOUND",
+                    "Section not found",
+                    {"section_id": section_id, "workspace_id": workspace_id},
+                    "Verify the section ID and ensure it belongs to your workspace"
+                )
+            )
         
         # Delete associated fields first
         db.query(KbField).filter(KbField.section_id == section_id).delete()
@@ -5209,7 +5225,7 @@ def create_kb_field(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Create a new field in knowledge base"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify KB exists and belongs to workspace
@@ -5219,7 +5235,15 @@ def create_kb_field(
         ).first()
         
         if not kb:
-            raise HTTPException(status_code=404, detail="Knowledge base not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "KB_NOT_FOUND",
+                    "Knowledge base not found",
+                    {"kb_id": kb_id, "workspace_id": workspace_id},
+                    "Verify the KB ID and ensure it belongs to your workspace"
+                )
+            )
         
         # Verify section exists if specified
         if payload.section_id:
@@ -5228,7 +5252,15 @@ def create_kb_field(
                 KbSection.kb_id == kb_id
             ).first()
             if not section:
-                raise HTTPException(status_code=404, detail="Section not found")
+                raise HTTPException(
+                    status_code=404, 
+                    detail=_create_error_response(
+                        "SECTION_NOT_FOUND",
+                        "Section not found",
+                        {"section_id": payload.section_id, "kb_id": kb_id},
+                        "Verify the section ID and ensure it belongs to the specified KB"
+                    )
+                )
         
         # Create field
         field_id = f"field_{secrets.token_urlsafe(8)}"
@@ -5272,7 +5304,7 @@ def update_kb_field(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Update a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify field exists and belongs to workspace
@@ -5282,7 +5314,15 @@ def update_kb_field(
         ).first()
         
         if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "FIELD_NOT_FOUND",
+                    "Field not found",
+                    {"field_id": field_id, "workspace_id": workspace_id},
+                    "Verify the field ID and ensure it belongs to your workspace"
+                )
+            )
         
         # Update fields
         if payload.label is not None:
@@ -5318,7 +5358,7 @@ def delete_kb_field(
     _guard: None = Depends(require_role("editor"))
 ) -> dict:
     """Delete a knowledge base field"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Verify field exists and belongs to workspace
@@ -5328,7 +5368,15 @@ def delete_kb_field(
         ).first()
         
         if not field:
-            raise HTTPException(status_code=404, detail="Field not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=_create_error_response(
+                    "FIELD_NOT_FOUND",
+                    "Field not found",
+                    {"field_id": field_id, "workspace_id": workspace_id},
+                    "Verify the field ID and ensure it belongs to your workspace"
+                )
+            )
         
         # Delete field
         db.delete(field)
@@ -5475,7 +5523,7 @@ def list_kb_assignments(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """List knowledge base assignments for workspace"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         query = db.query(KbAssignment).filter(
@@ -5516,7 +5564,7 @@ def get_ai_usage(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get AI usage statistics for workspace"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Parse period
@@ -5646,7 +5694,15 @@ def commit_import_job(
             ).with_for_update().first()
             
             if not target_kb:
-                raise HTTPException(status_code=404, detail="Target KB not found")
+                raise HTTPException(
+                    status_code=404, 
+                    detail=_create_error_response(
+                        "TARGET_KB_NOT_FOUND",
+                        "Target KB not found",
+                        {"target_kb_id": job.target_kb_id, "workspace_id": workspace_id},
+                        "Verify the target KB ID and ensure it belongs to your workspace"
+                    )
+                )
             
             # Apply changes based on mappings in job.meta_json
             mappings = job.meta_json.get("mappings", {}) if job.meta_json else {}
@@ -5774,22 +5830,30 @@ def get_workspace_id(request: Request, *, required: bool = True, fallback: str |
 
 
 def _recalculate_kb_metrics(db: Session, kb_id: str) -> None:
-    """Recalculate KB completeness and freshness metrics - FIXED VERSION"""
+    """Recalculate KB completeness and freshness metrics - ROBUST VERSION"""
     sections = db.query(KbSection).filter(KbSection.kb_id == kb_id).all()
     fields = db.query(KbField).filter(KbField.kb_id == kb_id).all()
 
-    # completeness (50/50)
-    sections_pct = (sum((s.completeness_pct or 0) for s in sections) / len(sections)) if sections else 0
-    fields_pct = (sum(1 for f in fields if (f.value_text or f.value_json)) / len(fields)) if fields else 0
-    completeness_pct = int(round((sections_pct * 0.5 + fields_pct * 0.5) * 100))
-
-    # freshness: se nessun updated_at ⇒ 0 (la UI mostra "—")
-    updateds = [s.updated_at for s in sections if s.updated_at] + [f.updated_at for f in fields if f.updated_at]
-    if updateds:
-        days = (datetime.utcnow() - max(updateds)).days
-        freshness_score = 100 if days <= 7 else 75 if days <= 30 else 50 if days <= 90 else 25
+    # Completeness
+    if not sections and not fields:
+        completeness_pct = 0
     else:
-        freshness_score = 0  # e la UI rende "—"
+        sec_w = 0.5
+        fld_w = 0.5
+        section_compl = (sum(s.completeness_pct or 0 for s in sections) / max(len(sections), 1)) if sections else 0
+        field_compl = (sum(1 for f in fields if (f.value_text or f.value_json)) / max(len(fields), 1)) if fields else 0
+        completeness_pct = int((section_compl * sec_w + field_compl * fld_w) * 100)
+
+    # Freshness
+    timestamps = []
+    timestamps += [s.updated_at for s in sections if s.updated_at]
+    timestamps += [f.updated_at for f in fields if f.updated_at]
+
+    if not timestamps:
+        freshness_score = 0
+    else:
+        days = (datetime.utcnow() - max(timestamps)).days
+        freshness_score = 100 if days <= 7 else 75 if days <= 30 else 50 if days <= 90 else 25
 
     kb = db.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
     if kb:
@@ -6006,7 +6070,7 @@ def track_kb_usage(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Track KB usage for hit-rate analytics"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Create usage record
@@ -6051,7 +6115,7 @@ def get_kb_analytics(
     _guard: None = Depends(require_role("viewer"))
 ) -> dict:
     """Get KB usage analytics and hit-rate"""
-    workspace_id = request.headers.get("X-Workspace-Id", "ws_1")
+    workspace_id = get_workspace_id(request, required=True)
     
     with next(get_db()) as db:
         # Calculate period
