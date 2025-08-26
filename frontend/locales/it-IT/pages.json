@@ -333,11 +333,6 @@
       "status": "Stato",
       "segment": "Segmento (JSON)"
     },
-    "actions": { 
-      "save": "Salva", 
-      "next": "Avanti",
-      "create_schedule": "Crea e programma" 
-    },
     "states": { 
       "loading": "Caricamento…", 
       "empty": "Nessun risultato", 

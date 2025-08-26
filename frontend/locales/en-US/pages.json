@@ -346,11 +346,6 @@
       "status": "Status",
       "segment": "Segment (JSON)"
     },
-    "actions": { 
-      "save": "Save", 
-      "next": "Next",
-      "create_schedule": "Create & Schedule" 
-    },
     "states": { 
       "loading": "Loading…", 
       "empty": "No results", 
