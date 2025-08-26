@@ -530,7 +530,33 @@
     "welcome": "Bentornato"
   },
   "history": {
-    "title": "Cronologia Chiamate e Risultati"
+    "title": "Cronologia chiamate & esiti",
+    "search_placeholder": "Cerca per ID, contatto, note…",
+    "search_aria": "Cerca nella cronologia",
+    "export_csv": "Esporta CSV",
+    "loading": "Caricamento cronologia…",
+    "error": "Impossibile caricare la cronologia.",
+    "empty": "Nessun esito trovato",
+    "filters": {
+      "campaign": "Campagna",
+      "all_campaigns": "Tutte le campagne",
+      "next_step": "Prossimo passo",
+      "all_steps": "Tutti i passi",
+      "score_min": "Punteggio Min",
+      "score_max": "Punteggio Max"
+    },
+    "steps": { "callback": "Richiamare", "email": "Inviare email", "meeting": "Fissare meeting" },
+    "table": {
+      "call_id": "ID Chiamata",
+      "campaign": "Campagna",
+      "outcome": "Esito",
+      "score": "Punteggio",
+      "next_step": "Prossimo passo",
+      "sentiment": "Sentiment",
+      "actions": "Azioni",
+      "view": "Apri"
+    },
+    "pagination": { "total": "{{count}} esiti" }
   },
   "import": {
     "dedupe": {
@@ -1280,6 +1306,7 @@
   "common": {
     "back": "Indietro",
     "next": "Successivo",
+    "prev": "Indietro",
     "save": "Salva",
     "cancel": "Annulla",
     "edit": "Modifica",
