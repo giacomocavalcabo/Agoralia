@@ -5796,6 +5796,241 @@ def get_kb_job_status(
         }
 
 
+@app.get("/kb/structured-cards")
+def list_structured_cards(
+    kb_id: Optional[str] = Query(None, description="Filter by Knowledge Base ID"),
+    card_type: Optional[str] = Query(None, description="Filter by card type"),
+    lang: Optional[str] = Query(None, description="Filter by language"),
+    min_confidence: Optional[float] = Query(None, ge=0.0, le=1.0, description="Minimum confidence score"),
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """List structured cards with filtering"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Build query with workspace filtering
+        query_builder = db.query(KbStructuredCard).join(
+            KnowledgeBase, KbStructuredCard.kb_id == KnowledgeBase.id
+        ).filter(KnowledgeBase.workspace_id == workspace_id)
+        
+        # Apply filters
+        if kb_id:
+            query_builder = query_builder.filter(KbStructuredCard.kb_id == kb_id)
+        if card_type:
+            query_builder = query_builder.filter(KbStructuredCard.card_type == card_type)
+        if lang:
+            query_builder = query_builder.filter(KbStructuredCard.lang == lang)
+        if min_confidence is not None:
+            query_builder = query_builder.filter(KbStructuredCard.confidence >= min_confidence)
+        
+        # Order by confidence and recency
+        cards = query_builder.order_by(
+            KbStructuredCard.confidence.desc(),
+            KbStructuredCard.updated_at.desc()
+        ).all()
+        
+        return {
+            "items": [
+                {
+                    "id": card.id,
+                    "kb_id": card.kb_id,
+                    "card_type": card.card_type,
+                    "title": card.title,
+                    "content_json": card.content_json,
+                    "confidence": card.confidence,
+                    "source_chunks": card.source_chunks,
+                    "lang": card.lang,
+                    "meta_json": card.meta_json,
+                    "created_at": card.created_at,
+                    "updated_at": card.updated_at
+                }
+                for card in cards
+            ],
+            "total": len(cards)
+        }
+
+
+@app.get("/kb/structured-cards/{card_id}")
+def get_structured_card(
+    card_id: str,
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get a specific structured card"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Get card with workspace verification
+        card = db.query(KbStructuredCard).join(
+            KnowledgeBase, KbStructuredCard.kb_id == KnowledgeBase.id
+        ).filter(
+            KbStructuredCard.id == card_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if not card:
+            raise HTTPException(
+                status_code=404,
+                detail=_create_error_response(
+                    "CARD_NOT_FOUND",
+                    "Structured card not found",
+                    {"card_id": card_id},
+                    "Verify the card ID and ensure it belongs to your workspace"
+                )
+            )
+        
+        return {
+            "id": card.id,
+            "kb_id": card.kb_id,
+            "card_type": card.card_type,
+            "title": card.title,
+            "content_json": card.content_json,
+            "confidence": card.confidence,
+            "source_chunks": card.source_chunks,
+            "lang": card.lang,
+            "meta_json": card.meta_json,
+            "created_at": card.created_at,
+            "updated_at": card.updated_at
+        }
+
+
+@app.get("/kb/completeness/{kb_id}")
+def get_kb_completeness(
+    kb_id: str,
+    request: Request = None,
+    _guard: None = Depends(require_role("viewer"))
+) -> dict:
+    """Get KB completeness metrics with intelligent breakdown"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Verify KB exists and belongs to workspace
+        kb = db.query(KnowledgeBase).filter(
+            KnowledgeBase.id == kb_id,
+            KnowledgeBase.workspace_id == workspace_id
+        ).first()
+        
+        if not kb:
+            raise HTTPException(
+                status_code=404,
+                detail=_create_error_response(
+                    "KB_NOT_FOUND",
+                    "Knowledge Base not found",
+                    {"kb_id": kb_id},
+                    "Verify the KB ID and ensure it belongs to your workspace"
+                )
+            )
+        
+        # Get structured cards for this KB
+        cards = db.query(KbStructuredCard).filter(
+            KbStructuredCard.kb_id == kb_id
+        ).all()
+        
+        # Get chunks for this KB
+        chunks = db.query(KbChunk).filter(
+            KbChunk.kb_id == kb_id
+        ).all()
+        
+        # Calculate completeness by category with weights
+        weights = {
+            "company": 0.20,      # 20% - Company profile
+            "contacts": 0.10,     # 10% - Contact information
+            "products": 0.25,     # 25% - Product catalog
+            "pricing": 0.15,      # 15% - Pricing information
+            "policies": 0.20,     # 20% - Company policies
+            "faq": 0.10           # 10% - FAQ section
+        }
+        
+        # Count cards by type
+        card_counts = {}
+        for card in cards:
+            card_type = card.card_type
+            if card_type not in card_counts:
+                card_counts[card_type] = 0
+            card_counts[card_type] += 1
+        
+        # Calculate scores for each category
+        category_scores = {}
+        for category, weight in weights.items():
+            count = card_counts.get(category, 0)
+            # Score based on presence and quality
+            if count == 0:
+                score = 0.0
+            elif count == 1:
+                score = 60.0  # Basic coverage
+            elif count <= 3:
+                score = 80.0  # Good coverage
+            else:
+                score = 100.0  # Excellent coverage
+            
+            # Apply confidence boost if cards exist
+            if count > 0:
+                avg_confidence = sum(
+                    c.confidence for c in cards if c.card_type == category
+                ) / count
+                score = min(100.0, score + (avg_confidence * 20))
+            
+            category_scores[category] = score
+        
+        # Calculate overall completeness
+        overall_score = sum(
+            score * weights[category] 
+            for category, score in category_scores.items()
+        )
+        
+        # Calculate freshness score
+        if chunks:
+            latest_update = max(chunk.updated_at for chunk in chunks if chunk.updated_at)
+            days_old = (datetime.utcnow() - latest_update).days
+            if days_old <= 7:
+                freshness_score = 100.0
+            elif days_old <= 30:
+                freshness_score = 75.0
+            elif days_old <= 90:
+                freshness_score = 50.0
+            else:
+                freshness_score = 25.0
+        else:
+            freshness_score = 0.0
+        
+        # Generate improvement suggestions
+        suggestions = []
+        for category, score in category_scores.items():
+            if score < 50:
+                suggestions.append(f"Add {category} information to improve coverage")
+            elif score < 80:
+                suggestions.append(f"Enhance {category} details for better completeness")
+        
+        if freshness_score < 50:
+            suggestions.append("Update content to improve freshness")
+        
+        if not chunks:
+            suggestions.append("Upload documents to start building your knowledge base")
+        
+        return {
+            "kb_id": kb_id,
+            "overall_score": round(overall_score, 1),
+            "breakdown": {
+                "company_score": round(category_scores.get("company", 0.0), 1),
+                "contacts_score": round(category_scores.get("contacts", 0.0), 1),
+                "products_score": round(category_scores.get("products", 0.0), 1),
+                "pricing_score": round(category_scores.get("pricing", 0.0), 1),
+                "policies_score": round(category_scores.get("policies", 0.0), 1),
+                "faq_score": round(category_scores.get("faq", 0.0), 1),
+                "freshness_score": round(freshness_score, 1),
+                "accuracy_score": round(overall_score * 0.9, 1)  # Estimate based on completeness
+            },
+            "last_calculated": datetime.utcnow(),
+            "suggestions": suggestions,
+            "stats": {
+                "total_cards": len(cards),
+                "total_chunks": len(chunks),
+                "card_types_present": list(card_counts.keys())
+            }
+        }
+
+
 @app.post("/kb/imports/{job_id}/cancel")
 def cancel_import_job(
     request: Request,

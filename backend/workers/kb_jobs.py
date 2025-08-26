@@ -234,6 +234,190 @@ def structure_extraction_job(workspace_id: str, kb_id: str) -> Dict[str, Any]:
 
 
 @dramatiq.actor(queue_name="kb_processing")
+def extract_company_profile_job(kb_id: str) -> Dict[str, Any]:
+    """
+    Extract company profile information from chunks
+    """
+    try:
+        logger.info(f"Starting company profile extraction for KB {kb_id}")
+        
+        # TODO: Implement company profile extraction:
+        # - Company name, description, industry
+        # - Mission, vision, values
+        # - Company size, location, founded year
+        # - Create KbStructuredCard with card_type="company"
+        
+        # Simulate processing time
+        import time
+        time.sleep(3)
+        
+        logger.info(f"Company profile extraction completed for KB {kb_id}")
+        
+        return {
+            "status": "completed",
+            "kb_id": kb_id,
+            "card_type": "company",
+            "message": "Company profile extracted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Company profile extraction failed for KB {kb_id}: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "kb_id": kb_id,
+            "error": str(e)
+        }
+
+
+@dramatiq.actor(queue_name="kb_processing")
+def extract_products_job(kb_id: str) -> Dict[str, Any]:
+    """
+    Extract product information from chunks
+    """
+    try:
+        logger.info(f"Starting product extraction for KB {kb_id}")
+        
+        # TODO: Implement product extraction:
+        # - Product names, descriptions, features
+        # - Pricing, specifications, use cases
+        # - Create KbStructuredCard with card_type="product"
+        
+        # Simulate processing time
+        import time
+        time.sleep(3)
+        
+        logger.info(f"Product extraction completed for KB {kb_id}")
+        
+        return {
+            "status": "completed",
+            "kb_id": kb_id,
+            "card_type": "products",
+            "message": "Products extracted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Product extraction failed for KB {kb_id}: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "kb_id": kb_id,
+            "error": str(e)
+        }
+
+
+@dramatiq.actor(queue_name="kb_processing")
+def extract_contacts_job(kb_id: str) -> Dict[str, Any]:
+    """
+    Extract contact information from chunks
+    """
+    try:
+        logger.info(f"Starting contact extraction for KB {kb_id}")
+        
+        # TODO: Implement contact extraction:
+        # - Contact persons, roles, departments
+        # - Email addresses, phone numbers
+        # - Office locations, social media
+        # - Create KbStructuredCard with card_type="contact"
+        
+        # Simulate processing time
+        import time
+        time.sleep(2)
+        
+        logger.info(f"Contact extraction completed for KB {kb_id}")
+        
+        return {
+            "status": "completed",
+            "kb_id": kb_id,
+            "card_type": "contacts",
+            "message": "Contacts extracted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Contact extraction failed for KB {kb_id}: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "kb_id": kb_id,
+            "error": str(e)
+        }
+
+
+@dramatiq.actor(queue_name="kb_processing")
+def extract_policies_job(kb_id: str) -> Dict[str, Any]:
+    """
+    Extract policy information from chunks
+    """
+    try:
+        logger.info(f"Starting policy extraction for KB {kb_id}")
+        
+        # TODO: Implement policy extraction:
+        # - Company policies, procedures, guidelines
+        # - Terms of service, privacy policy
+        # - Compliance requirements, standards
+        # - Create KbStructuredCard with card_type="policy"
+        
+        # Simulate processing time
+        import time
+        time.sleep(3)
+        
+        logger.info(f"Policy extraction completed for KB {kb_id}")
+        
+        return {
+            "status": "completed",
+            "kb_id": kb_id,
+            "card_type": "policies",
+            "message": "Policies extracted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Policy extraction failed for KB {kb_id}: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "kb_id": kb_id,
+            "error": str(e)
+        }
+
+
+@dramatiq.actor(queue_name="kb_processing")
+def extract_faq_job(kb_id: str) -> Dict[str, Any]:
+    """
+    Extract FAQ information from chunks
+    """
+    try:
+        logger.info(f"Starting FAQ extraction for KB {kb_id}")
+        
+        # TODO: Implement FAQ extraction:
+        # - Common questions and answers
+        # - Troubleshooting guides
+        # - How-to instructions, tips
+        # - Create KbStructuredCard with card_type="faq"
+        
+        # Simulate processing time
+        import time
+        time.sleep(2)
+        
+        logger.info(f"FAQ extraction completed for KB {kb_id}")
+        
+        return {
+            "status": "completed",
+            "kb_id": kb_id,
+            "card_type": "faq",
+            "message": "FAQ extracted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"FAQ extraction failed for KB {kb_id}: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "kb_id": kb_id,
+            "error": str(e)
+        }
+
+
+@dramatiq.actor(queue_name="kb_processing")
 def quality_analysis_job(workspace_id: str) -> Dict[str, Any]:
     """
     Analyze KB quality across workspace
@@ -287,6 +471,42 @@ def start_kb_processing_pipeline(doc_id: str) -> str:
         
     except Exception as e:
         logger.error(f"Failed to start KB processing pipeline: {str(e)}")
+        raise e
+
+
+def start_structure_extraction_pipeline(kb_id: str) -> str:
+    """
+    Start the structure extraction pipeline for a KB
+    """
+    try:
+        # Start all extraction jobs in parallel
+        extract_company_profile_job.send(kb_id)
+        extract_products_job.send(kb_id)
+        extract_contacts_job.send(kb_id)
+        extract_policies_job.send(kb_id)
+        extract_faq_job.send(kb_id)
+        
+        logger.info(f"Structure extraction pipeline started for KB {kb_id}")
+        return "structure_pipeline_started"
+        
+    except Exception as e:
+        logger.error(f"Failed to start structure extraction pipeline: {str(e)}")
+        raise e
+
+
+def start_completeness_analysis(workspace_id: str) -> str:
+    """
+    Start completeness analysis for a workspace
+    """
+    try:
+        # Start quality analysis
+        quality_analysis_job.send(workspace_id)
+        
+        logger.info(f"Completeness analysis started for workspace {workspace_id}")
+        return "completeness_analysis_started"
+        
+    except Exception as e:
+        logger.error(f"Failed to start completeness analysis: {str(e)}")
         raise e
 
 

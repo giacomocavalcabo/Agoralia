@@ -1,153 +1,111 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import KPI from '../components/ui/KPI.jsx'
-import { apiFetch } from '../lib/api.js'
-import 'chart.js/auto'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { fetchMetricsOverview } from "../lib/metricsApi";
 
-export default function Analytics(){
-  const { t, i18n } = useTranslation('pages')
-  const locale = i18n.language
-  const [data, setData] = useState(null)
-  const [filters, setFilters] = useState({ range:'30d', scope:'all', lang:[], agent:[], country:[], outcome:[], direction:[] })
-  useEffect(()=>{ (async()=>{ try{
-    const params = new URLSearchParams()
-    params.set('range', filters.range)
-    params.set('scope', filters.scope)
-    if (filters.lang.length) params.set('lang', filters.lang.join(','))
-    if (filters.agent.length) params.set('agent', filters.agent.join(','))
-    if (filters.country.length) params.set('country', filters.country.join(','))
-    if (filters.outcome.length) params.set('outcome', filters.outcome.join(','))
-    if (filters.direction.length) params.set('direction', filters.direction.join(','))
-    setData(await apiFetch(`/analytics/overview?${params.toString()}`))
-  } catch{} })() }, [filters])
+export default function Analytics() {
+  const { t } = useTranslation();
+  const [days, setDays] = useState(30);
 
-  const callsOverTime = useMemo(()=>{
-    const pts = data?.charts?.calls_over_time || []
-    return {
-      labels: pts.map(p=> p.ts),
-      datasets: [
-        { label:'Attempted', data: pts.map(p=> p.attempted), borderColor:'#4B5563', backgroundColor:'rgba(75,85,99,.2)' },
-        { label:'Connected', data: pts.map(p=> p.connected), borderColor:'#10B981', backgroundColor:'rgba(16,185,129,.2)' },
-        { label:'Finished', data: pts.map(p=> p.finished), borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,.2)' },
-      ]
-    }
-  }, [data])
-
-  const outcomesOverTime = useMemo(()=>{
-    const pts = data?.charts?.outcomes_over_time || []
-    const keys = ['qualified','not_interested','callback','voicemail','no_answer','failed']
-    const colors = ['#10B981','#F59E0B','#6B7280','#3B82F6','#9CA3AF','#EF4444']
-    return {
-      labels: pts.map(p=> p.ts),
-      datasets: keys.map((k,i)=> ({ label:k, data: pts.map(p=> p[k]||0), backgroundColor:colors[i] }))
-    }
-  }, [data])
-
-  const langDistribution = useMemo(()=>{
-    const pts = data?.charts?.lang_distribution || []
-    return {
-      labels: pts.map(p=> p.lang),
-      datasets: [{ label:'Calls', data: pts.map(p=> p.calls), backgroundColor:['#2563EB','#10B981','#F59E0B','#EF4444','#6B7280','#A78BFA'] }]
-    }
-  }, [data])
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["metrics_overview", { days }],
+    queryFn: () => fetchMetricsOverview({ days }),
+    staleTime: 60_000
+  });
 
   return (
-    <div style={{ display:'grid', gap:12 }}>
-      <div className="panel flex items-center justify-between gap-2">
-        <div className="kpi-title">Analytics</div>
-        <div className="flex gap-2">
-          <label className="kpi-title inline-flex items-center gap-1.5">
-            Range
-            <select value={filters.range} onChange={e=> setFilters({ ...filters, range:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
-              <option value="7d">7d</option>
-              <option value="30d">30d</option>
-              <option value="90d">90d</option>
-            </select>
-          </label>
-          <label className="kpi-title inline-flex items-center gap-1.5">
-            Scope
-            <select value={filters.scope} onChange={e=> setFilters({ ...filters, scope:e.target.value })} className="rounded-lg border border-line bg-bg-app px-2 py-1.5">
-              <option value="all">All</option>
-              <option value="campaign">Campaign</option>
-              <option value="agent">Agent</option>
-              <option value="language">Language</option>
-            </select>
-          </label>
-          <a href={`/api/analytics/export.csv?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">Export CSV</a>
-          <a href={`/api/analytics/export.json?locale=${encodeURIComponent(locale)}`} className="kpi-title rounded-lg border border-line bg-bg-app px-2.5 py-1.5 no-underline">Export JSON</a>
+    <div className="p-6 space-y-4">
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">{t("pages.analytics.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("pages.analytics.description")}</p>
         </div>
-      </div>
-
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, minmax(0, 1fr))', gap:12 }}>
-        <KPI label="Chiamate" value={data?.kpi?.calls ?? 0} />
-        <KPI label="Connesse" value={Math.round((data?.kpi?.connected_rate ?? 0)*100) + '%'} />
-        <KPI label="Qualificate" value={Math.round((data?.kpi?.qualified_rate ?? 0)*100) + '%'} />
-      </div>
-
-      <div className="panel" aria-describedby="desc-calls">
-        <div className="kpi-title mb-2" id="desc-calls">Chiamate nel tempo</div>
-        <div className="h-32 overflow-hidden">
-          <Line data={callsOverTime} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ display:false }}, scales:{ y:{ grid:{ color:'rgba(0,0,0,.06)' }}, x:{ grid:{ display:false }}} }} height={120} />
+        <div className="flex items-center gap-2">
+          <select
+            aria-label={t("pages.analytics.filters.range")}
+            className="border rounded px-2 py-1"
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+          >
+            <option value={7}>{t("pages.analytics.filters.last_7d")}</option>
+            <option value={30}>{t("pages.analytics.filters.last_30d")}</option>
+            <option value={90}>{t("pages.analytics.filters.last_90d")}</option>
+          </select>
         </div>
-      </div>
+      </header>
 
-      <div className="panel flex flex-wrap items-center gap-3">
-        <div className="kpi-title">Lingua</div>
-        {['en-US','it-IT','fr-FR','hi-IN'].map(code=> (
-          <label key={code} className="kpi-title inline-flex items-center gap-1.5">
-            <input type="checkbox" checked={filters.lang.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, lang: e.target.checked ? [...f.lang, code] : f.lang.filter(x=> x!==code) }))} />{code}
-          </label>
-        ))}
-        <div className="w-px h-5 bg-line" />
-        <div className="kpi-title">Direzione</div>
-        {['inbound','outbound'].map(code=> (
-          <label key={code} className="kpi-title inline-flex items-center gap-1.5">
-            <input type="checkbox" checked={filters.direction.includes(code)} onChange={(e)=> setFilters(f=> ({ ...f, direction: e.target.checked ? [...f.direction, code] : f.direction.filter(x=> x!==code) }))} />{code}
-          </label>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="panel" aria-describedby="desc-outcomes">
-          <div className="kpi-title mb-2" id="desc-outcomes">Risultati nel tempo</div>
-          <div className="h-32 overflow-hidden">
-            <Bar data={outcomesOverTime} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } }} height={120} />
-          </div>
+      {isError && (
+        <div className="rounded border p-3 bg-red-50 text-red-700">
+          <strong>{t("pages.analytics.error.title")}.</strong>{" "}
+          {t("pages.analytics.error.description")}
         </div>
+      )}
 
-        <div className="panel" aria-describedby="desc-lang">
-          <div className="kpi-title mb-2" id="desc-lang">Per lingua</div>
-          <div className="h-32 overflow-hidden">
-            <Doughnut data={langDistribution} options={{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }} height={120} />
-          </div>
-        </div>
-      </div>
+      {isLoading ? (
+        <div className="animate-pulse h-40 rounded bg-muted" />
+      ) : !data ? (
+        <div className="text-sm text-muted-foreground">{t("pages.analytics.empty")}</div>
+      ) : (
+        <>
+          {/* KPI strip */}
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              ["reached", data.funnel?.reached],
+              ["connected", data.funnel?.connected],
+              ["qualified", data.funnel?.qualified],
+              ["booked", data.funnel?.booked],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded border p-3">
+                <div className="text-xs text-muted-foreground">{t(`pages.analytics.kpi.${k}`)}</div>
+                <div className="text-xl font-semibold">{v ?? "—"}</div>
+              </div>
+            ))}
+          </section>
 
-      <div className="panel" aria-label="By tables">
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <div className="kpi-title mb-1.5">By campaign</div>
-            <ul className="m-0 pl-4">
-              {(data?.tables?.by_campaign||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
-            </ul>
-          </div>
-          <div>
-            <div className="kpi-title mb-1.5">By agent</div>
-            <ul className="m-0 pl-4">
-              {(data?.tables?.by_agent||[]).map(r=> (<li key={r.id} className="kpi-title">{r.name}: {r.calls}</li>))}
-            </ul>
-          </div>
-          <div>
-            <div className="kpi-title mb-1.5">By country</div>
-            <ul className="m-0 pl-4">
-              {(data?.tables?.by_country||[]).map(r=> (<li key={r.iso} className="kpi-title">{r.iso}: {r.calls}</li>))}
-            </ul>
-          </div>
-        </div>
-      </div>
+          {/* Charts placeholders (Chart.js kept for α; will swap to Recharts in β) */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded border p-3">
+              <div className="text-sm font-medium mb-2">{t("pages.analytics.charts.agents_top")}</div>
+              {/* replace with chart component you already use; for α, a simple list is okay */}
+              <ol className="text-sm space-y-1">
+                {(data.agents_top || []).map(a => (
+                  <li key={a.id} className="flex justify-between">
+                    <span>{a.name}</span><span className="tabular-nums">{a.calls}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="rounded border p-3">
+              <div className="text-sm font-medium mb-2">{t("pages.analytics.charts.geo")}</div>
+              <ol className="text-sm space-y-1">
+                {(data.geo || []).map(g => (
+                  <li key={g.iso2} className="flex justify-between">
+                    <span>{g.iso2}</span>
+                    <span className="tabular-nums">{g.calls}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="rounded border p-3 md:col-span-2">
+              <div className="text-sm font-medium mb-2">{t("pages.analytics.charts.funnel")}</div>
+              <div className="text-xs text-muted-foreground">
+                Reached → Connected → Qualified → Booked
+              </div>
+            </div>
+
+            <div className="rounded border p-3 md:col-span-2">
+              <div className="text-sm font-medium mb-2">{t("pages.analytics.charts.cost")}</div>
+              <div className="text-xs text-muted-foreground">
+                {Array.isArray(data.cost_series) ? `${data.cost_series.length} days` : "—"}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
     </div>
-  )
+  );
 }
 
 
