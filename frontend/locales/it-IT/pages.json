@@ -1172,7 +1172,11 @@
       "geo": "Per paese",
       "cost": "Costi nel tempo"
     },
-    "empty": "Nessun dato per i filtri selezionati.",
+    "empty": {
+      "title": "Nessun dato disponibile",
+      "description": "Nessun dato analytics trovato per i filtri selezionati. Prova ad aggiustare l'intervallo date o i filtri.",
+      "cta": "Reset filtri"
+    },
     "error": {
       "title": "Errore Analytics",
       "description": "Impossibile caricare gli analytics. Riprova."

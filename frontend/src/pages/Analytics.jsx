@@ -75,7 +75,9 @@ export default function Analytics() {
             ].map(([k, v]) => (
               <div key={k} className="rounded border p-3">
                 <div className="text-xs text-muted-foreground">{t(`pages.analytics.kpi.${k}`)}</div>
-                <div className="text-xl font-semibold">{v ?? "—"}</div>
+                <div className="text-xl font-semibold tabular-nums">
+                  {v !== null && v !== undefined ? formatters.number(v) : "—"}
+                </div>
               </div>
             ))}
           </section>
@@ -88,7 +90,8 @@ export default function Analytics() {
               <ol className="text-sm space-y-1">
                 {(data.agents_top || []).map(a => (
                   <li key={a.id} className="flex justify-between">
-                    <span>{a.name}</span><span className="tabular-nums">{a.calls}</span>
+                    <span>{a.name}</span>
+                    <span className="tabular-nums">{formatters.number(a.calls)}</span>
                   </li>
                 ))}
               </ol>
@@ -100,7 +103,7 @@ export default function Analytics() {
                 {(data.geo || []).map(g => (
                   <li key={g.iso2} className="flex justify-between">
                     <span>{g.iso2}</span>
-                    <span className="tabular-nums">{g.calls}</span>
+                    <span className="tabular-nums">{formatters.number(g.calls)}</span>
                   </li>
                 ))}
               </ol>

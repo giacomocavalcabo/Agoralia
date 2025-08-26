@@ -500,6 +500,20 @@
         "confirm": "Confirmar",
         "cancel": "Cancelar"
       }
+    },
+    "quality": {
+      "freshness": "Frescura",
+      "fresh": "Fresco",
+      "stale": "Rancio",
+      "outdated": "Obsoleto"
+    },
+    "cards": {
+      "company": "Empresa",
+      "products": "Productos",
+      "policies": "Políticas",
+      "pricing": "Precios",
+      "contacts": "Contactos",
+      "faq": "FAQ"
     }
   }
 }

@@ -1194,7 +1194,11 @@
       "geo": "By country",
       "cost": "Costs over time"
     },
-    "empty": "No data available for the selected filters.",
+    "empty": {
+      "title": "No data available",
+      "description": "No analytics data found for the selected filters. Try adjusting your date range or filters.",
+      "cta": "Reset filters"
+    },
     "error": {
       "title": "Analytics error",
       "description": "We couldn't load analytics. Please try again."

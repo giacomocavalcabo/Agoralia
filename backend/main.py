@@ -6213,14 +6213,21 @@ async def get_funnel_metrics(days: int = 30):
 		end_date = datetime.utcnow()
 		start_date = end_date - timedelta(days=days)
 		
+		# Demo mode: deterministic seed for consistent data
+		import random
+		seed = f"funnel:{days}"
+		random.seed(seed)
+		
 		# Mock data for now - replace with real queries
 		funnel_data = {
-			"reached": 1250,
-			"connected": 890,
-			"qualified": 445,
-			"booked": 178
+			"reached": 1250 + random.randint(-50, 50),
+			"connected": 890 + random.randint(-30, 30),
+			"qualified": 445 + random.randint(-20, 20),
+			"booked": 178 + random.randint(-10, 10)
 		}
 		
+		# Reset random seed
+		random.seed()
 		return funnel_data
 	except Exception as e:
 		logger.error(f"Error getting funnel metrics: {e}")
@@ -6278,6 +6285,11 @@ async def get_cost_series(days: int = 30):
 		end_date = datetime.utcnow()
 		start_date = end_date - timedelta(days=days)
 		
+		# Demo mode: deterministic seed for consistent data
+		import random
+		seed = f"cost_series:{days}"
+		random.seed(seed)
+		
 		# Mock data for now - replace with real queries
 		cost_series = []
 		for i in range(days):
@@ -6288,10 +6300,120 @@ async def get_cost_series(days: int = 30):
 				"cost_per_min": random.uniform(0.15, 0.35)  # €0.15-0.35 per minute
 			})
 		
+		# Reset random seed
+		random.seed()
 		return cost_series
 	except Exception as e:
 		logger.error(f"Error getting cost series: {e}")
 		raise HTTPException(status_code=500, detail="Failed to get cost series")
+
+async def get_timeseries_data(days: int = 30):
+	"""Get timeseries data for charts"""
+	try:
+		# Calculate date range
+		end_date = datetime.utcnow()
+		start_date = end_date - timedelta(days=days)
+		
+		# Demo mode: deterministic seed for consistent data
+		import random
+		seed = f"timeseries:{days}"
+		random.seed(seed)
+		
+		# Generate daily series with slight upward trend
+		series = []
+		base_reached = 40
+		base_connected = 28
+		base_qualified = 14
+		base_booked = 6
+		
+		for i in range(days):
+			date = start_date + timedelta(days=i)
+			# Add slight upward trend + random variation
+			trend_factor = 1 + (i / days) * 0.1  # 10% increase over period
+			
+			series.append({
+				"date": date.strftime("%Y-%m-%d"),
+				"reached": int((base_reached + random.randint(-5, 5)) * trend_factor),
+				"connected": int((base_connected + random.randint(-3, 3)) * trend_factor),
+				"qualified": int((base_qualified + random.randint(-2, 2)) * trend_factor),
+				"booked": int((base_booked + random.randint(-1, 1)) * trend_factor)
+			})
+		
+		# Reset random seed
+		random.seed()
+		
+		return {
+			"bucket": "day",
+			"series": series
+		}
+	except Exception as e:
+		logger.error(f"Error getting timeseries data: {e}")
+		raise HTTPException(status_code=500, detail="Failed to get timeseries data")
+
+async def get_heatmap_data(days: int = 30):
+	"""Get heatmap data for day-of-week x hour analysis"""
+	try:
+		# Demo mode: deterministic seed for consistent data
+		import random
+		seed = f"heatmap:{days}"
+		random.seed(seed)
+		
+		# Generate 7x24 matrix (dow x hour)
+		matrix = []
+		
+		for dow in range(7):  # 0=Sun, 1=Mon, ..., 6=Sat
+			for hour in range(24):
+				# Working hours (Mon-Fri, 9-18) are hotter
+				is_working_hours = dow >= 1 and dow <= 5 and hour >= 9 and hour <= 18
+				base_calls = 15 if is_working_hours else 3
+				
+				# Add some randomness
+				calls = max(0, base_calls + random.randint(-3, 3))
+				connected_rate = random.uniform(0.2, 0.6) if calls > 0 else 0
+				
+				matrix.append({
+					"dow": dow,
+					"hour": hour,
+					"calls": calls,
+					"connected_rate": round(connected_rate, 2)
+				})
+		
+		# Reset random seed
+		random.seed()
+		
+		return {
+			"bucket": "hour_x_dow",
+			"matrix": matrix
+		}
+	except Exception as e:
+		logger.error(f"Error getting heatmap data: {e}")
+		raise HTTPException(status_code=500, detail="Failed to get heatmap data")
+
+async def get_outcomes_data(days: int = 30):
+	"""Get outcomes breakdown data"""
+	try:
+		# Demo mode: deterministic seed for consistent data
+		import random
+		seed = f"outcomes:{days}"
+		random.seed(seed)
+		
+		# Generate outcomes with realistic distribution
+		outcomes = [
+			{"label": "Qualified", "count": 445 + random.randint(-20, 20), "rate": 0.356, "avg_handle_sec": 132 + random.randint(-10, 10)},
+			{"label": "No-answer", "count": 310 + random.randint(-15, 15), "rate": 0.248, "avg_handle_sec": 0},
+			{"label": "Wrong number", "count": 156 + random.randint(-10, 10), "rate": 0.125, "avg_handle_sec": 45 + random.randint(-5, 5)},
+			{"label": "Not interested", "count": 89 + random.randint(-8, 8), "rate": 0.071, "avg_handle_sec": 78 + random.randint(-5, 5)},
+			{"label": "Callback requested", "count": 67 + random.randint(-5, 5), "rate": 0.054, "avg_handle_sec": 95 + random.randint(-5, 5)},
+			{"label": "Other", "count": 183 + random.randint(-10, 10), "rate": 0.146, "avg_handle_sec": 65 + random.randint(-5, 5)}
+		]
+		
+		# Reset random seed
+		random.seed()
+		
+		return outcomes
+	except Exception as e:
+		logger.error(f"Error getting outcomes data: {e}")
+		raise HTTPException(status_code=500, detail="Failed to get outcomes data")
 
 # --- NEW: unified overview endpoint ---
 @app.get("/metrics/overview")
@@ -6312,6 +6434,15 @@ async def get_metrics_overview(
     geo = await get_geo_metrics(days=days)
     cost = await get_cost_series(days=days)
     
+    # Generate timeseries data
+    timeseries = await get_timeseries_data(days=days)
+    
+    # Generate heatmap data
+    heatmap = await get_heatmap_data(days=days)
+    
+    # Generate outcomes data
+    outcomes = await get_outcomes_data(days=days)
+    
     # Normalize params to snake_case and add currency
     params = {
         "days": days,
@@ -6324,7 +6455,7 @@ async def get_metrics_overview(
     
     # Generate ETag for caching (hash of params + payload)
     import hashlib
-    payload_str = str(funnel) + str(agents) + str(geo) + str(cost)
+    payload_str = str(funnel) + str(agents) + str(geo) + str(cost) + str(timeseries) + str(heatmap) + str(outcomes)
     etag = hashlib.md5(f"{str(params)}{payload_str}".encode()).hexdigest()
     
     return {
@@ -6332,6 +6463,9 @@ async def get_metrics_overview(
         "agents_top": agents,
         "geo": geo,
         "cost_series": cost,
+        "timeseries": timeseries,
+        "heatmap": heatmap,
+        "outcomes": outcomes,
         "params": params,
         "etag": etag
     }

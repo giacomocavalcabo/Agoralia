@@ -86,12 +86,12 @@ export default function KbOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         <Card>
           <div className="p-6 text-center">
             <DocumentTextIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-semibold text-gray-900">{items.length}</div>
-            <div className="text-sm text-gray-600">{t('kb.overview.sources_count', { count: items.length })}</div>
+            <div className="text-2xl font-semibold text-gray-900">{items.length || 0}</div>
+            <div className="text-sm text-gray-600">{t('kb.overview.sources_count', { count: items.length || 0 })}</div>
           </div>
         </Card>
         
