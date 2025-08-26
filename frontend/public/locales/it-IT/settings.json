@@ -1,5 +1,46 @@
 {
+  "title": "Impostazioni",
+  "description": "Gestisci il tuo account, team e preferenze di sistema",
   "coming_soon": "[Prossimamente]",
+  "save": "Salva",
+  "subtitle": "Gestisci il tuo account e preferenze",
+  
+  "nav": {
+    "title": "Impostazioni",
+    "subtitle": "Gestisci il tuo account e preferenze",
+    "profile": "Profilo",
+    "profile_desc": "Aggiorna le tue informazioni personali",
+    "company": "Azienda",
+    "company_desc": "Gestisci le impostazioni aziendali",
+    "integrations": "Integrazioni",
+    "integrations_desc": "Connetti servizi esterni",
+    "billing": "Fatturazione",
+    "billing_desc": "Gestisci fatturazione e abbonamenti"
+  },
+  
+  "account": {
+    "title": "Impostazioni Account",
+    "description": "Gestisci le impostazioni del tuo account personale",
+    "fields": {
+      "name": "Nome Completo",
+      "email": "Indirizzo Email",
+      "language": "Lingua",
+      "timezone": "Fuso Orario",
+      "dual_time": "Display Doppio Orario"
+    },
+    "languages": {
+      "english": "Inglese",
+      "italian": "Italiano",
+      "french": "Francese"
+    },
+    "actions": {
+      "save": "Salva Modifiche"
+    },
+    "errors": {
+      "load_failed": "Impossibile caricare le impostazioni"
+    }
+  },
+  
   "personal": {
     "dual_time": "Doppio display orario",
     "email": "admin@example.com",
@@ -8,8 +49,7 @@
     "timezone": "UTC",
     "title": "Informazioni personali"
   },
-  "save": "Risparmiare",
-  "subtitle": "Gestire le preferenze del proprio account e del proprio spazio di lavoro",
+  
   "tabs": {
     "audit": "Audit",
     "billing": "Fatturazione",
@@ -20,11 +60,12 @@
     "telephony": "Telefonia",
     "workspace": "Workspace"
   },
+  
   "telephony": {
     "buy_number": "[Numero di acquisto]",
     "numbers": "[Numeri]"
   },
-  "title": "Impostazioni",
+  
   "workspace": {
     "accepting": "[Accettazione]",
     "domain": "[Dominio]",
@@ -36,5 +77,76 @@
     "remove": "[Rimuovi]",
     "title": "[Titolo]",
     "upload_logo": "[Carica logo]"
+  },
+  
+  "profile": {
+    "title": "Impostazioni Profilo",
+    "description": "Aggiorna le tue informazioni personali e preferenze",
+    "personal_info": "Informazioni Personali",
+    "contact_details": "Dettagli Contatto",
+    "preferences": "Preferenze",
+    "security": "Sicurezza",
+    "notifications": "Notifiche"
+  },
+  
+  "company": {
+    "title": "Impostazioni Azienda",
+    "description": "Gestisci le informazioni e impostazioni aziendali",
+    "company_info": "Informazioni Azienda",
+    "address": "Indirizzo",
+    "contact": "Contatto",
+    "logo": "Logo Azienda",
+    "branding": "Branding",
+    "compliance": "Compliance"
+  },
+  
+  "team": {
+    "title": "Gestione Team",
+    "description": "Gestisci membri del team e permessi",
+    "members": "Membri Team",
+    "roles": "Ruoli e Permessi",
+    "invitations": "Inviti",
+    "activity": "Log Attività",
+    "departments": "Dipartimenti"
+  },
+  
+  "integrations": {
+    "title": "Integrazioni",
+    "description": "Connetti servizi e strumenti esterni",
+    "crm_systems": "Sistemi CRM",
+    "communication": "Comunicazione",
+    "analytics": "Analytics",
+    "automation": "Automazione",
+    "webhooks": "Webhooks"
+  },
+  
+  "billing": {
+    "title": "Fatturazione e Abbonamenti",
+    "description": "Gestisci la tua fatturazione e piani di abbonamento",
+    "current_plan": "Piano Attuale",
+    "usage": "Utilizzo",
+    "invoices": "Fatture",
+    "payment_methods": "Metodi di Pagamento",
+    "billing_history": "Cronologia Fatturazione"
+  },
+  
+  "security": {
+    "title": "Impostazioni Sicurezza",
+    "description": "Gestisci sicurezza e controlli di accesso",
+    "authentication": "Autenticazione",
+    "two_factor": "Autenticazione a Due Fattori",
+    "sessions": "Sessioni Attive",
+    "api_keys": "Chiavi API",
+    "audit_log": "Log Audit"
+  },
+  
+  "notifications": {
+    "title": "Preferenze Notifiche",
+    "description": "Configura come ricevi le notifiche",
+    "email": "Notifiche Email",
+    "sms": "Notifiche SMS",
+    "push": "Notifiche Push",
+    "in_app": "Notifiche in App",
+    "frequency": "Frequenza Notifiche"
   }
 }

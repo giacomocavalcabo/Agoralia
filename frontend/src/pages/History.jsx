@@ -44,7 +44,7 @@ export default function History() {
           />
           <button
             onClick={()=>exportHistoryCsv({ page, pageSize, q, filters })}
-            className="btn btn-success"
+            className="btn bg-primary-500 hover:bg-primary-600 text-white border-primary-500"
           >
             {t("pages.history.export_csv")}
           </button>

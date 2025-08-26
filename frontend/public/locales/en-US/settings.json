@@ -1,5 +1,46 @@
 {
+  "title": "Settings",
+  "description": "Manage your account, team, and system preferences",
   "coming_soon": "[Coming Soon]",
+  "save": "Save",
+  "subtitle": "Manage your account and workspace preferences",
+  
+  "nav": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences",
+    "profile": "Profile",
+    "profile_desc": "Update your personal information",
+    "company": "Company",
+    "company_desc": "Manage company settings",
+    "integrations": "Integrations",
+    "integrations_desc": "Connect external services",
+    "billing": "Billing",
+    "billing_desc": "Manage billing and subscriptions"
+  },
+  
+  "account": {
+    "title": "Account Settings",
+    "description": "Manage your personal account settings",
+    "fields": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "language": "Language",
+      "timezone": "Timezone",
+      "dual_time": "Dual Time Display"
+    },
+    "languages": {
+      "english": "English",
+      "italian": "Italian",
+      "french": "French"
+    },
+    "actions": {
+      "save": "Save Changes"
+    },
+    "errors": {
+      "load_failed": "Failed to load settings"
+    }
+  },
+  
   "personal": {
     "dual_time": "Dual Time Display",
     "email": "admin@example.com",
@@ -8,8 +49,7 @@
     "timezone": "UTC",
     "title": "Personal Information"
   },
-  "save": "Save",
-  "subtitle": "Manage your account and workspace preferences",
+  
   "tabs": {
     "audit": "Audit",
     "billing": "Billing",
@@ -20,11 +60,12 @@
     "telephony": "Telephony",
     "workspace": "Workspace"
   },
+  
   "telephony": {
     "buy_number": "[Buy Number]",
     "numbers": "[Numbers]"
   },
-  "title": "Settings",
+  
   "workspace": {
     "accepting": "[Accepting]",
     "domain": "[Domain]",
@@ -36,5 +77,76 @@
     "remove": "[Remove]",
     "title": "[Title]",
     "upload_logo": "[Upload Logo]"
+  },
+  
+  "profile": {
+    "title": "Profile Settings",
+    "description": "Update your personal information and preferences",
+    "personal_info": "Personal Information",
+    "contact_details": "Contact Details",
+    "preferences": "Preferences",
+    "security": "Security",
+    "notifications": "Notifications"
+  },
+  
+  "company": {
+    "title": "Company Settings",
+    "description": "Manage company information and settings",
+    "company_info": "Company Information",
+    "address": "Address",
+    "contact": "Contact",
+    "logo": "Company Logo",
+    "branding": "Branding",
+    "compliance": "Compliance"
+  },
+  
+  "team": {
+    "title": "Team Management",
+    "description": "Manage team members and permissions",
+    "members": "Team Members",
+    "roles": "Roles & Permissions",
+    "invitations": "Invitations",
+    "activity": "Activity Log",
+    "departments": "Departments"
+  },
+  
+  "integrations": {
+    "title": "Integrations",
+    "description": "Connect external services and tools",
+    "crm_systems": "CRM Systems",
+    "communication": "Communication",
+    "analytics": "Analytics",
+    "automation": "Automation",
+    "webhooks": "Webhooks"
+  },
+  
+  "billing": {
+    "title": "Billing & Subscriptions",
+    "description": "Manage your billing and subscription plans",
+    "current_plan": "Current Plan",
+    "usage": "Usage",
+    "invoices": "Invoices",
+    "payment_methods": "Payment Methods",
+    "billing_history": "Billing History"
+  },
+  
+  "security": {
+    "title": "Security Settings",
+    "description": "Manage security and access controls",
+    "authentication": "Authentication",
+    "two_factor": "Two-Factor Authentication",
+    "sessions": "Active Sessions",
+    "api_keys": "API Keys",
+    "audit_log": "Audit Log"
+  },
+  
+  "notifications": {
+    "title": "Notification Preferences",
+    "description": "Configure how you receive notifications",
+    "email": "Email Notifications",
+    "sms": "SMS Notifications",
+    "push": "Push Notifications",
+    "in_app": "In-App Notifications",
+    "frequency": "Notification Frequency"
   }
 }

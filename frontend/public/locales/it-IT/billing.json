@@ -1,47 +1,67 @@
 {
-  "auto_recharge": {
-    "description": "Ricarica automaticamente {threshold} quando il saldo scende sotto {topup}",
-    "disabled": "Ricarica automatica disattivata",
-    "enable": "[Abilita]",
-    "enabled": "Ricarica automatica abilitata",
-    "threshold": "[Soglia]",
-    "title": "[Titolo]",
-    "topup": "[Ricarica]"
-  },
-  "invoices": {
-    "download": "[Download]",
-    "title": "[Titolo]",
-    "view_all": "[Visualizza tutti]"
-  },
+  "title": "Fatturazione e Abbonamenti",
+  "subtitle": "Gestisci la tua fatturazione, metodi di pagamento e limiti di utilizzo",
+  
   "overview": {
-    "balance": "[Equilibrio]",
-    "cap_status": "[Stato del tappo]",
-    "minutes_mtd": "[Verbale]",
-    "usage_mtd": "[Usage Mtd]"
+    "balance": "Saldo Attuale",
+    "usage_mtd": "Utilizzo Questo Mese",
+    "minutes_mtd": "Minuti Questo Mese",
+    "cap_status": "Stato Utilizzo"
   },
+  
   "payment_methods": {
-    "add": "[Aggiungi]",
-    "add_card": "[Aggiungi scheda]",
-    "adding": "[Aggiunta]",
-    "card_details": "[Dettagli della carta]",
-    "default": "[Default]",
-    "title": "[Titolo]",
-    "unavailable": "[Non disponibile]",
-    "unavailable_desc": "[Desc non disponibile]"
+    "title": "Metodi di Pagamento",
+    "add": "Aggiungi Metodo di Pagamento",
+    "add_card": "Aggiungi Carta",
+    "adding": "Aggiunta in corso...",
+    "card_details": "Dettagli Carta",
+    "default": "Predefinito",
+    "unavailable": "Non disponibile",
+    "unavailable_desc": "I metodi di pagamento non sono attualmente disponibili"
   },
-  "subtitle": "[Sottotitolo]",
-  "title": "[Titolo]",
+  
+  "auto_recharge": {
+    "title": "Ricarica Automatica",
+    "description": "Ricarica automaticamente {topup} quando il saldo scende sotto {threshold}",
+    "enabled": "Abilitata",
+    "disabled": "Disabilitata",
+    "enable": "Abilita",
+    "threshold": "Soglia",
+    "topup": "Importo Ricarica"
+  },
+  
   "usage_cap": {
-    "current": "Uso attuale",
-    "description": "Massimale di utilizzo mensile impostato a {type} con avvisi a {limit}",
-    "hard": "Hard Cap (stop alle chiamate)",
-    "hard_cap": "Cappello rigido",
-    "limit": "Limite mensile ($)",
-    "soft": "Tappo morbido (solo avvertenze)",
-    "soft_cap": "Cappello morbido",
-    "stop_calls": "Arresto delle chiamate al limite",
-    "title": "Tappo d'uso",
-    "type": "Tipo di tappo",
-    "warnings_only": "Solo avvertenze"
+    "title": "Limite di Utilizzo",
+    "current": "Utilizzo Attuale",
+    "description": "Limite di utilizzo mensile impostato a {limit} con avvisi a {type}",
+    "hard": "Limite Rigido (stop chiamate)",
+    "hard_cap": "Limite Rigido",
+    "limit": "Limite Mensile (€)",
+    "soft": "Limite Morbido (solo avvisi)",
+    "soft_cap": "Limite Morbido",
+    "stop_calls": "Ferma chiamate al limite",
+    "type": "Tipo Limite",
+    "warnings_only": "Solo avvisi"
+  },
+  
+  "invoices": {
+    "title": "Fatture",
+    "download": "Scarica",
+    "view_all": "Visualizza Tutte"
+  },
+  
+  "admin": {
+    "title": "👑 AMMINISTRATORE",
+    "unlimited": "💰 Illimitato"
+  },
+  
+  "welcome": {
+    "title": "🚀 Benvenuto, Amministratore!",
+    "description": "Hai risorse illimitate e funzionalità premium."
+  },
+  
+  "status": {
+    "under_limit": "Sotto il limite",
+    "over_limit": "Sopra il limite"
   }
 }

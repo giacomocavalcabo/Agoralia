@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useI18n } from '../lib/i18n.jsx'
+import { useTranslation } from 'react-i18next'
 import { PaymentsDisabledBanner } from '../providers/StripeProvider.jsx'
 import { 
   CreditCardIcon, 
@@ -70,7 +70,7 @@ const mockBillingData = {
 }
 
 function OverviewCards({ data }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   
   // Safety checks
   if (!data) return null
@@ -165,7 +165,7 @@ function OverviewCards({ data }) {
 }
 
 function PaymentMethods({ data = [], onAddCard }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   
   // Fallback difensivo
   if (!Array.isArray(data)) data = [];
@@ -225,7 +225,7 @@ function PaymentMethods({ data = [], onAddCard }) {
 }
 
 function AutoRecharge({ data, onUpdate }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   const [formData, setFormData] = useState(data)
   const [isEditing, setIsEditing] = useState(false)
   
@@ -343,7 +343,7 @@ function AutoRecharge({ data, onUpdate }) {
 }
 
 function UsageCap({ data, onUpdate }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   const [formData, setFormData] = useState(data)
   const [isEditing, setIsEditing] = useState(false)
   
@@ -461,7 +461,7 @@ function UsageCap({ data, onUpdate }) {
 }
 
 function Invoices({ data }) {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   
   // Safety checks
   if (!data || !Array.isArray(data.invoices)) return null
@@ -509,7 +509,7 @@ function Invoices({ data }) {
 
 // Main Billing component
 export default function Billing() {
-  const { t } = useI18n()
+  const { t } = useTranslation('billing')
   const [billingData, setBillingData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

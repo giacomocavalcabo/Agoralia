@@ -99,10 +99,9 @@
       "description": "Please log in to access the knowledge base."
     },
     "overview": {
-      "kb": {
-        "title": "Knowledge Base",
-        "subtitle": "Centralize sources and documents. More data = better prepared agents.",
-        "actions": {
+      "title": "Knowledge Base",
+      "subtitle": "Centralize sources and documents. More data = better prepared agents.",
+      "actions": {
         "import_documents": "Import Documents",
         "add_source": "Add Source",
         "open": "Open",
@@ -148,31 +147,26 @@
       "sources_count_other": "{{count}} sources",
       "documents_count_one": "{{count}} document",
       "documents_count_other": "{{count}} documents",
-        "chunks_count_one": "{{count}} chunk",
-        "chunks_count_other": "{{count}} chunks",
-        "next_steps_items": {
-          "add_company": {
-            "title": "Add company information",
-            "description": "Create your company knowledge base"
-          },
-          "import_documents": {
-            "title": "Import documents",
-            "description": "Upload PDFs, DOCX, or crawl websites"
-          },
-          "add_sources": {
-            "title": "Add sources",
-            "description": "Connect external data sources"
-          }
+      "chunks_count_one": "{{count}} chunk",
+      "chunks_count_other": "{{count}} chunks",
+      "next_steps_items": {
+        "add_company": {
+          "title": "Add company information",
+          "description": "Create your company knowledge base"
         },
-        "import": {
-          "title": "Import Documents"
+        "import_documents": {
+          "title": "Import documents",
+          "description": "Upload PDFs, DOCX, or crawl websites"
+        },
+        "add_sources": {
+          "title": "Add sources",
+          "description": "Connect external data sources"
         }
       }
     },
     "empty": {
       "no_data": "No content yet",
-      "how_to_start": "Start by importing a document or adding a source.",
-      "import": "Import Documents"
+      "how_to_start": "Start by importing a document or adding a source."
     },
     "error": {
       "title": "Error loading knowledge base",
@@ -201,38 +195,7 @@
         "description": "Add your first source to start building your knowledge base."
       }
     },
-    "import": {
-      "title": "Import",
-      "tabs": { 
-        "paste": "Paste", 
-        "file": "File", 
-        "url": "Website" 
-      },
-      "actions": { 
-        "start": "Start import", 
-        "commit": "Commit", 
-        "cancel": "Cancel" 
-      },
-      "progress": { 
-        "parsing": "Parsing...", 
-        "chunking": "Chunking...", 
-        "embedding": "Embedding..." 
-      },
-      "file_upload": {
-        "title": "Upload document",
-        "subtitle": "PDF, DOCX, MD, TXT up to 50 MB",
-        "drag_drop": "Drag & drop your document here",
-        "or_click": "or click to select a file",
-        "supported_formats": "Supported: .pdf, .docx, .md, .txt"
-      },
-      "url_crawl": {
-        "title": "Crawl website",
-        "subtitle": "Enter a URL to crawl and extract content",
-        "placeholder": "https://example.com",
-        "depth": "Crawl depth",
-        "max_pages": "Max pages"
-      }
-    },
+
     "chunks": {
       "title": "Chunks",
       "filters": { 
@@ -296,6 +259,22 @@
       "source_added": "Source added",
       "source_refreshed": "Source refreshed",
       "source_deleted": "Source removed"
+    },
+    "editor": {
+      "actions": {
+        "save": "Save",
+        "saving": "Saving...",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+      },
+      "fields": {
+        "title": "Title",
+        "category": "Category",
+        "description": "Description"
+      },
+      "messages": {
+        "unsaved_guard": "You have unsaved changes. Are you sure you want to leave?"
+      }
     }
   },
   "import": {
@@ -560,8 +539,7 @@
     "buttons": {
       "today": "Today",
       "7d": "7d",
-      "30d": "30d",
-      "import": "Import",
+            "30d": "30d",
       "schedule": "Schedule"
     },
     "overview": "Overview",
@@ -599,341 +577,8 @@
     },
     "pagination": { "total": "{{count}} outcomes" }
   },
-  "import": {
-    "dedupe": {
-      "check_on": "[Check On]",
-      "merge": "[Merge]",
-      "resolve_strategy": "[Resolve Strategy]",
-      "skip": "[Skip]",
-      "title": "[Title]"
-    },
-    "launch": {
-      "launch": "[Launch]",
-      "launching": "[Launching]",
-      "new_import": "[New Import]",
-      "success": "[Success]",
-      "success_desc": "[Success Desc]",
-      "view_job": "[View Job]"
-    },
-    "legal": {
-      "disclosure": "[Disclosure]"
-    },
-    "mapping": {
-      "fields": "[Fields]",
-      "subtitle": "[Subtitle]",
-      "title": "[Title]"
-    },
-    "paste": {
-      "label": "[Label]",
-      "placeholder": "Paste your CSV data here (with headers)...",
-      "process": "[Process]",
-      "processing": "[Processing]"
-    },
-    "prefix": {
-      "apply_to_all": "[Apply To All]",
-      "auto": "[Auto]",
-      "default_country": "[Default Country]",
-      "force_0039": "[Force 0039]",
-      "force_39": "[Force 39]",
-      "no_prefix": "[No Prefix]",
-      "strategy": "[Strategy]",
-      "title": "[Title]"
-    },
-    "preview": {
-      "continue": "[Continue]",
-      "delimiter": "[Delimiter]",
-      "fields": "[Fields]",
-      "rows": "[Rows]",
-      "showing": "[Showing]",
-      "title": "[Title]",
-      "total": "[Total]"
-    },
-    "processing": "[Processing]",
-    "review": {
-      "config": "[Config]",
-      "cost": "[Cost]",
-      "cost_desc": "[Cost Desc]",
-      "cost_note": "[Cost Note]",
-      "subtitle": "[Subtitle]",
-      "summary": "[Summary]",
-      "title": "[Title]"
-    },
-    "sheet": {
-      "subtitle": "[Subtitle]",
-      "title": "[Title]",
-      "upload_csv": "[Upload Csv]"
-    },
-    "steps": {
-      "mapping": "[Mapping]",
-      "review": "[Review]",
-      "upload": "[Upload]"
-    },
-    "upload": {
-      "drag_drop": "[Drag Drop]",
-      "drop_here": "[Drop Here]",
-      "or_click": "[Or Click]",
-      "subtitle": "[Subtitle]",
-      "supported_formats": "[Supported Formats]",
-      "title": "[Title]"
-    }
-  },
-  "kb": {
-    "/": "Knowledge Base with {params}",
-    "title": "Knowledge Base",
-    "index": "Knowledge Base",
-    "auth": {
-      "title": "Sign in required",
-      "description": "Sign in to view your knowledge base and ingestion progress"
-    },
-    "empty": {
-      "workspace_blocked": "Workspace not available in demo mode"
-    },
-    "error": {
-      "title": "Loading error",
-      "description": "We couldn't load knowledge base data. Please retry.",
-      "retry": "Retry"
-    },
-          "overview": {
-        "title": "Knowledge Base",
-        "description": "Manage your knowledge base content and assignments",
-        "subtitle": "Manage your knowledge base and data sources",
-        "sources_count_one": "{{count}} source",
-        "sources_count_other": "{{count}} sources",
-        "documents_count_one": "{{count}} document",
-        "documents_count_other": "{{count}} documents",
-        "chunks_count_one": "{{count}} chunk",
-        "chunks_count_other": "{{count}} chunks",
-        "completeness": "Completeness",
-        "next_steps": "Next Steps",
-        "recent_changes": "Recent Changes",
-        "no_data": "No data available",
-        "next_steps_items": {
-          "add_company": {
-            "title": "Add company information",
-            "description": "Create your company knowledge base"
-          },
-          "import_documents": {
-            "title": "Import documents",
-            "description": "Upload PDFs, DOCX, or crawl websites"
-          },
-          "add_sources": {
-            "title": "Add sources",
-            "description": "Connect external data sources"
-          }
-        },
-      "actions": {
-        "import_documents": "Import documents",
-        "add_source": "Add source",
-        "open": "Open",
-        "edit": "Edit"
-      },
-      "kpi": {
-        "company": {
-          "title": "Company Information",
-          "description": "Basic company details and contact information",
-          "create": "Create Company"
-        },
-        "offer_packs": {
-          "title": "Offer Packs",
-          "empty": "No offer packs available",
-          "available": "{{count}} offer packs available",
-          "create_first": "Create your first offer pack",
-          "manage": "Manage offer packs"
-        },
-        "documents": {
-          "title": "Documents",
-          "complete": "Complete"
-        },
-        "assignments": {
-          "title": "Assignments",
-          "description": "Manage knowledge base assignments"
-        }
-      },
-      "table": {
-        "title": "Knowledge Base Items",
-        "empty": {
-          "title": "No knowledge base items",
-          "description": "Create your first knowledge base item to get started",
-          "cta_new": "Create Knowledge Base"
-        },
-        "error": {
-          "title": "Loading error",
-          "description": "We couldn't load knowledge base data",
-          "retry": "Retry"
-        },
-        "columns": {
-          "name": "Name",
-          "type": "Type",
-          "status": "Status",
-          "progress": "Progress",
-          "actions": "Actions",
-          "title": "Title",
-          "category": "Category", 
-          "status": "Status",
-          "updated_at": "Updated",
-          "owner": "Owner"
-        }
-      },
-      "toolbar": {
-        "search_placeholder": "Search knowledge base...",
-        "filter": {
-          "all": "All",
-          "published": "Published",
-          "drafts": "Drafts",
-          "archived": "Archived"
-        },
-        "bulk": {
-          "assign": "Assign",
-          "import": "Import",
-          "new_offer_pack": "New Offer Pack",
-          "delete": "Delete",
-          "export": "Export"
-        }
-      }
-    },
-    "editor": {
-      "actions": {
-        "save": "Save",
-        "saving": "Saving...",
-        "publish": "Publish",
-        "unpublish": "Unpublish"
-      },
-      "fields": {
-        "title": "Title",
-        "category": "Category",
-        "description": "Description"
-      },
-      "messages": {
-        "unsaved_guard": "You have unsaved changes. Are you sure you want to leave?"
-      }
-    },
-    "import": {
-      "title": "Import Documents",
-      "tabs": {
-        "paste": "Paste Text",
-        "file": "Upload File",
-        "url": "Crawl URL"
-      },
-      "file_upload": {
-        "title": "Upload Files",
-        "subtitle": "Upload PDFs, DOCX, or other document formats",
-        "drag_drop": "Drag and drop files here, or click to select",
-        "or_click": "or click to browse",
-        "supported_formats": "Supported formats: PDF, DOCX, TXT"
-      },
-      "url_crawl": {
-        "title": "Crawl Website",
-        "subtitle": "Extract content from web pages",
-        "placeholder": "Enter website URL (e.g., https://example.com)",
-        "depth": "Crawl Depth",
-        "max_pages": "Maximum Pages"
-      },
-      "progress": {
-        "parsing": "Parsing documents...",
-        "chunking": "Creating chunks...",
-        "embedding": "Generating embeddings..."
-      },
-      "actions": {
-        "cancel": "Cancel",
-        "start": "Start Import",
-        "commit": "Commit Import"
-      }
-    },
-    "sources": {
-      "title": "Data Sources",
-      "add_source": "Add Source",
-      "upload_file": "Upload File",
-      "last_refresh": "Last refreshed",
-      "refresh": "Refresh",
-      "delete": "Delete",
-      "seed_url": "Seed URL",
-      "depth": "Depth",
-      "max_pages": "Max pages",
-      "same_domain_only": "Same domain only",
-      "include_patterns": "Include (regex, comma-separated)",
-      "exclude_patterns": "Exclude (regex, comma-separated)",
-      "start_crawl": "Start crawl",
-      "status": "Status",
-      "pages": "pages",
-      "refresh_crawl": "Refresh crawl",
-      "empty": {
-        "title": "No sources yet",
-        "description": "Get started by adding your first data source"
-      },
-      "type": {
-        "manual": "Manual Entry",
-        "url": "URL Crawl"
-      },
-      "status": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "error": "Error",
-        "processing": "Processing"
-      }
-    },
-    "imports": {
-      "title": "Knowledge Base Imports",
-      "description": "Import and manage knowledge base content from external sources",
-      "actions": {
-        "new_import": "New Import"
-      },
-      "empty": {
-        "title": "No imports",
-        "description": "Start your first knowledge base import"
-      },
-      "download_errors": "Download errors CSV",
-      "add_field": "[Add Field]",
-      "apply_merge": "[Apply Merge]",
-      "conflicts": "[Conflicts]",
-      "existing_fields": "[Existing Fields]",
-      "existing_value": "[Existing Value]",
-      "field_changes": "[Field Changes]",
-      "field_new": "[Field New]",
-      "field_update": "[Field Update]",
-      "field_value": "[Field Value]",
-      "imported_fields": "[Imported Fields]",
-      "keep_existing": "[Keep Existing]",
-      "merge_strategy": "[Merge Strategy]",
-      "merge_summary": "[Merge Summary]",
-      "merge_values": "[Merge Values]",
-      "merged_preview": "[Merged Preview]",
-      "merging": "[Merging]",
-      "new_fields": "[New Fields]",
-      "new_value": "[New Value]",
-      "no_diff_available": "[No Diff Available]",
-      "no_value": "[No Value]",
-      "ready_to_merge": "[Ready To Merge]",
-      "strategy_auto_merge": "[Strategy Auto Merge]",
-      "strategy_auto_new": "[Strategy Auto New]",
-      "strategy_manual": "[Strategy Manual]",
-      "updated": "[Updated]",
-      "use_new": "[Use New]"
-    },
-    "assignments": {
-      "title": "Knowledge Base Assignments",
-      "description": "Assign knowledge base items to agents and campaigns",
-      "confirm": {
-        "assign_title": "Assign Knowledge Base",
-        "assign_desc": "Are you sure you want to assign this knowledge base item?",
-        "confirm": "Confirm",
-        "cancel": "Cancel"
-      }
-    },
-    "quality": {
-      "freshness": "Freshness",
-      "fresh": "Fresh",
-      "stale": "Stale",
-      "outdated": "Outdated"
-    },
-    "cards": {
-      "company": "Company",
-      "products": "Products",
-      "policies": "Policies",
-      "pricing": "Pricing",
-      "contacts": "Contacts",
-      "faq": "FAQ"
-    }
-  },
+
+
   "integrations": {
     "coming_soon": {
       "description": "More integrations will be available in future updates",
@@ -1115,89 +760,120 @@
       "added": "Lead added"
     }
   },
-      "numbers": {
-      "title": "My Numbers",
-      "description": "Manage phone numbers and routing",
-      "agent_id": "Agent ID",
-      "business_hours": "Business Hours",
-      "buy_number": "Buy a number",
-      "buy_numbers": "Buy Numbers",
-      "default_from": "Default caller ID",
-      "enable_voicemail": "Enable Voicemail",
-      "my_numbers": "My Numbers",
-      "route": "Route",
-      "route_number": "Route Number",
-      "use_my_number": "Use my number",
-      "voicemail_message": "Voicemail Message",
-      "filters": {
-        "country": "Country",
-        "provider": "Provider",
-        "capabilities": "Capabilities",
-        "created": "Created",
-        "status": "Status",
-        "empty": "No filters applied",
-        "select_field": "Select a field",
-        "value_placeholder": "Value",
-        "add": "Add",
-        "save_segment": "Save segment",
-        "load_segment": "Load segment",
-        "multiselect_hint": "Separate multiple values with commas"
-      },
-      "toolbar": {
-        "search_placeholder": "Search numbers…",
-        "open_filters": "Filters",
-        "clear_filters": "Clear filters",
-        "bulk": {
-          "assign": "Assign",
-          "release": "Release",
-          "export": "Export CSV"
-        }
-      },
-      "columns": {
-        "number": "Number",
-        "country": "Country",
-        "provider": "Provider",
-        "capabilities": "Capabilities",
-        "status": "Status",
-        "assigned_to": "Assigned to",
-        "created": "Created",
-        "actions": "Actions"
-      },
-      "actions": {
-        "view": "View",
-        "configure": "Configure",
+  "numbers": {
+    "title": "My Numbers",
+    "description": "Manage phone numbers and routing",
+    "agent_id": "Agent ID",
+    "business_hours": "Business Hours",
+    "buy_number": "Buy a number",
+    "buy_numbers": "Buy Numbers",
+    "default_from": "Default caller ID",
+    "enable_voicemail": "Enable Voicemail",
+    "my_numbers": "My Numbers",
+    "route": "Route",
+    "route_number": "Route Number",
+    "use_my_number": "Use my number",
+    "voicemail_message": "Voicemail Message",
+    "filters": {
+      "country": "Country",
+      "provider": "Provider",
+      "capabilities": "Capabilities",
+      "created": "Created",
+      "status": "Status",
+      "empty": "No filters applied",
+      "select_field": "Select a field",
+      "value_placeholder": "Value",
+      "add": "Add",
+      "save_segment": "Save segment",
+      "load_segment": "Load segment",
+      "multiselect_hint": "Separate multiple values with commas"
+    },
+    "toolbar": {
+      "search_placeholder": "Search numbers…",
+      "open_filters": "Filters",
+      "clear_filters": "Clear filters",
+      "bulk": {
         "assign": "Assign",
-        "release": "Release"
-      },
-      "dialogs": {
-        "release": {
-          "title": "Release number?",
-          "body": "This action is permanent. Calls to this number will stop routing.",
-          "confirm": "Release",
-          "cancel": "Cancel",
-          "success": "Number released",
-          "error": "Release failed"
-        }
-      },
-      "empty": {
-        "title": "No numbers yet",
-        "description": "Buy or port numbers to start calling."
-      },
-      "error": {
-        "title": "Couldn't load numbers",
-        "description": "Please retry or check your connection."
-      },
-      "toast": {
-        "copied": "Number copied"
+        "release": "Release",
+        "export": "Export CSV"
       }
     },
+    "columns": {
+      "number": "Number",
+      "country": "Country",
+      "provider": "Provider",
+      "capabilities": "Capabilities",
+      "status": "Status",
+      "assigned_to": "Assigned to",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "configure": "Configure",
+      "assign": "Assign",
+      "release": "Release"
+    },
+    "dialogs": {
+      "release": {
+        "title": "Release number?",
+        "body": "This action is permanent. Calls to this number will stop routing.",
+        "confirm": "Release",
+        "cancel": "Cancel",
+        "success": "Number released",
+        "error": "Release failed"
+      }
+    },
+    "empty": {
+      "title": "No numbers yet",
+      "description": "Buy or port numbers to start calling."
+    },
+    "error": {
+      "title": "Couldn't load numbers",
+      "description": "Please retry or check your connection."
+    },
+    "toast": {
+      "copied": "Number copied"
+    },
+    "overview": {
+      "title": "Phone Numbers Overview",
+      "description": "Monitor and manage your phone number portfolio",
+      "total_numbers": "Total Numbers",
+      "assigned_numbers": "Assigned Numbers",
+      "available_numbers": "Available Numbers",
+      "routing_status": "Routing Status",
+      "cost_analysis": "Cost Analysis",
+      "usage_metrics": "Usage Metrics"
+    },
+    "routing": {
+      "title": "Number Routing",
+      "description": "Configure how calls are routed for each number",
+      "default_agent": "Default Agent",
+      "fallback_routing": "Fallback Routing",
+      "business_hours": "Business Hours",
+      "after_hours": "After Hours",
+      "holiday_routing": "Holiday Routing",
+      "voicemail_settings": "Voicemail Settings"
+    },
+    "purchasing": {
+      "title": "Number Purchasing",
+      "description": "Buy new numbers and manage your portfolio",
+      "search_numbers": "Search Numbers",
+      "country_selection": "Country Selection",
+      "capability_filter": "Capability Filter",
+      "price_range": "Price Range",
+      "bulk_purchase": "Bulk Purchase",
+      "port_existing": "Port Existing Numbers"
+    }
+  },
   "settings": {
+    "title": "Settings",
+    "description": "Manage your account, team, and system preferences",
     "account": "Account",
     "billing": "Billing",
     "integrations": "Integrations",
     "profile": "Profile",
     "team": "Team",
-    "title": "Settings",
     "unsaved": "[Unsaved]",
     "nav": {
       "title": "Settings",
@@ -1210,6 +886,70 @@
       "integrations_desc": "Connect external services",
       "billing": "Billing",
       "billing_desc": "Manage billing and subscriptions"
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "description": "Update your personal information and preferences",
+      "personal_info": "Personal Information",
+      "contact_details": "Contact Details",
+      "preferences": "Preferences",
+      "security": "Security",
+      "notifications": "Notifications"
+    },
+    "company": {
+      "title": "Company Settings",
+      "description": "Manage company information and settings",
+      "company_info": "Company Information",
+      "address": "Address",
+      "contact": "Contact",
+      "logo": "Company Logo",
+      "branding": "Branding",
+      "compliance": "Compliance"
+    },
+    "team": {
+      "title": "Team Management",
+      "description": "Manage team members and permissions",
+      "members": "Team Members",
+      "roles": "Roles & Permissions",
+      "invitations": "Invitations",
+      "activity": "Activity Log",
+      "departments": "Departments"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect external services and tools",
+      "crm_systems": "CRM Systems",
+      "communication": "Communication",
+      "analytics": "Analytics",
+      "automation": "Automation",
+      "webhooks": "Webhooks"
+    },
+    "billing": {
+      "title": "Billing & Subscriptions",
+      "description": "Manage your billing and subscription plans",
+      "current_plan": "Current Plan",
+      "usage": "Usage",
+      "invoices": "Invoices",
+      "payment_methods": "Payment Methods",
+      "billing_history": "Billing History"
+    },
+    "security": {
+      "title": "Security Settings",
+      "description": "Manage security and access controls",
+      "authentication": "Authentication",
+      "two_factor": "Two-Factor Authentication",
+      "sessions": "Active Sessions",
+      "api_keys": "API Keys",
+      "audit_log": "Audit Log"
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "description": "Configure how you receive notifications",
+      "email": "Email Notifications",
+      "sms": "SMS Notifications",
+      "push": "Push Notifications",
+      "in_app": "In-App Notifications",
+      "frequency": "Notification Frequency"
     }
   },
   "error": {
@@ -1453,49 +1193,5 @@
     "hide": "Hide",
     "show": "Show",
     "no_data": "No data available"
-  },
-  "knowledgeBase": {
-    "title": "Knowledge Base",
-    "overview": "Overview",
-    "documents": "Documents",
-    "chunks": "Chunks",
-    "structuredCards": "Structured Cards",
-    "sources": "Sources",
-    "imports": "Imports",
-    "assignments": "Assignments",
-    "completeness": "Completeness",
-    "uploadDocument": "Upload Document",
-    "createSource": "Create Source",
-    "startImport": "Start Import",
-    "manageAssignments": "Manage Assignments",
-    "viewCompleteness": "View Completeness"
-  },
-  "analytics": {
-    "title": "Analytics",
-    "dashboard": "Dashboard",
-    "reports": "Reports",
-    "insights": "Insights",
-    "performance": "Performance",
-    "trends": "Trends",
-    "metrics": "Metrics",
-    "data": "Data",
-    "export": "Export",
-    "filters": "Filters",
-    "dateRange": "Date Range",
-    "comparison": "Comparison"
-  },
-  "history": {
-    "title": "History",
-    "recent": "Recent",
-    "activities": "Activities",
-    "events": "Events",
-    "logs": "Logs",
-    "audit": "Audit Trail",
-    "changes": "Changes",
-    "timeline": "Timeline",
-    "details": "Details",
-    "export": "Export History",
-    "filter": "Filter History",
-    "search": "Search History"
   }
 }

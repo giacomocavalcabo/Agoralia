@@ -18,25 +18,25 @@ export default function AnalyticsFilters({
       id: 'working_hours',
       label: t("pages.analytics.filters.working_hours"),
       description: t("pages.analytics.filters.working_hours_desc"),
-      icon: '🕘'
+      icon: null
     },
     {
       id: 'exclude_weekends',
       label: t("pages.analytics.filters.exclude_weekends"),
       description: t("pages.analytics.filters.exclude_weekends_desc"),
-      icon: '📅'
+      icon: null
     },
     {
       id: 'mobile_only',
       label: t("pages.analytics.filters.mobile_only"),
       description: t("pages.analytics.filters.mobile_only_desc"),
-      icon: '📱'
+      icon: null
     },
     {
       id: 'high_volume',
       label: t("pages.analytics.filters.high_volume"),
       description: t("pages.analytics.filters.high_volume_desc"),
-      icon: '📈'
+      icon: null
     }
   ];
 
@@ -95,7 +95,7 @@ export default function AnalyticsFilters({
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-background hover:bg-accent transition-colors text-xs"
                 title={filter.description}
               >
-                <span>{filter.icon}</span>
+                {filter.icon && <span>{filter.icon}</span>}
                 <span>{filter.label}</span>
               </button>
             ))}

@@ -15,7 +15,7 @@ import {
 
 // Personal/Account Tab Component
 function PersonalTab() {
-  const { t } = useTranslation('pages')
+  const { t } = useTranslation('settings')
   const { toast } = useToast()
   const { get, put } = useApiWithDemo()
   const isDemo = useIsDemo()
@@ -60,7 +60,7 @@ function PersonalTab() {
         })
       } else {
         toast({
-          title: t('settings.account.errors.load_failed'),
+          title: t('account.errors.load_failed'),
           description: error.message,
           type: 'error'
         })
@@ -139,7 +139,7 @@ function PersonalTab() {
         <div className="grid grid-cols-2 gap-6">
           <FormRow>
             <FieldLabel htmlFor="name" required>
-              {t('settings.account.fields.name', { ns: 'pages' })}
+              {t('account.fields.name')}
             </FieldLabel>
             <input
               id="name"
@@ -155,7 +155,7 @@ function PersonalTab() {
           
           <FormRow>
             <FieldLabel htmlFor="email" required>
-              {t('settings.account.fields.email', { ns: 'pages' })}
+              {t('account.fields.email')}
             </FieldLabel>
             <input
               id="email"
@@ -171,7 +171,7 @@ function PersonalTab() {
           
           <FormRow>
             <FieldLabel htmlFor="language" required>
-              {t('settings.account.fields.language', { ns: 'pages' })}
+              {t('account.fields.language')}
             </FieldLabel>
             <select
               id="language"
@@ -181,16 +181,16 @@ function PersonalTab() {
                 errors.language ? 'border-red-300' : 'border-gray-300'
               }`}
             >
-              <option value="en-US">{t('settings.account.languages.english', { ns: 'pages' })}</option>
-              <option value="it-IT">{t('settings.account.languages.italian', { ns: 'pages' })}</option>
-              <option value="fr-FR">{t('settings.account.languages.french', { ns: 'pages' })}</option>
+              <option value="en-US">{t('account.languages.english')}</option>
+              <option value="it-IT">{t('account.languages.italian')}</option>
+              <option value="fr-FR">{t('account.languages.french')}</option>
             </select>
             <FieldError>{errors.language}</FieldError>
           </FormRow>
           
           <FormRow>
             <FieldLabel htmlFor="timezone" required>
-              {t('settings.account.fields.timezone', { ns: 'pages' })}
+              {t('account.fields.timezone')}
             </FieldLabel>
             <select
               id="timezone"
@@ -201,9 +201,9 @@ function PersonalTab() {
               }`}
             >
               <option value="UTC">UTC</option>
-              <option value="Europe/Rome">{t('settings.account.timezones.rome', { ns: 'pages' })} (UTC+1)</option>
-              <option value="Europe/London">{t('settings.account.timezones.london', { ns: 'pages' })} (UTC+0)</option>
-              <option value="America/New_York">{t('settings.account.timezones.new_york', { ns: 'pages' })} (UTC-5)</option>
+              <option value="Europe/Rome">Rome (UTC+1)</option>
+              <option value="Europe/London">London (UTC+0)</option>
+              <option value="America/New_York">New York (UTC-5)</option>
             </select>
             <FieldError>{errors.timezone}</FieldError>
           </FormRow>
@@ -217,8 +217,8 @@ function PersonalTab() {
             onChange={(e) => setFormData({...formData, dualTime: e.target.checked})}
             className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
           />
-          <label htmlFor="dualTime" className="ml-2 text-sm text-gray-700">
-            {t('settings.account.fields.dual_time', { ns: 'pages' })}
+          <label htmlFor="dualTime" className="ml-2 text-sm text-sm text-gray-700">
+            {t('account.fields.dual_time')}
           </label>
         </div>
         
@@ -228,7 +228,7 @@ function PersonalTab() {
             disabled={isSaving}
             className="px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSaving ? t('common.saving', { ns: 'pages' }) : t('settings.account.actions.save', { ns: 'pages' })}
+            {isSaving ? t('common.saving') : t('account.actions.save')}
           </button>
         </FormActions>
       </div>
@@ -238,14 +238,14 @@ function PersonalTab() {
 
 // Main Settings component
 export default function Settings() {
-  const { t } = useTranslation('pages')
+  const { t } = useTranslation('settings')
   
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title={t('settings.title', { ns: 'pages' })}
-        description={t('settings.description', { ns: 'pages' })}
-      />
+              <PageHeader 
+          title={t('title')}
+          description={t('description')}
+        />
 
       <PersonalTab />
     </div>

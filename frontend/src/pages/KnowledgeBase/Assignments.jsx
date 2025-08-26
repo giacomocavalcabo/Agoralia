@@ -55,8 +55,8 @@ export default function Assignments() {
     if (!canEdit) return
     
     setConfirmDialog({
-      title: t('kb.assignments.confirm.assign_title'),
-      description: t('kb.assignments.confirm.assign_desc'),
+              title: t('pages.kb.assignments.confirm.assign_title'),
+        description: t('pages.kb.assignments.confirm.assign_desc'),
       onConfirm: () => performAssignment(scope, scopeId, kbId)
     })
   }
@@ -181,9 +181,9 @@ export default function Assignments() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">{t('kb.assignments.title')}</h1>
+              <h1 className="text-2xl font-semibold">{t('pages.kb.assignments.title')}</h1>
               <p className="text-sm text-gray-500 mt-1">
-                {t('kb.assignments.description')}
+                {t('pages.kb.assignments.description')}
               </p>
             </div>
           </div>
@@ -455,8 +455,8 @@ export default function Assignments() {
           isOpen={!!confirmDialog}
           title={confirmDialog?.title}
           description={confirmDialog?.description}
-          confirmText={t('kb.assignments.confirm.confirm')}
-          cancelText={t('kb.assignments.confirm.cancel')}
+                  confirmText={t('pages.kb.assignments.confirm.confirm')}
+        cancelText={t('pages.kb.assignments.confirm.cancel')}
           onConfirm={confirmDialog?.onConfirm}
           onCancel={() => setConfirmDialog(null)}
           data-testid="assign-confirm"

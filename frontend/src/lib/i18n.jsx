@@ -13,7 +13,7 @@ i18n
   .init({
     fallbackLng: "en-US",
     supportedLngs: ["en-US","it-IT","de-DE","fr-FR","es-ES","ar-EG"],
-    ns: ["common","pages","auth","dashboard","kb","numbers","leads","campaigns","settings","billing","imports","integrations","admin"],
+    ns: ["common","pages","settings","billing"],
     defaultNS: "common",
     backend: {
       // Vercel serve /public come / - file statici sempre disponibili

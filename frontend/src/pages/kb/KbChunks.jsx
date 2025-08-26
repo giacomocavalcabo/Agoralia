@@ -63,13 +63,13 @@ export default function KbChunks() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{t('kb.chunks.title')}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{t('pages.kb.chunks.title')}</h1>
           <p className="text-gray-600 mt-1">Browse and manage your knowledge base chunks</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => navigate('/knowledge/import')}>
             <DocumentTextIcon className="h-4 w-4 mr-2" />
-            {t('kb.import.title')}
+            {t('pages.kb.import.title')}
           </Button>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function KbChunks() {
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('kb.chunks.filters.query')}
+                    placeholder={t('pages.kb.chunks.filters.query')}
                     className="pl-10"
                   />
                 </div>
@@ -102,10 +102,10 @@ export default function KbChunks() {
               value={filters.rules || []}
               onChange={(rules) => setFilters({ ...filters, rules })}
               fields={[
-                { key: 'type', type: 'select', label: t('kb.chunks.filters.type') },
-                { key: 'lang', type: 'select', label: t('kb.chunks.filters.lang') },
-                { key: 'source', type: 'select', label: t('kb.chunks.filters.source') },
-                { key: 'document', type: 'select', label: t('kb.chunks.filters.document') }
+                { key: 'type', type: 'select', label: t('pages.kb.chunks.filters.type') },
+                { key: 'lang', type: 'select', label: t('pages.kb.chunks.filters.lang') },
+                { key: 'source', type: 'select', label: t('pages.kb.chunks.filters.source') },
+                { key: 'document', type: 'select', label: t('pages.kb.chunks.filters.document') }
               ]}
             />
           </div>
@@ -141,7 +141,7 @@ export default function KbChunks() {
                     {/* Actions */}
                     <div className="flex items-center space-x-2 mt-4">
                       <Button size="sm" variant="ghost" onClick={() => handleViewChunk(chunk)}>
-                        {t('kb.actions.view')}
+                        {t('pages.kb.actions.view')}
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => handleTagChunk(chunk)}>
                         Tag
@@ -157,11 +157,11 @@ export default function KbChunks() {
         <Card>
           <div className="text-center py-12">
             <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.chunks.empty.title')}</h3>
-            <p className="text-gray-600 mb-6">{t('kb.chunks.empty.description')}</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.kb.chunks.empty.title')}</h3>
+            <p className="text-gray-600 mb-6">{t('pages.kb.chunks.empty.description')}</p>
             <Button onClick={() => navigate('/knowledge/import')}>
               <DocumentTextIcon className="h-4 w-4 mr-2" />
-              {t('kb.import.title')}
+              {t('pages.kb.import.title')}
             </Button>
           </div>
         </Card>

@@ -46,7 +46,7 @@ const settingsNavigation = [
 ]
 
 export default function SettingsNav({ className }) {
-  const { t } = useTranslation('pages')
+  const { t } = useTranslation('settings')
   const location = useLocation()
   
   const isActive = (href) => {
@@ -60,10 +60,10 @@ export default function SettingsNav({ className }) {
     <nav data-testid="settings-nav" className={`w-64 bg-white border-r border-gray-200 p-6 space-y-2 ${className}`}>
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900">
-          {t('settings.nav.title', { ns: 'pages' })}
+          {t('nav.title')}
         </h2>
         <p className="text-sm text-gray-500">
-          {t('settings.nav.subtitle', { ns: 'pages' })}
+          {t('nav.subtitle')}
         </p>
       </div>
       
@@ -87,11 +87,11 @@ export default function SettingsNav({ className }) {
               }`} />
               <div className="flex-1">
                 <div className="font-medium">
-                  {t(item.name, { ns: 'pages' })}
+                  {t(item.name)}
                 </div>
                 {item.description && (
                   <div className="text-xs text-gray-500 mt-0.5">
-                    {t(item.description, { ns: 'pages' })}
+                    {t(item.description)}
                   </div>
                 )}
               </div>
