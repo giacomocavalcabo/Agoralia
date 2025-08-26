@@ -1,77 +1,39 @@
-// Unica sorgente di verità per i18n (react-i18next)
-console.log('[i18n] File i18n.jsx is loading...')
+// Soluzione definitiva i18n con http-backend (a prova di Vercel)
+import i18n from "i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+import HttpBackend from "i18next-http-backend";
+import { initReactI18next } from "react-i18next";
 
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
+console.log('[i18n] Initializing with http-backend solution...')
 
-// Autocarica TUTTE le JSON sotto locales/<lang>/<ns>.json (relativo da src/lib)
-console.log('[i18n] About to execute import.meta.glob (relative ../../locales/**/*.{json})...')
-const modules = import.meta.glob('../../locales/**/*.{json}', { eager: true, import: 'default' })
-console.log('[i18n] import.meta.glob executed, modules:', modules)
+i18n
+  .use(HttpBackend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: "en-US",
+    supportedLngs: ["en-US","it-IT","de-DE","fr-FR","es-ES","ar-EG"],
+    ns: ["common","pages","auth","dashboard","kb","numbers","leads","campaigns","settings","billing","imports","integrations","admin"],
+    defaultNS: "common",
+    backend: {
+      // Vercel serve /public come / - file statici sempre disponibili
+      loadPath: "/locales/{{lng}}/{{ns}}.json",
+      // Cache per performance
+      requestOptions: {
+        cache: 'default'
+      }
+    },
+    interpolation: { escapeValue: false },
+    debug: import.meta.env.DEV,
+    returnEmptyString: false,
+    react: { useSuspense: false }
+  });
 
-// Debug: log dei moduli trovati
-if (import.meta.env.DEV) {
-  console.log('[i18n] Modules found:', Object.keys(modules))
-}
-
-const resources = {}
-console.log('[i18n] Starting to process modules, count:', Object.keys(modules).length)
-for (const [path, mod] of Object.entries(modules)) {
-  // path es: ../../locales/en-US/pages.json
-  const parts = path.split('/')
-  const lang = parts[parts.length - 2]
-  const file = parts[parts.length - 1]            // pages.json
-  const ns = file.replace(/\.json$/,'')           // pages
-  
-  if (import.meta.env.DEV) {
-    console.log(`[i18n] Processing: ${path} -> lang:${lang}, ns:${ns}`)
-  }
-  
-  resources[lang] = resources[lang] || {}
-  resources[lang][ns] = (mod && mod.default) || mod
-}
-
-// Debug: log delle risorse caricate
-if (import.meta.env.DEV) {
-  console.log('[i18n] Resources loaded:', resources)
-  console.log('[i18n] EN-US namespaces:', Object.keys(resources['en-US'] || {}))
-  console.log('[i18n] IT-IT namespaces:', Object.keys(resources['it-IT'] || {}))
-}
-
-const DEFAULT_NS = 'pages'
-const FALLBACKS = ['en-US', 'it-IT']
-
-if (!i18n.isInitialized) {
-  console.log('[i18n] About to initialize i18n with resources:', resources)
-  console.log('[i18n] Resources keys:', Object.keys(resources))
-  console.log('[i18n] EN-US namespaces:', Object.keys(resources['en-US'] || {}))
-  console.log('[i18n] IT-IT namespaces:', Object.keys(resources['it-IT'] || {}))
-  i18n
-    .use(initReactI18next)
-    .init({
-      resources,
-      lng: 'en-US',
-      fallbackLng: FALLBACKS,
-      ns: Object.keys(resources['en-US'] || { [DEFAULT_NS]: {} }),
-      defaultNS: DEFAULT_NS,
-      interpolation: { escapeValue: false },
-      react: { useSuspense: false }, // niente suspense ⇒ niente bianchi
-      debug: import.meta.env.DEV === true,
-    })
-    .then(() => {
-      console.log('[i18n] i18n initialized successfully')
-      console.log('[i18n] Available languages:', i18n.languages)
-      console.log('[i18n] Current language:', i18n.language)
-      console.log('[i18n] Loaded namespaces:', Object.keys(i18n.options.ns || {}))
-    })
-    .catch((error) => {
-      console.error('[i18n] Failed to initialize i18n:', error)
-    })
-}
+console.log('[i18n] i18n initialized with http-backend')
 
 // Adapter per il vecchio hook `useI18n()` (compat)
 import { useTranslation } from 'react-i18next'
-export function useI18n(ns = DEFAULT_NS) {
+export function useI18n(ns = "common") {
   const { t, i18n: inst, ready } = useTranslation(ns)
   const setLocale = (lng) => {
     if (!lng || lng === inst.language) return
@@ -86,6 +48,5 @@ try {
   const saved = localStorage.getItem('app.lang')
   if (saved) i18n.changeLanguage(saved)
 } catch {}
-
 
 export default i18n
