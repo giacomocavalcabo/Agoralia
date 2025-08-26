@@ -77,7 +77,7 @@
     },
     "events": {
       "title": "Eventi del {{date}}",
-      "more": "+{{count}} altri"
+      "more": "+{count} altri"
     },
     "toasts": {
       "created": "Chiamata programmata",
@@ -143,9 +143,9 @@
       "next_steps": "Prossimi passi",
       "no_data": "Nessun contenuto ancora. Inizia importando un documento o aggiungendo una fonte.",
       "recent_changes": "Modifiche recenti",
-      "sources_count": "{{count}} fonti",
-      "documents_count": "{{count}} documenti",
-      "chunks_count": "{{count}} chunk"
+      "sources_count": "{count} fonti",
+      "documents_count": "{count} documenti",
+      "chunks_count": "{count} chunk"
     },
     "empty": {
       "no_data": "Nessun contenuto ancora",
@@ -301,7 +301,7 @@
     },
     "subset": {
       "title": "Seleziona le righe da importare",
-      "selected": "{{count}} selezionate",
+      "selected": "{count} selezionate",
       "filters": "Filtri",
       "select_all": "Seleziona tutto"
     },

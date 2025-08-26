@@ -86,7 +86,7 @@ export default function KbOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+      <div className="flex flex-col md:flex-row gap-6" style={{ display: 'flex', flexDirection: 'row', gap: '1.5rem' }}>
         <Card>
           <div className="p-6 text-center">
             <DocumentTextIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
