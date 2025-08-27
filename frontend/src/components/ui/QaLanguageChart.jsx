@@ -20,7 +20,7 @@ export default function QaLanguageChart({
   className = "",
   height = 300 
 }) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('pages');
   const formatters = createNumberFormatter(i18n.language, 'EUR');
   
   if (!data || !data.distributions) {
@@ -34,19 +34,19 @@ export default function QaLanguageChart({
   // Transform data for radar chart
   const radarData = [
     {
-      metric: t('pages.analytics.qa.talk_ratio'),
+              metric: t('analytics.qa.talk_ratio'),
       value: data.distributions?.talk_ratio?.p50 || 0,
       target: 0.6,
       fullMark: 1.0
     },
     {
-      metric: t('pages.analytics.qa.sentiment_agent'),
+              metric: t('analytics.qa.sentiment_agent'),
       value: (data.distributions?.sentiment_agent?.avg || 0) + 1, // Convert -1..1 to 0..2
       target: 1.0,
       fullMark: 2.0
     },
     {
-      metric: t('pages.analytics.qa.interruptions'),
+              metric: t('analytics.qa.interruptions'),
       value: Math.max(0, 3 - (data.distributions?.interruptions?.avg || 0)), // Invert: lower is better
       target: 2.0,
       fullMark: 3.0
@@ -55,7 +55,7 @@ export default function QaLanguageChart({
 
   // Transform data for bar chart
   const barData = data.top_objections?.map((obj, index) => ({
-    objection: t(`pages.analytics.qa.objections.${obj.label}`, { defaultValue: obj.label }),
+            objection: t(`analytics.qa.objections.${obj.label}`, { defaultValue: obj.label }),
     count: obj.count,
     color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]
   })) || [];
@@ -82,7 +82,7 @@ export default function QaLanguageChart({
         {/* Radar Chart - Quality Metrics */}
         <div>
           <h3 className="text-lg font-semibold mb-4">
-            {t('pages.analytics.qa.quality_metrics')}
+            {t('analytics.qa.quality_metrics')}
           </h3>
           <ResponsiveContainer width="100%" height={height}>
             <RadarChart data={radarData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
@@ -90,14 +90,14 @@ export default function QaLanguageChart({
               <PolarAngleAxis dataKey="metric" />
               <PolarRadiusAxis angle={90} domain={[0, 'dataMax']} />
               <Radar
-                name={t('pages.analytics.qa.current')}
+                name={t('analytics.qa.current')}
                 dataKey="value"
                 stroke="#3b82f6"
                 fill="#3b82f6"
                 fillOpacity={0.3}
               />
               <Radar
-                name={t('pages.analytics.qa.target')}
+                name={t('analytics.qa.target')}
                 dataKey="target"
                 stroke="#10b981"
                 fill="transparent"
@@ -110,7 +110,7 @@ export default function QaLanguageChart({
         {/* Bar Chart - Top Objections */}
         <div>
           <h3 className="text-lg font-semibold mb-4">
-            {t('pages.analytics.qa.top_objections')}
+            {t('analytics.qa.top_objections')}
           </h3>
           {barData.length > 0 ? (
             <ResponsiveContainer width="100%" height={height}>
@@ -141,7 +141,7 @@ export default function QaLanguageChart({
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              {t('pages.analytics.qa.no_objections')}
+              {t('analytics.qa.no_objections')}
             </div>
           )}
         </div>
@@ -155,7 +155,7 @@ export default function QaLanguageChart({
               {formatters.percent((data.distributions?.talk_ratio?.p50 || 0))}
             </div>
             <div className="text-sm text-muted-foreground">
-              {t('pages.analytics.qa.avg_talk_ratio')}
+              {t('analytics.qa.avg_talk_ratio')}
             </div>
           </div>
           
@@ -164,7 +164,7 @@ export default function QaLanguageChart({
               {formatters.number(data.distributions?.dead_air_sec?.p50 || 0)}s
             </div>
             <div className="text-sm text-muted-foreground">
-              {t('pages.analytics.qa.avg_dead_air')}
+              {t('analytics.qa.avg_dead_air')}
             </div>
           </div>
           
@@ -173,7 +173,7 @@ export default function QaLanguageChart({
               {formatters.number(data.distributions?.interruptions?.avg || 0)}
             </div>
             <div className="text-sm text-muted-foreground">
-              {t('pages.analytics.qa.avg_interruptions')}
+              {t('analytics.qa.avg_interruptions')}
             </div>
           </div>
           
@@ -182,7 +182,7 @@ export default function QaLanguageChart({
               {formatters.percent((data.distributions?.sentiment_agent?.avg || 0) + 1)}
             </div>
             <div className="text-sm text-muted-foreground">
-              {t('pages.analytics.qa.avg_sentiment')}
+              {t('analytics.qa.avg_sentiment')}
             </div>
           </div>
         </div>

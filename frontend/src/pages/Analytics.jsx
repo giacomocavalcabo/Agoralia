@@ -20,7 +20,7 @@ import InsightsPanel from "../components/ui/InsightsPanel";
 import ExportPanel from "../components/ui/ExportPanel";
 
 export default function Analytics() {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('pages');
   const [days, setDays] = useState(30);
   const [filters, setFilters] = useState({});
   

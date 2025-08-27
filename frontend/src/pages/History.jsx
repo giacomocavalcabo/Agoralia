@@ -5,7 +5,7 @@ import { fetchHistory, exportHistoryCsv } from '../lib/historyApi'
 import { useToast } from '../components/ToastProvider.jsx'
 
 export default function History() {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation('pages')
   const { toast } = useToast()
   const [page, setPage] = useState(1)
   const [pageSize] = useState(50)

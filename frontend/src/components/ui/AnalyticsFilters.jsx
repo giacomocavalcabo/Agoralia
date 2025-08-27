@@ -9,7 +9,7 @@ export default function AnalyticsFilters({
   className = "",
   showQuickFilters = true 
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pages');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Quick filter presets
