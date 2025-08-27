@@ -390,7 +390,7 @@ export default function Admin() {
 
 					<div className="grid grid-cols-12 gap-4">
 						<div className="col-span-12 xl:col-span-7 panel">
-							<div className="kpi-title mb-2">{t('pages.dashboard.health.title')}</div>
+							                <div className="kpi-title mb-2">{t('dashboard.health.title')}</div>
 							<div className="grid gap-2">
 								{services.map((s,i)=> (
 									<div key={i} className="flex items-center gap-2">

@@ -78,9 +78,9 @@ export default function TopList({
                 {progressValue !== undefined && (
                   <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
                     <span>
-                      {progressKey === 'qualified_rate' && t("pages.analytics.metrics.qualified_rate")}
-                      {progressKey === 'connected_rate' && t("pages.analytics.metrics.connected_rate")}
-                      {progressKey === 'avg_duration_sec' && t("pages.analytics.metrics.avg_duration")}
+                              {progressKey === 'qualified_rate' && t("analytics.metrics.qualified_rate")}
+        {progressKey === 'connected_rate' && t("analytics.metrics.connected_rate")}
+        {progressKey === 'avg_duration_sec' && t("analytics.metrics.avg_duration")}
                     </span>
                     <span className="tabular-nums">
                       {progressKey === 'avg_duration_sec' 

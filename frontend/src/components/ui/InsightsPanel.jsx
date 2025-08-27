@@ -28,8 +28,8 @@ export default function InsightsPanel({ className = "", days = 7 }) {
 
   if (error) {
     return (
-      <section aria-label={t("pages.analytics.insights.title")} className={`mt-6 ${className}`}>
-        <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.insights.title")}</h2>
+      <section aria-label={t("analytics.insights.title")} className={`mt-6 ${className}`}>
+        <h2 className="text-lg font-semibold mb-4">{t("analytics.insights.title")}</h2>
         <div className="p-3 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
           Failed to load insights. Please try again.
         </div>
@@ -39,16 +39,16 @@ export default function InsightsPanel({ className = "", days = 7 }) {
 
   if (!insights) {
     return (
-      <section aria-label={t("pages.analytics.insights.title")} className={`mt-6 ${className}`}>
-        <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.insights.title")}</h2>
+      <section aria-label={t("analytics.insights.title")} className={`mt-6 ${className}`}>
+        <h2 className="text-lg font-semibold mb-4">{t("analytics.insights.title")}</h2>
         <div className="text-muted-foreground">No insights available for this period.</div>
       </section>
     );
   }
 
   return (
-    <section aria-label={t("pages.analytics.insights.title")} className={`mt-6 ${className}`}>
-      <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.insights.title")}</h2>
+    <section aria-label={t("analytics.insights.title")} className={`mt-6 ${className}`}>
+      <h2 className="text-lg font-semibold mb-4">{t("analytics.insights.title")}</h2>
       
       <div className="space-y-6">
         {/* Period Header */}
@@ -62,7 +62,7 @@ export default function InsightsPanel({ className = "", days = 7 }) {
           <div>
             <h3 className="text-md font-medium mb-3 flex items-center gap-2">
               <span className="text-green-600">📈</span>
-              {t("pages.analytics.insights.continue")}
+              {t("analytics.insights.continue")}
             </h3>
             <div className="space-y-2">
               {insights.highlights.map((highlight, index) => (
@@ -80,7 +80,7 @@ export default function InsightsPanel({ className = "", days = 7 }) {
           <div>
             <h3 className="text-md font-medium mb-3 flex items-center gap-2">
               <span className="text-blue-600">🎯</span>
-              {t("pages.analytics.insights.actions")}
+              {t("analytics.insights.actions")}
             </h3>
             <div className="space-y-2">
               {insights.actions.map((action, index) => (
@@ -98,7 +98,7 @@ export default function InsightsPanel({ className = "", days = 7 }) {
           <div>
             <h3 className="text-md font-medium mb-3 flex items-center gap-2">
               <span className="text-orange-600">⚠️</span>
-              {t("pages.analytics.insights.risks")}
+              {t("analytics.insights.risks")}
             </h3>
             <div className="space-y-2">
               {insights.risks.map((risk, index) => (
@@ -116,7 +116,7 @@ export default function InsightsPanel({ className = "", days = 7 }) {
           <div>
             <h3 className="text-md font-medium mb-3 flex items-center gap-2">
               <span className="text-purple-600">💬</span>
-              {t("pages.analytics.insights.top_objections")}
+              {t("analytics.insights.top_objections")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {insights.top_objections.map((objection, index) => (

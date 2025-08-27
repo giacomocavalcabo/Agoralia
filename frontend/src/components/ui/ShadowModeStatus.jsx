@@ -34,7 +34,7 @@ export default function ShadowModeStatus({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-muted-foreground">
-            {t('pages.analytics.shadow.loading')}
+            {t('analytics.shadow.loading')}
           </span>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function ShadowModeStatus({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">
-            {t('pages.analytics.shadow.title')}
+            {t('analytics.shadow.title')}
           </span>
           <Badge variant={getStabilityColor(stabilityScore)}>
             {getStabilityIcon(stabilityScore)} {stabilityScore}%
@@ -95,8 +95,8 @@ export default function ShadowModeStatus({
       
       <div className="text-sm text-muted-foreground mb-3">
         {stabilityScore >= 0.80 
-          ? t('pages.analytics.shadow.stable_message')
-          : t('pages.analytics.shadow.unstable_message')
+          ? t('analytics.shadow.stable_message')
+          : t('analytics.shadow.unstable_message')
         }
       </div>
       
@@ -108,14 +108,14 @@ export default function ShadowModeStatus({
               {(stabilityScore * 100).toFixed(1)}%
             </div>
             <div className="text-sm text-muted-foreground">
-              {t('pages.analytics.shadow.stability')}
+              {t('analytics.shadow.stability')}
             </div>
           </div>
           
           {/* Funnel Deltas */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-foreground">
-              {t('pages.analytics.shadow.funnel_deltas')}
+              {t('analytics.shadow.funnel_deltas')}
             </h4>
             
             {Object.entries(deltas.funnel || {}).map(([key, delta]) => (
@@ -142,7 +142,7 @@ export default function ShadowModeStatus({
           {notes && notes.length > 0 && (
             <div className="pt-2 border-t">
               <h4 className="text-sm font-medium text-foreground mb-2">
-                {t('pages.analytics.shadow.notes')}
+                {t('analytics.shadow.notes')}
               </h4>
               <div className="space-y-1">
                 {notes.map((note, index) => (
@@ -158,12 +158,12 @@ export default function ShadowModeStatus({
           <div className="pt-2 border-t">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {t('pages.analytics.shadow.rollout_status')}
+                {t('analytics.shadow.rollout_status')}
               </span>
               <Badge variant={stabilityScore >= 0.80 ? 'success' : 'warning'}>
                 {stabilityScore >= 0.80 
-                  ? t('pages.analytics.shadow.ready_for_rollout')
-                  : t('pages.analytics.shadow.not_ready')
+                  ? t('analytics.shadow.ready_for_rollout')
+                  : t('analytics.shadow.not_ready')
                 }
               </Badge>
             </div>

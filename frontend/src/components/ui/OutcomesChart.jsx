@@ -39,9 +39,9 @@ export default function OutcomesChart({
   }));
 
   const pieData = [
-    { name: t('pages.analytics.outcomes.booked'), value: data.totals?.booked || 0, color: '#10b981' },
-    { name: t('pages.analytics.outcomes.qualified'), value: data.totals?.qualified || 0, color: '#3b82f6' },
-    { name: t('pages.analytics.outcomes.failed'), value: data.totals?.failed || 0, color: '#ef4444' }
+            { name: t('analytics.outcomes.booked'), value: data.totals?.booked || 0, color: '#10b981' },
+        { name: t('analytics.outcomes.qualified'), value: data.totals?.qualified || 0, color: '#3b82f6' },
+        { name: t('analytics.outcomes.failed'), value: data.totals?.failed || 0, color: '#ef4444' }
   ].filter(item => item.value > 0);
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -66,7 +66,7 @@ export default function OutcomesChart({
         {/* Bar Chart - Reasons Breakdown */}
         <div>
           <h3 className="text-lg font-semibold mb-4">
-            {t('pages.analytics.outcomes.by_reason')}
+            {t('analytics.outcomes.by_reason')}
           </h3>
           <ResponsiveContainer width="100%" height={height}>
             <BarChart data={barData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
@@ -99,7 +99,7 @@ export default function OutcomesChart({
         {/* Pie Chart - Totals */}
         <div>
           <h3 className="text-lg font-semibold mb-4">
-            {t('pages.analytics.outcomes.totals')}
+            {t('analytics.outcomes.totals')}
           </h3>
           <ResponsiveContainer width="100%" height={height}>
             <PieChart>
