@@ -7,7 +7,11 @@
     "usage_mtd": "Usage This Month",
     "minutes_mtd": "Minutes This Month",
     "cap_status": "Usage Status",
-    "cap_status_desc": "Current usage status"
+    "cap_status_desc": "Current usage status",
+    "balance_amount": "Balance Amount",
+    "usage_amount": "Usage Amount",
+    "usage_limit": "Usage Limit",
+    "minutes_limit": "Minutes Limit"
   },
   
   "payment_methods": {

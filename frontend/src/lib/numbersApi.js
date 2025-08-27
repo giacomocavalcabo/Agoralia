@@ -32,3 +32,9 @@ export const bindNumber = (body) =>
     method: "POST",
     body: JSON.stringify(body),
   });
+
+export const listProviders = () => apiFetch("/settings/telephony/providers");
+export const upsertProvider = (body) => apiFetch("/settings/telephony/providers", {method:"POST", body});
+export const purchaseNumber = (body) => apiFetch("/settings/telephony/numbers/purchase", {method:"POST", body});
+export const importNumberApi = (body) => apiFetch("/settings/telephony/numbers/import", {method:"POST", body});
+export const listOrders = () => apiFetch("/settings/telephony/orders");

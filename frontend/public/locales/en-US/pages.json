@@ -608,6 +608,7 @@
   },
   "history": {
     "title": "Call History & Outcomes",
+    "description": "View and manage call history, outcomes, and next steps",
     "search_placeholder": "Search by ID, contact, notes…",
     "search_aria": "Search in history",
     "export_csv": "Export CSV",
@@ -1203,6 +1204,10 @@
       "snapshot": "Copy snapshot link",
       "copied": "Snapshot link copied"
     }
+  },
+  "nav": {
+    "title": "Navigation",
+    "subtitle": "Main navigation menu"
   },
   "common": {
     "back": "Back",

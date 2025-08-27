@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { listNumbers, purchaseRetellNumber, importNumber, confirmImport, setRouting } from '../lib/numbersApi'
 import NumbersTable from '../components/NumbersTable'
 import BindControls from '../components/BindControls'
+import ProviderAccounts from '../components/ProviderAccounts'
+import NumberWizard from '../components/NumberWizard'
 import { PhoneIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 
@@ -57,6 +59,12 @@ export default function SettingsTelephony() {
       <div className="rounded-lg border p-3 bg-amber-50 text-amber-800 text-sm">
         <strong>{t('settings.telephony.policy.title')}:</strong> {t('settings.telephony.policy.no_outbound')}
       </div>
+
+      {/* Provider Management */}
+      <ProviderAccounts />
+      
+      {/* Number Wizard */}
+      <NumberWizard />
 
       {/* Actions */}
       <div className="grid md:grid-cols-3 gap-4">

@@ -1198,7 +1198,28 @@
     }
   },
   "settings": {
-    "account": "Account",
+    "account": {
+      "title": "Impostazioni Account",
+      "description": "Gestisci le impostazioni del tuo account personale",
+      "fields": {
+        "name": "Nome Completo*",
+        "email": "Indirizzo Email*",
+        "language": "Lingua*",
+        "timezone": "Fuso Orario*",
+        "dual_time": "Visualizzazione Doppio Tempo"
+      },
+      "languages": {
+        "english": "Inglese",
+        "italian": "Italiano",
+        "french": "Francese"
+      },
+      "actions": {
+        "save": "Salva Modifiche"
+      },
+      "errors": {
+        "load_failed": "Impossibile caricare le impostazioni"
+      }
+    },
     "billing": "Fatturazione",
     "integrations": "Integrazioni",
     "profile": "Profilo",
@@ -1488,6 +1509,7 @@
   },
   "history": {
     "title": "Cronologia Chiamate e Risultati",
+    "description": "Visualizza e gestisci cronologia chiamate, risultati e prossimi passi",
     "search_placeholder": "Cerca per ID, contatto, note…",
     "search_aria": "Cerca nella cronologia",
     "export_csv": "Esporta CSV",
@@ -1576,6 +1598,10 @@
     "zoho": {
       "description": "Connetti a Zoho CRM con supporto multi-DC"
     }
+  },
+  "nav": {
+    "title": "Navigazione",
+    "subtitle": "Menu di navigazione principale"
   },
   "common": {
     "back": "Indietro",

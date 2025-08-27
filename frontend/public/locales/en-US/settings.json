@@ -24,10 +24,10 @@
     "title": "Account Settings",
     "description": "Manage your personal account settings",
     "fields": {
-      "name": "Full Name",
-      "email": "Email Address",
-      "language": "Language",
-      "timezone": "Timezone",
+      "name": "Full Name*",
+      "email": "Email Address*",
+      "language": "Language*",
+      "timezone": "Timezone*",
       "dual_time": "Dual Time Display"
     },
     "languages": {
@@ -75,6 +75,43 @@
       "outbound": "Outbound",
       "save": "Save",
       "outbound_locked": "Outbound not allowed for forwarded numbers"
+    },
+    "providers": {
+      "title": "Provider accounts",
+      "linked": "Linked",
+      "label_placeholder": "Label (opzionale)",
+      "api_key_placeholder": "API Key (non verrà mostrata)",
+      "connect": "Collega",
+      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+    },
+    "wizard": {
+      "buy": {
+        "title": "Compra numero",
+        "cta": "Acquista",
+        "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
+      },
+      "import": {
+        "title": "Aggiungi numero esistente",
+        "cta": "Aggiungi",
+        "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
+      },
+      "select_provider": "Seleziona account provider…",
+      "country_placeholder": "Paese ISO2 (es. US, IT, IN)",
+      "type": {
+        "local": "Local",
+        "mobile": "Mobile",
+        "tollfree": "Toll-free"
+      },
+      "area_code_placeholder": "Area code (opzionale)",
+      "e164_placeholder": "Numero in E.164 (es. +12125551234)",
+      "orders": {
+        "title": "Ordini & Import",
+        "order_id": "Order ID",
+        "provider": "Provider",
+        "number": "Numero",
+        "status": "Stato",
+        "empty": "Nessun ordine"
+      }
     }
   },
   

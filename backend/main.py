@@ -3734,6 +3734,9 @@ async def settings_import_number(
 
 from pydantic import BaseModel
 from backend.services.telephony import assert_e164, enforce_outbound_policy, validate_number_binding
+from backend.services.telephony_providers import start_purchase, start_import, finalize_activate_number
+from backend.services.crypto import enc, dec
+from backend.models import ProviderAccount, TelephonyProvider, NumberOrder, Number
 
 class BindPayload(BaseModel):
     number_id: str
@@ -3786,6 +3789,136 @@ async def settings_list_agents(
     ]
     
     return {"agents": agents}
+
+# ===================== Telephony Provider Management =====================
+
+@app.get("/settings/telephony/providers")
+async def list_providers(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """List telephony providers for the current workspace"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    rows = db.query(ProviderAccount).filter(ProviderAccount.workspace_id == wsid).all()
+    return [{"id": r.id, "provider": r.provider.value, "label": r.label} for r in rows]
+
+@app.post("/settings/telephony/providers")
+async def upsert_provider(
+    body: dict, 
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Add or update a telephony provider account"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    provider = TelephonyProvider(body["provider"])
+    
+    acc = ProviderAccount(
+        id=f"prov_{provider.value}_{wsid}",
+        workspace_id=wsid,
+        provider=provider,
+        api_key_encrypted=enc(body["api_key"]),
+        label=body.get("label")
+    )
+    
+    db.merge(acc)
+    db.commit()
+    return {"ok": True}
+
+@app.post("/settings/telephony/numbers/purchase")
+async def purchase_number(
+    body: dict, 
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Purchase a phone number from a provider"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    acc = db.query(ProviderAccount).filter_by(
+        workspace_id=wsid, 
+        id=body["provider_account_id"]
+    ).first()
+    
+    if not acc:
+        raise HTTPException(400, "provider_account_not_found")
+    
+    order = await start_purchase(db, wsid, acc, {
+        "request_id": body["request_id"],
+        "country": body["country"],
+        "type": body.get("type", "local"),
+        "area_code": body.get("area_code")
+    })
+    
+    return {"order_id": order.id, "status": order.status}
+
+@app.post("/settings/telephony/numbers/import")
+async def import_number(
+    body: dict, 
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Import an existing phone number from a provider"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    acc = db.query(ProviderAccount).filter_by(
+        workspace_id=wsid, 
+        id=body["provider_account_id"]
+    ).first()
+    
+    if not acc:
+        raise HTTPException(400, "provider_account_not_found")
+    
+    order = await start_import(db, wsid, acc, body["e164"], body["request_id"])
+    return {"order_id": order.id, "status": order.status}
+
+@app.get("/settings/telephony/orders")
+async def list_orders(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """List number orders for the current workspace"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    q = db.query(NumberOrder).filter_by(workspace_id=wsid).order_by(NumberOrder.created_at.desc())
+    return [{
+        "id": o.id,
+        "status": o.status,
+        "e164": o.result.get("e164") if o.result else None,
+        "provider": o.provider.value
+    } for o in q.all()]
+
+# ===================== Provider Webhooks =====================
+
+@app.post("/webhooks/twilio")
+async def twilio_webhook(
+    payload: dict, 
+    db: Session = Depends(get_db)
+) -> dict:
+    """Handle Twilio webhook events for number orders"""
+    # TODO: Validate signature (X-Twilio-Signature) - omitted here
+    ref = payload.get("orderSid") or payload.get("phoneNumberSid")
+    order = db.query(NumberOrder).filter_by(provider_ref=ref).first()
+    
+    if not order:
+        return {"ok": True}
+    
+    # If status is "active" or "completed"
+    if payload.get("status") in ("active", "completed"):
+        finalize_activate_number(db, order, hosted=True)  # CLI "hosted" by provider
+    
+    return {"ok": True}
+
+@app.post("/webhooks/telnyx")
+async def telnyx_webhook(
+    payload: dict, 
+    db: Session = Depends(get_db)
+) -> dict:
+    """Handle Telnyx webhook events for number orders"""
+    # TODO: Validate signature (Telnyx-Signature) - omitted here
+    ref = payload.get("record_type_id") or payload.get("order_id")
+    order = db.query(NumberOrder).filter_by(provider_ref=ref).first()
+    
+    if order and payload.get("status") in ("active", "completed"):
+        finalize_activate_number(db, order, hosted=True)
+    
+    return {"ok": True}
+
 # ===================== Sprint 6: Outcomes & CRM =====================
 
 @app.post("/calls/{call_id}/outcome")

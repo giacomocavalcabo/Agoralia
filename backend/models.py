@@ -268,6 +268,38 @@ class Number(Base):
     outbound_enabled = Column(Boolean, default=False)
     inbound_agent_id = Column(String, nullable=True)
     outbound_agent_id = Column(String, nullable=True)
+    # Provider fields
+    provider = Column(String, nullable=True)  # retell|twilio|telnyx
+    provider_ref = Column(String, nullable=True)
+    hosted = Column(Boolean, default=False)  # True if hosted by provider
+    verified_cli = Column(Boolean, default=False)  # True if verified as caller ID
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ===================== Telephony Providers =====================
+
+class TelephonyProvider(PyEnum):
+    twilio = "twilio"
+    telnyx = "telnyx"
+
+class ProviderAccount(Base):
+    __tablename__ = "provider_accounts"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    provider = Column(Enum(TelephonyProvider), nullable=False)
+    api_key_encrypted = Column(String, nullable=False)
+    label = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class NumberOrder(Base):
+    __tablename__ = "number_orders"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    provider = Column(Enum(TelephonyProvider), nullable=False)
+    request = Column(JSON, nullable=False)
+    status = Column(String, default="pending")  # pending|review|failed|active
+    provider_ref = Column(String, nullable=True)
+    result = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

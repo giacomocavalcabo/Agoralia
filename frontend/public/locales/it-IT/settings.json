@@ -75,6 +75,43 @@
       "outbound": "Outbound",
       "save": "Salva",
       "outbound_locked": "Outbound non consentito per numeri inoltrati"
+    },
+    "providers": {
+      "title": "Account provider",
+      "linked": "Collegato",
+      "label_placeholder": "Etichetta (opzionale)",
+      "api_key_placeholder": "API Key (non verrà mostrata)",
+      "connect": "Collega",
+      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+    },
+    "wizard": {
+      "buy": {
+        "title": "Compra numero",
+        "cta": "Acquista",
+        "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
+      },
+      "import": {
+        "title": "Aggiungi numero esistente",
+        "cta": "Aggiungi",
+        "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
+      },
+      "select_provider": "Seleziona account provider…",
+      "country_placeholder": "Paese ISO2 (es. US, IT, IN)",
+      "type": {
+        "local": "Locale",
+        "mobile": "Mobile",
+        "tollfree": "Gratuito"
+      },
+      "area_code_placeholder": "Prefisso (opzionale)",
+      "e164_placeholder": "Numero in E.164 (es. +12125551234)",
+      "orders": {
+        "title": "Ordini & Import",
+        "order_id": "ID Ordine",
+        "provider": "Provider",
+        "number": "Numero",
+        "status": "Stato",
+        "empty": "Nessun ordine"
+      }
     }
   },
   
