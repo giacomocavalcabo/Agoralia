@@ -33,25 +33,25 @@ export default function FunnelChart({ data, className = "" }) {
   // Transform data for Recharts
   const chartData = [
     { 
-      stage: t("pages.analytics.kpi.reached"), 
+      stage: t("analytics.kpi.reached"), 
       value: data.reached || 0, 
       color: COLORS.reached,
       key: 'reached'
     },
     { 
-      stage: t("pages.analytics.kpi.connected"), 
+      stage: t("analytics.kpi.connected"), 
       value: data.connected || 0, 
       color: COLORS.connected,
       key: 'connected'
     },
     { 
-      stage: t("pages.analytics.kpi.qualified"), 
+      stage: t("analytics.kpi.qualified"), 
       value: data.qualified || 0, 
       color: COLORS.qualified,
       key: 'qualified'
     },
     { 
-      stage: t("pages.analytics.kpi.booked"), 
+      stage: t("analytics.kpi.booked"), 
       value: data.booked || 0, 
       color: COLORS.booked,
       key: 'booked'

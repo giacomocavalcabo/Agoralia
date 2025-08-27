@@ -41,12 +41,12 @@ export default function GoalsPanel({ className = "" }) {
   };
 
   return (
-    <section aria-label={t("pages.analytics.goals.title")} className={`mt-6 ${className}`}>
-      <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.goals.title")}</h2>
+            <section aria-label={t("analytics.goals.title")} className={`mt-6 ${className}`}>
+          <h2 className="text-lg font-semibold mb-4">{t("analytics.goals.title")}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div>
-          <label className="text-sm text-muted-foreground">{t("pages.analytics.goals.metric")}</label>
+                      <label className="text-sm text-muted-foreground">{t("analytics.goals.metric")}</label>
           <select 
             value={goal.metric} 
             onChange={(e) => updateGoal('metric', e.target.value)}
@@ -61,7 +61,7 @@ export default function GoalsPanel({ className = "" }) {
         </div>
         
         <div>
-          <label className="text-sm text-muted-foreground">{t("pages.analytics.goals.condition")}</label>
+                      <label className="text-sm text-muted-foreground">{t("analytics.goals.condition")}</label>
           <select 
             value={goal.op} 
             onChange={(e) => updateGoal('op', e.target.value)}
@@ -77,7 +77,7 @@ export default function GoalsPanel({ className = "" }) {
         </div>
         
         <div>
-          <label className="text-sm text-muted-foreground">{t("pages.analytics.goals.threshold")}</label>
+                      <label className="text-sm text-muted-foreground">{t("analytics.goals.threshold")}</label>
           <input 
             type="number" 
             step="0.01"
@@ -88,7 +88,7 @@ export default function GoalsPanel({ className = "" }) {
         </div>
         
         <div>
-          <label className="text-sm text-muted-foreground">{t("pages.analytics.goals.window")}</label>
+                      <label className="text-sm text-muted-foreground">{t("analytics.goals.window")}</label>
           <select 
             value={goal.window_days} 
             onChange={(e) => updateGoal('window_days', parseInt(e.target.value))}
@@ -107,7 +107,7 @@ export default function GoalsPanel({ className = "" }) {
           disabled={alertMutation.isPending}
           className="px-6"
         >
-          {alertMutation.isPending ? 'Checking...' : t("pages.analytics.goals.add")}
+                      {alertMutation.isPending ? 'Checking...' : t("analytics.goals.add")}
         </Button>
       </div>
       
@@ -141,7 +141,7 @@ export default function GoalsPanel({ className = "" }) {
                 </div>
                 
                 <div>
-                  <span className="text-muted-foreground">{t("pages.analytics.goals.last_check")}:</span>
+                  <span className="text-muted-foreground">{t("analytics.goals.last_check")}:</span>
                   <span className="ml-2 font-medium">Now</span>
                 </div>
               </div>

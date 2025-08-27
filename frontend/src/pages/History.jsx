@@ -67,7 +67,7 @@ export default function History() {
           <select
             value={filters.campaign_id}
             onChange={(e)=>{ setPage(1); setFilters(f=>({...f, campaign_id: e.target.value })); }}
-            aria-label={t("pages.history.filters.campaign")}
+            aria-label={t("history.filters.campaign")}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             <option value="">{t("history.filters.all_campaigns")}</option>
@@ -77,7 +77,7 @@ export default function History() {
           <select
             value={filters.next_step}
             onChange={(e)=>{ setPage(1); setFilters(f=>({...f, next_step: e.target.value })); }}
-            aria-label={t("pages.history.filters.next_step")}
+            aria-label={t("history.filters.next_step")}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             <option value="">{t("history.filters.all_steps")}</option>
@@ -113,12 +113,12 @@ export default function History() {
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("pages.history.table.call_id")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900 min-w-[150px]">{t("pages.history.table.campaign")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("pages.history.table.outcome")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("pages.history.table.score")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900 w-28">{t("pages.history.table.next_step")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("pages.history.table.actions")}</th>
+                              <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("history.table.call_id")}</th>
+              <th className="px-3 py-3 font-medium text-gray-900 min-w-[150px]">{t("history.table.campaign")}</th>
+              <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("history.table.outcome")}</th>
+              <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("history.table.score")}</th>
+              <th className="px-3 py-3 font-medium text-gray-900 w-28">{t("history.table.next_step")}</th>
+              <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("history.table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +170,7 @@ export default function History() {
                     <td className="px-3 py-2">{row.next_step || "—"}</td>
                     <td className="px-3 py-2">
                       <a className="text-sm text-primary-600 hover:text-primary-800 font-medium" href={`/history/${row.id}`}>
-                        {t("pages.history.table.view")}
+                        {t("history.table.view")}
                       </a>
                     </td>
                   </tr>

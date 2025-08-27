@@ -110,7 +110,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.reached} 
                 fill={COLORS.reached} 
                 fillOpacity={0.3}
-                name={t("pages.analytics.kpi.reached")}
+                name={t("analytics.kpi.reached")}
               />
               <Area 
                 type="monotone" 
@@ -119,7 +119,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.connected} 
                 fill={COLORS.connected} 
                 fillOpacity={0.3}
-                name={t("pages.analytics.kpi.connected")}
+                name={t("analytics.kpi.connected")}
               />
               <Area 
                 type="monotone" 
@@ -128,7 +128,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.qualified} 
                 fill={COLORS.qualified} 
                 fillOpacity={0.3}
-                name={t("pages.analytics.kpi.qualified")}
+                name={t("analytics.kpi.qualified")}
               />
               <Area 
                 type="monotone" 
@@ -137,7 +137,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.booked} 
                 fill={COLORS.booked} 
                 fillOpacity={0.3}
-                name={t("pages.analytics.kpi.booked")}
+                name={t("analytics.kpi.booked")}
               />
             </>
           ) : (
@@ -148,7 +148,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.reached} 
                 strokeWidth={2}
                 dot={{ fill: COLORS.reached, strokeWidth: 2, r: 3 }}
-                name={t("pages.analytics.kpi.reached")}
+                name={t("analytics.kpi.reached")}
               />
               <Line 
                 type="monotone" 
@@ -156,7 +156,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.connected} 
                 strokeWidth={2}
                 dot={{ fill: COLORS.connected, strokeWidth: 2, r: 3 }}
-                name={t("pages.analytics.kpi.connected")}
+                name={t("analytics.kpi.connected")}
               />
               <Line 
                 type="monotone" 
@@ -164,7 +164,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.qualified} 
                 strokeWidth={2}
                 dot={{ fill: COLORS.qualified, strokeWidth: 2, r: 3 }}
-                name={t("pages.analytics.kpi.qualified")}
+                name={t("analytics.kpi.qualified")}
               />
               <Line 
                 type="monotone" 
@@ -172,7 +172,7 @@ export default function TimeSeriesChart({
                 stroke={COLORS.booked} 
                 strokeWidth={2}
                 dot={{ fill: COLORS.booked, strokeWidth: 2, r: 3 }}
-                name={t("pages.analytics.kpi.booked")}
+                name={t("analytics.kpi.booked")}
               />
             </>
           )}

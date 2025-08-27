@@ -67,7 +67,7 @@ export default function HeatmapChart({ data, className = "" }) {
     <div className={className}>
       <div className="mb-4">
         <h4 className="text-sm font-medium text-foreground mb-2">
-          {t("pages.analytics.charts.heatmap")}
+          {t("analytics.charts.heatmap")}
         </h4>
         <p className="text-xs text-muted-foreground">
           Call volume by day and hour (darker = more calls)
