@@ -29,9 +29,9 @@ export default function KbImportWizard() {
   const [progress, setProgress] = useState({ parsing: 0, chunking: 0, embedding: 0 });
   
   const tabs = [
-            { id: 'paste', label: t('pages.kb.import.tabs.paste'), icon: ClipboardDocumentIcon },
-        { id: 'file', label: t('pages.kb.import.tabs.file'), icon: DocumentTextIcon },
-        { id: 'url', label: t('pages.kb.import.tabs.url'), icon: GlobeAltIcon }
+              { id: 'paste', label: t('kb.import.tabs.paste'), icon: ClipboardDocumentIcon },
+        { id: 'file', label: t('kb.import.tabs.file'), icon: DocumentTextIcon },
+        { id: 'url', label: t('kb.import.tabs.url'), icon: GlobeAltIcon }
   ];
   
   const handleFileUpload = (event) => {
@@ -71,7 +71,7 @@ export default function KbImportWizard() {
       }
       
       setCurrentStep('review');
-              toast?.success?.(t('pages.kb.toasts.import_started'));
+              toast?.success?.(t('kb.toasts.import_started'));
     }
     
     setProcessing(false);
@@ -112,15 +112,15 @@ export default function KbImportWizard() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('pages.kb.import.file_upload.title')}
+                {t('kb.import.file_upload.title')}
               </label>
-              <p className="text-sm text-gray-600 mb-4">{t('pages.kb.import.file_upload.subtitle')}</p>
+              <p className="text-sm text-gray-600 mb-4">{t('kb.import.file_upload.subtitle')}</p>
               
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-600 mb-2">{t('pages.kb.import.file_upload.drag_drop')}</p>
-                <p className="text-xs text-gray-500 mb-4">{t('pages.kb.import.file_upload.or_click')}</p>
-                <p className="text-xs text-gray-500">{t('pages.kb.import.file_upload.supported_formats')}</p>
+                <p className="text-sm text-gray-600 mb-2">{t('kb.import.file_upload.drag_drop')}</p>
+                <p className="text-xs text-gray-500 mb-4">{t('kb.import.file_upload.or_click')}</p>
+                <p className="text-xs text-gray-500">{t('kb.import.file_upload.supported_formats')}</p>
                 
                 <input
                   type="file"
@@ -153,9 +153,9 @@ export default function KbImportWizard() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('pages.kb.import.url_crawl.title')}
+                {t('kb.import.url_crawl.title')}
               </label>
-              <p className="text-sm text-gray-600 mb-4">{t('pages.kb.import.url_crawl.subtitle')}</p>
+              <p className="text-sm text-gray-600 mb-4">{t('kb.import.url_crawl.subtitle')}</p>
               
               <div className="space-y-4">
                 <div>
@@ -165,7 +165,7 @@ export default function KbImportWizard() {
                   <Input
                     value={importData.url}
                     onChange={(e) => setImportData({ ...importData, url: e.target.value })}
-                    placeholder={t('pages.kb.import.url_crawl.placeholder')}
+                    placeholder={t('kb.import.url_crawl.placeholder')}
                     disabled={processing}
                   />
                 </div>
@@ -173,7 +173,7 @@ export default function KbImportWizard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('pages.kb.import.url_crawl.depth')}
+                      {t('kb.import.url_crawl.depth')}
                     </label>
                     <select
                       value={importData.depth}
@@ -189,7 +189,7 @@ export default function KbImportWizard() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('pages.kb.import.url_crawl.max_pages')}
+                      {t('kb.import.url_crawl.max_pages')}
                     </label>
                     <select
                       value={importData.maxPages}
@@ -223,7 +223,7 @@ export default function KbImportWizard() {
       <div className="space-y-4">
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span>{t('pages.kb.import.progress.parsing')}</span>
+            <span>{t('kb.import.progress.parsing')}</span>
             <span>{progress.parsing}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -233,7 +233,7 @@ export default function KbImportWizard() {
         
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span>{t('pages.kb.import.progress.chunking')}</span>
+            <span>{t('kb.import.progress.chunking')}</span>
             <span>{progress.chunking}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -243,7 +243,7 @@ export default function KbImportWizard() {
         
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span>{t('pages.kb.import.progress.embedding')}</span>
+            <span>{t('kb.import.progress.embedding')}</span>
             <span>{progress.embedding}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -274,10 +274,10 @@ export default function KbImportWizard() {
       
       <div className="flex justify-center gap-3">
         <Button variant="outline" onClick={handleCancel}>
-          {t('pages.kb.import.actions.cancel')}
+          {t('kb.import.actions.cancel')}
         </Button>
         <Button onClick={handleCommit}>
-          {t('pages.kb.import.actions.commit')}
+          {t('kb.import.actions.commit')} 
         </Button>
       </div>
     </div>
@@ -293,7 +293,7 @@ export default function KbImportWizard() {
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">{t('pages.kb.import.title')}</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">{t('kb.import.title')}</h1>  
             <p className="text-gray-600 mt-1">Import content into your knowledge base</p>
           </div>
         </div>

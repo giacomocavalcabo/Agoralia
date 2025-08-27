@@ -114,8 +114,8 @@ export default function KBEditor({ kind = 'company' }) {
     const handleBeforeUnload = (e) => {
       if (isDirty) {
         e.preventDefault()
-            e.returnValue = t('pages.kb.editor.messages.unsaved_guard')
-    return t('pages.kb.editor.messages.unsaved_guard')
+            e.returnValue = t('kb.editor.messages.unsaved_guard')
+    return t('kb.editor.messages.unsaved_guard')
       }
     }
 
@@ -283,8 +283,8 @@ export default function KBEditor({ kind = 'company' }) {
                   onClick={handlePublish}
                   disabled={kb?.completeness_pct < 60}
                   variant={kb?.status === 'published' ? 'outline' : 'default'}
-                >
-                  {kb?.status === 'published' ? t('pages.kb.editor.actions.unpublish') : t('pages.kb.editor.actions.publish')}
+                > 
+                  {kb?.status === 'published' ? t('kb.editor.actions.unpublish') : t('kb.editor.actions.publish')}
                 </Button>
               )}
             </div>
@@ -306,7 +306,7 @@ export default function KBEditor({ kind = 'company' }) {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t('pages.kb.editor.fields.title')} *
+                            {t('kb.editor.fields.title')} *
                           </label>
                           <input
                             {...register('name')}
@@ -320,12 +320,12 @@ export default function KBEditor({ kind = 'company' }) {
                             <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
                           )}
                           {nameAutosave.isSaving && (
-                            <div className="text-xs text-blue-600 mt-1">{t('pages.kb.editor.actions.saving')}</div>
+                            <div className="text-xs text-blue-600 mt-1">{t('kb.editor.actions.saving')}</div>
                           )}
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t('pages.kb.editor.fields.category')}
+                            {t('kb.editor.fields.category')}
                           </label>
                           <select
                             {...register('type')}
@@ -346,12 +346,12 @@ export default function KBEditor({ kind = 'company' }) {
                             <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>
                           )}
                           {typeAutosave.isSaving && (
-                            <div className="text-xs text-blue-600 mt-1">{t('pages.kb.editor.actions.saving')}</div>
+                            <div className="text-xs text-blue-600 mt-1">{t('kb.editor.actions.saving')}</div>
                           )}
                         </div>
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t('pages.kb.editor.fields.description')}
+                            {t('kb.editor.fields.description')}
                           </label>
                           <textarea
                             {...register('description')}
@@ -361,14 +361,14 @@ export default function KBEditor({ kind = 'company' }) {
                             disabled={!canEdit}
                           />
                           {descriptionAutosave.isSaving && (
-                            <div className="text-xs text-blue-600 mt-1">{t('pages.kb.editor.actions.saving')}</div>
+                            <div className="text-xs text-blue-600 mt-1">{t('kb.editor.actions.saving')}</div>
                           )}
                         </div>
                       </div>
                       
                       <div className="flex justify-end">
                         <Button type="submit" disabled={!isDirty}>
-                          {t('pages.kb.editor.actions.save')}
+                          {t('kb.editor.actions.save')}
                         </Button>
                       </div>
                     </form>
