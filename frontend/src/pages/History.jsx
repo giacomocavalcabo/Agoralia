@@ -34,7 +34,7 @@ export default function History() {
     <div className="px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">
               {t("history.title")}
@@ -43,12 +43,12 @@ export default function History() {
               {t("history.description") || "View and manage your call history and outcomes"}
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <input
               placeholder={t("history.search_placeholder")}
               value={q}
               onChange={(e)=>{ setPage(1); setQ(e.target.value); }}
-              className="w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               aria-label={t("history.search_aria")}
             />
             <button
@@ -63,7 +63,7 @@ export default function History() {
         
       {/* Filtri */}
       <div className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 max-w-4xl">
           <select
             value={filters.campaign_id}
             onChange={(e)=>{ setPage(1); setFilters(f=>({...f, campaign_id: e.target.value })); }}
@@ -75,13 +75,15 @@ export default function History() {
           </select>
 
           <select
-            value={filters.score_min}
-            onChange={(e)=>{ setPage(1); setFilters(f=>({...f, score_min: e.target.value })); }}
-            aria-label={t("pages.history.filters.score_min")}
+            value={filters.next_step}
+            onChange={(e)=>{ setPage(1); setFilters(f=>({...f, next_step: e.target.value })); }}
+            aria-label={t("pages.history.filters.next_step")}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
-            <option value="">{t("history.filters.score_min")}</option>
-            {/* TODO: popola da API campagne */}
+            <option value="">{t("history.filters.all_steps")}</option>
+            <option value="callback">{t("history.steps.callback")}</option>
+            <option value="email">{t("history.steps.email")}</option>
+            <option value="meeting">{t("history.steps.meeting")}</option>
           </select>
 
           <input 
@@ -108,22 +110,21 @@ export default function History() {
       {/* Tabella risultati */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="w-full text-left text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.call_id")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.campaign")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.outcome")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.score")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.next_step")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.sentiment")}</th>
-                <th className="px-3 py-3 font-medium text-gray-900">{t("pages.history.table.actions")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("pages.history.table.call_id")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 min-w-[150px]">{t("pages.history.table.campaign")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("pages.history.table.outcome")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 w-20">{t("pages.history.table.score")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 w-28">{t("pages.history.table.next_step")}</th>
+                <th className="px-3 py-3 font-medium text-gray-900 w-24">{t("pages.history.table.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-6 text-center text-gray-500">
+                  <td colSpan="6" className="px-3 py-6 text-center text-gray-500">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
                       <span className="ml-2">{t("history.loading")}</span>
@@ -132,13 +133,13 @@ export default function History() {
                 </tr>
               ) : isError ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-6 text-center text-red-600">
+                  <td colSpan="6" className="px-3 py-6 text-center text-red-600">
                     {t("history.error")}
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
+                  <td colSpan="6" className="px-3 py-8 text-center text-gray-500">
                     {t("history.empty")}
                   </td>
                 </tr>
@@ -167,7 +168,6 @@ export default function History() {
                       </span>
                     </td>
                     <td className="px-3 py-2">{row.next_step || "—"}</td>
-                    <td className="px-3 py-2">{row.sentiment ?? "—"}</td>
                     <td className="px-3 py-2">
                       <a className="text-sm text-primary-600 hover:text-primary-800 font-medium" href={`/history/${row.id}`}>
                         {t("pages.history.table.view")}
