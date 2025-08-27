@@ -70,8 +70,8 @@ export default function KbOverview() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">{t('pages.kb.title')}</h1>
-        <p className="text-gray-600 mt-1">{t('pages.kb.overview.title')}</p>
+                            <h1 className="text-2xl font-semibold text-gray-900">{t('kb.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('kb.overview.title')}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => navigate('/knowledge/sources')}>
