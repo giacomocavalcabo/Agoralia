@@ -3,11 +3,35 @@ from functools import lru_cache
 from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from pathlib import Path
+import json
+import logging
 from ..models import ProviderAccount, TelephonyProvider
 from ..services.crypto import dec
 from .providers.twilio_adapter import TwilioAdapter
 from .providers.telnyx_adapter import TelnyxAdapter
-from ..schemas.telephony_coverage import Country, Capabilities, PricingInfo
+from ..schemas_telephony_coverage import Country, Capabilities, PricingInfo
+
+logger = logging.getLogger(__name__)
+
+def load_telnyx_snapshot() -> dict:
+    """Load Telnyx coverage from static JSON with fallback paths"""
+    ROOT = Path(__file__).resolve().parents[2]
+    TELNYX_PATHS = [
+        ROOT / "static" / "telephony" / "telnyx_coverage.json",   # primary path
+        ROOT / "data" / "telnyx_coverage.json",                   # fallback path
+    ]
+    
+    for p in TELNYX_PATHS:
+        if p.exists():
+            try:
+                return json.loads(p.read_text(encoding="utf-8"))
+            except Exception as e:
+                logger.warning(f"Failed to load Telnyx coverage from {p}: {e}")
+                continue
+    
+    logger.warning("Telnyx coverage JSON not found in expected paths: %s", TELNYX_PATHS)
+    return {"countries": []}
 
 def get_provider_adapter(provider: TelephonyProvider, api_key: str):
     """Get the appropriate provider adapter"""

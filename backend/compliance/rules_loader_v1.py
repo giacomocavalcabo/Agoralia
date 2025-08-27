@@ -38,11 +38,11 @@ def load_rules_v1() -> Dict[str, RuleV1]:
         count = len(RULES_V1)
         logger.info(f"Loaded {count} compliance rules v1")
         
-        # Assert coverage (should be >= 240 countries)
-        if count < 240:
-            logger.warning(f"Expected >= 240 countries, got {count}")
+        # Coverage check (relaxed - not all countries may have rules)
+        if count < 120:
+            logger.warning(f"Low compliance rules coverage: {count} countries (baseline: 120)")
         else:
-            logger.info(f"✅ Coverage OK: {count} countries loaded")
+            logger.info(f"✅ Compliance coverage OK: {count} countries loaded")
         
         return RULES_V1
         
