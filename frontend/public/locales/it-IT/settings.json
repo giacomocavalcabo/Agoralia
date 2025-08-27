@@ -65,7 +65,17 @@
   
   "telephony": {
     "buy_number": "[Numero di acquisto]",
-    "numbers": "[Numeri]"
+    "numbers": "[Numeri]",
+    "policy": {
+      "title": "Policy",
+      "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."
+    },
+    "bind": {
+      "inbound": "Inbound",
+      "outbound": "Outbound",
+      "save": "Salva",
+      "outbound_locked": "Outbound non consentito per numeri inoltrati"
+    }
   },
   
   "pages": {

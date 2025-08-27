@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { listNumbers, purchaseRetellNumber, importNumber, confirmImport, setRouting } from '../lib/numbersApi'
 import NumbersTable from '../components/NumbersTable'
+import BindControls from '../components/BindControls'
 import { PhoneIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 
@@ -51,6 +52,11 @@ export default function SettingsTelephony() {
           <p className="text-sm text-muted-foreground">{t('pages.settings.telephony.subtitle', 'Manage phone numbers, providers and routing.')}</p>
         </div>
       </header>
+
+      {/* Policy Banner */}
+      <div className="rounded-lg border p-3 bg-amber-50 text-amber-800 text-sm">
+        <strong>{t('settings.telephony.policy.title')}:</strong> {t('settings.telephony.policy.no_outbound')}
+      </div>
 
       {/* Actions */}
       <div className="grid md:grid-cols-3 gap-4">
@@ -115,14 +121,11 @@ export default function SettingsTelephony() {
               <option value="">{t('pages.settings.telephony.route.select', 'Select a number')}</option>
               {numbers.map(n => <option key={n.id} value={n.id}>{n.e164} · {n.provider}</option>)}
             </select>
-            <label className="text-sm">{t('pages.settings.telephony.route.inbound', 'Inbound agent')}</label>
-            <input className="input" placeholder="agent_id (optional)" value={route.inbound_agent_id} onChange={e => setRoute(v => ({ ...v, inbound_agent_id: e.target.value }))}/>
-            <label className="text-sm">{t('pages.settings.telephony.route.outbound', 'Outbound agent')}</label>
-            <input className="input" placeholder="agent_id (optional)" value={route.outbound_agent_id} onChange={e => setRoute(v => ({ ...v, outbound_agent_id: e.target.value }))}/>
-            <button className="btn btn-primary mt-2" onClick={() => mRoute.mutate(route)} disabled={mRoute.isPending || !route.numberId}>
-              {t('pages.settings.telephony.route.save', 'Save routing')}
-            </button>
-            {mRoute.isError && <div className="text-red-600 text-sm">{String(mRoute.error?.message || 'Error')}</div>}
+            {route.numberId && (
+              <BindControls 
+                number={numbers.find(n => n.id === route.numberId) || {}} 
+              />
+            )}
           </div>
         </div>
       </div>

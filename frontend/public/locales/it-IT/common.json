@@ -20,5 +20,6 @@
   "duration": "Durata",
   "search": "Cerca",
   "unknown": "Sconosciuto",
-  "retry": "Riprova"
+  "retry": "Riprova",
+  "none": "Nessuno"
 }

@@ -63,7 +63,17 @@
   
   "telephony": {
     "buy_number": "[Buy Number]",
-    "numbers": "[Numbers]"
+    "numbers": "[Numbers]",
+    "policy": {
+      "title": "Policy",
+      "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."
+    },
+    "bind": {
+      "inbound": "Inbound",
+      "outbound": "Outbound",
+      "save": "Save",
+      "outbound_locked": "Outbound not allowed for forwarded numbers"
+    }
   },
   
   "nav": {

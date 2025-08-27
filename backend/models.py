@@ -263,6 +263,11 @@ class Number(Base):
     provider = Column(String)  # retell|sip|other
     provider_ref = Column(String)
     can_inbound = Column(Boolean, default=False)
+    # Binding fields for telephony settings
+    inbound_enabled = Column(Boolean, default=False)
+    outbound_enabled = Column(Boolean, default=False)
+    inbound_agent_id = Column(String, nullable=True)
+    outbound_agent_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

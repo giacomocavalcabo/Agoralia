@@ -3732,28 +3732,60 @@ async def settings_import_number(
     return await numbers_byo(transformed_payload, db)
 
 
+from pydantic import BaseModel
+from backend.services.telephony import assert_e164, enforce_outbound_policy, validate_number_binding
+
+class BindPayload(BaseModel):
+    number_id: str
+    inbound_enabled: bool = False
+    outbound_enabled: bool = False
+    inbound_agent_id: str | None = None
+    outbound_agent_id: str | None = None
+
 @app.post("/settings/telephony/bind")
 async def settings_bind_number(
-    payload: dict, 
+    payload: BindPayload, 
+    request: Request,
     db: Session = Depends(get_db)
 ) -> dict:
-    """Bind number to agent (proxy to /numbers/{id}/route)"""
-    number_id = payload.get("number_id")
-    if not number_id:
-        raise HTTPException(status_code=400, detail="Number ID required")
+    """Bind number to agent with policy enforcement"""
+    # 1) Recupera numero e valida ownership
+    wsid = get_workspace_id(request, fallback="ws_1")
+    number = validate_number_binding(payload.number_id, wsid, db)
     
-    # Transform payload to match the expected format
-    route_payload = {
-        "agent_id": payload.get("inbound_agent_id") or payload.get("outbound_agent_id"),
-        "hours_json": {},  # Default 24/7
-        "voicemail": True,
-        "transcript": True
-    }
+    # 2) Policy outbound
+    enforce_outbound_policy(number, payload.outbound_enabled)
     
-    # Call the existing function
-    return await numbers_route(number_id, route_payload, db)
+    # 3) (opzionale) Validazioni E.164 su eventuali campi 'forward_to', ecc.
+    # assert_e164(number.phone_e164)
+    
+    # 4) Persist - aggiorna i campi del numero
+    number.inbound_enabled = payload.inbound_enabled
+    number.outbound_enabled = payload.outbound_enabled
+    number.inbound_agent_id = payload.inbound_agent_id
+    number.outbound_agent_id = payload.outbound_agent_id
+    
+    db.add(number)
+    db.commit()
+    
+    return {"ok": True, "number_id": number.id}
 
 
+@app.get("/settings/telephony/agents")
+async def settings_list_agents(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """List available agents for telephony binding (stub)"""
+    # TODO: Replace with actual agent lookup from your system
+    # For now, return mock agents
+    agents = [
+        {"id": "agent_1", "name": "Sales Agent 1", "type": "sales"},
+        {"id": "agent_2", "name": "Support Agent 1", "type": "support"},
+        {"id": "agent_3", "name": "General Agent", "type": "general"}
+    ]
+    
+    return {"agents": agents}
 # ===================== Sprint 6: Outcomes & CRM =====================
 
 @app.post("/calls/{call_id}/outcome")

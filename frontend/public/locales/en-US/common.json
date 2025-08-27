@@ -20,5 +20,6 @@
   "duration": "Duration",
   "search": "Search",
   "unknown": "Unknown",
-  "retry": "Retry"
+  "retry": "Retry",
+  "none": "None"
 }

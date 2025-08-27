@@ -27,6 +27,12 @@ def upgrade() -> None:
     op.add_column('numbers', sa.Column('assigned_id', sa.String(), nullable=True))  # workspace_id or campaign_id
     op.add_column('numbers', sa.Column('tags', postgresql.JSONB(), nullable=True))
     
+    # Add telephony binding fields
+    op.add_column('numbers', sa.Column('inbound_enabled', sa.Boolean(), nullable=True, default=False))
+    op.add_column('numbers', sa.Column('outbound_enabled', sa.Boolean(), nullable=True, default=False))
+    op.add_column('numbers', sa.Column('inbound_agent_id', sa.String(), nullable=True))
+    op.add_column('numbers', sa.Column('outbound_agent_id', sa.String(), nullable=True))
+    
     # Update existing records to have default verification_status
     op.execute("UPDATE numbers SET verification_status = 'verified' WHERE verified = true")
     op.execute("UPDATE numbers SET verification_status = 'pending' WHERE verified = false")
@@ -156,3 +162,9 @@ def downgrade() -> None:
     op.drop_column('numbers', 'purchase_cost_cents')
     op.drop_column('numbers', 'verification_status')
     op.drop_column('numbers', 'provider_number_id')
+    
+    # Remove telephony binding fields
+    op.drop_column('numbers', 'outbound_agent_id')
+    op.drop_column('numbers', 'inbound_agent_id')
+    op.drop_column('numbers', 'outbound_enabled')
+    op.drop_column('numbers', 'inbound_enabled')

@@ -24,3 +24,11 @@ export async function setRouting(numberId, body) {
   // { inbound_agent_id?, outbound_agent_id? }
   return apiFetch(`/settings/telephony/bind`, { method: 'POST', body: { number_id: numberId, ...body } })
 }
+
+export const listAgents = () => apiFetch("/settings/telephony/agents");
+
+export const bindNumber = (body) =>
+  apiFetch("/settings/telephony/bind", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
