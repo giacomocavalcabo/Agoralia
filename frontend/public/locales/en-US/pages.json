@@ -166,7 +166,8 @@
     },
     "empty": {
       "no_data": "No content yet",
-      "how_to_start": "Start by importing a document or adding a source."
+      "how_to_start": "Start by importing a document or adding a source.",
+      "import": "Import Documents"
     },
     "error": {
       "title": "Error loading knowledge base",

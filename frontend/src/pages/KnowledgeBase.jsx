@@ -75,13 +75,13 @@ export default function KnowledgeBase() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{t('pages.kb.auth.title')}</h1>
+          <h1 className="text-2xl font-semibold">{t('kb.auth.title')}</h1>
         </div>
         <Card>
           <div className="text-center py-8">
             <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.kb.auth.title')}</h3>
-              <p className="text-gray-600">{t('pages.kb.auth.description')}</p>
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.auth.title')}</h3>
+              <p className="text-gray-600">{t('kb.auth.description')}</p>
           </div>
         </Card>
       </div>
@@ -96,15 +96,15 @@ export default function KnowledgeBase() {
           <h1 className="text-2xl font-semibold">Knowledge</h1>
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-              {t('pages.kb.demo')}
+              {t('kb.demo')}
             </span>
             <Button onClick={handleImport} variant="outline">
               <CogIcon className="h-4 w-4 mr-2" />
-              {t('pages.kb.overview.actions.import_documents')}
+              {t('kb.overview.actions.import_documents')}
             </Button>
             <Button onClick={handleCreateOfferPack} variant="secondary">
               <PlusIcon className="h-4 w-4 mr-2" />
-              {t('pages.kb.overview.actions.add_source')}
+              {t('kb.overview.actions.add_source')}
             </Button>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function KnowledgeBase() {
           <Card title={
             <div className="flex items-center gap-2">
               <DocumentTextIcon className="h-5 w-5" />
-              {t('pages.kb.overview.kpi.company.title')}
+              {t('kb.overview.kpi.company.title')}
             </div>
           }>
             <CompletenessMeter 
@@ -132,7 +132,7 @@ export default function KnowledgeBase() {
           <Card title={
             <div className="flex items-center gap-2">
               <ChartBarIcon className="h-5 w-5" />
-              {t('pages.kb.overview.kpi.offer_packs.title')}
+              {t('kb.overview.kpi.offer_packs.title')}
             </div>
           }>
             <CompletenessMeter 
@@ -151,12 +151,12 @@ export default function KnowledgeBase() {
           <Card title={
             <div className="flex items-center gap-2">
               <CogIcon className="h-5 w-5" />
-              {t('pages.kb.overview.kpi.documents.title')}
+              {t('kb.overview.kpi.documents.title')}
             </div>
           }>
             <div className="text-center py-4">
               <div className="text-2xl font-bold text-blue-600">{demo.progress}%</div>
-              <div className="text-sm text-gray-600">{t('pages.kb.overview.kpi.documents.complete')}</div>
+              <div className="text-sm text-gray-600">{t('kb.overview.kpi.documents.complete')}</div>
             </div>
             <div className="mt-3 flex gap-2">
               <Button onClick={handleImport} size="sm">
@@ -176,8 +176,8 @@ export default function KnowledgeBase() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">{t('pages.kb.overview.title')}</h1>
-              <p className="text-gray-600 mt-1">{t('pages.kb.overview.subtitle')}</p>
+              <h1 className="text-2xl font-semibold">{t('kb.overview.title')}</h1>
+              <p className="text-gray-600 mt-1">{t('kb.overview.subtitle')}</p>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleImport} variant="outline">
@@ -193,10 +193,10 @@ export default function KnowledgeBase() {
           <Card>
             <div className="text-center py-8">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.kb.empty.no_data')}</h3>
-              <p className="text-gray-600 mb-4">{t('pages.kb.empty.how_to_start')}</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.empty.no_data')}</h3>
+              <p className="text-gray-600 mb-4">{t('kb.empty.how_to_start')}</p>
               <Button onClick={handleImport}>
-                {t('pages.kb.empty.import')}
+                {t('kb.empty.import')}
               </Button>
             </div>
           </Card>
@@ -214,10 +214,10 @@ export default function KnowledgeBase() {
         <Card>
           <div className="text-center py-8">
             <DocumentTextIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.kb.error.title')}</h3>
-              <p className="text-gray-600 mb-4">{t('pages.kb.error.description')}</p>
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.error.title')}</h3>
+              <p className="text-gray-600 mb-4">{t('kb.error.description')}</p>
               <Button onClick={() => window.location.reload()}>
-                {t('pages.kb.error.retry')}
+                {t('kb.error.retry')}
               </Button>
           </div>
         </Card>
@@ -248,7 +248,7 @@ export default function KnowledgeBase() {
         <Card title={
           <div className="flex items-center gap-2">
             <DocumentTextIcon className="h-5 w-5" />
-                          {t('pages.kb.overview.kpi.company.title')}
+                          {t('kb.overview.kpi.company.title')}
           </div>
         }>
             {company ? (
@@ -264,17 +264,17 @@ export default function KnowledgeBase() {
                     onClick={() => navigate(`/knowledge/company/${company.id}`)}
                     size="sm"
                   >
-                    {t('pages.kb.overview.actions.open')}
+                    {t('kb.overview.actions.open')}
                   </Button>
                 </div>
               </>
             ) : (
               <>
                 <p className="text-sm text-gray-500 mb-3">
-                  {t('pages.kb.overview.kpi.company.description')}
+                  {t('kb.overview.kpi.company.description')}
                 </p>
                 <Button onClick={handleCreateCompany} size="sm">
-                  {t('pages.kb.overview.kpi.company.create')}
+                  {t('kb.overview.kpi.company.create')}
                 </Button>
               </>
             )}
@@ -283,7 +283,7 @@ export default function KnowledgeBase() {
         <Card title={
           <div className="flex items-center gap-2">
             <ChartBarIcon className="h-5 w-5" />
-                          {t('pages.kb.overview.kpi.offer_packs.title')}
+                          {t('kb.overview.kpi.offer_packs.title')}
           </div>
         }>
             <div className="text-3xl font-semibold">{offers.length}</div>
