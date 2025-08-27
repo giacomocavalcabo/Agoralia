@@ -10,7 +10,7 @@ import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
 import CRMSyncStatus from '../../components/CRMSyncStatus';
 
 const Integrations = () => {
-  const { t } = useTranslation('pages');
+  const { t } = useTranslation('integrations');
   const { toast } = useToast();
   
   const [integrations, setIntegrations] = useState({
@@ -45,7 +45,7 @@ const Integrations = () => {
       }
     } catch (error) {
       toast({
-        title: t('integrations.errors.load_failed', { ns: 'pages' }),
+        title: t('integrations.errors.load_failed'),
         description: error.message,
         type: 'error'
       });
@@ -74,9 +74,8 @@ const Integrations = () => {
       }));
       
       toast({
-        title: t('integrations.messages.connected', { ns: 'pages' }),
-        description: t('integrations.messages.connected_desc', { 
-          ns: 'pages', 
+                title: t('integrations.messages.connected'),
+        description: t('integrations.messages.connected_desc', {
           provider: provider.toUpperCase() 
         }),
         type: 'success'
@@ -84,7 +83,7 @@ const Integrations = () => {
       
     } catch (error) {
       toast({
-        title: t('integrations.errors.connection_failed', { ns: 'pages' }),
+        title: t('integrations.errors.connection_failed'),
         description: error.message,
         type: 'error'
       });
@@ -111,9 +110,8 @@ const Integrations = () => {
       }));
       
       toast({
-        title: t('integrations.messages.disconnected', { ns: 'pages' }),
-        description: t('integrations.messages.disconnected_desc', { 
-          ns: 'pages', 
+                title: t('integrations.messages.disconnected'),
+        description: t('integrations.messages.disconnected_desc', {
           provider: provider.toUpperCase() 
         }),
         type: 'success'
@@ -121,7 +119,7 @@ const Integrations = () => {
       
     } catch (error) {
       toast({
-        title: t('integrations.errors.disconnection_failed', { ns: 'pages' }),
+        title: t('integrations.errors.disconnection_failed'),
         description: error.message,
         type: 'error'
       });
@@ -143,9 +141,8 @@ const Integrations = () => {
       }
       
       toast({
-        title: t('integrations.messages.test_success', { ns: 'pages' }),
-        description: t('integrations.messages.test_success_desc', { 
-          ns: 'pages', 
+                title: t('integrations.messages.test_success'),
+        description: t('integrations.messages.test_success_desc', {
           provider: provider.toUpperCase() 
         }),
         type: 'success'
@@ -153,9 +150,8 @@ const Integrations = () => {
       
     } catch (error) {
       toast({
-        title: t('integrations.messages.test_failed', { ns: 'pages' }),
-        description: t('integrations.messages.test_failed_desc', { 
-          ns: 'pages', 
+                title: t('integrations.messages.test_failed'),
+        description: t('integrations.messages.test_failed_desc', {
           provider: provider.toUpperCase() 
         }),
         type: 'error'
@@ -187,10 +183,10 @@ const Integrations = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'connected': return t('integrations.status.connected', { ns: 'pages' });
-      case 'connecting': return t('integrations.status.connecting', { ns: 'pages' });
-      case 'error': return t('integrations.status.error', { ns: 'pages' });
-      default: return t('integrations.status.disconnected', { ns: 'pages' });
+      case 'connected': return t('integrations.status.connected');
+      case 'connecting': return t('integrations.status.connecting');
+      case 'error': return t('integrations.status.error');
+      default: return t('integrations.status.disconnected');
     }
   };
 
@@ -207,16 +203,16 @@ const Integrations = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('integrations.title', { ns: 'pages' })}
-        description={t('integrations.description', { ns: 'pages' })}
+        title={t('integrations.title')}
+        description={t('integrations.description')}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="crm">{t('integrations.tabs.crm', { ns: 'pages' })}</TabsTrigger>
-          <TabsTrigger value="mapping">{t('integrations.tabs.mapping', { ns: 'pages' })}</TabsTrigger>
-          <TabsTrigger value="sync">{t('integrations.tabs.sync', { ns: 'pages' })}</TabsTrigger>
-          <TabsTrigger value="other">{t('integrations.tabs.other', { ns: 'pages' })}</TabsTrigger>
+          <TabsTrigger value="crm">{t('integrations.tabs.crm')}</TabsTrigger>
+          <TabsTrigger value="mapping">{t('integrations.tabs.mapping')}</TabsTrigger>
+          <TabsTrigger value="sync">{t('integrations.tabs.sync')}</TabsTrigger>
+          <TabsTrigger value="other">{t('integrations.tabs.other')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="crm" className="space-y-6">
@@ -236,12 +232,12 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.hubspot.description', { ns: 'pages' })}
+                  {t('integrations.hubspot.description')}
                 </p>
                 
                 {integrations.hubspot.connected && (
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <p><strong>{t('integrations.portal_id', { ns: 'pages' })}:</strong> {integrations.hubspot.portal_id}</p>
+                    <p><strong>{t('integrations.portal_id')}:</strong> {integrations.hubspot.portal_id}</p>
                   </div>
                 )}
                 
@@ -252,7 +248,7 @@ const Integrations = () => {
                       disabled={loading.hubspot}
                       className="flex-1"
                     >
-                      {loading.hubspot ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
+                      {loading.hubspot ? t('common.connecting') : t('integrations.actions.connect')}
                     </Button>
                   ) : (
                     <>
@@ -262,7 +258,7 @@ const Integrations = () => {
                         disabled={loading.hubspot_test}
                         className="flex-1"
                       >
-                        {loading.hubspot_test ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
+                        {loading.hubspot_test ? t('common.testing') : t('integrations.actions.test')}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -270,7 +266,7 @@ const Integrations = () => {
                         disabled={loading.hubspot}
                         className="flex-1"
                       >
-                        {loading.hubspot ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
+                        {loading.hubspot ? t('common.disconnecting') : t('integrations.actions.disconnect')}
                       </Button>
                     </>
                   )}
@@ -283,14 +279,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('hubspot')}
                       className="w-full"
                     >
-                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
+                      {t('integrations.actions.field_mapping')}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('hubspot')}
                       className="w-full"
                     >
-                      {t('integrations.actions.sync_status', { ns: 'pages' })}
+                      {t('integrations.actions.sync_status')}
                     </Button>
                   </div>
                 )}
@@ -312,7 +308,7 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.zoho.description', { ns: 'pages' })}
+                  {t('integrations.zoho.description')}
                 </p>
                 
                 <div className="flex gap-2">
@@ -322,7 +318,7 @@ const Integrations = () => {
                       disabled={loading.zoho}
                       className="flex-1"
                     >
-                      {loading.zoho ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
+                      {loading.zoho ? t('common.connecting') : t('integrations.actions.connect')}
                     </Button>
                   ) : (
                     <>
@@ -332,7 +328,7 @@ const Integrations = () => {
                         disabled={loading.zoho_test}
                         className="flex-1"
                       >
-                        {loading.zoho_test ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
+                        {loading.zoho_test ? t('common.testing') : t('integrations.actions.test')}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -340,7 +336,7 @@ const Integrations = () => {
                         disabled={loading.zoho}
                         className="flex-1"
                       >
-                        {loading.zoho_test ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
+                        {loading.zoho_test ? t('common.disconnecting') : t('integrations.actions.disconnect')}
                       </Button>
                     </>
                   )}
@@ -353,14 +349,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('zoho')}
                       className="w-full"
                     >
-                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
+                      {t('integrations.actions.field_mapping')}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('zoho')}
                       className="w-full"
                     >
-                      {t('integrations.actions.sync_status', { ns: 'pages' })}
+                      {t('integrations.actions.sync_status')}
                     </Button>
                   </div>
                 )}
@@ -382,7 +378,7 @@ const Integrations = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('integrations.odoo.description', { ns: 'pages' })}
+                  {t('integrations.odoo.description')}
                 </p>
                 
                 <div className="flex gap-2">
@@ -392,7 +388,7 @@ const Integrations = () => {
                       disabled={loading.odoo}
                       className="flex-1"
                     >
-                      {loading.odoo ? t('common.connecting', { ns: 'pages' }) : t('integrations.actions.connect', { ns: 'pages' })}
+                      {loading.odoo ? t('common.connecting') : t('integrations.actions.connect')}
                     </Button>
                   ) : (
                     <>
@@ -402,7 +398,7 @@ const Integrations = () => {
                         disabled={loading.odoo}
                         className="flex-1"
                       >
-                        {loading.odoo ? t('common.testing', { ns: 'pages' }) : t('integrations.actions.test', { ns: 'pages' })}
+                        {loading.odoo ? t('common.testing') : t('integrations.actions.test')}
                       </Button>
                       <Button 
                         variant="destructive"
@@ -410,7 +406,7 @@ const Integrations = () => {
                         disabled={loading.odoo}
                         className="flex-1"
                       >
-                        {loading.odoo_test ? t('common.disconnecting', { ns: 'pages' }) : t('integrations.actions.disconnect', { ns: 'pages' })}
+                        {loading.odoo_test ? t('common.disconnecting') : t('integrations.actions.disconnect')}
                       </Button>
                     </>
                   )}
@@ -423,14 +419,14 @@ const Integrations = () => {
                       onClick={() => openMappingEditor('odoo')}
                       className="w-full"
                     >
-                      {t('integrations.actions.field_mapping', { ns: 'pages' })}
+                      {t('integrations.actions.field_mapping')}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => openSyncStatus('odoo')}
                       className="w-full"
                     >
-                      {t('integrations.actions.sync_status', { ns: 'pages' })}
+                      {t('integrations.actions.sync_status')}
                     </Button>
                   </div>
                 )}
@@ -444,13 +440,13 @@ const Integrations = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {t('integrations.mapping.title', { ns: 'pages' })} - {selectedProvider.toUpperCase()}
+                  {t('integrations.mapping.title')} - {selectedProvider.toUpperCase()}
                 </h2>
                 <Button 
                   variant="outline"
                   onClick={() => setActiveTab('crm')}
                 >
-                  {t('integrations.actions.back_to_integrations', { ns: 'pages' })}
+                  {t('integrations.actions.back_to_integrations')}
                 </Button>
               </div>
               
@@ -463,13 +459,13 @@ const Integrations = () => {
           ) : (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                {t('integrations.mapping.select_provider', { ns: 'pages' })}
+                {t('integrations.mapping.select_provider')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('integrations.mapping.select_provider_desc', { ns: 'pages' })}
+                {t('integrations.mapping.select_provider_desc')}
               </p>
               <Button onClick={() => setActiveTab('crm')}>
-                {t('integrations.actions.go_to_integrations', { ns: 'pages' })}
+                {t('integrations.actions.go_to_integrations')}
               </Button>
             </div>
           )}
@@ -480,13 +476,13 @@ const Integrations = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {t('integrations.sync.title', { ns: 'pages' })} - {selectedProvider.toUpperCase()}
+                  {t('integrations.sync.title')} - {selectedProvider.toUpperCase()}
                 </h2>
                 <Button 
                   variant="outline"
                   onClick={() => setActiveTab('crm')}
                 >
-                  {t('integrations.actions.back_to_integrations', { ns: 'pages' })}
+                  {t('integrations.actions.back_to_integrations')}
                 </Button>
               </div>
               
@@ -498,13 +494,13 @@ const Integrations = () => {
           ) : (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                {t('integrations.sync.select_provider', { ns: 'pages' })}
+                {t('integrations.sync.select_provider')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('integrations.sync.select_provider_desc', { ns: 'pages' })}
+                {t('integrations.sync.select_provider_desc')}
               </p>
               <Button onClick={() => setActiveTab('crm')}>
-                {t('integrations.actions.go_to_integrations', { ns: 'pages' })}
+                {t('integrations.actions.go_to_integrations')}
               </Button>
             </div>
           )}
@@ -513,13 +509,13 @@ const Integrations = () => {
         <TabsContent value="other" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('integrations.other.coming_soon', { ns: 'pages' })}</CardTitle>
+              <CardTitle>{t('integrations.other.coming_soon')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">
-                {t('integrations.other.coming_soon_desc', { ns: 'pages' })}
-              </p>
-            </CardContent>
+                              <p className="text-gray-600 dark:text-gray-400">
+                  {t('integrations.other.coming_soon_desc')}
+                </p>
+              </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

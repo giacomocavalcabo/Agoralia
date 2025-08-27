@@ -21,5 +21,8 @@
   "search": "Cerca",
   "unknown": "Sconosciuto",
   "retry": "Riprova",
-  "none": "Nessuno"
+  "none": "Nessuno",
+  "connecting": "Connessione in corso...",
+  "testing": "Test in corso...",
+  "disconnecting": "Disconnessione in corso..."
 }

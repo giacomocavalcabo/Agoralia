@@ -15,7 +15,7 @@ function e164OrThrow(input) {
 }
 
 export default function SettingsTelephony() {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation('pages')
   const qc = useQueryClient()
   const [buy, setBuy] = useState({ country: 'US', type: 'local', area_code: '' })
   const [byo, setByo] = useState({ provider: 'twilio', e164: '' })
@@ -48,8 +48,8 @@ export default function SettingsTelephony() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{t('pages.settings.telephony.title', 'Telephony')}</h1>
-          <p className="text-sm text-muted-foreground">{t('pages.settings.telephony.subtitle', 'Manage phone numbers, providers and routing.')}</p>
+                  <h1 className="text-xl font-semibold">{t('settings.telephony.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('settings.telephony.subtitle')}</p>
         </div>
       </header>
 
@@ -62,24 +62,24 @@ export default function SettingsTelephony() {
       <div className="grid md:grid-cols-3 gap-4">
         {/* Buy Retell */}
         <div className="rounded-2xl border p-4">
-          <div className="font-medium mb-2">{t('pages.settings.telephony.buy.title', 'Buy number (Retell)')}</div>
+          <div className="font-medium mb-2">{t('settings.telephony.buy.title')}</div>
           <div className="grid gap-2">
-            <label className="text-sm">{t('pages.settings.telephony.buy.country', 'Country')}</label>
+            <label className="text-sm">{t('settings.telephony.buy.country')}</label>
             <input className="input" value={buy.country} onChange={e => setBuy(v => ({ ...v, country: e.target.value }))} placeholder="US, IT, GB..." />
-            <label className="text-sm">{t('pages.settings.telephony.buy.type', 'Type')}</label>
+            <label className="text-sm">{t('settings.telephony.buy.type')}</label>
             <select className="input" value={buy.type} onChange={e => setBuy(v => ({ ...v, type: e.target.value }))}>
               <option value="local">Local</option>
               <option value="tollfree">Toll-free</option>
               <option value="mobile">Mobile</option>
             </select>
-            <label className="text-sm">{t('pages.settings.telephony.buy.area_code', 'Area code (optional)')}</label>
+            <label className="text-sm">{t('settings.telephony.buy.area_code')}</label>
             <input className="input" value={buy.area_code} onChange={e => setBuy(v => ({ ...v, area_code: e.target.value }))} placeholder="415, 02, ..." />
             <button
               className="btn btn-primary mt-2"
               onClick={() => mPurchase.mutate(buy)}
               disabled={mPurchase.isPending}
             >
-              <PlusIcon className="w-4 h-4 mr-1" /> {t('pages.settings.telephony.buy.cta', 'Purchase')}
+              <PlusIcon className="w-4 h-4 mr-1" /> {t('settings.telephony.buy.cta')}
             </button>
             {mPurchase.isError && <div className="text-red-600 text-sm">{String(mPurchase.error?.message || 'Error')}</div>}
           </div>
@@ -87,26 +87,26 @@ export default function SettingsTelephony() {
 
         {/* BYO */}
         <div className="rounded-2xl border p-4">
-          <div className="font-medium mb-2">{t('pages.settings.telephony.byo.title', 'Bring your own')}</div>
+          <div className="font-medium mb-2">{t('settings.telephony.byo.title')}</div>
           <div className="grid gap-2">
-            <label className="text-sm">{t('pages.settings.telephony.byo.provider', 'Provider')}</label>
+            <label className="text-sm">{t('settings.telephony.byo.provider')}</label>
             <select className="input" value={byo.provider} onChange={e => setByo(v => ({ ...v, provider: e.target.value }))}>
               <option value="twilio">Twilio</option>
               <option value="telnyx">Telnyx</option>
               <option value="zadarma">Zadarma</option>
             </select>
-            <label className="text-sm">{t('pages.settings.telephony.byo.e164', 'Phone (E.164)')}</label>
+            <label className="text-sm">{t('settings.telephony.byo.e164')}</label>
             <input className="input" placeholder="+14155551234" value={byo.e164} onChange={e => setByo(v => ({ ...v, e164: e.target.value }))}/>
             <button className="btn btn-primary mt-2" onClick={() => mImport.mutate(byo)} disabled={mImport.isPending}>
-              {t('pages.settings.telephony.byo.cta', 'Link number')}
+              {t('settings.telephony.byo.cta')}
             </button>
             {mImport.isError && <div className="text-red-600 text-sm">{String(mImport.error?.message || 'Error')}</div>}
 
             <div className="mt-2">
-              <label className="text-sm">{t('pages.settings.telephony.byo.code', 'Confirmation code')}</label>
+              <label className="text-sm">{t('settings.telephony.byo.code')}</label>
               <input className="input" value={confirm.code} onChange={e => setConfirm({ code: e.target.value })} placeholder="123456"/>
               <button className="btn btn-secondary mt-2" onClick={() => mConfirm.mutate(confirm)} disabled={mConfirm.isPending}>
-                {t('pages.settings.telephony.byo.confirm', 'Confirm')}
+                {t('settings.telephony.byo.confirm')}
               </button>
             </div>
           </div>
@@ -114,11 +114,11 @@ export default function SettingsTelephony() {
 
         {/* Routing */}
         <div className="rounded-2xl border p-4">
-          <div className="font-medium mb-2">{t('pages.settings.telephony.route.title', 'Routing')}</div>
+          <div className="font-medium mb-2">{t('settings.telephony.route.title')}</div>
           <div className="grid gap-2">
-            <label className="text-sm">{t('pages.settings.telephony.route.number', 'Number')}</label>
+            <label className="text-sm">{t('settings.telephony.route.number')}</label>
             <select className="input" value={route.numberId} onChange={e => setRoute(v => ({ ...v, numberId: e.target.value }))}>
-              <option value="">{t('pages.settings.telephony.route.select', 'Select a number')}</option>
+              <option value="">{t('settings.telephony.route.select')}</option>
               {numbers.map(n => <option key={n.id} value={n.id}>{n.e164} · {n.provider}</option>)}
             </select>
             {route.numberId && (
@@ -132,7 +132,7 @@ export default function SettingsTelephony() {
 
       {/* Numbers table */}
       <div>
-        <h2 className="text-sm font-semibold mb-2">{t('pages.settings.telephony.numbers', 'Phone numbers')}</h2>
+        <h2 className="text-sm font-semibold mb-2">{t('settings.telephony.numbers')}</h2>
         <NumbersTable data={numbers} />
       </div>
     </div>

@@ -1357,6 +1357,130 @@
       "copied": "Link snapshot copiato"
     }
   },
+  "settings": {
+    "title": "Impostazioni",
+    "description": "Gestisci il tuo account, team e preferenze di sistema",
+    "account": "Account",
+    "billing": "Fatturazione",
+    "integrations": "Integrazioni",
+    "profile": "Profilo",
+    "team": "Team",
+    "unsaved": "[Non salvato]",
+    "nav": {
+      "title": "Impostazioni",
+      "subtitle": "Gestisci il tuo account e preferenze",
+      "profile": "Profilo",
+      "profile_desc": "Aggiorna le tue informazioni personali",
+      "company": "Azienda",
+      "company_desc": "Gestisci le impostazioni aziendali",
+      "integrations": "Integrazioni",
+      "integrations_desc": "Connetti servizi esterni",
+      "billing": "Fatturazione",
+      "billing_desc": "Gestisci fatturazione e abbonamenti"
+    },
+    "profile": {
+      "title": "Impostazioni Profilo",
+      "description": "Aggiorna le tue informazioni personali e preferenze",
+      "personal_info": "Informazioni Personali",
+      "contact_details": "Dettagli Contatto",
+      "preferences": "Preferenze",
+      "security": "Sicurezza",
+      "notifications": "Notifiche"
+    },
+    "company": {
+      "title": "Impostazioni Azienda",
+      "description": "Gestisci informazioni e impostazioni aziendali",
+      "company_info": "Informazioni Azienda",
+      "address": "Indirizzo",
+      "contact": "Contatto",
+      "logo": "Logo Azienda",
+      "branding": "Branding",
+      "compliance": "Compliance"
+    },
+    "team": {
+      "title": "Gestione Team",
+      "description": "Gestisci membri del team e permessi",
+      "members": "Membri Team",
+      "roles": "Ruoli & Permessi",
+      "invitations": "Inviti",
+      "activity": "Log Attività",
+      "departments": "Dipartimenti"
+    },
+    "integrations": {
+      "title": "Integrazioni",
+      "description": "Connetti servizi e strumenti esterni",
+      "crm_systems": "Sistemi CRM",
+      "communication": "Comunicazione",
+      "analytics": "Analytics",
+      "automation": "Automazione",
+      "webhooks": "Webhooks"
+    },
+    "billing": {
+      "title": "Fatturazione & Abbonamenti",
+      "description": "Gestisci la tua fatturazione e piani di abbonamento",
+      "current_plan": "Piano Attuale",
+      "usage": "Utilizzo",
+      "invoices": "Fatture",
+      "payment_methods": "Metodi di Pagamento",
+      "billing_history": "Cronologia Fatturazione"
+    },
+    "security": {
+      "title": "Impostazioni Sicurezza",
+      "description": "Gestisci sicurezza e controlli di accesso",
+      "authentication": "Autenticazione",
+      "two_factor": "Autenticazione a Due Fattori",
+      "sessions": "Sessioni Attive",
+      "api_keys": "Chiavi API",
+      "audit_log": "Log Audit"
+    },
+    "notifications": {
+      "title": "Preferenze Notifiche",
+      "description": "Configura come ricevi le notifiche",
+      "email": "Notifiche Email",
+      "sms": "Notifiche SMS",
+      "push": "Notifiche Push",
+      "in_app": "Notifiche In-App",
+      "frequency": "Frequenza Notifiche"
+    },
+    "telephony": {
+      "title": "Telefonia",
+      "subtitle": "Gestisci numeri di telefono, provider e routing",
+      "numbers": "Numeri di telefono",
+      "buy": {
+        "title": "Compra numero (Retell)",
+        "country": "Paese",
+        "type": "Tipo",
+        "area_code": "Prefisso (opzionale)",
+        "cta": "Acquista"
+      },
+      "byo": {
+        "title": "Porta il tuo",
+        "provider": "Provider",
+        "e164": "Telefono (E.164)",
+        "cta": "Collega numero",
+        "code": "Codice conferma",
+        "confirm": "Conferma"
+      },
+      "route": {
+        "title": "Routing",
+        "number": "Numero",
+        "select": "Seleziona un numero",
+        "inbound": "Agente inbound",
+        "outbound": "Agente outbound",
+        "save": "Salva routing"
+      },
+      "policy": {
+        "title": "Policy",
+        "no_outbound": "Per ora, le chiamate outbound sono consentite solo con numeri Retell. I numeri inoltrati/ospitati esternamente non possono essere usati come caller ID."
+      },
+      "bind": {
+        "inbound": "Inbound",
+        "outbound": "Outbound",
+        "save": "Salva",
+        "outbound_locked": "Outbound non consentito per numeri inoltrati"
+      }
+    }
+  },
   "common": {
     "back": "Indietro",
     "next": "Successivo",

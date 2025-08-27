@@ -1,58 +1,101 @@
 {
-  "connect": "[Collegati]",
+  "connect": "Connetti",
   "connected": {
     "description": "L'integrazione è stata collegata con successo",
-    "title": "[Titolo]"
+    "title": "Connesso"
   },
-  "disconnect": "[Disconnessione]",
+  "disconnect": "Disconnetti",
   "disconnected": {
     "description": "Integrazione scollegata",
-    "title": "[Titolo]"
+    "title": "Disconnesso"
   },
   "error": {
-    "description": "[Descrizione]",
-    "title": "[Titolo]"
+    "description": "Si è verificato un errore durante l'elaborazione della richiesta",
+    "title": "Errore"
   },
   "hubspot": {
-    "description": "[Descrizione]"
+    "description": "Sincronizza contatti, aziende e deal con HubSpot CRM"
   },
   "mapping": {
     "error": {
-      "description": "[Descrizione]",
-      "title": "[Titolo]"
+      "description": "Impossibile salvare la mappatura dei campi",
+      "title": "Errore Mappatura"
     },
     "saved": {
-      "description": "[Descrizione]",
-      "title": "[Titolo]"
+      "description": "Mappatura dei campi salvata con successo",
+      "title": "Mappatura Salvata"
     }
   },
   "odoo": {
-    "description": "[Descrizione]"
+    "description": "Integra con Odoo CRM usando JSON-RPC"
   },
-  "portal_id": "[Portal Id]",
+  "portal_id": "ID Portale",
   "status": {
-    "connected": "[Collegato]",
-    "connecting": "[Collegamento]",
-    "disconnected": "[Disconnesso]",
-    "error": "[Errore]"
+    "connected": "Connesso",
+    "connecting": "Connessione in corso",
+    "disconnected": "Disconnesso",
+    "error": "Errore"
   },
-  "subtitle": "[Sottotitolo]",
+  "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
   "tabs": {
-    "crm": "[Crm]",
-    "other": "[Altro]"
+    "crm": "Sistemi CRM",
+    "other": "Altri Strumenti"
   },
   "test": {
     "error": {
-      "description": "Test di connessione fallito",
-      "title": "[Titolo]"
+      "description": "Impossibile testare la connessione a {provider}",
+      "title": "Test Connessione Fallito"
     },
     "success": {
-      "description": "Test di connessione riuscito",
-      "title": "[Titolo]"
+      "description": "Test di connessione a {provider} riuscito",
+      "title": "Test Connessione Riuscito"
     }
   },
-  "title": "[Titolo]",
+  "title": "Integrazioni",
+  "description": "Connetti servizi e strumenti esterni",
+  "errors": {
+    "load_failed": "Impossibile caricare le integrazioni",
+    "connection_failed": "Impossibile connettersi",
+    "disconnection_failed": "Impossibile disconnettersi"
+  },
+  "messages": {
+    "connected": "Connesso con successo",
+    "connected_desc": "Connesso con successo a {provider}",
+    "disconnected": "Disconnesso con successo",
+    "disconnected_desc": "Disconnesso con successo da {provider}",
+    "test_success": "Test di connessione riuscito",
+    "test_success_desc": "Test di connessione a {provider} riuscito",
+    "test_failed": "Test di connessione fallito",
+    "test_failed_desc": "Test di connessione a {provider} fallito"
+  },
+  "mapping": {
+    "title": "Mappatura Campi",
+    "select_provider": "Seleziona un provider",
+    "select_provider_desc": "Scegli un provider CRM per configurare la mappatura dei campi"
+  },
+  "sync": {
+    "title": "Stato Sincronizzazione",
+    "select_provider": "Seleziona un provider",
+    "select_provider_desc": "Scegli un provider CRM per visualizzare lo stato di sincronizzazione"
+  },
+  "tabs": {
+    "mapping": "Mappatura Campi",
+    "sync": "Stato Sincronizzazione"
+  },
+  "actions": {
+    "connect": "Connetti",
+    "disconnect": "Disconnetti",
+    "test": "Test Connessione",
+    "field_mapping": "Mappatura Campi",
+    "sync_status": "Stato Sincronizzazione",
+    "back_to_integrations": "Torna alle Integrazioni",
+    "go_to_integrations": "Vai alle Integrazioni"
+  },
+  "other": {
+    "coming_soon": "Presto Disponibile",
+    "coming_soon_desc": "Altre integrazioni saranno disponibili in aggiornamenti futuri"
+  },
   "zoho": {
-    "description": "[Descrizione]"
+    "description": "Connetti a Zoho CRM con supporto multi-DC"
   }
 }

@@ -21,5 +21,8 @@
   "search": "Search",
   "unknown": "Unknown",
   "retry": "Retry",
-  "none": "None"
+  "none": "None",
+  "connecting": "Connecting...",
+  "testing": "Testing...",
+  "disconnecting": "Disconnecting..."
 }
