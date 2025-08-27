@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from sqlalchemy import Column, String, Boolean, Integer, BigInteger, DateTime, ForeignKey, Text, JSON, Enum as SAEnum, UniqueConstraint, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from db import Base
+from backend.db.base import Base
 
 
 # ===================== CRM Enums =====================

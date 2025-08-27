@@ -15,7 +15,7 @@ async def test_crm_imports():
     
     try:
         # Test models
-        from models import (
+        from backend.models import (
             CrmProvider, CrmConnection, CrmEntityLink, CrmFieldMapping,
             CrmSyncCursor, CrmSyncLog, CrmWebhookEvent
         )

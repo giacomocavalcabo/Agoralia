@@ -1,7 +1,7 @@
 # backend/services/providers/telnyx_adapter.py
 import httpx
 from typing import List, Dict
-from ..schemas.telephony_coverage import Country, Capabilities, Requirement, PricingInfo
+from backend.schemas.telephony_coverage import Country, Capabilities, Requirement, PricingInfo
 
 class TelnyxAdapter:
     def __init__(self, api_key: str):

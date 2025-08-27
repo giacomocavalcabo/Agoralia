@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
-from models import CallDailyAggregate, CallRecord
+# from backend.models import CallDailyAggregate, CallRecord  # TODO: implement when models exist
 from config.settings import settings
 
 logger = logging.getLogger(__name__)

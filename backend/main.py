@@ -43,11 +43,11 @@ import time
 import httpx
 from fastapi import BackgroundTasks
 
-# Import services for Gamma
-from services.call_service import CallService
-from services.ai_service import AIService
-from services.shadow_analytics import ShadowAnalyticsService
-from ai_client import OpenAIClient
+# Import services for Gamma (commented until models are implemented)
+# from services.call_service import CallService
+# from services.ai_service import AIService
+# from services.shadow_analytics import ShadowAnalyticsService
+# from ai_client import OpenAIClient
 
 # ===================== Delta Models & Helpers =====================
 class SegmentFilters(BaseModel):
@@ -4683,12 +4683,12 @@ def create_knowledge_base(
         }
 
 
-@app.get("/kb/{kb_id}")
-def get_knowledge_base(
-    request: Request,
-    kb_id: str,
-    _guard: None = Depends(require_role("viewer"))
-) -> dict:
+# @app.get("/kb/{kb_id}")
+# def get_knowledge_base(
+#     request: Request,
+#     kb_id: str,
+#     _guard: None = Depends(require_role("viewer"))
+# ) -> dict:
     """Get knowledge base details with sections and fields"""
     # Validate workspace ownership
     workspace_id = get_workspace_id(request, required=True)
@@ -4801,14 +4801,14 @@ def get_knowledge_base(
         }
 
 
-@app.patch("/kb/{kb_id}")
-def update_knowledge_base(
-    request: Request,
-    kb_id: str,
-            payload: KnowledgeBaseUpdate,
-    if_match: str = Header(None, alias="If-Match"),
-    _guard: None = Depends(require_role("editor"))
-) -> dict:
+# @app.patch("/kb/{kb_id}")
+# def update_knowledge_base(
+#     request: Request,
+#     kb_id: str,
+#             payload: dict,  # TODO: restore KnowledgeBaseUpdate when schema exists
+#     if_match: str = Header(None, alias="If-Match"),
+#     _guard: None = Depends(require_role("editor"))
+# ) -> dict:
     """Update knowledge base metadata"""
     workspace_id = get_workspace_id(request, required=True)
     

@@ -11,10 +11,10 @@ from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
-from models import (
-    CallRecord, CallTurn, CallQuality, CallDailyAggregate,
-    RetellWebhookEvent, AiObjectionCache
-)
+# from backend.models import (  # TODO: implement when models exist
+#     CallRecord, CallTurn, CallQuality, CallDailyAggregate,
+#     RetellWebhookEvent, AiObjectionCache
+# )
 from services.ai_service import AIService
 
 logger = logging.getLogger(__name__)

@@ -18,17 +18,37 @@ def _twilio_client() -> Client:
 
 def _fetch_country_list(client: Client) -> List[Dict[str, Any]]:
     # /AvailablePhoneNumbers.json -> elenco paesi supportati e sotto-risorse (local/mobile/toll_free)
-    resp = client.available_phone_numbers.list(limit=1000)
     out = []
-    for c in resp:
-        # la lib twilio restituisce oggetti con attributi snake_case
-        out.append({
-            "country": getattr(c, "country", None),
-            "country_code": getattr(c, "country_code", None),
-            "beta": bool(getattr(c, "beta", False)),
-            "subresource_uris": getattr(c, "subresource_uris", {}) or {},
-            "uri": getattr(c, "uri", None)
-        })
+    page_size = 1000
+    page = 0
+    max_pages = 10  # Safety limit
+    
+    try:
+        while page < max_pages:
+            resp = client.available_phone_numbers.list(limit=page_size, page_size=page_size, page=page)
+            if not resp:
+                break
+                
+            for c in resp:
+                # la lib twilio restituisce oggetti con attributi snake_case
+                out.append({
+                    "country": getattr(c, "country", None),
+                    "country_code": getattr(c, "country_code", None),
+                    "beta": bool(getattr(c, "beta", False)),
+                    "subresource_uris": getattr(c, "subresource_uris", {}) or {},
+                    "uri": getattr(c, "uri", None)
+                })
+            
+            page += 1
+            # Se abbiamo meno risultati della page_size, abbiamo finito
+            if len(resp) < page_size:
+                break
+                
+    except Exception as e:
+        # Log error and continue with what we have
+        import logging
+        logging.warning(f"Twilio pagination error: {e}. Returning {len(out)} countries.")
+    
     return out
 
 def _country_types(entry: Dict[str, Any]) -> Dict[str, bool]:

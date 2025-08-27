@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 # Add backend to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_db
-from models import User, UserAuth
+from backend.db import get_db
+from backend.models import User, UserAuth
 
 def create_admin_user():
     """Create admin user if it doesn't exist"""
