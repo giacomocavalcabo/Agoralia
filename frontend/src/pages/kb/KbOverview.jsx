@@ -33,9 +33,9 @@ export default function KbOverview() {
   ] : [];
   
   const nextSteps = [
-            { id: 1, title: t('pages.kb.overview.next_steps_items.add_company.title'), description: t('pages.kb.overview.next_steps_items.add_company.description'), action: 'add_company', icon: PlusIcon },
-        { id: 2, title: t('pages.kb.overview.next_steps_items.import_documents.title'), description: t('pages.kb.overview.next_steps_items.import_documents.description'), action: 'import', icon: CloudArrowUpIcon },
-        { id: 3, title: t('pages.kb.overview.next_steps_items.add_sources.title'), description: t('pages.kb.overview.next_steps_items.add_sources.description'), action: 'add_sources', icon: GlobeAltIcon }
+            { id: 1, title: t('kb.overview.next_steps_items.add_company.title'), description: t('kb.overview.next_steps_items.add_company.description'), action: 'add_company', icon: PlusIcon },
+        { id: 2, title: t('kb.overview.next_steps_items.import_documents.title'), description: t('kb.overview.next_steps_items.import_documents.description'), action: 'import', icon: CloudArrowUpIcon },
+        { id: 3, title: t('kb.overview.next_steps_items.add_sources.title'), description: t('kb.overview.next_steps_items.add_sources.description'), action: 'add_sources', icon: GlobeAltIcon }
   ];
 
   const handleAction = (action) => {
@@ -76,11 +76,11 @@ export default function KbOverview() {
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => navigate('/knowledge/sources')}>
             <GlobeAltIcon className="h-4 w-4 mr-2" />
-            {t('pages.kb.sources.add_source')}
+            {t('kb.sources.add_source')}
           </Button>
           <Button onClick={() => navigate('/knowledge/import')}>
             <CloudArrowUpIcon className="h-4 w-4 mr-2" />
-            {t('pages.kb.import.title')}
+            {t('kb.import.title')}
           </Button>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function KbOverview() {
           <div className="p-6 text-center">
             <DocumentTextIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
             <div className="text-2xl font-semibold text-gray-900">{items.length || 0}</div>
-            <div className="text-sm text-gray-600">{t('pages.kb.overview.sources_count', { count: items.length || 0 })}</div>
+            <div className="text-sm text-gray-600">{t('kb.overview.sources_count', { count: items.length || 0 })}</div>
           </div>
         </Card>
         
@@ -99,7 +99,7 @@ export default function KbOverview() {
           <div className="p-6 text-center">
             <CloudArrowUpIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-sm text-gray-600">{t('pages.kb.overview.documents_count', { count: 0 })}</div>
+            <div className="text-sm text-gray-600">{t('kb.overview.documents_count', { count: 0 })}</div>
           </div>
         </Card>
         
@@ -107,7 +107,7 @@ export default function KbOverview() {
           <div className="p-6 text-center">
             <DocumentTextIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
             <div className="text-2xl font-semibold text-gray-900">0</div>
-            <div className="text-sm text-gray-600">{t('pages.kb.overview.chunks_count', { count: 0 })}</div>
+            <div className="text-sm text-gray-600">{t('kb.overview.chunks_count', { count: 0 })}</div>
           </div>
         </Card>
       </div>
@@ -117,7 +117,7 @@ export default function KbOverview() {
         {/* Completeness Meter */}
         <Card>
           <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('pages.kb.overview.completeness')}</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('kb.overview.completeness')}</h3>
             <CompletenessMeter 
               completeness={overallCompleteness}
               freshness={overallFreshness}
@@ -130,7 +130,7 @@ export default function KbOverview() {
         {/* Next Steps */}
         <Card>
           <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('pages.kb.overview.next_steps')}</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('kb.overview.next_steps')}</h3>
             <div className="space-y-3">
               {nextSteps.map((step) => (
                 <div key={step.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
@@ -145,8 +145,8 @@ export default function KbOverview() {
                     onClick={() => handleAction(step.action)}
                   >
                     {step.action === 'add_company' ? t('common.add') : 
-                     step.action === 'import' ? t('pages.kb.import.title') : 
-                     t('pages.kb.sources.add_source')}
+                                     step.action === 'import' ? t('kb.import.title') :
+                t('kb.sources.add_source')}
                   </Button>
                 </div>
               ))}
@@ -159,7 +159,7 @@ export default function KbOverview() {
       {recentChanges.length > 0 && (
         <Card>
           <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('pages.kb.overview.recent_changes')}</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('kb.overview.recent_changes')}</h3>
             <div className="space-y-3">
               {recentChanges.map((change) => (
                 <div key={change.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -185,15 +185,15 @@ export default function KbOverview() {
         <Card>
           <div className="text-center py-12">
             <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('pages.kb.overview.no_data')}</h3>
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('kb.overview.no_data')}</h3>
             <div className="flex justify-center gap-3 mt-4">
               <Button onClick={() => navigate('/knowledge/company/new')}>
                 <PlusIcon className="h-4 w-4 mr-2" />
-                {t('pages.kb.overview.next_steps')}
+                {t('kb.overview.next_steps')}
               </Button>
               <Button variant="outline" onClick={() => navigate('/knowledge/import')}>
                 <CloudArrowUpIcon className="h-4 w-4 mr-2" />
-                {t('pages.kb.import.title')}
+                {t('kb.import.title')}
               </Button>
             </div>
           </div>

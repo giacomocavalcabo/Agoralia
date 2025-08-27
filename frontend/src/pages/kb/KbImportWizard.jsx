@@ -333,10 +333,10 @@ export default function KbImportWizard() {
               {/* Actions */}
               <div className="flex justify-end space-x-3 mt-6">
                 <Button variant="outline" onClick={handleCancel}>
-                  {t('pages.kb.import.actions.cancel')}
+                  {t('kb.import.actions.cancel')}
                 </Button>
                 <Button onClick={handleStartImport} disabled={processing}>
-                                      {t('pages.kb.import.actions.start')}
+                                      {t('kb.import.actions.start')}
                 </Button>
               </div>
             </>

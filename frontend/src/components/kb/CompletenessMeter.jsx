@@ -19,9 +19,9 @@ export function CompletenessMeter({
   };
 
   const getFreshnessLabel = (score) => {
-    if (score >= 80) return t('pages.kb.quality.fresh');
-    if (score >= 60) return t('pages.kb.quality.stale');
-    return t('pages.kb.quality.outdated');
+    if (score >= 80) return t('kb.quality.fresh');
+    if (score >= 60) return t('kb.quality.stale');
+    return t('kb.quality.outdated');
   };
 
   const getFreshnessDays = (lastUpdated) => {
@@ -42,19 +42,19 @@ export function CompletenessMeter({
 
   // Category weights for visual representation
   const categoryWeights = {
-    company: { weight: 20, label: t('pages.kb.cards.company') },
-    products: { weight: 25, label: t('pages.kb.cards.products') },
-    policies: { weight: 20, label: t('pages.kb.cards.policies') },
-    pricing: { weight: 15, label: t('pages.kb.cards.pricing') },
-    contacts: { weight: 10, label: t('pages.kb.cards.contacts') },
-    faq: { weight: 10, label: t('pages.kb.cards.faq') }
+    company: { weight: 20, label: t('kb.cards.company') },
+    products: { weight: 25, label: t('kb.cards.products') },
+    policies: { weight: 20, label: t('kb.cards.policies') },
+    pricing: { weight: 15, label: t('kb.cards.pricing') },
+    contacts: { weight: 10, label: t('kb.cards.contacts') },
+    faq: { weight: 10, label: t('kb.cards.faq') }
   };
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">{t('pages.kb.overview.completeness')}</span>
+          <span className="text-sm font-medium text-gray-700">{t('kb.overview.completeness')}</span>
           <span className="text-lg font-semibold text-gray-900">{completeness}%</span>
         </div>
         <ProgressBar 
@@ -68,7 +68,7 @@ export function CompletenessMeter({
         <>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">{t('pages.kb.quality.freshness')}</span>
+              <span className="text-sm font-medium text-gray-700">{t('kb.quality.freshness')}</span>
               <Badge status={getFreshnessLabel(freshness).toLowerCase()}>
                 {freshness}/100
               </Badge>
@@ -82,7 +82,7 @@ export function CompletenessMeter({
           
           {lastUpdated && (
             <div className="text-xs text-gray-500">
-              {t('pages.kb.sources.last_refresh')}: {new Date(lastUpdated).toLocaleDateString()}
+              {t('kb.sources.last_refresh')}: {new Date(lastUpdated).toLocaleDateString()}
               {freshnessDays !== null && (
                 <span className={`ml-2 px-2 py-1 rounded text-xs ${
                   freshnessStatus === 'fresh' ? 'bg-green-100 text-green-800' :
@@ -100,7 +100,7 @@ export function CompletenessMeter({
       {/* Category Breakdown */}
       {breakdown && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">{t('pages.kb.quality.breakdown')}</h4>
+                      <h4 className="text-sm font-medium text-gray-700">{t('kb.quality.breakdown')}</h4>
           <div className="grid grid-cols-2 gap-3">
             {Object.entries(categoryWeights).map(([key, config]) => {
               const score = breakdown[`${key}_score`] || 0;
@@ -128,7 +128,7 @@ export function CompletenessMeter({
       {/* Improvement Suggestions */}
       {suggestions.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">{t('pages.kb.quality.suggestions')}</h4>
+                      <h4 className="text-sm font-medium text-gray-700">{t('kb.quality.suggestions')}</h4>
           <ul className="space-y-1">
             {suggestions.map((suggestion, index) => (
               <li key={index} className="text-xs text-gray-600 flex items-start">
