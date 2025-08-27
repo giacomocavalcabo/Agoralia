@@ -24,5 +24,8 @@
   "none": "None",
   "connecting": "Connecting...",
   "testing": "Testing...",
-  "disconnecting": "Disconnecting..."
+  "disconnecting": "Disconnecting...",
+  "edit": "Edit",
+  "on": "On",
+  "off": "Off"
 }

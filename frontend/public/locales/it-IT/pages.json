@@ -155,6 +155,9 @@
       "how_to_start": "Inizia importando un documento o aggiungendo una fonte.",
       "import": "Importa Documenti"
     },
+    "import": {
+      "title": "Importa Documenti"
+    },
     "error": {
       "title": "Errore nel caricamento della knowledge base",
       "description": "Non siamo riusciti a caricare i dati della knowledge base. Riprova.",
@@ -1212,7 +1215,9 @@
       "integrations": "Integrazioni",
       "integrations_desc": "Connetti servizi esterni",
       "billing": "Fatturazione",
-      "billing_desc": "Gestisci fatturazione e abbonamenti"
+      "billing_desc": "Gestisci fatturazione e abbonamenti",
+      "telephony": "Telefonia",
+      "telephony_desc": "Gestisci numeri di telefono e routing"
     }
   },
   "error": {
@@ -1479,6 +1484,97 @@
         "save": "Salva",
         "outbound_locked": "Outbound non consentito per numeri inoltrati"
       }
+    }
+  },
+  "history": {
+    "title": "Cronologia Chiamate e Risultati",
+    "search_placeholder": "Cerca per ID, contatto, note…",
+    "search_aria": "Cerca nella cronologia",
+    "export_csv": "Esporta CSV",
+    "loading": "Caricamento cronologia…",
+    "error": "Impossibile caricare la cronologia.",
+    "empty": "Nessun risultato trovato",
+    "filters": {
+      "campaign": "Campagna",
+      "all_campaigns": "Tutte le campagne",
+      "next_step": "Prossimo Passo",
+      "all_steps": "Tutti i passi",
+      "score_min": "Punteggio Min",
+      "score_max": "Punteggio Max"
+    },
+    "steps": { "callback": "Richiamata", "email": "Invia Email", "meeting": "Prenota Riunione" },
+    "table": {
+      "call_id": "ID Chiamata",
+      "campaign": "Campagna",
+      "outcome": "Risultato",
+      "score": "Punteggio",
+      "next_step": "Prossimo Passo",
+      "sentiment": "Sentimento",
+      "actions": "Azioni",
+      "view": "Visualizza"
+    },
+    "pagination": { "total": "{{count}} risultati" }
+  },
+  "integrations": {
+    "coming_soon": {
+      "description": "Altre integrazioni saranno disponibili in aggiornamenti futuri",
+      "title": "Presto Disponibile"
+    },
+    "connect": "Connetti",
+    "connected": {
+      "description": "Connesso con successo a {provider}",
+      "title": "Connesso con Successo"
+    },
+    "disconnect": "Disconnetti",
+    "disconnected": {
+      "description": "Disconnesso con successo da {provider}",
+      "title": "Disconnesso con Successo"
+    },
+    "error": {
+      "description": "Si è verificato un errore durante l'elaborazione della richiesta",
+      "title": "Errore"
+    },
+    "hubspot": {
+      "description": "Sincronizza contatti, aziende e deal con HubSpot CRM"
+    },
+    "mapping": {
+      "error": {
+        "description": "Impossibile salvare la mappatura dei campi",
+        "title": "Errore Mappatura"
+      },
+      "saved": {
+        "description": "Mappatura dei campi salvata con successo",
+        "title": "Mappatura Salvata"
+      }
+    },
+    "odoo": {
+      "description": "Integra con Odoo CRM usando JSON-RPC"
+    },
+    "portal_id": "ID Portale",
+    "status": {
+      "connected": "Connesso",
+      "connecting": "Connessione in corso",
+      "disconnected": "Disconnesso",
+      "error": "Errore"
+    },
+    "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
+    "tabs": {
+      "crm": "Sistemi CRM",
+      "other": "Altri Strumenti"
+    },
+    "test": {
+      "error": {
+        "description": "Impossibile testare la connessione a {provider}",
+        "title": "Test Connessione Fallito"
+      },
+      "success": {
+        "description": "Test di connessione a {provider} riuscito",
+        "title": "Test Connessione Riuscito"
+      }
+    },
+    "title": "Integrazioni",
+    "zoho": {
+      "description": "Connetti a Zoho CRM con supporto multi-DC"
     }
   },
   "common": {

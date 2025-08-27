@@ -15,7 +15,9 @@
     "integrations": "Integrations",
     "integrations_desc": "Connect external services",
     "billing": "Billing",
-    "billing_desc": "Manage billing and subscriptions"
+    "billing_desc": "Manage billing and subscriptions",
+    "telephony": "Telephony",
+    "telephony_desc": "Manage phone numbers and routing"
   },
   
   "account": {

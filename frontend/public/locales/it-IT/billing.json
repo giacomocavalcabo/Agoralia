@@ -6,7 +6,8 @@
     "balance": "Saldo Attuale",
     "usage_mtd": "Utilizzo Questo Mese",
     "minutes_mtd": "Minuti Questo Mese",
-    "cap_status": "Stato Utilizzo"
+    "cap_status": "Stato Utilizzo",
+    "cap_status_desc": "Stato utilizzo attuale"
   },
   
   "payment_methods": {
@@ -17,7 +18,10 @@
     "card_details": "Dettagli Carta",
     "default": "Predefinito",
     "unavailable": "Non disponibile",
-    "unavailable_desc": "I metodi di pagamento non sono attualmente disponibili"
+    "unavailable_desc": "I metodi di pagamento non sono attualmente disponibili",
+    "card_number": "Numero Carta",
+    "expires": "Scade",
+    "edit": "Modifica"
   },
   
   "auto_recharge": {
@@ -27,7 +31,8 @@
     "disabled": "Disabilitata",
     "enable": "Abilita",
     "threshold": "Soglia",
-    "topup": "Importo Ricarica"
+    "topup": "Importo Ricarica",
+    "on": "Attivo"
   },
   
   "usage_cap": {

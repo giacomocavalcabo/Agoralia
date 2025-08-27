@@ -169,6 +169,9 @@
       "how_to_start": "Start by importing a document or adding a source.",
       "import": "Import Documents"
     },
+    "import": {
+      "title": "Import Documents"
+    },
     "error": {
       "title": "Error loading knowledge base",
       "description": "We couldn't load the knowledge base data. Please try again.",

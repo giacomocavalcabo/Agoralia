@@ -6,7 +6,8 @@
     "balance": "Current Balance",
     "usage_mtd": "Usage This Month",
     "minutes_mtd": "Minutes This Month",
-    "cap_status": "Usage Status"
+    "cap_status": "Usage Status",
+    "cap_status_desc": "Current usage status"
   },
   
   "payment_methods": {
@@ -17,7 +18,10 @@
     "card_details": "Card Details",
     "default": "Default",
     "unavailable": "Unavailable",
-    "unavailable_desc": "Payment methods are currently unavailable"
+    "unavailable_desc": "Payment methods are currently unavailable",
+    "card_number": "Card Number",
+    "expires": "Expires",
+    "edit": "Edit"
   },
   
   "auto_recharge": {
@@ -27,7 +31,8 @@
     "disabled": "Disabled",
     "enable": "Enable",
     "threshold": "Threshold",
-    "topup": "Top-up Amount"
+    "topup": "Top-up Amount",
+    "on": "On"
   },
   
   "usage_cap": {
@@ -41,7 +46,8 @@
     "soft_cap": "Soft Cap",
     "stop_calls": "Stop calls at limit",
     "type": "Cap Type",
-    "warnings_only": "Warnings only"
+    "warnings_only": "Warnings only",
+    "soft": "Soft Cap (warnings only)"
   },
   
   "invoices": {
