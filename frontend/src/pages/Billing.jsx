@@ -92,7 +92,7 @@ function OverviewCards({ data }) {
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">
-              {t('billing.overview.balance') || 'Available Balance'}
+              {t('overview.balance') || 'Available Balance'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
               ${balance.toFixed(2)}
@@ -109,7 +109,7 @@ function OverviewCards({ data }) {
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">
-              {t('billing.overview.usage_mtd') || 'Usage MTD'}
+              {t('overview.usage_mtd') || 'Usage MTD'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
               ${mtd.toFixed(2)}
@@ -129,7 +129,7 @@ function OverviewCards({ data }) {
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">
-              {t('billing.overview.minutes_mtd') || 'Minutes MTD'}
+              {t('overview.minutes_mtd') || 'Minutes MTD'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
               {minutes.toLocaleString()}
@@ -149,7 +149,7 @@ function OverviewCards({ data }) {
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">
-              {t('billing.overview.cap_status') || 'Cap Status'}
+              {t('overview.cap_status') || 'Cap Status'}
             </p>
             <p className="text-2xl font-semibold text-gray-900">
               {((mtd / cap) * 100).toFixed(0)}%
@@ -174,14 +174,14 @@ function PaymentMethods({ data = [], onAddCard }) {
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
-          {t('billing.payment_methods.title') || 'Payment Methods'}
+          {t('payment_methods.title') || 'Payment Methods'}
         </h3>
         <button
           onClick={onAddCard}
           className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          {t('billing.payment_methods.add') || 'Add Card'}
+          {t('payment_methods.add') || 'Add Card'}
         </button>
       </div>
       
@@ -209,7 +209,7 @@ function PaymentMethods({ data = [], onAddCard }) {
             <div className="flex items-center space-x-3">
               {method.isDefault && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  {t('billing.payment_methods.default') || 'Default'}
+                  {t('payment_methods.default') || 'Default'}
                 </span>
               )}
               <button className="text-sm text-gray-600 hover:text-gray-800">
@@ -238,7 +238,7 @@ function AutoRecharge({ data, onUpdate }) {
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
-          {t('billing.auto_recharge.title') || 'Auto-Recharge'}
+          {t('auto_recharge.title') || 'Auto-Recharge'}
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
@@ -259,7 +259,7 @@ function AutoRecharge({ data, onUpdate }) {
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />
             <label htmlFor="autoRechargeEnabled" className="ml-2 text-sm text-gray-700">
-              {t('billing.auto_recharge.enable') || 'Enable auto-recharge'}
+              {t('auto_recharge.enable') || 'Enable  auto-recharge'} 
             </label>
           </div>
           
@@ -267,7 +267,7 @@ function AutoRecharge({ data, onUpdate }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('billing.auto_recharge.threshold') || 'Recharge when balance falls below'}
+                  {t('auto_recharge.threshold') || 'Recharge when balance falls below'}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -282,7 +282,7 @@ function AutoRecharge({ data, onUpdate }) {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('billing.auto_recharge.topup') || 'Recharge amount'}
+                  {t('auto_recharge.topup') || 'Recharge amount'}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -317,11 +317,11 @@ function AutoRecharge({ data, onUpdate }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-900">
-                {data.enabled ? t('billing.auto_recharge.enabled') : t('billing.auto_recharge.disabled')}
+                {data.enabled ? t('auto_recharge.enabled') : t('auto_recharge.disabled')}
               </p>
               {data.enabled && (
                 <p className="text-sm text-gray-500">
-                  {t('billing.auto_recharge.description', {
+                  {t('auto_recharge.description', {
                     topup: data.topup,
                     threshold: data.threshold
                   }) || `Recharge $${data.topup} when balance falls below $${data.threshold}`}
@@ -356,7 +356,7 @@ function UsageCap({ data, onUpdate }) {
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
-          {t('billing.usage_cap.title') || 'Usage Cap'}
+          {t('usage_cap.title') || 'Usage Cap'}
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
@@ -370,21 +370,21 @@ function UsageCap({ data, onUpdate }) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('billing.usage_cap.type') || 'Cap Type'}
+              {t('usage_cap.type') || 'Cap Type'}
             </label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="soft">{t('billing.usage_cap.soft') || 'Soft Cap (warnings only)'}</option>
-              <option value="hard">{t('billing.usage_cap.hard') || 'Hard Cap (stop calls)'}</option>
+                              <option value="soft">{t('usage_cap.soft') || 'Soft Cap (warnings only)'}</option>
+                <option value="hard">{t('usage_cap.hard') || 'Hard Cap (stop calls)'}</option>
             </select>
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('billing.usage_cap.limit') || 'Monthly Limit ($)'}
+              {t('usage_cap.limit') || 'Monthly Limit ($)'}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -417,12 +417,12 @@ function UsageCap({ data, onUpdate }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-900">
-                {data.type === 'hard' ? t('billing.usage_cap.hard_cap') : t('billing.usage_cap.soft_cap')}
+                {data.type === 'hard' ? t('usage_cap.hard_cap') : t('usage_cap.soft_cap')}
               </p>
               <p className="text-sm text-gray-500">
-                {t('billing.usage_cap.description', {
+                {t('usage_cap.description', {
                   limit: data.limit,
-                  type: data.type === 'hard' ? t('billing.usage_cap.stop_calls') : t('billing.usage_cap.warnings_only')
+                  type: data.type === 'hard' ? t('usage_cap.stop_calls') : t('usage_cap.warnings_only')
                 }) || `Limit: $${data.limit} - ${data.type === 'hard' ? 'Stop calls at limit' : 'Warnings only'}`}
               </p>
             </div>
@@ -431,14 +431,14 @@ function UsageCap({ data, onUpdate }) {
                 ? 'bg-red-100 text-red-800' 
                 : 'bg-yellow-100 text-yellow-800'
             }`}>
-              {data.type === 'hard' ? t('billing.usage_cap.hard') : t('billing.usage_cap.soft')}
+              {data.type === 'hard' ? t('usage_cap.hard') : t('usage_cap.soft')}
             </span>
           </div>
           
           {/* Usage Progress */}
           <div className="mt-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>{t('billing.usage_cap.current') || 'Current Usage'}</span>
+                              <span>{t('usage_cap.current') || 'Current Usage'}</span>  
               <span>${mockBillingData.usage.mtd.toFixed(2)} / ${data.limit.toFixed(2)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -469,7 +469,7 @@ function Invoices({ data }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-6">
-        {t('billing.invoices.title') || 'Recent Invoices'}
+                  {t('invoices.title') || 'Recent Invoices'}
       </h3>
       
       <div className="space-y-4">
@@ -491,7 +491,7 @@ function Invoices({ data }) {
                 {invoice.status}
               </span>
               <button className="text-sm text-green-600 hover:text-green-800">
-                {t('billing.invoices.download') || 'Download'}
+                {t('invoices.download') || 'Download'}
               </button>
             </div>
           </div>
@@ -500,7 +500,7 @@ function Invoices({ data }) {
       
       <div className="mt-6 text-center">
         <button className="text-sm text-green-600 hover:text-green-800 font-medium">
-          {t('billing.invoices.view_all') || 'View All Invoices'}
+                      {t('invoices.view_all') || 'View All Invoices'}
         </button>
       </div>
     </div>
@@ -622,7 +622,7 @@ export default function Billing() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-semibold text-gray-900">
-            {t('billing.title') || 'Billing & Usage'}
+            {t('title') || 'Billing & Usage'}
           </h1>
           <div className="flex items-center space-x-2">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
@@ -634,7 +634,7 @@ export default function Billing() {
           </div>
         </div>
         <p className="text-gray-600">
-          {t('billing.subtitle') || 'Manage your payment methods, auto-recharge, and usage limits'}
+          {t('subtitle') || 'Manage your payment methods, auto-recharge, and usage limits'}
         </p>
         <p className="text-sm text-purple-600 mt-1">
           🚀 Welcome, Admin! You have unlimited resources and premium features.

@@ -17,38 +17,38 @@ import {
 const settingsNavigation = [
   { 
     id: 'profile', 
-    name: 'settings.nav.profile',
+    name: 'nav.profile',
     href: 'profile', 
     icon: UserIcon,
-    description: 'settings.nav.profile_desc'
+    description: 'nav.profile_desc'
   },
   { 
     id: 'company', 
-    name: 'settings.nav.company',
+    name: 'nav.company',
     href: 'company', 
     icon: BuildingOfficeIcon,
-    description: 'settings.nav.company_desc'
+    description: 'nav.company_desc'
   },
   { 
     id: 'integrations', 
-    name: 'settings.nav.integrations',
+    name: 'nav.integrations',
     href: 'integrations', 
     icon: CogIcon,
-    description: 'settings.nav.integrations_desc'
+    description: 'nav.integrations_desc'
   },
   { 
     id: 'billing', 
-    name: 'settings.nav.billing',
+    name: 'nav.billing',
     href: 'billing', 
     icon: CreditCardIcon,
-    description: 'settings.nav.billing_desc'
+    description: 'nav.billing_desc'
   },
   { 
     id: 'telephony', 
-    name: 'settings.nav.telephony',
+    name: 'nav.telephony',
     href: 'telephony', 
     icon: PhoneIcon,
-    description: 'settings.nav.telephony_desc'
+    description: 'nav.telephony_desc'
   }
 ]
 
