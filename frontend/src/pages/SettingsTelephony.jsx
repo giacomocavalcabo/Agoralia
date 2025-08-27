@@ -7,6 +7,7 @@ import NumbersTable from '../components/NumbersTable'
 import BindControls from '../components/BindControls'
 import ProviderAccounts from '../components/ProviderAccounts'
 import NumberWizard from '../components/NumberWizard'
+import CoveragePanel from '../components/CoveragePanel'
 import { PhoneIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 
@@ -65,6 +66,9 @@ export default function SettingsTelephony() {
       
       {/* Number Wizard */}
       <NumberWizard />
+
+      {/* Coverage & Requirements */}
+      <CoveragePanel />
 
       {/* Actions */}
       <div className="grid md:grid-cols-3 gap-4">

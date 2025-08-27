@@ -112,6 +112,21 @@
         "status": "Stato",
         "empty": "Nessun ordine"
       }
+    },
+    "coverage": {
+      "title": "Coverage & Requirements",
+      "select_country": "Select Country",
+      "choose_country": "Choose a country...",
+      "origin_country": "Origin Country (for pricing)",
+      "what_you_can_buy": "What you can buy here",
+      "features": "Features",
+      "import_support": "Import/Porting",
+      "outbound_policy": "Outbound Caller ID",
+      "requirements": "Requirements & Documents",
+      "notes": "Notes",
+      "pricing": "Pricing (estimate)",
+      "buy_with_provider": "Buy with this provider",
+      "add_existing": "Add existing number"
     }
   },
   

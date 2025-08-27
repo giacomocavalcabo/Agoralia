@@ -15,8 +15,8 @@ export default function InsightsPanel({ className = "", days = 7 }) {
 
   if (isLoading) {
     return (
-      <section aria-label={t("pages.analytics.insights.title")} className={`mt-6 ${className}`}>
-        <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.insights.title")}</h2>
+      <section aria-label={t("analytics.insights.title")} className={`mt-6 ${className}`}>
+        <h2 className="text-lg font-semibold mb-4">{t("analytics.insights.title")}</h2>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-4 bg-muted rounded animate-pulse" />

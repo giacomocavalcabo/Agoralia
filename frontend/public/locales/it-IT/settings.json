@@ -112,6 +112,21 @@
         "status": "Stato",
         "empty": "Nessun ordine"
       }
+    },
+    "coverage": {
+      "title": "Copertura & Requisiti",
+      "select_country": "Seleziona Paese",
+      "choose_country": "Scegli un paese...",
+      "origin_country": "Paese di Origine (per pricing)",
+      "what_you_can_buy": "Cosa puoi comprare qui",
+      "features": "Funzionalità",
+      "import_support": "Import/Porting",
+      "outbound_policy": "Outbound Caller ID",
+      "requirements": "Requisiti & Documenti",
+      "notes": "Note",
+      "pricing": "Pricing (stima)",
+      "buy_with_provider": "Compra con questo provider",
+      "add_existing": "Aggiungi numero esistente"
     }
   },
   

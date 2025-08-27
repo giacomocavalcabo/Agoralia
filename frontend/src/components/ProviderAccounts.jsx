@@ -5,7 +5,7 @@ import { listProviders, upsertProvider } from "../lib/numbersApi";
 import { useTranslation } from "react-i18next";
 
 export default function ProviderAccounts() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('settings');
   const qc = useQueryClient();
   const { data: providers = [] } = useQuery({ queryKey: ["providers"], queryFn: listProviders });
   

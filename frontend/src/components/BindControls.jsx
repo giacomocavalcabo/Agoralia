@@ -5,7 +5,7 @@ import { listAgents, bindNumber } from "../lib/numbersApi";
 import { useTranslation } from "react-i18next";
 
 export default function BindControls({ number }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('settings');
   const qc = useQueryClient();
   const { data: agents = [] } = useQuery(["tel_agents"], listAgents);
 

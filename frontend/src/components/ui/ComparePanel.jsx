@@ -72,8 +72,8 @@ export default function ComparePanel({ className = "" }) {
   );
 
   return (
-    <section aria-label={t("pages.analytics.compare.title")} className={`mt-6 ${className}`}>
-      <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.compare.title")}</h2>
+            <section aria-label={t("analytics.compare.title")} className={`mt-6 ${className}`}>
+          <h2 className="text-lg font-semibold mb-4">{t("analytics.compare.title")}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {renderSegmentForm('left', leftSegment, updateSegment)}
@@ -86,7 +86,7 @@ export default function ComparePanel({ className = "" }) {
           disabled={compareMutation.isPending}
           className="px-6"
         >
-          {compareMutation.isPending ? 'Comparing...' : t("pages.analytics.compare.add")}
+                      {compareMutation.isPending ? 'Comparing...' : t("analytics.compare.add")}
         </Button>
       </div>
       

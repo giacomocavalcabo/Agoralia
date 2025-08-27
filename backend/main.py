@@ -3737,6 +3737,7 @@ from backend.services.telephony import assert_e164, enforce_outbound_policy, val
 from backend.services.telephony_providers import start_purchase, start_import, finalize_activate_number
 from backend.services.crypto import enc, dec
 from backend.models import ProviderAccount, TelephonyProvider, NumberOrder, Number
+from backend.services.coverage_service import get_countries, get_capabilities, get_pricing_twilio
 
 class BindPayload(BaseModel):
     number_id: str
@@ -3789,6 +3790,63 @@ async def settings_list_agents(
     ]
     
     return {"agents": agents}
+
+# ===================== Coverage & Requirements =====================
+
+@app.get("/settings/telephony/countries")
+async def countries(
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get countries available for a specific provider"""
+    if provider not in ["twilio", "telnyx"]:
+        raise HTTPException(status_code=400, detail="Provider must be 'twilio' or 'telnyx'")
+    
+    wsid = get_workspace_id(request, fallback="ws_1")
+    countries_data = await get_countries(provider, wsid, db)
+    
+    return {
+        "provider": provider,
+        "countries": [country.dict() for country in countries_data]
+    }
+
+@app.get("/settings/telephony/capabilities")
+async def capabilities(
+    provider: str,
+    country: str,
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get capabilities for a specific provider/country combination"""
+    if provider not in ["twilio", "telnyx"]:
+        raise HTTPException(status_code=400, detail="Provider must be 'twilio' or 'telnyx'")
+    
+    wsid = get_workspace_id(request, fallback="ws_1")
+    capabilities_data = await get_capabilities(provider, wsid, country, db)
+    
+    return {
+        "provider": provider,
+        "country": country,
+        "capabilities": capabilities_data.dict()
+    }
+
+@app.get("/settings/telephony/pricing/twilio")
+async def pricing(
+    origin: str,
+    destination: str,
+    request: Request,
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get Twilio pricing for a route (origin -> destination)"""
+    wsid = get_workspace_id(request, fallback="ws_1")
+    pricing_data = await get_pricing_twilio(wsid, origin, destination, db)
+    
+    return {
+        "origin": origin,
+        "destination": destination,
+        "pricing": pricing_data.dict()
+    }
 
 # ===================== Telephony Provider Management =====================
 

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { nanoid } from "nanoid";
 
 export default function NumberWizard() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('settings');
   const qc = useQueryClient();
   const { data: providers = [] } = useQuery({ queryKey: ["providers"], queryFn: listProviders });
   const { data: orders = [] } = useQuery({ 

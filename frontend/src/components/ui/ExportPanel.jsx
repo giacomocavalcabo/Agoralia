@@ -42,8 +42,8 @@ export default function ExportPanel({ className = "", filters = {} }) {
   ];
 
   return (
-    <section aria-label={t("pages.analytics.export.title")} className={`mt-6 ${className}`}>
-      <h2 className="text-lg font-semibold mb-4">{t("pages.analytics.export.title")}</h2>
+            <section aria-label={t("analytics.export.title")} className={`mt-6 ${className}`}>
+          <h2 className="text-lg font-semibold mb-4">{t("analytics.export.title")}</h2>
       
       <div className="space-y-6">
         {/* Export Options */}
@@ -63,7 +63,7 @@ export default function ExportPanel({ className = "", filters = {} }) {
                     disabled={exporting}
                     className="flex-1"
                   >
-                    {exporting ? '...' : t("pages.analytics.export.csv")}
+                    {exporting ? '...' : t("analytics.export.csv")}
                   </Button>
                   
                   <Button
@@ -73,7 +73,7 @@ export default function ExportPanel({ className = "", filters = {} }) {
                     disabled={exporting}
                     className="flex-1"
                   >
-                    {exporting ? '...' : t("pages.analytics.export.json")}
+                    {exporting ? '...' : t("analytics.export.json")}
                   </Button>
                 </div>
               </div>
@@ -97,12 +97,12 @@ export default function ExportPanel({ className = "", filters = {} }) {
               {snapshotCopied ? (
                 <>
                   <span className="text-green-600">✓</span>
-                  {t("pages.analytics.export.copied")}
+                  {t("analytics.export.copied")}
                 </>
               ) : (
                 <>
                   <span>🔗</span>
-                  {t("pages.analytics.export.snapshot")}
+                  {t("analytics.export.snapshot")}
                 </>
               )}
             </Button>
