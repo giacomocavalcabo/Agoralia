@@ -1,5 +1,6 @@
 import enum
-from sqlalchemy import Column, String, Boolean, Integer, BigInteger, DateTime, ForeignKey, Text, JSON, Enum, UniqueConstraint, Float
+from enum import Enum as PyEnum
+from sqlalchemy import Column, String, Boolean, Integer, BigInteger, DateTime, ForeignKey, Text, JSON, Enum as SAEnum, UniqueConstraint, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from db import Base
@@ -286,7 +287,7 @@ class ProviderAccount(Base):
     __tablename__ = "provider_accounts"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(TelephonyProvider), nullable=False)
+    provider = Column(SAEnum(TelephonyProvider), nullable=False)
     api_key_encrypted = Column(String, nullable=False)
     label = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -295,7 +296,7 @@ class NumberOrder(Base):
     __tablename__ = "number_orders"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(TelephonyProvider), nullable=False)
+    provider = Column(SAEnum(TelephonyProvider), nullable=False)
     request = Column(JSON, nullable=False)
     status = Column(String, default="pending")  # pending|review|failed|active
     provider_ref = Column(String, nullable=True)
@@ -399,8 +400,8 @@ class CrmConnection(Base):
     
     id = Column(String, primary_key=True)
     workspace_id = Column(String, nullable=False)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    status = Column(Enum(CrmConnectionStatus, name='crm_connection_status'), nullable=False, default=CrmConnectionStatus.DISCONNECTED)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
+    status = Column(SAEnum(CrmConnectionStatus, name='crm_connection_status'), nullable=False, default=CrmConnectionStatus.DISCONNECTED)
     
     # Connection details
     access_token_enc = Column(Text, nullable=True)  # Encrypted access token
@@ -432,8 +433,8 @@ class CrmEntityLink(Base):
     __tablename__ = "crm_entity_links"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(SAEnum(CrmObjectType, name='crm_object_type'), nullable=False)
     local_id = Column(String, nullable=False)
     remote_id = Column(String, nullable=False)
     remote_etag = Column(String, nullable=True)
@@ -444,8 +445,8 @@ class CrmFieldMapping(Base):
     __tablename__ = "crm_field_mappings"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(SAEnum(CrmObjectType, name='crm_object_type'), nullable=False)
     mapping_json = Column(JSON, nullable=False)
     picklists_json = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -456,8 +457,8 @@ class CrmSyncCursor(Base):
     __tablename__ = "crm_sync_cursors"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
+    object = Column(SAEnum(CrmObjectType, name='crm_object_type'), nullable=False)
     since_ts = Column(DateTime, nullable=True)
     cursor_token = Column(String, nullable=True)
     page_after = Column(String, nullable=True)
@@ -468,10 +469,10 @@ class CrmSyncLog(Base):
     __tablename__ = "crm_sync_logs"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
-    level = Column(Enum(CrmLogLevel, name='crm_log_level'), nullable=False)
-    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
-    direction = Column(Enum(CrmSyncDirection, name='crm_sync_direction'), nullable=False)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
+    level = Column(SAEnum(CrmLogLevel, name='crm_log_level'), nullable=False)
+    object = Column(SAEnum(CrmObjectType, name='crm_object_type'), nullable=False)
+    direction = Column(SAEnum(CrmSyncDirection, name='crm_sync_direction'), nullable=False)
     correlation_id = Column(String, nullable=True)
     message = Column(Text, nullable=False)
     payload_json = Column(JSON, nullable=True)
@@ -481,12 +482,12 @@ class CrmSyncLog(Base):
 class CrmWebhookEvent(Base):
     __tablename__ = "crm_webhook_events"
     id = Column(String, primary_key=True)
-    provider = Column(Enum(CrmProvider, name='crm_provider'), nullable=False)
+    provider = Column(SAEnum(CrmProvider, name='crm_provider'), nullable=False)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
     event_id = Column(String, nullable=False)
-    object = Column(Enum(CrmObjectType, name='crm_object_type'), nullable=False)
+    object = Column(SAEnum(CrmObjectType, name='crm_object_type'), nullable=False)
     payload_json = Column(JSON, nullable=False)
-    status = Column(Enum(CrmWebhookStatus, name='crm_webhook_status'), nullable=False)
+    status = Column(SAEnum(CrmWebhookStatus, name='crm_webhook_status'), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     processed_at = Column(DateTime, nullable=True)
 

@@ -1601,7 +1601,17 @@
   },
   "nav": {
     "title": "Navigazione",
-    "subtitle": "Menu di navigazione principale"
+    "subtitle": "Menu di navigazione principale",
+    "profile": "Profilo",
+    "profile_desc": "Aggiorna le tue informazioni personali",
+    "company": "Azienda",
+    "company_desc": "Gestisci le impostazioni aziendali",
+    "integrations": "Integrazioni",
+    "integrations_desc": "Connetti servizi esterni",
+    "billing": "Fatturazione",
+    "billing_desc": "Gestisci fatturazione e abbonamenti",
+    "telephony": "Telefonia",
+    "telephony_desc": "Gestisci numeri di telefono e instradamento"
   },
   "common": {
     "back": "Indietro",

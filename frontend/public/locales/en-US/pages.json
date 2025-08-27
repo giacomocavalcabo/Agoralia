@@ -1207,7 +1207,17 @@
   },
   "nav": {
     "title": "Navigation",
-    "subtitle": "Main navigation menu"
+    "subtitle": "Main navigation menu",
+    "profile": "Profile",
+    "profile_desc": "Update your personal information",
+    "company": "Company",
+    "company_desc": "Manage company settings",
+    "integrations": "Integrations",
+    "integrations_desc": "Connect external services",
+    "billing": "Billing",
+    "billing_desc": "Manage billing and subscriptions",
+    "telephony": "Telephony",
+    "telephony_desc": "Manage phone numbers and routing"
   },
   "common": {
     "back": "Back",

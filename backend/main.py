@@ -3738,6 +3738,7 @@ from backend.services.telephony_providers import start_purchase, start_import, f
 from backend.services.crypto import enc, dec
 from backend.models import ProviderAccount, TelephonyProvider, NumberOrder, Number
 from backend.services.coverage_service import get_countries, get_capabilities, get_pricing_twilio
+from backend.services.twilio_coverage import build_twilio_snapshot, save_twilio_snapshot, load_twilio_snapshot
 
 class BindPayload(BaseModel):
     number_id: str
@@ -3940,6 +3941,66 @@ async def list_orders(
         "e164": o.result.get("e164") if o.result else None,
         "provider": o.provider.value
     } for o in q.all()]
+
+# ===================== Telephony Coverage (Twilio) =====================
+
+@app.get("/settings/telephony/coverage")
+async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
+    """Get coverage information for a specific provider"""
+    if provider == "twilio":
+        return load_twilio_snapshot()
+    # telnyx: se hai già il JSON completo, servilo da statico
+    from pathlib import Path
+    p = Path(__file__).parent / "static" / "telephony" / "telnyx_coverage.json"
+    if p.exists():
+        import json
+        return json.loads(p.read_text("utf-8"))
+    return {"provider": "telnyx", "countries": []}
+
+@app.post("/settings/telephony/coverage/rebuild")
+async def rebuild_coverage(provider: str = Query(..., pattern="^twilio$")):
+    """Rebuild coverage snapshot (admin only)"""
+    # esegue ad-hoc il job e aggiorna lo snapshot
+    payload = build_twilio_snapshot()
+    save_twilio_snapshot(payload)
+    return {"ok": True, "updated": payload.get("last_updated")}
+
+@app.get("/settings/telephony/inventory/search")
+async def twilio_inventory_search(
+    provider: str = Query(..., pattern="^twilio$"),
+    country: str = Query(..., min_length=2, max_length=2),
+    number_type: str = Query(..., pattern="^(local|mobile|toll_free)$"),
+    area_code: str | None = Query(None),
+    contains: str | None = Query(None),
+):
+    """
+    Ricerca live (Twilio) – l'inventario NON può essere staticizzato.
+    """
+    from config.settings import settings
+    from twilio.rest import Client as TwilioClient
+    
+    client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    # switch sui sub-resource
+    fetcher = {
+        "local": client.available_phone_numbers(country).local,
+        "mobile": client.available_phone_numbers(country).mobile,
+        "toll_free": client.available_phone_numbers(country).toll_free,
+    }[number_type]
+    
+    params = {}
+    if area_code: 
+        params["area_code"] = area_code
+    if contains:  
+        params["contains"] = contains
+    
+    nums = fetcher.list(limit=25, **params)
+    return [{
+        "phone_number": n.phone_number,
+        "friendly_name": getattr(n, "friendly_name", None),
+        "region": getattr(n, "region", None),
+        "iso_country": country,
+        "capabilities": getattr(n, "capabilities", None)
+    } for n in nums]
 
 # ===================== Provider Webhooks =====================
 

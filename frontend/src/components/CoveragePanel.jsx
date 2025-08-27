@@ -2,38 +2,35 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { fetchCountries, fetchCapabilities, fetchTwilioPricing } from "../lib/coverageApi";
+import { getCoverage, searchInventoryTwilio } from "../lib/telephonyApi";
 import { CheckIcon, XMarkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function CoveragePanel() {
   const { t } = useTranslation('settings');
   const [selectedProvider, setSelectedProvider] = useState("twilio");
   const [selectedCountry, setSelectedCountry] = useState("");
-  const [originCountry, setOriginCountry] = useState("US");
 
-  // Fetch countries for selected provider
-  const { data: countriesData, isLoading: countriesLoading } = useQuery({
-    queryKey: ["countries", selectedProvider],
-    queryFn: () => fetchCountries(selectedProvider),
+  // Fetch coverage for selected provider
+  const { data: coverageData, isLoading: coverageLoading } = useQuery({
+    queryKey: ["coverage", selectedProvider],
+    queryFn: () => getCoverage(selectedProvider),
     enabled: !!selectedProvider,
   });
 
-  // Fetch capabilities for selected country
-  const { data: capabilitiesData, isLoading: capabilitiesLoading } = useQuery({
-    queryKey: ["capabilities", selectedProvider, selectedCountry],
-    queryFn: () => fetchCapabilities(selectedProvider, selectedCountry),
-    enabled: !!selectedCountry,
-  });
-
-  // Fetch Twilio pricing if applicable
-  const { data: pricingData } = useQuery({
-    queryKey: ["pricing", originCountry, selectedCountry],
-    queryFn: () => fetchTwilioPricing(originCountry, selectedCountry),
-    enabled: selectedProvider === "twilio" && !!selectedCountry && originCountry !== selectedCountry,
-  });
-
-  const countries = countriesData?.countries || [];
-  const capabilities = capabilitiesData?.capabilities;
+  // Get countries and capabilities from coverage data
+  const countries = coverageData?.countries || [];
+  const selectedCountryData = countries.find(c => c.alpha2 === selectedCountry);
+  const capabilities = selectedCountryData?.types ? {
+    buy: selectedCountryData.types,
+    features: {
+      voice: true,  // Default - in futuro potremmo estenderlo
+      sms: true,
+      mms: selectedCountryData.types.mobile || false
+    },
+    import_supported: true,  // Default - in futuro potremmo estenderlo
+    regulatory: selectedCountryData.regulatory || [],
+    notes: []
+  } : null;
 
   const handleCountrySelect = (countryCode) => {
     setSelectedCountry(countryCode);
@@ -93,42 +90,22 @@ export default function CoveragePanel() {
       </div>
 
       {/* Country Selection */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            {t('settings.telephony.coverage.select_country', 'Seleziona Paese')}
-          </label>
-          <select
-            className="input w-full"
-            value={selectedCountry}
-            onChange={(e) => handleCountrySelect(e.target.value)}
-          >
-            <option value="">{t('settings.telephony.coverage.choose_country', 'Scegli un paese...')}</option>
-            {countries.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.name} ({country.code})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {selectedProvider === "twilio" && (
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('settings.telephony.coverage.origin_country', 'Paese di Origine (per pricing)')}
-            </label>
-            <select
-              className="input w-full"
-              value={originCountry}
-              onChange={(e) => setOriginCountry(e.target.value)}
-            >
-              <option value="US">United States (US)</option>
-              <option value="IT">Italy (IT)</option>
-              <option value="DE">Germany (DE)</option>
-              <option value="GB">United Kingdom (GB)</option>
-            </select>
-          </div>
-        )}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          {t('settings.telephony.coverage.select_country', 'Seleziona Paese')}
+        </label>
+        <select
+          className="input w-full"
+          value={selectedCountry}
+          onChange={(e) => handleCountrySelect(e.target.value)}
+        >
+          <option value="">{t('settings.telephony.coverage.choose_country', 'Scegli un paese...')}</option>
+          {countries.map((country) => (
+            <option key={country.alpha2} value={country.alpha2}>
+              {country.name} ({country.alpha2})
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Capabilities Display */}
@@ -140,12 +117,12 @@ export default function CoveragePanel() {
               {t('settings.telephony.coverage.what_you_can_buy', 'Cosa puoi comprare qui')}
             </h4>
             <div className="space-y-2">
-              {Object.entries(capabilities.buy).map(([type, enabled]) => (
-                <div key={type} className="flex items-center justify-between">
-                  <span className="capitalize">{type}</span>
-                  {getStatusIcon(enabled)}
-                </div>
-              ))}
+                          {Object.entries(capabilities.buy).map(([type, enabled]) => (
+              <div key={type} className="flex items-center justify-between">
+                <span className="capitalize">{type === "toll_free" ? "toll-free" : type}</span>
+                {getStatusIcon(enabled)}
+              </div>
+            ))}
             </div>
           </div>
 
@@ -188,22 +165,29 @@ export default function CoveragePanel() {
       )}
 
       {/* Regulatory Requirements */}
-      {capabilities && capabilities.regulatory && capabilities.regulatory.length > 0 && (
+      {capabilities && capabilities.regulatory && Object.keys(capabilities.regulatory).length > 0 && (
         <div className="p-4 border rounded-lg">
           <h4 className="font-semibold mb-3 text-gray-900">
             {t('settings.telephony.coverage.requirements', 'Requisiti & Documenti')}
           </h4>
           <div className="space-y-3">
-            {capabilities.regulatory.map((req, index) => (
-              <div key={index} className="p-3 bg-gray-50 rounded">
-                <div className="font-medium text-sm mb-1">
-                  {req.number_type} - {req.entity}
+            {Object.entries(capabilities.regulatory).map(([numberType, entities]) => (
+              <div key={numberType} className="p-3 bg-gray-50 rounded">
+                <div className="font-medium text-sm mb-1 capitalize">
+                  {numberType === "toll_free" ? "toll-free" : numberType}
                 </div>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                  {req.fields.map((field, fieldIndex) => (
-                    <li key={fieldIndex}>{field}</li>
-                  ))}
-                </ul>
+                {Object.entries(entities).map(([entityType, fields]) => (
+                  <div key={entityType} className="mt-2">
+                    <div className="text-xs font-medium text-gray-600 capitalize mb-1">
+                      {entityType}
+                    </div>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      {fields.map((field, fieldIndex) => (
+                        <li key={fieldIndex}>{field}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -224,26 +208,22 @@ export default function CoveragePanel() {
         </div>
       )}
 
-      {/* Twilio Pricing */}
-      {selectedProvider === "twilio" && pricingData && (
-        <div className="p-4 border rounded-lg">
-          <h4 className="font-semibold mb-3 text-gray-900">
-            {t('settings.telephony.coverage.pricing', 'Pricing (stima)')}
-          </h4>
-          {pricingData.pricing.available ? (
-            <div className="p-3 bg-green-50 border border-green-200 rounded">
-              <div className="text-sm text-green-800">
-                <strong>Tariffa:</strong> {pricingData.pricing.rate_per_minute} {pricingData.pricing.currency}/min
-              </div>
-              <div className="text-xs text-green-700 mt-1">
-                {originCountry} → {selectedCountry}
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
-              Pricing non disponibile per questa rotta
-            </div>
-          )}
+      {/* Coverage Info */}
+      {coverageData && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <InformationCircleIcon className="w-5 h-5 text-blue-600" />
+            <span className="font-medium text-blue-900">
+              Informazioni sulla Copertura
+            </span>
+          </div>
+          <p className="text-sm text-blue-800">
+            Questa è una fotografia delle capacità (aggiornata: {new Date(coverageData.last_updated * 1000).toLocaleDateString()}). 
+            Disponibilità e prezzi sono verificati in tempo reale al momento dell'acquisto.
+          </p>
+          <p className="text-sm text-blue-800 mt-2">
+            La portabilità (mantenere il tuo numero) si verifica caso per caso al momento della richiesta.
+          </p>
         </div>
       )}
 

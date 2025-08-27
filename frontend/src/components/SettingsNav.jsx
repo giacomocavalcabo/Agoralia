@@ -53,7 +53,7 @@ const settingsNavigation = [
 ]
 
 export default function SettingsNav({ className }) {
-  const { t } = useTranslation('settings')
+  const { t } = useTranslation('pages')
   const location = useLocation()
   
   const isActive = (href) => {

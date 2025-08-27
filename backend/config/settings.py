@@ -1,6 +1,7 @@
 """
 Configuration module for Agoralia API
 """
+import os
 from typing import List, Optional
 from pydantic_settings import BaseSettings
 
@@ -67,6 +68,10 @@ class Settings(BaseSettings):
     OPENAI_BUDGET_MAX_USD: float = 10.0  # Daily budget cap
     OPENAI_MAX_TOKENS: int = 4000
     OPENAI_TEMPERATURE: float = 0.7
+
+    # Twilio Configuration
+    TWILIO_ACCOUNT_SID: str = os.getenv("TWILIO_ACCOUNT_SID", "")
+    TWILIO_AUTH_TOKEN: str = os.getenv("TWILIO_AUTH_TOKEN", "")
 
 
 settings = Settings()
