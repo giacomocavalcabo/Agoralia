@@ -293,14 +293,54 @@
       "drag_drop": "Trascina qui il tuo CSV",
       "or_click": "oppure clicca per selezionare un file",
       "supported_formats": "Supportati: .csv, .xls, .xlsx",
-      "paste_placeholder": "Incolla qui le righe (CSV o TSV)"
+      "paste_placeholder": "Incolla qui le righe (CSV o TSV)",
+      "drop_here": "Rilascia il file qui"
+    },
+    "paste": {
+      "label": "Incolla dati CSV",
+      "placeholder": "Incolla qui i tuoi dati CSV (con intestazioni)...",
+      "processing": "Elaborazione...",
+      "process": "Elabora Dati"
+    },
+    "sheet": {
+      "title": "Integrazione Google Sheets",
+      "subtitle": "Presto disponibile! Puoi esportare il tuo Google Sheet come CSV e caricarlo qui.",
+      "upload_csv": "Carica CSV Invece"
+    },
+    "processing": "Elaborazione dei tuoi dati...",
+    "preview": {
+      "title": "Anteprima Dati",
+      "rows": "Righe",
+      "fields": "Campi",
+      "delimiter": "Separatore",
+      "continue": "Continua alla Mappatura",
+      "showing": "Mostrando le prime 5 righe di",
+      "total": "righe totali"
     },
     "mapping": {
       "title": "Mappa i campi",
       "subtitle": "Abbiamo pre-mappato le intestazioni quando possibile. Telefono e Nome sono obbligatori.",
       "required": "Obbligatorio",
       "columns": { "name": "Nome", "phone": "Telefono", "email": "Email", "company": "Azienda" },
-      "actions": { "auto": "Auto-mappa", "reset": "Reset" }
+      "actions": { "auto": "Auto-mappa", "reset": "Reset" },
+      "fields": "Mappatura Campi"
+    },
+    "prefix": {
+      "title": "Configurazione Prefisso Telefono",
+      "strategy": "Strategia Prefisso",
+      "auto": "Rilevamento automatico (+39, 0039, nessuno)",
+      "force_39": "Forza prefisso +39",
+      "force_0039": "Forza prefisso 0039",
+      "no_prefix": "Nessun prefisso (mantieni originale)",
+      "default_country": "Paese Predefinito",
+      "apply_to_all": "Applica regole prefisso a tutti i numeri di telefono"
+    },
+    "dedupe": {
+      "title": "Regole Deduplicazione",
+      "check_on": "Controlla duplicati su:",
+      "resolve_strategy": "Quando si trovano duplicati:",
+      "skip": "Salta duplicati",
+      "merge": "Unisci e aggiorna esistenti"
     },
     "subset": {
       "title": "Seleziona le righe da importare",
@@ -325,7 +365,13 @@
       "title": "Revisione legale",
       "legend": "Legenda: 🟢 Consentito • 🟡 Condizionato • 🔴 Vietato",
       "columns": { "category": "Categoria", "why": "Motivo" },
-      "category": { "allowed": "Consentito", "conditional": "Condizionato", "blocked": "Vietato" }
+      "category": { "allowed": "Consentito", "conditional": "Condizionato", "blocked": "Vietato" },
+      "subtitle": "Rivedi la configurazione di import e avvia il job",
+      "summary": "Riepilogo Import",
+      "config": "Revisione Configurazione",
+      "cost": "Costo Stimato",
+      "cost_desc": "Basato sul tuo piano attuale e contatti stimati",
+      "cost_note": "Il costo effettivo può variare in base ai risultati finali di elaborazione"
     },
     "commit": {
       "title": "Conferma e importa",
@@ -333,6 +379,14 @@
       "progress": "Import in corso…",
       "done": "Import completato",
       "errors_csv": "Scarica errori CSV"
+    },
+    "launch": {
+      "success": "Job di Import Avviato!",
+      "success_desc": "Il tuo job di import è stato accodato e inizierà l'elaborazione a breve.",
+      "view_job": "Visualizza Stato Job",
+      "new_import": "Avvia Nuovo Import",
+      "launching": "Avvio in corso...",
+      "launch": "Avvia Import"
     },
     "toast": {
       "file_too_big": "Il file supera 50 MB.",

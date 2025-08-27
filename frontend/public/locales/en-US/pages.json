@@ -302,7 +302,29 @@
       "drag_drop": "Drag & drop your CSV here",
       "or_click": "or click to select a file",
       "supported_formats": "Supported: .csv, .xls, .xlsx",
-      "paste_placeholder": "Paste rows here (CSV or TSV)"
+      "paste_placeholder": "Paste rows here (CSV or TSV)",
+      "drop_here": "Drop the file here"
+    },
+    "paste": {
+      "label": "Paste CSV data",
+      "placeholder": "Paste your CSV data here (with headers)...",
+      "processing": "Processing...",
+      "process": "Process Data"
+    },
+    "sheet": {
+      "title": "Google Sheets Integration",
+      "subtitle": "Coming soon! You can export your Google Sheet as CSV and upload it here.",
+      "upload_csv": "Upload CSV Instead"
+    },
+    "processing": "Processing your data...",
+    "preview": {
+      "title": "Data Preview",
+      "rows": "Rows",
+      "fields": "Fields",
+      "delimiter": "Delimiter",
+      "continue": "Continue to Mapping",
+      "showing": "Showing first 5 rows of",
+      "total": "total rows"
     },
     "mapping": {
       "title": "Map fields",
@@ -313,7 +335,25 @@
         "phone": "Phone",
         "email": "Company"
       },
-      "actions": { "auto": "Auto-map", "reset": "Reset" }
+      "actions": { "auto": "Auto-map", "reset": "Reset" },
+      "fields": "Field Mapping"
+    },
+    "prefix": {
+      "title": "Phone Number Prefix Configuration",
+      "strategy": "Prefix Strategy",
+      "auto": "Auto-detect (+39, 0039, none)",
+      "force_39": "Force +39 prefix",
+      "force_0039": "Force 0039 prefix",
+      "no_prefix": "No prefix (keep as-is)",
+      "default_country": "Default Country",
+      "apply_to_all": "Apply prefix rules to all phone numbers"
+    },
+    "dedupe": {
+      "title": "Deduplication Rules",
+      "check_on": "Check for duplicates on:",
+      "resolve_strategy": "When duplicates found:",
+      "skip": "Skip duplicates",
+      "merge": "Merge and update existing"
     },
     "subset": {
       "title": "Select rows to import",
@@ -348,7 +388,13 @@
       "title": "Legal review",
       "legend": "Legend: 🟢 Allowed • 🟡 Conditional • 🔴 Blocked",
       "columns": { "category": "Category", "why": "Why" },
-      "category": { "allowed": "Allowed", "conditional": "Conditional", "blocked": "Blocked" }
+      "category": { "allowed": "Allowed", "conditional": "Conditional", "blocked": "Blocked" },
+      "subtitle": "Review your import configuration and launch the job",
+      "summary": "Import Summary",
+      "config": "Configuration Review",
+      "cost": "Estimated Cost",
+      "cost_desc": "Based on your current plan and estimated new contacts",
+      "cost_note": "Actual cost may vary based on final processing results"
     },
     "commit": {
       "title": "Confirm & import",
@@ -356,6 +402,14 @@
       "progress": "Importing…",
       "done": "Import completed",
       "errors_csv": "Download errors CSV"
+    },
+    "launch": {
+      "success": "Import Job Launched!",
+      "success_desc": "Your import job has been queued and will start processing shortly.",
+      "view_job": "View Job Status",
+      "new_import": "Start New Import",
+      "launching": "Launching...",
+      "launch": "Launch Import"
     },
     "toast": {
       "file_too_big": "The file exceeds 50 MB.",

@@ -12,7 +12,7 @@ import LegalReviewStep from '../components/import/LegalReviewStep'
 
 // Step components
 function UploadStep({ onDataDetected, onNext }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const [uploadMethod, setUploadMethod] = useState('csv')
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
@@ -382,7 +382,7 @@ function UploadStep({ onDataDetected, onNext }) {
 
 // Step 2: Field Mapping
 function FieldMappingStep({ data, onNext, onBack }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const [fieldMappings, setFieldMappings] = useState({})
   const [prefixConfig, setPrefixConfig] = useState({
     strategy: 'auto', // 'auto', '+39', '0039', 'none'
@@ -662,7 +662,7 @@ function FieldMappingStep({ data, onNext, onBack }) {
 
 // Step 3: Review & Launch
 function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const [isLaunching, setIsLaunching] = useState(false)
   const [jobId, setJobId] = useState(null)
 
@@ -872,7 +872,7 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
 
 // Main Import component
 export default function Import() {
-  const { t } = useI18n()
+  const { t } = useI18n('pages')
   const [currentStep, setCurrentStep] = useState(1)
   const [importData, setImportData] = useState(null)
   const [mappingData, setMappingData] = useState(null)
