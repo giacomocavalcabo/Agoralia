@@ -26,8 +26,7 @@ const baseGroups = [
 	]},
 	{ label: 'Configure', items:[
 		{ label:'Settings', to:'/settings' }, 
-		{ label:'Members', to:'/invite' }, 
-		{ label:'Billing', to:'/settings/billing' }
+		{ label:'Members', to:'/invite' }
 	]},
 ]
 

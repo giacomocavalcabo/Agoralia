@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDemoData } from '../lib/useDemoData'
 import { 
   UserIcon, 
   BuildingOfficeIcon, 
@@ -55,6 +56,7 @@ const settingsNavigation = [
 export default function SettingsNav({ className }) {
   const { t } = useTranslation('settings')
   const location = useLocation()
+  const isDemo = useDemoData()
   
   const isActive = (href) => {
     if (href === 'profile') {
@@ -76,8 +78,13 @@ export default function SettingsNav({ className }) {
       
       <div className="space-y-1">
         {settingsNavigation.map((item) => {
+          // Skip billing tab in demo mode if you want to hide it completely
+          // const skipInDemo = isDemo && item.id === 'billing'
+          // if (skipInDemo) return null
+          
           const active = isActive(item.href)
           const Icon = item.icon
+          const isBillingInDemo = isDemo && item.id === 'billing'
           
           return (
             <Link
@@ -93,8 +100,15 @@ export default function SettingsNav({ className }) {
                 active ? 'text-green-500' : 'text-gray-400 group-hover:text-gray-500'
               }`} />
               <div className="flex-1">
-                <div className="font-medium">
-                  {t(item.name)}
+                <div className="flex items-center gap-2">
+                  <div className="font-medium">
+                    {t(item.name)}
+                  </div>
+                  {isBillingInDemo && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Demo
+                    </span>
+                  )}
                 </div>
                 {item.description && (
                   <div className="text-xs text-gray-500 mt-0.5">

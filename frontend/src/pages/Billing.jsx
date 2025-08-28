@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PaymentsDisabledBanner } from '../providers/StripeProvider.jsx'
+import { useDemoData } from '../lib/useDemoData'
 import { 
   CreditCardIcon, 
   CurrencyDollarIcon,
@@ -507,9 +508,278 @@ function Invoices({ data }) {
   )
 }
 
+function BudgetAndLimits() {
+  const { t } = useTranslation('settings')
+  const [budget, setBudget] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({})
+  const [error, setError] = useState(null)
+  
+  useEffect(() => {
+    loadBudget()
+  }, [])
+  
+  const loadBudget = async () => {
+    try {
+      setIsLoading(true)
+      const { getBudget } = await import('../lib/billingApi.js')
+      const budgetData = await getBudget()
+      setBudget(budgetData)
+      setFormData({
+        monthly_budget_cents: budgetData.settings.monthly_budget_cents,
+        budget_currency: budgetData.settings.budget_currency,
+        budget_resets_day: budgetData.settings.budget_resets_day,
+        budget_hard_stop: budgetData.settings.budget_hard_stop,
+        budget_thresholds: budgetData.settings.budget_thresholds
+      })
+    } catch (err) {
+      console.error('Failed to load budget:', err)
+      setError('Failed to load budget settings')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleSave = async () => {
+    try {
+      setIsLoading(true)
+      const { updateBudget } = await import('../lib/billingApi.js')
+      const updatedBudget = await updateBudget(formData)
+      setBudget(updatedBudget)
+      setIsEditing(false)
+      // Show success message
+      if (window.toast) {
+        window.toast.success(t('budget.saved') || 'Budget settings saved')
+      }
+    } catch (err) {
+      console.error('Failed to update budget:', err)
+      setError('Failed to save budget settings')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleCancel = () => {
+    setFormData({
+      monthly_budget_cents: budget?.settings.monthly_budget_cents || 0,
+      budget_currency: budget?.settings.budget_currency || 'USD',
+      budget_resets_day: budget?.settings.budget_resets_day || 1,
+      budget_hard_stop: budget?.settings.budget_hard_stop || true,
+      budget_thresholds: budget?.settings.budget_thresholds || [0.8, 1.0]
+    })
+    setIsEditing(false)
+    setError(null)
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="text-center">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Budget</h3>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadBudget}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+  
+  const monthlyBudget = budget?.settings.monthly_budget_cents || 0
+  const mtdSpend = budget?.spend_month_to_date_cents || 0
+  const progressPercentage = monthlyBudget > 0 ? Math.min(100, (mtdSpend / monthlyBudget) * 100) : 0
+  const isBlocked = budget?.blocked || false
+  const thresholdHit = budget?.threshold_hit
+  
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {t('budget.title') || 'Budget & Limits'}
+          </h3>
+          <p className="text-sm text-gray-600">
+            Manage your monthly spending limits and budget controls
+          </p>
+        </div>
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="text-sm text-blue-600 hover:text-blue-800"
+          disabled={isLoading}
+        >
+          {isEditing ? t('common.cancel') || 'Cancel' : t('common.edit') || 'Edit'}
+        </button>
+      </div>
+      
+      {/* Budget Progress Bar */}
+      {monthlyBudget > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              {t('budget.progress') || 'Month-to-date spend'}
+            </span>
+            <span className="text-sm text-gray-600">
+              ${(mtdSpend / 100).toFixed(2)} / ${(monthlyBudget / 100).toFixed(2)}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${
+                progressPercentage >= 100 ? 'bg-red-500' :
+                progressPercentage >= 80 ? 'bg-yellow-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+          {thresholdHit && (
+            <div className={`mt-2 text-sm ${
+              thresholdHit >= 1.0 ? 'text-red-600' : 'text-yellow-600'
+            }`}>
+              {thresholdHit >= 1.0 
+                ? t('budget.blocked') || 'Monthly budget reached. Purchase/Import are disabled.'
+                : t('budget.warn80') || 'You have reached 80% of your monthly budget.'
+              }
+            </div>
+          )}
+        </div>
+      )}
+      
+      {isEditing ? (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('budget.monthly') || 'Monthly budget (USD)'}
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.monthly_budget_cents / 100}
+              onChange={(e) => setFormData({
+                ...formData, 
+                monthly_budget_cents: Math.round(parseFloat(e.target.value || 0) * 100)
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0.00"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('budget.resets') || 'Resets on day'}
+            </label>
+            <select
+              value={formData.budget_resets_day}
+              onChange={(e) => setFormData({...formData, budget_resets_day: parseInt(e.target.value)})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {Array.from({length: 28}, (_, i) => i + 1).map(day => (
+                <option key={day} value={day}>{day}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="hardStop"
+              checked={formData.budget_hard_stop}
+              onChange={(e) => setFormData({...formData, budget_hard_stop: e.target.checked})}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="hardStop" className="ml-2 text-sm text-gray-700">
+              {t('budget.hard_stop') || 'Stop operations when limit is reached'}
+            </label>
+          </div>
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Monthly Budget:</span>
+            <span className="text-sm font-medium text-gray-900">
+              ${(monthlyBudget / 100).toFixed(2)}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Currency:</span>
+            <span className="text-sm font-medium text-gray-900">
+              {budget?.settings.budget_currency || 'USD'}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Resets on day:</span>
+            <span className="text-sm font-medium text-gray-900">
+              {budget?.settings.budget_resets_day || 1}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Hard stop:</span>
+            <span className="text-sm font-medium text-gray-900">
+              {budget?.settings.budget_hard_stop ? 'Enabled' : 'Disabled'}
+            </span>
+          </div>
+          
+          {isBlocked && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center">
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
+                <span className="text-sm text-red-700">
+                  {t('budget.blocked') || 'Operations are currently blocked due to budget limit'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Main Billing component
 export default function Billing() {
   const { t } = useTranslation('billing')
+  const isDemo = useDemoData()
   const [billingData, setBillingData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

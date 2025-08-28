@@ -107,6 +107,9 @@ export default function Root() {
                     <Route path="campaigns/:id" element={<CampaignDetail />} />
                     <Route path="calendar" element={<Calendar />} />
                     
+                    {/* Billing redirect alias - must come before settings to avoid conflicts */}
+                    <Route path="/billing" element={<Navigate to="/settings/billing" replace />} />
+                    
                     {/* Settings routes with nested layout */}
                     <Route path="settings" element={<SettingsLayout />}>
                       <Route index element={<Navigate to="profile" replace />} />
