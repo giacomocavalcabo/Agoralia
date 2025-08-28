@@ -142,7 +142,7 @@ def append_ledger(session: Session, workspace_id: str, amount_cents: int,
         currency=currency,
         provider=provider,
         kind=kind,
-        metadata=metadata or {},
+        metadata_json=metadata or {},
         idempotency_key=idempotency_key
     )
     

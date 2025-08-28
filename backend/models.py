@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, Boolean, Integer, BigInteger, DateTime, F
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.db.base import Base
+import uuid
 
 
 # ===================== CRM Enums =====================
@@ -746,7 +747,26 @@ class BillingLedger(Base):
     currency = Column(String(3), nullable=False, default="USD")
     provider = Column(String(32), nullable=True)
     kind = Column(String(32), nullable=False)  # number_purchase, number_import_fee, adjustment, refund
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)  # Nome colonna DB: "metadata", attributo Python: "metadata_json"
     idempotency_key = Column(String(80), nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ===================== Compliance & KYC Models =====================
+
+class RegulatorySubmission(Base):
+    __tablename__ = "regulatory_submissions"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False, index=True)
+    provider = Column(String, nullable=False)  # "twilio" | "telnyx"
+    country = Column(String, nullable=False)   # "IT", "US", ...
+    number_type = Column(String, nullable=False)  # "local" | "mobile" | "toll_free"
+    entity_type = Column(String, nullable=False)  # "business" | "individual"
+    status = Column(String, default="draft")      # draft|submitted|approved|rejected
+    required_fields = Column(JSON, default={})    # elenco requisiti previsti
+    provided_fields = Column(JSON, default={})    # stato campi caricati
+    files = Column(JSON, default=[])              # [{name, path, mime, size}]
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

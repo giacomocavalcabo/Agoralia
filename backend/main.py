@@ -3946,6 +3946,27 @@ async def purchase_number(
             }
         )
     
+    # Compliance check
+    try:
+        ensure_compliance_or_raise(
+            db, wsid, 
+            body.get("provider", "twilio"), 
+            body.get("country", "US"), 
+            body.get("type", "local"), 
+            body.get("entity_type", "business")
+        )
+    except HTTPException as e:
+        if e.detail.get("error") == "compliance_required":
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "compliance_required",
+                    "message": "Compliance requirements not met. Please complete KYC first.",
+                    "requirements": e.detail.get("requirements", {})
+                }
+            )
+        raise e
+    
     # Provider account check
     acc = db.query(ProviderAccount).filter_by(
         workspace_id=wsid, 
@@ -4046,6 +4067,27 @@ async def import_number(
                 "threshold_hit": budget_check["threshold_hit"]
             }
         )
+    
+    # Compliance check
+    try:
+        ensure_compliance_or_raise(
+            db, wsid, 
+            body.get("provider", "twilio"), 
+            body.get("country", "US"), 
+            body.get("type", "local"), 
+            body.get("entity_type", "business")
+        )
+    except HTTPException as e:
+        if e.detail.get("error") == "compliance_required":
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "compliance_required",
+                    "message": "Compliance requirements not met. Please complete KYC first.",
+                    "requirements": e.detail.get("requirements", {})
+                }
+            )
+        raise e
     
     # Provider account check
     acc = db.query(ProviderAccount).filter_by(
@@ -4161,6 +4203,177 @@ async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
     # Fallback finale
     fallback = {"provider": provider, "countries": [], "error": "no_data"}
     return JSONResponse(content=fallback)
+
+# ===================== Telephony Compliance (KYC) =====================
+from backend.schemas_compliance import ComplianceRequirements, ComplianceCreate, ComplianceUploadAck, ComplianceSubmission
+from backend.services.compliance_service import get_requirements, ensure_compliance_or_raise
+from backend.models import RegulatorySubmission
+from fastapi import UploadFile, File, Form
+import os
+
+@app.get("/settings/telephony/compliance/requirements", response_model=ComplianceRequirements)
+def compliance_requirements(provider: str, country: str, number_type: str, entity_type: str):
+    """Get compliance requirements for a specific provider/country/number_type/entity_type"""
+    req = get_requirements(provider, country, number_type, entity_type) or {}
+    return {
+        "country": country, 
+        "number_type": number_type, 
+        "entity_type": entity_type, 
+        "documents": req.get("documents", []),
+        "notes": req.get("notes")
+    }
+
+@app.post("/settings/telephony/compliance/submissions", response_model=ComplianceSubmission)
+def compliance_create(payload: ComplianceCreate, db: Session = Depends(get_db), user=Depends(auth_guard)):
+    """Create a new compliance submission"""
+    sub = RegulatorySubmission(
+        workspace_id=user.workspace_id,
+        provider=payload.provider.lower(),
+        country=payload.country.upper(),
+        number_type=payload.number_type.lower(),
+        entity_type=payload.entity_type.lower(),
+        required_fields=get_requirements(payload.provider, payload.country, payload.number_type, payload.entity_type),
+        provided_fields=payload.provided_fields,
+        status="draft",
+    )
+    db.add(sub)
+    db.commit()
+    db.refresh(sub)
+    return {
+        "id": sub.id, 
+        "status": sub.status,
+        "provider": sub.provider,
+        "country": sub.country,
+        "number_type": sub.number_type,
+        "entity_type": sub.entity_type,
+        "required_fields": sub.required_fields,
+        "provided_fields": sub.provided_fields,
+        "files": sub.files or [],
+        "notes": sub.notes,
+        "created_at": sub.created_at.isoformat(),
+        "updated_at": sub.updated_at.isoformat()
+    }
+
+@app.post("/settings/telephony/compliance/submissions/{sub_id}/files", response_model=ComplianceUploadAck)
+def compliance_upload(
+    sub_id: str, 
+    kind: str = Form(...), 
+    f: UploadFile = File(...), 
+    db: Session = Depends(get_db), 
+    user=Depends(auth_guard)
+):
+    """Upload a compliance document file"""
+    sub = db.query(RegulatorySubmission).filter_by(id=sub_id, workspace_id=user.workspace_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    # Create upload directory
+    path = f"backend/static/uploads/regulatory/{user.workspace_id}/{sub_id}"
+    os.makedirs(path, exist_ok=True)
+    
+    # Save file
+    dst = os.path.join(path, f.filename)
+    with open(dst, "wb") as out:
+        out.write(f.file.read())
+    
+    # Update submission
+    files = sub.files or []
+    files.append({
+        "name": f.filename, 
+        "path": dst, 
+        "mime": f.content_type, 
+        "size": os.path.getsize(dst), 
+        "kind": kind
+    })
+    sub.files = files
+    sub.status = "submitted"
+    db.commit()
+    
+    return {
+        "file_name": f.filename, 
+        "kind": kind, 
+        "size": os.path.getsize(dst), 
+        "mime": f.content_type
+    }
+
+# ===================== Telephony Portability =====================
+
+@app.get("/settings/telephony/portability")
+def portability(provider: str, country: str, number_type: str):
+    """Check portability for a specific provider/country/number_type combination"""
+    if provider.lower() == "telnyx":
+        # Load from static Telnyx coverage
+        from pathlib import Path
+        p = Path(__file__).parent / "static" / "telephony" / "telnyx_coverage.json"
+        if p.exists():
+            try:
+                import json
+                data = json.loads(p.read_text("utf-8"))
+                countries = data.get("countries", [])
+                rec = next((c for c in countries if c.get("country", {}).get("alpha2") == country.upper()), None)
+                if rec:
+                    types = rec.get("types", {})
+                    number_type_key = number_type.replace("_", " ").title()
+                    portability = types.get(number_type_key, {}).get("Number Portability", False)
+                    return {
+                        "provider": provider,
+                        "country": country,
+                        "number_type": number_type,
+                        "portability": bool(portability)
+                    }
+            except Exception as e:
+                import logging
+                logging.error(f"Failed to load Telnyx portability data: {e}")
+    
+    # Default: unknown portability
+    return {
+        "provider": provider,
+        "country": country,
+        "number_type": number_type,
+        "portability": "unknown"
+    }
+
+# ===================== Inbound Webhooks & Routing Log =====================
+
+@app.post("/webhooks/twilio/voice")
+async def twilio_voice_webhook(payload: dict, request: Request):
+    """Handle Twilio voice webhook events"""
+    # Validate signature (implement proper validation)
+    # For now, just log the event
+    
+    # Extract relevant information
+    event_data = {
+        "provider": "twilio",
+        "event_type": "voice",
+        "payload": payload,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    # Log the event (in production, save to database)
+    import logging
+    logging.info(f"Twilio voice webhook: {event_data}")
+    
+    return {"status": "received"}
+
+@app.post("/webhooks/telnyx/voice")
+async def telnyx_voice_webhook(payload: dict, request: Request):
+    """Handle Telnyx voice webhook events"""
+    # Validate signature (implement proper validation)
+    # For now, just log the event
+    
+    # Extract relevant information
+    event_data = {
+        "provider": "telnyx",
+        "event_type": "voice",
+        "payload": payload,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    # Log the event (in production, save to database)
+    import logging
+    logging.info(f"Telnyx voice webhook: {event_data}")
+    
+    return {"status": "received"}
 
 @app.post("/settings/telephony/coverage/rebuild")
 async def rebuild_coverage(
