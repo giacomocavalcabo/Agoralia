@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDateSafe } from '../lib/format';
 import NumbersRowActions from './NumbersRowActions';
+import TelephonyCapabilityBadges from './TelephonyCapabilityBadges';
 
 export default function NumbersTable({ data = [], filters, onFiltersChange, onSearch, onExport }) {
   const { t, i18n } = useTranslation('pages');
@@ -40,13 +41,7 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
       id: 'capabilities',
       header: t('numbers.columns.capabilities'),
       cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.capabilities?.map((cap, i) => (
-            <span key={i} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-              {cap}
-            </span>
-          )) || '—'}
-        </div>
+        <TelephonyCapabilityBadges number={row.original} />
       )
     },
     {

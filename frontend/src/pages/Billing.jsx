@@ -656,6 +656,9 @@ export default function Billing() {
       {/* Usage Cap */}
       <UsageCap data={billingData?.usageCap ?? {}} onUpdate={handleUsageCapUpdate} />
       
+      {/* Budget & Limits */}
+      <BudgetAndLimits />
+      
       {/* Invoices */}
       <Invoices data={billingData?.invoices ?? []} />
     </div>

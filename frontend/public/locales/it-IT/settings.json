@@ -84,6 +84,21 @@
       "connect": "Collega",
       "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
     },
+    "badges": {
+      "hosted": "Ospitato",
+      "hosted_tooltip": "Numero ospitato dal provider (outbound consentito)",
+      "inbound": "In entrata",
+      "inbound_tooltip": "Numero può ricevere chiamate in entrata",
+      "outbound": "In uscita",
+      "outbound_tooltip": "Numero può fare chiamate in uscita (solo ospitato)",
+      "sms": "SMS",
+      "sms_tooltip": "Numero supporta messaggi SMS",
+      "mms": "MMS", 
+      "mms_tooltip": "Numero supporta messaggi MMS",
+      "portable": "Portabile",
+      "portable_tooltip": "Numero può essere portato ad altro provider",
+      "no_capabilities": "Nessuna capacità"
+    },
     "wizard": {
       "buy": {
         "title": "Compra numero",
