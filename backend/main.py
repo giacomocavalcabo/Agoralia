@@ -4362,44 +4362,36 @@ def portability(provider: str, country: str, number_type: str):
 # ===================== Inbound Webhooks & Routing Log =====================
 
 @app.post("/webhooks/twilio/voice")
-async def twilio_voice_webhook(payload: dict, request: Request):
+async def twilio_voice_webhook(payload: dict, request: Request, db: Session = Depends(get_db)):
     """Handle Twilio voice webhook events"""
     # Validate signature (implement proper validation)
     # For now, just log the event
     
-    # Extract relevant information
-    event_data = {
-        "provider": "twilio",
-        "event_type": "voice",
-        "payload": payload,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    # Route the inbound call
+    from backend.services.inbound_router import route_inbound
+    route_result = route_inbound(db, 'twilio', payload)
     
     # Log the event (in production, save to database)
     import logging
-    logging.info(f"Twilio voice webhook: {event_data}")
+    logging.info(f"Twilio voice webhook: {route_result}")
     
-    return {"status": "received"}
+    return {"status": "received", "routing": route_result}
 
 @app.post("/webhooks/telnyx/voice")
-async def telnyx_voice_webhook(payload: dict, request: Request):
+async def telnyx_voice_webhook(payload: dict, request: Request, db: Session = Depends(get_db)):
     """Handle Telnyx voice webhook events"""
     # Validate signature (implement proper validation)
     # For now, just log the event
     
-    # Extract relevant information
-    event_data = {
-        "provider": "telnyx",
-        "event_type": "voice",
-        "payload": payload,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    # Route the inbound call
+    from backend.services.inbound_router import route_inbound
+    route_result = route_inbound(db, 'telnyx', payload)
     
     # Log the event (in production, save to database)
     import logging
-    logging.info(f"Telnyx voice webhook: {event_data}")
+    logging.info(f"Telnyx voice webhook: {route_result}")
     
-    return {"status": "received"}
+    return {"status": "received", "routing": route_result}
 
 @app.post("/settings/telephony/coverage/rebuild")
 async def rebuild_coverage(

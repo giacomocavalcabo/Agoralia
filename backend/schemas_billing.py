@@ -34,12 +34,12 @@ class LedgerEntry(BaseModel):
     currency: str
     provider: Optional[str] = None
     kind: str
-    metadata: Optional[Dict[str, Any]] = Field(None, alias="metadata_json")  # Mappa da metadata_json del DB
+    metadata: Optional[Dict[str, Any]] = None  # Con la property del modello, Pydantic leggerà metadata direttamente
     idempotency_key: Optional[str] = None
     created_at: datetime
     
     class Config:
-        populate_by_name = True  # Permette sia metadata che metadata_json
+        orm_mode = True  # Pydantic v1: leggi direttamente dall'istanza ORM
 
 
 class LedgerResponse(BaseModel):

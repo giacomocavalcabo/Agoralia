@@ -50,6 +50,13 @@ const settingsNavigation = [
     href: 'telephony', 
     icon: PhoneIcon,
     description: 'nav.telephony_desc'
+  },
+  { 
+    id: 'telephony-compliance', 
+    name: 'nav.telephony_compliance',
+    href: 'telephony/compliance', 
+    icon: ShieldCheckIcon,
+    description: 'nav.telephony_compliance_desc'
   }
 ]
 

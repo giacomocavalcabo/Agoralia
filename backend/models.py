@@ -750,6 +750,15 @@ class BillingLedger(Base):
     metadata_json = Column("metadata", JSON, nullable=True)  # Nome colonna DB: "metadata", attributo Python: "metadata_json"
     idempotency_key = Column(String(80), nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # 🔒 Bridge sicuro per Pydantic/FastAPI (from_orm)
+    @property
+    def metadata(self):
+        return self.metadata_json
+
+    @metadata.setter
+    def metadata(self, value):
+        self.metadata_json = value
 
 
 # ===================== Compliance & KYC Models =====================

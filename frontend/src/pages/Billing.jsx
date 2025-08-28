@@ -11,64 +11,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline'
 
-// Mock data - in production this would come from API
-const mockBillingData = {
-  balance: 100000000.00, // Admin gets 100M€! 🚀
-  usage: {
-    mtd: 1250.75, // Usage molto basso rispetto al saldo
-    cap: 1000000000.00, // Cap a 1 miliardo
-    minutes: 5000,
-    minutesCap: 1000000 // 1M di minuti
-  },
-  autoRecharge: {
-    enabled: true,
-    threshold: 1000000.00, // Ricarica automatica a 1M€
-    topup: 10000000.00 // Ricarica di 10M€
-  },
-  usageCap: {
-    type: 'soft', // 'hard' or 'soft'
-    limit: 1000000000.00, // Limite a 1 miliardo
-    warning: 800000000.00 // Warning a 800M€
-  },
-  paymentMethods: [
-    {
-      id: 'pm_1',
-      type: 'card',
-      last4: '4242',
-      brand: 'visa',
-      expMonth: 12,
-      expYear: 2025,
-      isDefault: true
-    },
-    {
-      id: 'pm_2',
-      type: 'card',
-      last4: '8888',
-      brand: 'mastercard',
-      expMonth: 6,
-      expYear: 2026,
-      isDefault: false
-    }
-  ],
-  invoices: [
-    {
-      id: 'inv_1',
-      number: 'INV-2025-001',
-      period: 'January 2025',
-      amount: 1250.75,
-      status: 'paid',
-      date: '2025-01-15'
-    },
-    {
-      id: 'inv_2',
-      number: 'INV-2024-012',
-      period: 'December 2024',
-      amount: 890.50,
-      status: 'paid',
-      date: '2024-12-15'
-    }
-  ]
-}
+// ✅ No more mock data - all data comes from API via billingApi.js
 
 function OverviewCards({ data }) {
   const { t } = useTranslation('settings')
@@ -474,19 +417,19 @@ function UsageCap({ data, onUpdate }) {
           {/* Usage Progress */}
           <div className="mt-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
-                              <span>{t('usage_cap.current') || 'Current Usage'}</span>  
-              <span>${mockBillingData.usage.mtd.toFixed(2)} / ${data.limit.toFixed(2)}</span>
+              <span>{t('usage_cap.current') || 'Current Usage'}</span>  
+              <span>${(data.mtd_spend_cents || 0) / 100} / ${(data.monthly_budget_cents || 0) / 100}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className={`h-2 rounded-full ${
-                  mockBillingData.usage.mtd / data.limit > 0.8 
+                  (data.mtd_spend_cents || 0) / (data.monthly_budget_cents || 1) > 0.8 
                     ? 'bg-red-500' 
-                    : mockBillingData.usage.mtd / data.limit > 0.6 
+                    : (data.mtd_spend_cents || 0) / (data.monthly_budget_cents || 1) > 0.6 
                     ? 'bg-yellow-500' 
                     : 'bg-green-500'
                 }`}
-                style={{ width: `${Math.min((mockBillingData.usage.mtd / data.limit) * 100, 100)}%` }}
+                style={{ width: `${Math.min(((data.mtd_spend_cents || 0) / (data.monthly_budget_cents || 1)) * 100, 100)}%` }}
               ></div>
             </div>
           </div>
@@ -823,19 +766,14 @@ export default function Billing() {
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || isDemo
   
   useEffect(() => {
-    // Simula caricamento dati da API
     const loadBillingData = async () => {
       try {
         setLoading(true)
-        // In produzione, qui faremmo una chiamata API
-        // const response = await apiFetch('/billing')
-        // setBillingData(response)
-        
-        // Per ora usiamo i mock data con un delay per simulare il caricamento
-        setTimeout(() => {
-          setBillingData(mockBillingData)
-          setLoading(false)
-        }, 500)
+        // ✅ Use real API via billingApi.js
+        const { getBudget } = await import('../lib/billingApi.js')
+        const response = await getBudget()
+        setBillingData(response)
+        setLoading(false)
       } catch (err) {
         setError(err.message)
         setLoading(false)
@@ -970,13 +908,13 @@ export default function Billing() {
       <OverviewCards data={billingData} />
       
       {/* Payment Methods */}
-      <PaymentMethods data={billingData?.paymentMethods ?? []} onAddCard={handleAddCard} />
+      <PaymentMethods data={billingData?.payment_methods ?? []} onAddCard={handleAddCard} />
       
       {/* Auto-Recharge */}
-      <AutoRecharge data={billingData?.autoRecharge ?? {}} onUpdate={handleAutoRechargeUpdate} />
+      <AutoRecharge data={billingData?.auto_recharge ?? {}} onUpdate={handleAutoRechargeUpdate} />
       
       {/* Usage Cap */}
-      <UsageCap data={billingData?.usageCap ?? {}} onUpdate={handleUsageCapUpdate} />
+      <UsageCap data={billingData} onUpdate={handleUsageCapUpdate} />
       
       {/* Budget & Limits */}
       <BudgetAndLimits />

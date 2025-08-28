@@ -17,7 +17,9 @@
     "billing": "Fatturazione",
     "billing_desc": "Gestisci fatturazione e abbonamenti",
     "telephony": "Telefonia",
-    "telephony_desc": "Gestisci numeri di telefono e instradamento"
+    "telephony_desc": "Gestisci numeri di telefono e instradamento",
+    "telephony_compliance": "Conformità",
+    "telephony_compliance_desc": "Gestisci compliance e KYC"
   },
   
   "account": {
@@ -73,15 +75,19 @@
     "warn80": "Hai raggiunto l'80% del budget mensile.",
     "blocked": "Budget mensile raggiunto. Acquisto/Import sono disabilitati."
   },
-  "budget": {
-    "title": "Budget e Limiti",
-    "monthly": "Budget mensile (USD)",
-    "resets": "Si azzera il giorno",
-    "hard_stop": "Blocca le operazioni al raggiungimento del limite",
-    "progress": "Spesa mese in corso",
-    "saved": "Impostazioni budget salvate",
-    "warn80": "Hai raggiunto l'80% del budget mensile.",
-    "blocked": "Budget mensile raggiunto. Acquisto/Import sono disabilitati."
+  
+  "billing": {
+    "title": "Fatturazione",
+    "subtitle": "Gestisci budget e limiti di utilizzo",
+    "demo_banner": "Stai visualizzando la Fatturazione in modalità demo. Le azioni sono disabilitate.",
+    "overview": {
+      "balance": "Saldo",
+      "usage_mtd": "Spesa (mese in corso)",
+      "minutes_mtd": "Minuti (mese in corso)",
+      "cap_status_label": "Stato limite",
+      "of_cap": "di {{cap}}"
+    },
+    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
   },
   "telephony": {
     "buy_number": "[Numero di acquisto]",
@@ -116,9 +122,17 @@
       "mms": "MMS", 
       "mms_tooltip": "Numero supporta messaggi MMS",
       "portable": "Portabile",
-      "portable_tooltip": "Numero può essere portato ad altro provider",
-      "no_capabilities": "Nessuna capacità"
-    },
+              "portable_tooltip": "Numero può essere portato ad altro provider",
+        "no_capabilities": "Nessuna capacità"
+      },
+      "compliance": {
+        "title": "Conformità / KYC",
+        "requirements": "Requisiti",
+        "submissions": "Sottomissioni",
+        "new_submission": "Nuova Sottomissione",
+        "upload": "Carica file",
+        "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC."
+      },
     "coverage": {
       "last_updated": "Ultimo aggiornamento",
       "rebuild_snapshot": "Rigenera snapshot",

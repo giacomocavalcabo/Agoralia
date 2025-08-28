@@ -73,23 +73,28 @@
     "warn80": "You have reached 80% of your monthly budget.",
     "blocked": "Monthly budget reached. Purchase/Import are disabled."
   },
-  "budget": {
-    "title": "Budget & Limits",
-    "monthly": "Monthly budget (USD)",
-    "resets": "Resets on day",
-    "hard_stop": "Stop operations when limit is reached",
-    "progress": "Month-to-date spend",
-    "saved": "Budget settings saved",
-    "warn80": "You have reached 80% of your monthly budget.",
-    "blocked": "Monthly budget reached. Purchase/Import are disabled."
-  },
-  "telephony": {
-    "buy_number": "[Buy Number]",
-    "numbers": "[Numbers]",
-    "policy": {
-      "title": "Policy",
-      "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."
+  
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Manage budget and usage limits",
+    "demo_banner": "You are viewing the demo version. Amounts are masked and actions are disabled.",
+    "overview": {
+      "balance": "Balance",
+      "usage_mtd": "Usage (MTD)",
+      "minutes_mtd": "Minutes (MTD)",
+      "cap_status_label": "Cap Status",
+      "of_cap": "of {{cap}}"
     },
+    "load_warning": "Some billing data is not available. Showing safe values."
+  },
+  
+  "telephony": {
+      "buy_number": "[Buy Number]",
+      "numbers": "[Numbers]",
+      "policy": {
+        "title": "Policy",
+        "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."
+      },
     "bind": {
       "inbound": "Inbound",
       "outbound": "Outbound",
@@ -116,9 +121,17 @@
       "mms": "MMS",
       "mms_tooltip": "Number supports MMS messaging",
       "portable": "Portable",
-      "portable_tooltip": "Number can be ported to another provider",
-      "no_capabilities": "No capabilities"
-    },
+              "portable_tooltip": "Number can be ported to another provider",
+        "no_capabilities": "No capabilities"
+      },
+      "compliance": {
+        "title": "Compliance / KYC",
+        "requirements": "Requirements",
+        "submissions": "Submissions",
+        "new_submission": "New Submission",
+        "upload": "Upload file",
+        "missing": "Compliance required before purchase/import. Complete KYC."
+      },
     "coverage": {
       "last_updated": "Last updated",
       "rebuild_snapshot": "Rebuild snapshot",
