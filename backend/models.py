@@ -294,14 +294,17 @@ class ProviderAccount(Base):
 
 class NumberOrder(Base):
     __tablename__ = "number_orders"
+    
     id = Column(String, primary_key=True)
-    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    workspace_id = Column(String, index=True, nullable=False)
     provider = Column(SAEnum(TelephonyProvider), nullable=False)
     request = Column(JSON, nullable=False)
-    status = Column(String, default="pending")  # pending|review|failed|active
+    status = Column(String, default="pending")  # pending|in_progress|active|failed|failed_transient
     provider_ref = Column(String, nullable=True)
     result = Column(JSON, nullable=True)
+    idempotency_key = Column(String, nullable=True, index=True)  # Per evitare duplicati
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class NumberVerification(Base):
@@ -730,5 +733,20 @@ class KbUsage(Base):
     tokens_used = Column(Integer, default=0)
     cost_micros = Column(Integer, default=0)  # Cost in microcents
     meta_json = Column(JSON)  # Additional metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ===================== Billing & Budget Models =====================
+
+class BillingLedger(Base):
+    __tablename__ = "billing_ledger"
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    amount_cents = Column(Integer, nullable=False)
+    currency = Column(String(3), nullable=False, default="USD")
+    provider = Column(String(32), nullable=True)
+    kind = Column(String(32), nullable=False)  # number_purchase, number_import_fee, adjustment, refund
+    metadata = Column(JSON, nullable=True)
+    idempotency_key = Column(String(80), nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

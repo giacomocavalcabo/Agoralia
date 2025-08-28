@@ -7,6 +7,12 @@ from typing import Optional, Dict, Tuple
 from fastapi import HTTPException, Request
 import redis
 import os
+import logging
+from typing import Dict, Tuple
+from collections import defaultdict
+from fastapi import HTTPException
+
+logger = logging.getLogger(__name__)
 
 class RateLimiter:
     def __init__(self):
@@ -130,6 +136,92 @@ class RateLimiter:
 
 # Global instance
 rate_limiter = RateLimiter()
+
+class WorkspaceRateLimiter:
+    """Rate limiter per workspace per operazioni telephony"""
+    
+    def __init__(self):
+        # {workspace_id: [(timestamp, operation_type), ...]}
+        self.requests: Dict[str, list] = defaultdict(list)
+        
+        # Configurazione rate limits
+        self.limits = {
+            "purchase": {"per_minute": 5, "per_day": 20},      # 5 acquisti/min, 20/giorno
+            "import": {"per_minute": 10, "per_day": 50},       # 10 import/min, 50/giorno
+            "inventory_search": {"per_minute": 30, "per_day": 1000}  # 30 ricerche/min, 1000/giorno
+        }
+    
+    def _cleanup_old_requests(self, workspace_id: str, operation: str):
+        """Rimuove richieste vecchie per mantenere la memoria pulita"""
+        now = time.time()
+        cutoff_minute = now - 60
+        cutoff_day = now - 86400
+        
+        # Mantieni solo le richieste recenti
+        self.requests[workspace_id] = [
+            (ts, op) for ts, op in self.requests[workspace_id]
+            if ts > cutoff_day
+        ]
+    
+    def check_rate_limit(self, workspace_id: str, operation: str) -> bool:
+        """Verifica se la richiesta rispetta i rate limit"""
+        if operation not in self.limits:
+            logger.warning(f"Unknown operation type: {operation}")
+            return True
+        
+        now = time.time()
+        cutoff_minute = now - 60
+        cutoff_day = now - 86400
+        
+        # Conta richieste per minuto e per giorno
+        minute_requests = [
+            (ts, op) for ts, op in self.requests[workspace_id]
+            if ts > cutoff_minute and op == operation
+        ]
+        
+        day_requests = [
+            (ts, op) for ts, op in self.requests[workspace_id]
+            if ts > cutoff_day and op == operation
+        ]
+        
+        limits = self.limits[operation]
+        
+        # Verifica limiti
+        if len(minute_requests) >= limits["per_minute"]:
+            logger.warning(f"Rate limit exceeded for {workspace_id}: {operation} per minute")
+            return False
+        
+        if len(day_requests) >= limits["per_day"]:
+            logger.warning(f"Rate limit exceeded for {workspace_id}: {operation} per day")
+            return False
+        
+        return True
+    
+    def record_request(self, workspace_id: str, operation: str):
+        """Registra una richiesta per il rate limiting"""
+        now = time.time()
+        self.requests[workspace_id].append((now, operation))
+        
+        # Cleanup per mantenere la memoria gestibile
+        self._cleanup_old_requests(workspace_id, operation)
+    
+    def enforce_rate_limit(self, workspace_id: str, operation: str):
+        """Applica rate limiting, solleva eccezione se superato"""
+        if not self.check_rate_limit(workspace_id, operation):
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "rate_limit_exceeded",
+                    "operation": operation,
+                    "message": f"Rate limit exceeded for {operation}. Please try again later.",
+                    "retry_after": 60
+                }
+            )
+        
+        self.record_request(workspace_id, operation)
+
+# Istanza globale
+telephony_rate_limiter = WorkspaceRateLimiter()
 
 def require_rate_limit(request: Request, action: str = "default"):
     """Decorator to require rate limiting"""

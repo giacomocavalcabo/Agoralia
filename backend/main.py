@@ -22,6 +22,8 @@ from backend.db import Base, engine, get_db
 from backend.logger import logger
 from backend.config import settings
 from backend.routers import crm, auth, auth_microsoft, compliance
+from backend.utils.rate_limiter import telephony_rate_limiter
+from backend.services.webhook_verification import require_valid_webhook_signature
 from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
@@ -3889,6 +3891,44 @@ async def purchase_number(
     request: Request,
     db: Session = Depends(get_db)
 ) -> dict:
+    """Purchase a new phone number from a provider"""
+    # Rate limiting
+    wsid = get_workspace_id(request, fallback="ws_1")
+    telephony_rate_limiter.enforce_rate_limit(wsid, "purchase")
+    
+    # Idempotency check
+    idempotency_key = request.headers.get("Idempotency-Key")
+    if idempotency_key:
+        existing_order = db.query(NumberOrder).filter_by(
+            workspace_id=wsid,
+            idempotency_key=idempotency_key
+        ).first()
+        if existing_order:
+            return {"order_id": existing_order.id, "status": existing_order.status, "idempotent": True}
+    
+    # Provider account check
+    acc = db.query(ProviderAccount).filter_by(
+        workspace_id=wsid, 
+        id=body["provider_account_id"]
+    ).first()
+    
+    if not acc:
+        raise HTTPException(400, "provider_account_not_found")
+    
+    # Create order with idempotency key
+    order = await start_purchase(db, wsid, acc, {
+        "request_id": body["request_id"],
+        "country": body["country"],
+        "type": body.get("type", "local"),
+        "area_code": body.get("area_code")
+    })
+    
+    # Save idempotency key
+    if idempotency_key:
+        order.idempotency_key = idempotency_key
+        db.commit()
+    
+    return {"order_id": order.id, "status": order.status}
     """Purchase a phone number from a provider"""
     wsid = get_workspace_id(request, fallback="ws_1")
     acc = db.query(ProviderAccount).filter_by(
@@ -3915,7 +3955,21 @@ async def import_number(
     db: Session = Depends(get_db)
 ) -> dict:
     """Import an existing phone number from a provider"""
+    # Rate limiting
     wsid = get_workspace_id(request, fallback="ws_1")
+    telephony_rate_limiter.enforce_rate_limit(wsid, "import")
+    
+    # Idempotency check
+    idempotency_key = request.headers.get("Idempotency-Key")
+    if idempotency_key:
+        existing_order = db.query(NumberOrder).filter_by(
+            workspace_id=wsid,
+            idempotency_key=idempotency_key
+        ).first()
+        if existing_order:
+            return {"order_id": existing_order.id, "status": existing_order.status, "idempotent": True}
+    
+    # Provider account check
     acc = db.query(ProviderAccount).filter_by(
         workspace_id=wsid, 
         id=body["provider_account_id"]
@@ -3924,7 +3978,14 @@ async def import_number(
     if not acc:
         raise HTTPException(400, "provider_account_not_found")
     
+    # Create order with idempotency key
     order = await start_import(db, wsid, acc, body["e164"], body["request_id"])
+    
+    # Save idempotency key
+    if idempotency_key:
+        order.idempotency_key = idempotency_key
+        db.commit()
+    
     return {"order_id": order.id, "status": order.status}
 
 @app.get("/settings/telephony/orders")
@@ -3972,7 +4033,13 @@ async def twilio_inventory_search(
     number_type: str = Query(..., pattern="^(local|mobile|toll_free)$"),
     area_code: str | None = Query(None),
     contains: str | None = Query(None),
+    request: Request = None,
 ):
+    """Ricerca live (Twilio) – l'inventario NON può essere staticizzato."""
+    # Rate limiting
+    if request:
+        wsid = get_workspace_id(request, fallback="ws_1")
+        telephony_rate_limiter.enforce_rate_limit(wsid, "inventory_search")
     """
     Ricerca live (Twilio) – l'inventario NON può essere staticizzato.
     """
