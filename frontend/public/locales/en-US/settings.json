@@ -265,15 +265,23 @@
   },
   
   "billing": {
-    "title": "Billing & Subscriptions",
-    "description": "Manage your billing and subscription plans",
+    "title": "Billing",
+    "subtitle": "Manage your budget and usage limits",
     "current_plan": "Current Plan",
     "usage": "Usage",
     "invoices": "Invoices",
     "payment_methods": "Payment Methods",
     "billing_history": "Billing History",
     "demo_banner": "You are viewing the demo version. Amounts are masked and actions are disabled.",
-    "demo_disabled": "Disabled in demo mode"
+    "demo_disabled": "Disabled in demo mode",
+    "overview": {
+      "balance": "Balance",
+      "usage_mtd": "Usage (MTD)",
+      "minutes_mtd": "Minutes (MTD)",
+      "cap_status_label": "Cap status",
+      "of_cap": "of {{cap}}"
+    },
+    "load_warning": "Some billing data could not be loaded. Showing safe defaults."
   },
   
   "security": {
@@ -294,5 +302,9 @@
     "push": "Push Notifications",
     "in_app": "In-App Notifications",
     "frequency": "Notification Frequency"
+  },
+  
+  "common": {
+    "retry": "Retry"
   }
 }

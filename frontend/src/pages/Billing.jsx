@@ -71,94 +71,62 @@ const mockBillingData = {
 }
 
 function OverviewCards({ data }) {
-  const { t } = useTranslation('billing')
+  const { t } = useTranslation('settings')
   
   // Safety checks
   if (!data) return null
   
-  const balance = data.balance ?? 0
-  const usage = data.usage ?? {}
-  const mtd = usage.mtd ?? 0
-  const cap = usage.cap ?? 0
-  const minutes = usage.minutes ?? 0
-  const minutesCap = usage.minutesCap ?? 0
+  // ✅ fallback sobrio: zeri, no "unlimited"
+  const safeData = {
+    monthly_budget_cents: data?.monthly_budget_cents ?? 0,
+    budget_currency: data?.budget_currency ?? "USD",
+    budget_hard_stop: data?.budget_hard_stop ?? true,
+    mtd_spend_cents: data?.mtd_spend_cents ?? 0,
+    minutes_mtd: data?.minutes_mtd ?? 0,
+    cap_percent: (() => {
+      const cap = data?.monthly_budget_cents ?? 0;
+      const mtd = data?.mtd_spend_cents ?? 0;
+      return cap > 0 ? Math.min(100, Math.round((mtd / cap) * 100)) : 0;
+    })(),
+  }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       {/* Balance */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">
-              {t('overview.balance') || 'Available Balance'}
-            </p>
-            <p className="text-2xl font-semibold text-gray-900">
-              ${balance.toFixed(2)}
-            </p>
-          </div>
+      <div className="border rounded-xl p-4">
+        <div className="text-xs uppercase text-slate-500">
+          {t("settings.billing.overview.balance","Balance")}
+        </div>
+        <div className="text-xl font-semibold">
+          {new Intl.NumberFormat(undefined,{style:"currency",currency:safeData.budget_currency}).format((safeData.monthly_budget_cents - safeData.mtd_spend_cents)/100)}
         </div>
       </div>
-
+      
       {/* Usage MTD */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <ClockIcon className="h-6 w-6 text-blue-600" />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">
-              {t('overview.usage_mtd') || 'Usage MTD'}
-            </p>
-            <p className="text-2xl font-semibold text-gray-900">
-              ${mtd.toFixed(2)}
-            </p>
-            <p className="text-sm text-gray-500">
-              of ${cap.toFixed(2)}
-            </p>
-          </div>
+      <div className="border rounded-xl p-4">
+        <div className="text-xs uppercase text-slate-500">
+          {t("settings.billing.overview.usage_mtd","Usage (MTD)")}
+        </div>
+        <div className="text-xl font-semibold">
+          {new Intl.NumberFormat(undefined,{style:"currency",currency:safeData.budget_currency}).format(safeData.mtd_spend_cents/100)}
+        </div>
+        <div className="text-xs text-slate-500">
+          {t("settings.billing.overview.of_cap","of {{cap}}",{
+            cap: new Intl.NumberFormat(undefined,{style:"currency",currency:safeData.budget_currency}).format((safeData.monthly_budget_cents||0)/100)
+          })}
         </div>
       </div>
-
+      
       {/* Minutes MTD */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-purple-100 rounded-lg">
-            <ClockIcon className="h-6 w-6 text-purple-600" />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">
-              {t('overview.minutes_mtd') || 'Minutes MTD'}
-            </p>
-            <p className="text-2xl font-semibold text-gray-900">
-              {minutes.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">
-              of {minutesCap.toLocaleString()}
-            </p>
-          </div>
+      <div className="border rounded-xl p-4">
+        <div className="text-xs uppercase text-slate-500">
+          {t("settings.billing.overview.minutes_mtd","Minutes (MTD)")}
         </div>
-      </div>
-
-      {/* Usage Cap Status */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">
-              {t('overview.cap_status') || 'Cap Status'}
-            </p>
-            <p className="text-2xl font-semibold text-gray-900">
-              {((mtd / cap) * 100).toFixed(0)}%
-            </p>
-            <p className="text-sm text-gray-500">
-              {mtd >= cap ? 'Over limit' : 'Under limit'}
-            </p>
-          </div>
+        <div className="text-xl font-semibold">
+          {new Intl.NumberFormat().format(safeData.minutes_mtd || 0)}
+        </div>
+        <div className="text-xs text-slate-500">
+          {t("settings.billing.overview.cap_status_label","Cap status")}: {safeData.cap_percent}%
         </div>
       </div>
     </div>
@@ -932,12 +900,13 @@ export default function Billing() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-6 w-6 text-red-600 mr-3" />
+            <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 mr-3" />
             <div>
-              <h3 className="text-lg font-medium text-red-800">Error Loading Billing Data</h3>
-              <p className="text-red-700 mt-1">{error}</p>
+              <div className="text-sm text-amber-800">
+                {t('settings.billing.load_warning', 'Some billing data could not be loaded. Showing safe defaults.')}
+              </div>
             </div>
           </div>
           <button 
@@ -946,11 +915,11 @@ export default function Billing() {
             className={`mt-4 px-4 py-2 rounded-lg ${
               import.meta.env.VITE_DEMO_MODE === 'true'
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700'
+                : 'bg-amber-600 text-white hover:bg-amber-700'
             }`}
             title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
           >
-            Retry
+            {t('common.retry', 'Retry')}
           </button>
         </div>
       </div>
@@ -961,12 +930,13 @@ export default function Billing() {
   if (!billingData) {
     return (
       <div className="space-y-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 mr-3" />
+            <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 mr-3" />
             <div>
-              <h3 className="text-lg font-medium text-yellow-800">No Billing Data Available</h3>
-              <p className="text-yellow-700 mt-1">Please check your account settings or contact support.</p>
+              <div className="text-sm text-amber-800">
+                {t('settings.billing.load_warning', 'Some billing data could not be loaded. Showing safe defaults.')}
+              </div>
             </div>
           </div>
         </div>

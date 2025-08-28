@@ -3,39 +3,19 @@
  * Handles budget management and billing operations
  */
 
-import { apiFetch } from './api'
+import { apiFetch } from "./api";
 
-/**
- * Get current budget state for workspace
- * @returns {Promise<Object>} Budget state with settings and current spending
- */
 export const getBudget = async () => {
-  try {
-    const response = await apiFetch('/settings/billing/budget')
-    return response
-  } catch (error) {
-    console.error('Failed to fetch budget:', error)
-    throw error
-  }
-}
+  const res = await apiFetch("/settings/billing/budget");
+  return res; // { monthly_budget_cents, budget_currency, budget_hard_stop, mtd_spend_cents, minutes_mtd }
+};
 
-/**
- * Update budget settings for workspace
- * @param {Object} payload - Budget settings to update
- * @returns {Promise<Object>} Updated budget state
- */
 export const updateBudget = async (payload) => {
-  try {
-    const response = await apiFetch('/settings/billing/budget', {
-      method: 'PUT',
-      body: JSON.stringify(payload)
-    })
-    return response
-  } catch (error) {
-    console.error('Failed to update budget:', error)
-    throw error
-  }
-}
+  return await apiFetch("/settings/billing/budget", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+};
 
 /**
  * Get billing ledger entries (optional)

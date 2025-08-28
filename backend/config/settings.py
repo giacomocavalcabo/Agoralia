@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     
     # Cron Jobs Security
     CRON_SECRET: str = os.getenv("CRON_SECRET", "")
+    
+    # Twilio live search controls
+    ENABLE_TWILIO_LIVE_SEARCH: bool = bool(int(os.getenv("ENABLE_TWILIO_LIVE_SEARCH", "1")))
+    SNAPSHOT_MAX_AGE_HOURS: int = int(os.getenv("SNAPSHOT_MAX_AGE_HOURS", "72"))
 
 
 settings = Settings()

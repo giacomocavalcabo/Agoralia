@@ -260,15 +260,23 @@
   },
   
   "billing": {
-    "title": "Fatturazione e Abbonamenti",
-    "description": "Gestisci la tua fatturazione e piani di abbonamento",
+    "title": "Fatturazione",
+    "subtitle": "Gestisci budget e limiti di utilizzo",
     "current_plan": "Piano Attuale",
     "usage": "Utilizzo",
     "invoices": "Fatture",
     "payment_methods": "Metodi di Pagamento",
     "billing_history": "Cronologia Fatturazione",
     "demo_banner": "Stai visualizzando la versione demo. Gli importi sono mascherati e le azioni sono disabilitate.",
-    "demo_disabled": "Disabilitato in modalità demo"
+    "demo_disabled": "Disabilitato in modalità demo",
+    "overview": {
+      "balance": "Saldo",
+      "usage_mtd": "Spesa (mese in corso)",
+      "minutes_mtd": "Minuti (mese in corso)",
+      "cap_status_label": "Stato limite",
+      "of_cap": "di {{cap}}"
+    },
+    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
   },
   
   "security": {
@@ -289,5 +297,9 @@
     "push": "Notifiche Push",
     "in_app": "Notifiche in App",
     "frequency": "Frequenza Notifiche"
+  },
+  
+  "common": {
+    "retry": "Riprova"
   }
 }

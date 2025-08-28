@@ -35,6 +35,7 @@ from backend.services.billing_service import (
     month_window, sum_ledger, check_budget, append_ledger, 
     get_workspace_budget_state, check_idempotency
 )
+from backend.services.budget_guard import atomic_ledger_write, atomic_budget_check
 from backend import schemas
 
 # Models will be imported locally where needed to avoid duplication
@@ -3921,30 +3922,31 @@ async def purchase_number(
         if existing_order:
             return {"order_id": existing_order.id, "status": existing_order.status, "idempotent": True}
     
-    # Budget check
-    workspace = db.query(Workspace).filter(Workspace.id == wsid).first()
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-    
     # Estimate cost (fallback to 300 cents = $3.00)
     estimated_cost_cents = body.get("estimated_cost_cents", 300)
     
-    # Check budget before proceeding
-    start, end = month_window(datetime.utcnow(), workspace.budget_resets_day or 1)
-    mtd_spend = sum_ledger(db, wsid, start, end)
-    budget_check = check_budget(workspace, mtd_spend, estimated_cost_cents)
-    
-    if budget_check["blocked"]:
-        raise HTTPException(
-            status_code=403, 
-            detail={
-                "error": "budget_exceeded",
-                "message": "Monthly budget limit exceeded",
-                "mtd_spend_cents": mtd_spend,
-                "budget_limit_cents": budget_check["limit"],
-                "threshold_hit": budget_check["threshold_hit"]
-            }
+    # Atomic budget check with workspace lock
+    try:
+        workspace, budget_check = atomic_budget_check(
+            db, wsid, estimated_cost_cents, idempotency_key, "number_purchase"
         )
+        
+        # If idempotent, return existing order info
+        if budget_check.get("idempotent"):
+            existing_order = db.query(NumberOrder).filter_by(
+                workspace_id=wsid,
+                idempotency_key=idempotency_key
+            ).first()
+            if existing_order:
+                return {
+                    "order_id": existing_order.id, 
+                    "status": existing_order.status,
+                    "idempotent": True,
+                    "cost_cents": existing_order.cost_cents if hasattr(existing_order, 'cost_cents') else estimated_cost_cents
+                }
+    except HTTPException as e:
+        # Re-raise budget exceeded errors
+        raise e
     
     # Compliance check
     try:
@@ -3990,9 +3992,8 @@ async def purchase_number(
     db.add(order)
     db.commit()
     
-    # Log the transaction in billing ledger
-    # Note: This is the estimated cost, actual cost will be updated later
-    append_ledger(
+    # Log the transaction in billing ledger (atomic)
+    ledger_entry = atomic_ledger_write(
         db, wsid, estimated_cost_cents, 
         workspace.budget_currency or "USD",
         acc.provider, "number_purchase",
@@ -4043,30 +4044,31 @@ async def import_number(
         if existing_order:
             return {"order_id": existing_order.id, "status": existing_order.status, "idempotent": True}
     
-    # Budget check
-    workspace = db.query(Workspace).filter(Workspace.id == wsid).first()
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-    
     # Estimate import cost (usually lower than purchase, fallback to 100 cents = $1.00)
     estimated_cost_cents = body.get("estimated_cost_cents", 100)
     
-    # Check budget before proceeding
-    start, end = month_window(datetime.utcnow(), workspace.budget_resets_day or 1)
-    mtd_spend = sum_ledger(db, wsid, start, end)
-    budget_check = check_budget(workspace, mtd_spend, estimated_cost_cents)
-    
-    if budget_check["blocked"]:
-        raise HTTPException(
-            status_code=403, 
-            detail={
-                "error": "budget_exceeded",
-                "message": "Monthly budget limit exceeded",
-                "mtd_spend_cents": mtd_spend,
-                "budget_limit_cents": budget_check["limit"],
-                "threshold_hit": budget_check["threshold_hit"]
-            }
+    # Atomic budget check with workspace lock
+    try:
+        workspace, budget_check = atomic_budget_check(
+            db, wsid, estimated_cost_cents, idempotency_key, "number_import"
         )
+        
+        # If idempotent, return existing order info
+        if budget_check.get("idempotent"):
+            existing_order = db.query(NumberOrder).filter_by(
+                workspace_id=wsid,
+                idempotency_key=idempotency_key
+            ).first()
+            if existing_order:
+                return {
+                    "order_id": existing_order.id, 
+                    "status": existing_order.status,
+                    "idempotent": True,
+                    "cost_cents": existing_order.cost_cents if hasattr(existing_order, 'cost_cents') else estimated_cost_cents
+                }
+    except HTTPException as e:
+        # Re-raise budget exceeded errors
+        raise e
     
     # Compliance check
     try:
@@ -4112,8 +4114,8 @@ async def import_number(
     db.add(order)
     db.commit()
     
-    # Log the transaction in billing ledger
-    append_ledger(
+    # Log the transaction in billing ledger (atomic)
+    ledger_entry = atomic_ledger_write(
         db, wsid, estimated_cost_cents, 
         workspace.budget_currency or "USD",
         acc.provider, "number_import_fee",
@@ -4156,17 +4158,41 @@ from config.settings import settings
 
 @app.get("/settings/telephony/coverage")
 async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
-    """Get coverage information for a specific provider with caching"""
+    """Get coverage information for a specific provider with caching and age control"""
     # Prova cache prima
     cached_data = get_coverage_cache(provider)
+    
     if cached_data:
+        # Check if snapshot is too old
+        if provider == "twilio" and not settings.ENABLE_TWILIO_LIVE_SEARCH:
+            last_updated = cached_data.get("last_updated")
+            if last_updated:
+                from datetime import datetime, timedelta
+                try:
+                    snapshot_time = datetime.fromisoformat(last_updated.replace('Z', '+00:00'))
+                    age_hours = (datetime.now(snapshot_time.tzinfo) - snapshot_time).total_seconds() / 3600
+                    
+                    if age_hours > settings.SNAPSHOT_MAX_AGE_HOURS:
+                        return JSONResponse(
+                            content={
+                                "provider": provider,
+                                "error": "snapshot_stale",
+                                "message": f"Snapshot is {age_hours:.1f} hours old (max: {settings.SNAPSHOT_MAX_AGE_HOURS})",
+                                "last_updated": last_updated,
+                                "countries": cached_data.get("countries", [])
+                            },
+                            status_code=503
+                        )
+                except Exception:
+                    pass  # Continue with cached data if parsing fails
+        
         return JSONResponse(
             content=cached_data,
             headers=cache_headers(provider)
         )
     
-    # Fallback per Twilio: prova a costruire soft
-    if provider == "twilio":
+    # Fallback per Twilio: prova a costruire soft solo se live search abilitato
+    if provider == "twilio" and settings.ENABLE_TWILIO_LIVE_SEARCH:
         try:
             payload = build_twilio_snapshot()
             # Salva in cache e disco

@@ -33,7 +33,6 @@ const navigation = [
   { name: 'History', href: '/history', icon: ClockIcon },
   { name: 'Import', href: '/import', icon: DocumentTextIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
-  { name: 'Billing', href: '/settings/billing', icon: CreditCardIcon },
   { name: 'Members', href: '/invite', icon: UserGroupIcon },
 ]
 
