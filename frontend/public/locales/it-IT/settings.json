@@ -73,6 +73,16 @@
     "warn80": "Hai raggiunto l'80% del budget mensile.",
     "blocked": "Budget mensile raggiunto. Acquisto/Import sono disabilitati."
   },
+  "budget": {
+    "title": "Budget e Limiti",
+    "monthly": "Budget mensile (USD)",
+    "resets": "Si azzera il giorno",
+    "hard_stop": "Blocca le operazioni al raggiungimento del limite",
+    "progress": "Spesa mese in corso",
+    "saved": "Impostazioni budget salvate",
+    "warn80": "Hai raggiunto l'80% del budget mensile.",
+    "blocked": "Budget mensile raggiunto. Acquisto/Import sono disabilitati."
+  },
   "telephony": {
     "buy_number": "[Numero di acquisto]",
     "numbers": "[Numeri]",
@@ -256,7 +266,9 @@
     "usage": "Utilizzo",
     "invoices": "Fatture",
     "payment_methods": "Metodi di Pagamento",
-    "billing_history": "Cronologia Fatturazione"
+    "billing_history": "Cronologia Fatturazione",
+    "demo_banner": "Stai visualizzando la versione demo. Gli importi sono mascherati e le azioni sono disabilitate.",
+    "demo_disabled": "Disabilitato in modalità demo"
   },
   
   "security": {

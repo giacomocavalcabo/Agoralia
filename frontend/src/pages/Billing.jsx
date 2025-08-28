@@ -219,7 +219,15 @@ function PaymentMethods({ data = [], onAddCard }) {
                   {t('payment_methods.default') || 'Default'}
                 </span>
               )}
-              <button className="text-sm text-gray-600 hover:text-gray-800">
+              <button 
+                className={`text-sm ${
+                  import.meta.env.VITE_DEMO_MODE === 'true'
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+                disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+                title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
+              >
                 {t('common.edit') || 'Edit'}
               </button>
             </div>
@@ -269,7 +277,12 @@ function AutoRecharge({ data, onUpdate }) {
               id="autoRechargeEnabled"
               checked={formData.enabled}
               onChange={(e) => setFormData({...formData, enabled: e.target.checked})}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`h-4 w-4 focus:ring-green-500 border-gray-300 rounded ${
+                import.meta.env.VITE_DEMO_MODE === 'true'
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-green-600'
+              }`}
             />
             <label htmlFor="autoRechargeEnabled" className="ml-2 text-sm text-gray-700">
               {t('auto_recharge.enable') || 'Enable  auto-recharge'} 
@@ -288,7 +301,10 @@ function AutoRecharge({ data, onUpdate }) {
                     type="number"
                     value={formData.threshold}
                     onChange={(e) => setFormData({...formData, threshold: parseFloat(e.target.value)})}
-                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+                    className={`w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      import.meta.env.VITE_DEMO_MODE === 'true' ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -303,7 +319,10 @@ function AutoRecharge({ data, onUpdate }) {
                     type="number"
                     value={formData.topup}
                     onChange={(e) => setFormData({...formData, topup: parseFloat(e.target.value)})}
-                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+                    className={`w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      import.meta.env.VITE_DEMO_MODE === 'true' ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -313,13 +332,25 @@ function AutoRecharge({ data, onUpdate }) {
           <div className="flex justify-end space-x-3">
             <button
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`px-4 py-2 ${
+                import.meta.env.VITE_DEMO_MODE === 'true'
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
             >
               {t('common.cancel') || 'Cancel'}
             </button>
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`px-6 py-2 font-medium rounded-lg ${
+                import.meta.env.VITE_DEMO_MODE === 'true'
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+              title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
             >
               {t('common.save') || 'Save'}
             </button>
@@ -394,7 +425,10 @@ function UsageCap({ data, onUpdate }) {
             <select
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                import.meta.env.VITE_DEMO_MODE === 'true' ? 'bg-gray-100 cursor-not-allowed' : ''
+              }`}
             >
                               <option value="soft">{t('usage_cap.soft') || 'Soft Cap (warnings only)'}</option>
                 <option value="hard">{t('usage_cap.hard') || 'Hard Cap (stop calls)'}</option>
@@ -411,7 +445,10 @@ function UsageCap({ data, onUpdate }) {
                 type="number"
                 value={formData.limit}
                 onChange={(e) => setFormData({...formData, limit: parseFloat(e.target.value)})}
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+                className={`w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  import.meta.env.VITE_DEMO_MODE === 'true' ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
               />
             </div>
           </div>
@@ -419,13 +456,25 @@ function UsageCap({ data, onUpdate }) {
           <div className="flex justify-end space-x-3">
             <button
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`px-4 py-2 ${
+                import.meta.env.VITE_DEMO_MODE === 'true'
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+              title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
             >
               {t('common.cancel') || 'Cancel'}
             </button>
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
+              disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+              className={`px-6 py-2 font-medium rounded-lg ${
+                import.meta.env.VITE_DEMO_MODE === 'true'
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+              title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
             >
               {t('common.save') || 'Save'}
             </button>
@@ -893,7 +942,13 @@ export default function Billing() {
           </div>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+            className={`mt-4 px-4 py-2 rounded-lg ${
+              import.meta.env.VITE_DEMO_MODE === 'true'
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                : 'bg-red-600 text-white hover:bg-red-700'
+            }`}
+            title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
           >
             Retry
           </button>

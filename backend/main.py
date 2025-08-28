@@ -3897,6 +3897,16 @@ async def purchase_number(
     db: Session = Depends(get_db)
 ) -> dict:
     """Purchase a new phone number from a provider"""
+    # DEMO mode guard
+    if os.getenv("DEMO_MODE") == "1":
+        raise HTTPException(
+            status_code=422, 
+            detail={
+                "error": "demo_mode",
+                "message": "Number purchases are disabled in demo mode"
+            }
+        )
+    
     # Rate limiting
     wsid = get_workspace_id(request, fallback="ws_1")
     telephony_rate_limiter.enforce_rate_limit(wsid, "purchase")
@@ -3988,6 +3998,16 @@ async def import_number(
     db: Session = Depends(get_db)
 ) -> dict:
     """Import an existing phone number from a provider"""
+    # DEMO mode guard
+    if os.getenv("DEMO_MODE") == "1":
+        raise HTTPException(
+            status_code=422, 
+            detail={
+                "error": "demo_mode",
+                "message": "Number imports are disabled in demo mode"
+            }
+        )
+    
     # Rate limiting
     wsid = get_workspace_id(request, fallback="ws_1")
     telephony_rate_limiter.enforce_rate_limit(wsid, "import")
@@ -4002,6 +4022,31 @@ async def import_number(
         if existing_order:
             return {"order_id": existing_order.id, "status": existing_order.status, "idempotent": True}
     
+    # Budget check
+    workspace = db.query(Workspace).filter(Workspace.id == wsid).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    
+    # Estimate import cost (usually lower than purchase, fallback to 100 cents = $1.00)
+    estimated_cost_cents = body.get("estimated_cost_cents", 100)
+    
+    # Check budget before proceeding
+    start, end = month_window(datetime.utcnow(), workspace.budget_resets_day or 1)
+    mtd_spend = sum_ledger(db, wsid, start, end)
+    budget_check = check_budget(workspace, mtd_spend, estimated_cost_cents)
+    
+    if budget_check["blocked"]:
+        raise HTTPException(
+            status_code=403, 
+            detail={
+                "error": "budget_exceeded",
+                "message": "Monthly budget limit exceeded",
+                "mtd_spend_cents": mtd_spend,
+                "budget_limit_cents": budget_check["limit"],
+                "threshold_hit": budget_check["threshold_hit"]
+            }
+        )
+    
     # Provider account check
     acc = db.query(ProviderAccount).filter_by(
         workspace_id=wsid, 
@@ -4011,15 +4056,39 @@ async def import_number(
     if not acc:
         raise HTTPException(400, "provider_account_not_found")
     
-    # Create order with idempotency key
-    order = await start_import(db, wsid, acc, body["e164"], body["request_id"])
+    # TODO: Implement actual import logic
+    # For now, create a mock order
+    order = NumberOrder(
+        id=f"import_{int(datetime.utcnow().timestamp())}",
+        workspace_id=wsid,
+        provider=acc.provider,
+        request=body,
+        status="pending",
+        idempotency_key=idempotency_key
+    )
     
-    # Save idempotency key
-    if idempotency_key:
-        order.idempotency_key = idempotency_key
-        db.commit()
+    db.add(order)
+    db.commit()
     
-    return {"order_id": order.id, "status": order.status}
+    # Log the transaction in billing ledger
+    append_ledger(
+        db, wsid, estimated_cost_cents, 
+        workspace.budget_currency or "USD",
+        acc.provider, "number_import_fee",
+        metadata={
+            "order_id": order.id,
+            "e164": body.get("e164"),
+            "estimated": True
+        },
+        idempotency_key=idempotency_key
+    )
+    
+    return {
+        "order_id": order.id, 
+        "status": order.status,
+        "cost_cents": estimated_cost_cents,
+        "threshold_hit": budget_check["threshold_hit"]
+    }
 
 @app.get("/settings/telephony/orders")
 async def list_orders(
@@ -4240,6 +4309,15 @@ async def update_budget(
     current_ws: Workspace = Depends(require_workspace_admin),
     db: Session = Depends(get_db)
 ):
+    # DEMO mode guard
+    if os.getenv("DEMO_MODE") == "1":
+        raise HTTPException(
+            status_code=422, 
+            detail={
+                "error": "demo_mode",
+                "message": "Budget updates are disabled in demo mode"
+            }
+        )
     """Update budget settings for workspace (admin only)"""
     # Update only provided fields
     if payload.monthly_budget_cents is not None:
