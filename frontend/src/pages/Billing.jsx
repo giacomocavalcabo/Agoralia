@@ -984,25 +984,12 @@ export default function Billing() {
       )}
       
       {/* Header */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            {t('title') || 'Billing & Usage'}
-          </h1>
-          <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-              👑 ADMIN
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-              💰 Unlimited
-            </span>
-          </div>
-        </div>
-        <p className="text-gray-600">
-          {t('subtitle') || 'Manage your payment methods, auto-recharge, and usage limits'}
-        </p>
-        <p className="text-sm text-purple-600 mt-1">
-          🚀 Welcome, Admin! You have unlimited resources and premium features.
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {t('settings.billing.title') || 'Billing'}
+        </h1>
+        <p className="text-sm text-gray-600">
+          {t('settings.billing.subtitle') || 'Manage your budget and usage limits'}
         </p>
       </div>
 
