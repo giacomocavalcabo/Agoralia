@@ -21,6 +21,17 @@ export async function searchInventoryTwilio({ country, type, areaCode, contains 
   return r.json();
 }
 
+export async function rebuildTwilioSnapshot() {
+  const r = await fetch('/api/settings/telephony/coverage/rebuild?provider=twilio', {
+    method: 'POST',
+    headers: { 
+      'X-Cron-Secret': import.meta.env.VITE_CRON_SECRET ?? '' // opzionale, solo in local
+    },
+  });
+  if (!r.ok) throw new Error(`rebuild_${r.status}`);
+  return r.json();
+}
+
 // Mantieni compatibilità con l'API esistente
 export { 
   listProviders, 

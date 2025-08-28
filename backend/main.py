@@ -4037,27 +4037,85 @@ async def list_orders(
     } for o in q.all()]
 
 # ===================== Telephony Coverage (Twilio) =====================
+from fastapi import Header, HTTPException
+from fastapi.responses import JSONResponse
+from services.coverage_cache import get as get_coverage_cache, set_mem as set_coverage_cache, save_disk, headers as cache_headers
+from services.twilio_coverage import build_twilio_snapshot
+from config.settings import settings
 
 @app.get("/settings/telephony/coverage")
 async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
-    """Get coverage information for a specific provider"""
+    """Get coverage information for a specific provider with caching"""
+    # Prova cache prima
+    cached_data = get_coverage_cache(provider)
+    if cached_data:
+        return JSONResponse(
+            content=cached_data,
+            headers=cache_headers(provider)
+        )
+    
+    # Fallback per Twilio: prova a costruire soft
     if provider == "twilio":
-        return load_twilio_snapshot()
-    # telnyx: se hai già il JSON completo, servilo da statico
+        try:
+            payload = build_twilio_snapshot()
+            # Salva in cache e disco
+            set_coverage_cache(provider, payload)
+            save_disk(provider, payload)
+            return JSONResponse(
+                content=payload,
+                headers=cache_headers(provider)
+            )
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to build Twilio snapshot: {e}")
+            # Ritorna fallback minimal
+            fallback = {"provider": "twilio", "last_updated": None, "countries": [], "error": "degraded"}
+            return JSONResponse(content=fallback)
+    
+    # Telnyx: carica da static/telephony
     from pathlib import Path
     p = Path(__file__).parent / "static" / "telephony" / "telnyx_coverage.json"
     if p.exists():
-        import json
-        return json.loads(p.read_text("utf-8"))
-    return {"provider": "telnyx", "countries": []}
+        try:
+            import json
+            data = json.loads(p.read_text("utf-8"))
+            # Salva in cache
+            set_coverage_cache(provider, data)
+            return JSONResponse(
+                content=data,
+                headers=cache_headers(provider)
+            )
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to load Telnyx coverage: {e}")
+    
+    # Fallback finale
+    fallback = {"provider": provider, "countries": [], "error": "no_data"}
+    return JSONResponse(content=fallback)
 
 @app.post("/settings/telephony/coverage/rebuild")
-async def rebuild_coverage(provider: str = Query(..., pattern="^twilio$")):
-    """Rebuild coverage snapshot (admin only)"""
-    # esegue ad-hoc il job e aggiorna lo snapshot
-    payload = build_twilio_snapshot()
-    save_twilio_snapshot(payload)
-    return {"ok": True, "updated": payload.get("last_updated")}
+async def rebuild_coverage(
+    provider: str = Query(..., pattern="^twilio$"),
+    x_cron_secret: str = Header(default="")
+):
+    """Rebuild coverage snapshot (admin only, cron protected)"""
+    # Verifica secret per cron
+    if settings.CRON_SECRET and x_cron_secret != settings.CRON_SECRET:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    
+    try:
+        # Costruisci snapshot
+        payload = build_twilio_snapshot()
+        
+        # Salva in cache e disco
+        set_coverage_cache(provider, payload)
+        save_disk(provider, payload)
+        
+        return {"ok": True, "updated": payload.get("last_updated")}
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to rebuild coverage: {e}")
+        raise HTTPException(status_code=500, detail="rebuild_failed")
 
 @app.get("/settings/telephony/inventory/search")
 async def twilio_inventory_search(

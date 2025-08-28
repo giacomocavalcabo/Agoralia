@@ -179,7 +179,13 @@ function PaymentMethods({ data = [], onAddCard }) {
         </h3>
         <button
           onClick={onAddCard}
-          className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+          disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+          className={`inline-flex items-center px-4 py-2 font-medium rounded-lg transition-colors ${
+            import.meta.env.VITE_DEMO_MODE === 'true'
+              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700'
+          }`}
+          title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           {t('payment_methods.add') || 'Add Card'}
@@ -243,7 +249,13 @@ function AutoRecharge({ data, onUpdate }) {
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="text-sm text-green-600 hover:text-green-800 font-medium"
+          disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+          className={`text-sm font-medium ${
+            import.meta.env.VITE_DEMO_MODE === 'true'
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-green-600 hover:text-green-800'
+          }`}
+          title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
         >
           {isEditing ? t('common.cancel') : t('common.edit')}
         </button>
@@ -361,7 +373,13 @@ function UsageCap({ data, onUpdate }) {
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="text-sm text-green-600 hover:text-green-800 font-medium"
+          disabled={import.meta.env.VITE_DEMO_MODE === 'true'}
+          className={`text-sm font-medium ${
+            import.meta.env.VITE_DEMO_MODE === 'true'
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-green-600 hover:text-green-800'
+          }`}
+          title={import.meta.env.VITE_DEMO_MODE === 'true' ? 'Disabilitato in demo' : ''}
         >
           {isEditing ? t('common.cancel') : t('common.edit')}
         </button>
@@ -784,6 +802,9 @@ export default function Billing() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   
+  // DEMO mode guard
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || isDemo
+  
   useEffect(() => {
     // Simula caricamento dati da API
     const loadBillingData = async () => {
@@ -808,18 +829,30 @@ export default function Billing() {
   }, [])
   
   const handleAutoRechargeUpdate = (newData) => {
+    if (isDemoMode) {
+      alert('Demo mode: Auto-recharge updates disabled')
+      return
+    }
     if (billingData) {
       setBillingData({...billingData, autoRecharge: newData})
     }
   }
   
   const handleUsageCapUpdate = (newData) => {
+    if (isDemoMode) {
+      alert('Demo mode: Usage cap updates disabled')
+      return
+    }
     if (billingData) {
       setBillingData({...billingData, usageCap: newData})
     }
   }
   
   const handleAddCard = () => {
+    if (isDemoMode) {
+      alert('Demo mode: Stripe integration disabled')
+      return
+    }
     // In production, this would open Stripe Elements
     alert('Stripe Elements integration coming soon!')
   }
@@ -888,6 +921,13 @@ export default function Billing() {
   
   return (
     <div className="space-y-6">
+      {/* Demo Banner */}
+      {isDemoMode && (
+        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900">
+          <strong>Demo mode</strong> — le azioni di pagamento/ricarica sono disabilitate in questa istanza.
+        </div>
+      )}
+      
       {/* Header */}
       <div>
         <div className="flex items-center justify-between mb-2">

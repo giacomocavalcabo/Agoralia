@@ -109,6 +109,12 @@
       "portable_tooltip": "Number can be ported to another provider",
       "no_capabilities": "No capabilities"
     },
+    "coverage": {
+      "last_updated": "Last updated",
+      "rebuild_snapshot": "Rebuild snapshot",
+      "rebuild_ok": "Snapshot rebuild started",
+      "rebuild_err": "Failed to rebuild snapshot"
+    },
     "wizard": {
       "buy": {
         "title": "Compra numero",

@@ -63,6 +63,11 @@ def build_twilio_snapshot() -> Dict[str, Any]:
     client = _twilio_client()
     countries = _fetch_country_list(client)
 
+    # Log warning se pochi paesi (ma non bloccare)
+    if len(countries) < 150:
+        import logging
+        logging.warning(f"Twilio snapshot countries={len(countries)} (inferiore alla baseline, ma accettabile)")
+
     # opzionale: carica seed regolatorio statico se presente (arricchisce lo snapshot)
     regs = {}
     if REG_SEED_FILE.exists():

@@ -109,6 +109,12 @@
       "portable_tooltip": "Numero può essere portato ad altro provider",
       "no_capabilities": "Nessuna capacità"
     },
+    "coverage": {
+      "last_updated": "Ultimo aggiornamento",
+      "rebuild_snapshot": "Rigenera snapshot",
+      "rebuild_ok": "Rigenerazione avviata",
+      "rebuild_err": "Rigenerazione fallita"
+    },
     "wizard": {
       "buy": {
         "title": "Compra numero",
