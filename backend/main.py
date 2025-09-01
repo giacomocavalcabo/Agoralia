@@ -2266,48 +2266,53 @@ async def auth_register(payload: dict, request: Request) -> Response:
 @app.get("/auth/me")
 @app.get("/api/auth/me")  # Compatibilità con frontend
 def auth_me(request: Request) -> dict:
-    from backend.auth.session import get_session
-    sess = get_session(request)
-    if not sess:
-        return {"authenticated": False}
-    
-    # Get fresh user data from DB
-    with next(get_db()) as db:
-        user_id = sess.get("claims", {}).get("user_id")
-        if not user_id:
+    try:
+        from backend.auth.session import get_session
+        sess = get_session(request)
+        if not sess:
             return {"authenticated": False}
         
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
-            return {"authenticated": False}
-        
-        # Get workspace memberships
-        memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-            workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "workspace_name": workspace.name if workspace else "Unknown",
-                "role": wm.role
-            })
-        
-        return {
-            "authenticated": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "locale": user.locale,
-                "tz": user.tz,
-                "is_admin_global": bool(user.is_admin_global),
-                "email_verified": bool(user.email_verified_at),
-                "totp_enabled": bool(user.totp_enabled),
-                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
-                "created_at": user.created_at.isoformat() if user.created_at else None
-            },
-            "memberships": memberships,
-            "csrf": sess.get("csrf")
-        }
+        # Get fresh user data from DB
+        with next(get_db()) as db:
+            user_id = sess.get("claims", {}).get("user_id")
+            if not user_id:
+                return {"authenticated": False}
+            
+            user = db.query(User).filter(User.id == user_id).first()
+            if not user:
+                return {"authenticated": False}
+            
+            # Get workspace memberships
+            memberships = []
+            for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+                workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
+                memberships.append({
+                    "workspace_id": wm.workspace_id,
+                    "workspace_name": workspace.name if workspace else "Unknown",
+                    "role": wm.role
+                })
+            
+            return {
+                "authenticated": True,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "locale": user.locale,
+                    "tz": user.tz,
+                    "is_admin_global": bool(user.is_admin_global),
+                    "email_verified": bool(user.email_verified_at),
+                    "totp_enabled": bool(user.totp_enabled),
+                    "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+                    "created_at": user.created_at.isoformat() if user.created_at else None
+                },
+                "memberships": memberships,
+                "csrf": sess.get("csrf")
+            }
+    except Exception as e:
+        # Log error for debugging but return 401 instead of 500
+        logger.error(f"Error in /api/auth/me: {str(e)}")
+        return {"authenticated": False, "error": "Authentication service temporarily unavailable"}
 
 
 # /auth/logout endpoint moved to backend/routers/auth.py

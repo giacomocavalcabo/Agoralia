@@ -2,14 +2,14 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1"
-healthcheckPath = "/crm/health?provider=hubspot"
+startCommand = "sh -c 'alembic upgrade head && exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1 --loop asyncio --http h11'"
+healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [deploy.services]
-worker = "dramatiq backend.workers.crm_jobs -p 4"
+worker = "python -m backend.worker"
 
 [deploy.environment]
 ENV = "production"
