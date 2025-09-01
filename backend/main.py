@@ -25,7 +25,7 @@ from backend.config import settings
 # 🔒 Assert di sicurezza per Base.metadata
 import sqlalchemy as sa
 assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
-from backend.routers import crm, auth, auth_microsoft, compliance
+from backend.routers import crm, auth, auth_microsoft, compliance, integrations
 from backend.utils.rate_limiter import telephony_rate_limiter
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
@@ -672,6 +672,10 @@ logger.info("Including CRM router...")
 app.include_router(crm.router)
 logger.info("CRM router included successfully")
 
+logger.info("Including Integrations router...")
+app.include_router(integrations.router, prefix="/settings")
+logger.info("Integrations router included successfully")
+
 logger.info("Including Auth router...")
 app.include_router(auth.router)
 app.include_router(auth_microsoft.router)
@@ -685,6 +689,7 @@ api.include_router(auth.router)            # → /api/auth/*
 api.include_router(auth_microsoft.router)  # → /api/auth_microsoft/*
 api.include_router(compliance.router)      # → /api/compliance/*
 api.include_router(crm.router)             # → /api/crm/*
+api.include_router(integrations.router, prefix="/settings")  # → /api/settings/integrations/*
 app.include_router(api)
 logger.info("API aliases included successfully")
 
@@ -753,6 +758,22 @@ def _alias_metrics(rest: str, request: Request):
 def _alias_dashboard(rest: str, request: Request):
     """Alias per /api/dashboard/* → redirect a /dashboard/*"""
     return RedirectResponse(url=f"/dashboard/{rest}", status_code=307)
+
+# --- NUOVO: alias per /api/integrations/* (redirect 307)
+@app.get("/api/integrations/{rest:path}")
+def _alias_integrations(rest: str, request: Request):
+    """Alias per /api/integrations/* → redirect a /api/settings/integrations/*"""
+    return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
+
+@app.post("/api/integrations/{rest:path}")
+def _alias_integrations_post(rest: str, request: Request):
+    """Alias POST per /api/integrations/* → redirect a /api/settings/integrations/*"""
+    return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
+
+@app.delete("/api/integrations/{rest:path}")
+def _alias_integrations_delete(rest: str, request: Request):
+    """Alias DELETE per /api/integrations/* → redirect a /api/settings/integrations/*"""
+    return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
 
 
 # ===================== Numbers Endpoints =====================

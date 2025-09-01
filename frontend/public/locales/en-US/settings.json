@@ -92,7 +92,19 @@
       "submissions": "Submissions",
       "new_submission": "New Submission",
       "upload": "Upload file",
-      "missing": "Compliance required before purchase/import. Complete KYC."
+      "missing": "Compliance required before purchase/import. Complete KYC.",
+      "failed_loading_requirements": "Failed loading requirements",
+      "failed_loading_submissions": "Failed loading submissions",
+      "providers": {
+        "twilio": "Twilio"
+      },
+      "countries": {
+        "it": "IT"
+      },
+      "types": {
+        "local": "Local",
+        "business": "Business"
+      }
     },
     "coverage": {
       "title": "Coverage & Requirements",
@@ -150,19 +162,18 @@
       "no_numbers": "No numbers yet",
       "no_numbers_desc": "Buy or port numbers to start calling."
     },
-    "numbers": {
-      "empty": {
-        "title": "No numbers yet",
-        "description": "Buy or port numbers to start calling."
-      },
-      "columns": {
-        "number": "Number",
-        "country": "Country",
-        "provider": "Provider",
-        "capabilities": "Capabilities",
-        "created": "Created",
-        "actions": "Actions"
-      }
+    "numbers": "Phone numbers",
+    "numbers_empty": {
+      "title": "No numbers yet",
+      "description": "Buy or port numbers to start calling."
+    },
+    "numbers_columns": {
+      "number": "Number",
+      "country": "Country",
+      "provider": "Provider",
+      "capabilities": "Capabilities",
+      "created": "Created",
+      "actions": "Actions"
     }
   },
 
@@ -220,6 +231,28 @@
     "logo": "Company Logo",
     "branding": "Branding",
     "compliance": "Compliance"
+  },
+
+  "account": {
+    "title": "Account Settings",
+    "fields": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "language": "Language",
+      "timezone": "Timezone",
+      "dual_time": "Dual Time Display"
+    },
+    "languages": {
+      "english": "English",
+      "italian": "Italian",
+      "french": "French"
+    },
+    "actions": {
+      "save": "Save Changes"
+    },
+    "values": {
+      "utc": "UTC"
+    }
   },
 
   "team": {

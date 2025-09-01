@@ -92,7 +92,19 @@
       "submissions": "Sottomissioni",
       "new_submission": "Nuova Sottomissione",
       "upload": "Carica file",
-      "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC."
+      "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC.",
+      "failed_loading_requirements": "Caricamento requisiti fallito",
+      "failed_loading_submissions": "Caricamento sottomissioni fallito",
+      "providers": {
+        "twilio": "Twilio"
+      },
+      "countries": {
+        "it": "IT"
+      },
+      "types": {
+        "local": "Locale",
+        "business": "Business"
+      }
     },
     "coverage": {
       "title": "Copertura & Requisiti",
@@ -150,19 +162,18 @@
       "no_numbers": "Nessun numero ancora",
       "no_numbers_desc": "Compra o porta numeri per iniziare a chiamare."
     },
-    "numbers": {
-      "empty": {
-        "title": "Nessun numero ancora",
-        "description": "Compra o porta numeri per iniziare a chiamare."
-      },
-      "columns": {
-        "number": "Numero",
-        "country": "Paese",
-        "provider": "Provider",
-        "capabilities": "Capacità",
-        "created": "Creato",
-        "actions": "Azioni"
-      }
+    "numbers": "Numeri di telefono",
+    "numbers_empty": {
+      "title": "Nessun numero ancora",
+      "description": "Compra o porta numeri per iniziare a chiamare."
+    },
+    "numbers_columns": {
+      "number": "Numero",
+      "country": "Paese",
+      "provider": "Provider",
+      "capabilities": "Capacità",
+      "created": "Creato",
+      "actions": "Azioni"
     }
   },
 
@@ -220,6 +231,28 @@
     "logo": "Logo Azienda",
     "branding": "Branding",
     "compliance": "Compliance"
+  },
+
+  "account": {
+    "title": "Impostazioni Account",
+    "fields": {
+      "name": "Nome Completo",
+      "email": "Indirizzo Email",
+      "language": "Lingua",
+      "timezone": "Fuso Orario",
+      "dual_time": "Display Doppio Orario"
+    },
+    "languages": {
+      "english": "Inglese",
+      "italian": "Italiano",
+      "french": "Francese"
+    },
+    "actions": {
+      "save": "Salva Modifiche"
+    },
+    "values": {
+      "utc": "UTC"
+    }
   },
 
   "team": {

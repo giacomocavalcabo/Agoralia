@@ -11,7 +11,7 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
   const columns = [
     {
       id: 'e164',
-      header: t('numbers.columns.number'),
+      header: t('telephony.numbers_columns.number'),
       cell: ({ row }) => (
         <div className="font-mono text-sm">
           {row.original.e164}
@@ -20,7 +20,7 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
     },
     {
       id: 'country_iso',
-      header: t('numbers.columns.country'),
+      header: t('telephony.numbers_columns.country'),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="text-lg">{getCountryFlag(row.original.country_iso)}</span>
@@ -30,7 +30,7 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
     },
     {
       id: 'provider',
-      header: t('numbers.columns.provider'),
+      header: t('telephony.numbers_columns.provider'),
       cell: ({ row }) => (
         <div className="text-sm">
           {row.original.provider || '—'}
@@ -39,14 +39,14 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
     },
     {
       id: 'capabilities',
-      header: t('numbers.columns.capabilities'),
+      header: t('telephony.numbers_columns.capabilities'),
       cell: ({ row }) => (
         <TelephonyCapabilityBadges number={row.original} />
       )
     },
     {
       id: 'created_at',
-      header: t('numbers.columns.created'),
+      header: t('telephony.numbers_columns.created'),
       cell: ({ row }) => (
         <div className="text-sm text-gray-600">
           {formatDateSafe(row.original.created_at, i18n.language)}
@@ -55,7 +55,7 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
     },
     {
       id: 'actions',
-      header: t('numbers.columns.actions'),
+      header: t('telephony.numbers_columns.actions'),
       cell: ({ row }) => <NumbersRowActions row={row} />
     }
   ];
@@ -74,10 +74,10 @@ export default function NumbersTable({ data = [], filters, onFiltersChange, onSe
       <div className="text-center py-12">
         <div className="text-gray-500 mb-2">📞</div>
         <h3 className="text-lg font-medium text-gray-900 mb-1">
-          {t('numbers.empty.title')}
+          {t('telephony.numbers_empty.title')}
         </h3>
         <p className="text-gray-600">
-          {t('numbers.empty.description')}
+          {t('telephony.numbers_empty.description')}
         </p>
       </div>
     );
