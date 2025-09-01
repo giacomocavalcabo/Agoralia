@@ -1,95 +1,21 @@
 {
-  "title": "Impostazioni",
-  "description": "Gestisci il tuo account, team e preferenze di sistema",
-  "coming_soon": "[Prossimamente]",
-  "save": "Salva",
-  "subtitle": "Gestisci il tuo account e preferenze",
-  
   "nav": {
     "title": "Impostazioni",
     "subtitle": "Gestisci il tuo account e preferenze",
     "profile": "Profilo",
-    "profile_desc": "Aggiorna le tue informazioni personali",
+    "profile_desc": "Informazioni personali e preferenze",
     "company": "Azienda",
-    "company_desc": "Gestisci le impostazioni aziendali",
+    "company_desc": "Impostazioni aziendali e branding",
     "integrations": "Integrazioni",
     "integrations_desc": "Connetti servizi esterni",
     "billing": "Fatturazione",
-    "billing_desc": "Gestisci fatturazione e abbonamenti",
+    "billing_desc": "Gestisci budget e utilizzo",
     "telephony": "Telefonia",
     "telephony_desc": "Gestisci numeri di telefono e instradamento",
     "telephony_compliance": "Conformità",
-    "telephony_compliance_desc": "Gestisci compliance e KYC"
+    "telephony_compliance_desc": "Gestisci conformità e KYC"
   },
-  
-  "account": {
-    "title": "Impostazioni Account",
-    "description": "Gestisci le impostazioni del tuo account personale",
-    "fields": {
-      "name": "Nome Completo",
-      "email": "Indirizzo Email",
-      "language": "Lingua",
-      "timezone": "Fuso Orario",
-      "dual_time": "Display Doppio Orario"
-    },
-    "languages": {
-      "english": "Inglese",
-      "italian": "Italiano",
-      "french": "Francese"
-    },
-    "actions": {
-      "save": "Salva Modifiche"
-    },
-    "errors": {
-      "load_failed": "Impossibile caricare le impostazioni"
-    }
-  },
-  
-  "personal": {
-    "dual_time": "Doppio display orario",
-    "email": "admin@example.com",
-    "language": "Inglese",
-    "name": "Utente amministratore",
-    "timezone": "UTC",
-    "title": "Informazioni personali"
-  },
-  
-  "tabs": {
-    "audit": "Audit",
-    "billing": "Fatturazione",
-    "compliance": "Compliance",
-    "integrations": "Integrazioni",
-    "members": "Membri",
-    "personal": "Personale",
-    "telephony": "Telefonia",
-    "workspace": "Workspace"
-  },
-  
-  "budget": {
-    "title": "Budget e Limiti",
-    "monthly": "Budget mensile (USD)",
-    "resets": "Si azzera il giorno",
-    "hard_stop": "Blocca le operazioni al raggiungimento del limite",
-    "progress": "Spesa mese in corso",
-    "saved": "Impostazioni budget salvate",
-    "warn80": "Hai raggiunto l'80% del budget mensile.",
-    "blocked": "Budget mensile raggiunto. Acquisto/Import sono disabilitati."
-  },
-  
-  "billing": {
-    "title": "Fatturazione",
-    "subtitle": "Gestisci budget e limiti di utilizzo",
-    "demo_banner": "Stai visualizzando la Fatturazione in modalità demo. Le azioni sono disabilitate.",
-    "hard_stop_banner": "Limite budget raggiunto. Non sono consentiti nuovi acquisti.",
-    "overview": {
-      "balance": "Saldo",
-      "usage_mtd": "Spesa (mese in corso)",
-      "minutes_mtd": "Minuti (mese in corso)",
-      "cap_status_label": "Stato limite",
-      "of_cap": "di {{cap}}"
-    },
-    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
-  },
+
   "telephony": {
     "title": "Telefonia",
     "subtitle": "Gestisci numeri di telefono, provider e instradamento",
@@ -101,7 +27,13 @@
     "providers": {
       "telnyx": "Telnyx",
       "twilio": "Twilio",
-      "zadarma": "Zadarma"
+      "zadarma": "Zadarma",
+      "title": "Account provider",
+      "linked": "Collegato",
+      "label_placeholder": "Etichetta (opzionale)",
+      "api_key_placeholder": "API Key (non verrà mostrata)",
+      "connect": "Collega",
+      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
     },
     "policy": {
       "title": "Policy",
@@ -113,14 +45,6 @@
       "save": "Salva",
       "outbound_locked": "Outbound non consentito per numeri inoltrati",
       "outbound_requires_hosted": "Outbound richiede numero ospitato"
-    },
-    "providers": {
-      "title": "Account provider",
-      "linked": "Collegato",
-      "label_placeholder": "Etichetta (opzionale)",
-      "api_key_placeholder": "API Key (non verrà mostrata)",
-      "connect": "Collega",
-      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
     },
     "buy": {
       "title": "Compra numero",
@@ -159,17 +83,17 @@
       "mms": "MMS", 
       "mms_tooltip": "Numero supporta messaggi MMS",
       "portable": "Portabile",
-              "portable_tooltip": "Numero può essere portato ad altro provider",
-        "no_capabilities": "Nessuna capacità"
-      },
-      "compliance": {
-        "title": "Conformità / KYC",
-        "requirements": "Requisiti",
-        "submissions": "Sottomissioni",
-        "new_submission": "Nuova Sottomissione",
-        "upload": "Carica file",
-        "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC."
-      },
+      "portable_tooltip": "Numero può essere portato ad altro provider",
+      "no_capabilities": "Nessuna capacità"
+    },
+    "compliance": {
+      "title": "Conformità / KYC",
+      "requirements": "Requisiti",
+      "submissions": "Sottomissioni",
+      "new_submission": "Nuova Sottomissione",
+      "upload": "Carica file",
+      "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC."
+    },
     "coverage": {
       "title": "Copertura & Requisiti",
       "select_country": "Seleziona Paese",
@@ -199,11 +123,6 @@
         "cta": "Acquista",
         "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
       },
-      "type": {
-        "local": "Locale",
-        "mobile": "Mobile",
-        "tollfree": "Gratuito"
-      },
       "import": {
         "title": "Aggiungi numero esistente",
         "cta": "Aggiungi",
@@ -227,123 +146,47 @@
         "empty": "Nessun ordine"
       }
     },
-    "coverage": {
-      "title": "Copertura & Requisiti",
-      "select_country": "Seleziona Paese",
-      "choose_country": "Scegli un paese...",
-      "origin_country": "Paese di Origine (per pricing)",
-      "what_you_can_buy": "Cosa puoi comprare qui",
-      "features": "Funzionalità",
-      "import_support": "Import/Porting",
-      "outbound_policy": "Outbound Caller ID",
-      "requirements": "Requisiti & Documenti",
-      "notes": "Note",
-      "pricing": "Pricing (stima)",
-      "buy_with_provider": "Compra con questo provider",
-      "add_existing": "Aggiungi numero esistente"
-    }
-  },
-  
-  "pages": {
-    "settings": {
-      "nav": { "telephony": "Telefonia" },
-      "telephony": {
-        "title": "Telefonia",
-        "subtitle": "Gestisci numeri, provider e instradamento chiamate.",
-        "numbers": "Numeri di telefono",
-        "policy": {
-          "title": "Policy",
-          "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."
-        },
-        "providers": {
-          "title": "Account provider",
-          "linked": "Collegato",
-          "label_placeholder": "Etichetta (opzionale)",
-          "api_key_placeholder": "API Key (non verrà mostrata)",
-          "connect": "Collega",
-          "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
-        },
-        "buy": {
-          "title": "Compra numero",
-          "country": "Paese",
-          "type": "Tipologia",
-          "area_code": "Prefisso (opzionale)",
-          "cta": "Acquista",
-          "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
-        },
-        "wizard": {
-          "buy": {
-            "title": "Compra numero",
-            "cta": "Acquista",
-            "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
-          },
-          "import": {
-            "title": "Aggiungi numero esistente",
-            "cta": "Aggiungi",
-            "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
-          },
-          "select_provider": "Seleziona account provider...",
-          "country_placeholder": "Paese ISO2 (es. US, IT, IN)",
-          "type": {
-            "local": "Locale",
-            "mobile": "Mobile",
-            "tollfree": "Toll-free"
-          },
-          "area_code_placeholder": "Prefisso (opzionale)"
-        },
-        "byo": {
-          "title": "Aggiungi numero esistente",
-          "provider": "Provider",
-          "e164": "Numero (E.164)",
-          "cta": "Aggiungi",
-          "code": "Codice di conferma",
-          "confirm": "Conferma",
-          "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
-        },
-        "route": {
-          "title": "Instradamento",
-          "number": "Numero",
-          "select": "Seleziona un numero",
-          "inbound": "Agente inbound",
-          "outbound": "Agente outbound",
-          "save": "Salva instradamento"
-        },
-        "orders": {
-          "title": "Ordini & Import",
-          "order_id": "ID Ordine",
-          "provider": "Provider",
-          "number": "Numero",
-          "status": "Stato",
-          "empty": "Nessun ordine"
-        },
-        "coverage": {
-          "title": "Copertura & Requisiti",
-          "select_country": "Seleziona Paese",
-          "choose_country": "Scegli un paese...",
-          "origin_country": "Paese di Origine (per pricing)",
-          "what_you_can_buy": "Cosa puoi comprare qui",
-          "features": "Funzionalità",
-          "import_support": "Import/Porting",
-          "outbound_policy": "Outbound Caller ID",
-          "requirements": "Requisiti & Documenti",
-          "notes": "Note",
-          "pricing": "Pricing (stima)",
-          "buy_with_provider": "Compra con questo provider",
-          "add_existing": "Aggiungi numero esistente",
-          "provider_info": {
-            "global_coverage": "Copertura Globale",
-            "twilio_description": "Copertura ampia con numeri locali, mobile e toll-free in molti paesi",
-            "telnyx_description": "Qualità e affidabilità Tier-1, ottimo in Europa/LatAm/APAC"
-          },
-          "status": {
-            "available": "Disponibile",
-            "not_available": "Non disponibile"
-          }
-        }
+    "messages": {
+      "no_numbers": "Nessun numero ancora",
+      "no_numbers_desc": "Compra o porta numeri per iniziare a chiamare."
+    },
+    "numbers": {
+      "empty": {
+        "title": "Nessun numero ancora",
+        "description": "Compra o porta numeri per iniziare a chiamare."
+      },
+      "columns": {
+        "number": "Numero",
+        "country": "Paese",
+        "provider": "Provider",
+        "capabilities": "Capacità",
+        "created": "Creato",
+        "actions": "Azioni"
       }
     }
   },
-  
+
+  "billing": {
+    "title": "Fatturazione",
+    "subtitle": "Gestisci budget e limiti di utilizzo",
+    "current_plan": "Piano Attuale",
+    "usage": "Utilizzo",
+    "invoices": "Fatture",
+    "payment_methods": "Metodi di Pagamento",
+    "billing_history": "Cronologia Fatturazione",
+    "demo_banner": "Stai visualizzando la versione demo. Gli importi sono mascherati e le azioni sono disabilitate.",
+    "demo_disabled": "Disabilitato in modalità demo",
+    "hard_stop_banner": "Limite budget raggiunto. Non sono consentiti nuovi acquisti.",
+    "overview": {
+      "balance": "Saldo",
+      "usage_mtd": "Spesa (mese in corso)",
+      "minutes_mtd": "Minuti (mese in corso)",
+      "cap_status_label": "Stato limite",
+      "of_cap": "di {{cap}}"
+    },
+    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
+  },
+
   "workspace": {
     "accepting": "[Accettazione]",
     "domain": "[Dominio]",
@@ -356,7 +199,7 @@
     "title": "[Titolo]",
     "upload_logo": "[Carica logo]"
   },
-  
+
   "profile": {
     "title": "Impostazioni Profilo",
     "description": "Aggiorna le tue informazioni personali e preferenze",
@@ -366,10 +209,11 @@
     "security": "Sicurezza",
     "notifications": "Notifiche"
   },
-  
+
   "company": {
     "title": "Impostazioni Azienda",
     "description": "Gestisci le informazioni e impostazioni aziendali",
+    "coming_soon": "Prossimamente",
     "company_info": "Informazioni Azienda",
     "address": "Indirizzo",
     "contact": "Contatto",
@@ -377,7 +221,7 @@
     "branding": "Branding",
     "compliance": "Compliance"
   },
-  
+
   "team": {
     "title": "Gestione Team",
     "description": "Gestisci membri del team e permessi",
@@ -387,7 +231,7 @@
     "activity": "Log Attività",
     "departments": "Dipartimenti"
   },
-  
+
   "integrations": {
     "title": "Integrazioni",
     "description": "Connetti servizi e strumenti esterni",
@@ -397,27 +241,7 @@
     "automation": "Automazione",
     "webhooks": "Webhooks"
   },
-  
-  "billing": {
-    "title": "Fatturazione",
-    "subtitle": "Gestisci budget e limiti di utilizzo",
-    "current_plan": "Piano Attuale",
-    "usage": "Utilizzo",
-    "invoices": "Fatture",
-    "payment_methods": "Metodi di Pagamento",
-    "billing_history": "Cronologia Fatturazione",
-    "demo_banner": "Stai visualizzando la versione demo. Gli importi sono mascherati e le azioni sono disabilitate.",
-    "demo_disabled": "Disabilitato in modalità demo",
-    "overview": {
-      "balance": "Saldo",
-      "usage_mtd": "Spesa (mese in corso)",
-      "minutes_mtd": "Minuti (mese in corso)",
-      "cap_status_label": "Stato limite",
-      "of_cap": "di {{cap}}"
-    },
-    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
-  },
-  
+
   "security": {
     "title": "Impostazioni Sicurezza",
     "description": "Gestisci sicurezza e controlli di accesso",
@@ -427,7 +251,7 @@
     "api_keys": "Chiavi API",
     "audit_log": "Log Audit"
   },
-  
+
   "notifications": {
     "title": "Preferenze Notifiche",
     "description": "Configura come ricevi le notifiche",
@@ -437,8 +261,9 @@
     "in_app": "Notifiche in App",
     "frequency": "Frequenza Notifiche"
   },
-  
+
   "common": {
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "none": "Nessuno"
   }
 }

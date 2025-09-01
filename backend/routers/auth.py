@@ -86,10 +86,18 @@ class LoginIn(BaseModel):
 @router.get("/me")
 def auth_me(user: User = Depends(get_current_user)):
     """Get current user info for header"""
+    # Check if user is allowed to see demo data
+    from backend.config import settings
+    is_demo_allowed = user.email.lower() in settings.demo_admin_emails_list
+    
     return {
         "id": str(user.id), 
         "email": user.email, 
-        "name": getattr(user, "name", None) or user.email.split("@")[0]
+        "name": getattr(user, "name", None) or user.email.split("@")[0],
+        "locale": getattr(user, 'locale', None) or "en-US",
+        "is_admin_global": bool(user.is_admin_global),
+        "email_verified": bool(getattr(user, 'email_verified_at', None)),
+        "is_demo_allowed": is_demo_allowed,
     }
 
 @router.post("/login")
@@ -277,30 +285,5 @@ def auth_logout(response: Response, request: Request):
     clear_session_cookie(response)
     return Response(status_code=204)
 
-@router.get("/me")
-def auth_me(request: Request, db: Session = Depends(get_db)):
-    sid = read_session_cookie(request)
-    uid = get_user_id(sid)
-    if not uid:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    user = db.execute(select(User).where(User.id == uid)).scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    
-    # Check if user is allowed to see demo data
-    from backend.config import settings
-    is_demo_allowed = user.email.lower() in settings.demo_admin_emails_list
-    
-    # SHAPE SEMPRE UGUALI:
-    return {
-        "user": {
-            "id": str(user.id),
-            "email": user.email,
-            "name": user.name or (user.email.split("@")[0] if user.email else "User"),
-            "locale": getattr(user, 'locale', None) or "en-US",
-            "is_admin_global": bool(user.is_admin_global),
-            "email_verified": bool(user.email_verified_at),
-            "is_demo_allowed": is_demo_allowed,
-        }
-    }
+# RIMOSSO: definizione duplicata di /me che causava 500 invece di 401
+# La prima definizione (linea 85) usa get_current_user correttamente

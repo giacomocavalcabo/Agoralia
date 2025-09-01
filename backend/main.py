@@ -27,7 +27,9 @@ import sqlalchemy as sa
 assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
 from backend.routers import crm, auth, auth_microsoft, compliance
 from backend.utils.rate_limiter import telephony_rate_limiter
-from backend.services.webhook_verification import require_valid_webhook_signature
+from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
+from backend.services.webhook_verification import require_valid_webhook_verification
 from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
@@ -676,6 +678,16 @@ app.include_router(auth_microsoft.router)
 app.include_router(compliance.router)
 logger.info("Auth router included successfully")
 
+# --- NUOVO: alias con /api per compatibilità frontend
+logger.info("Including API aliases...")
+api = APIRouter(prefix="/api")
+api.include_router(auth.router)            # → /api/auth/*
+api.include_router(auth_microsoft.router)  # → /api/auth_microsoft/*
+api.include_router(compliance.router)      # → /api/compliance/*
+api.include_router(crm.router)             # → /api/crm/*
+app.include_router(api)
+logger.info("API aliases included successfully")
+
 # Session management moved to backend/sessions.py to avoid circular imports
 
 
@@ -730,6 +742,17 @@ def me_inbox(limit: int = 20) -> dict:
             return {"items": out}
     except Exception:
         return {"items": []}
+
+# --- NUOVO: alias per /api/metrics/* e /api/dashboard/* (redirect 307)
+@app.get("/api/metrics/{rest:path}")
+def _alias_metrics(rest: str, request: Request):
+    """Alias per /api/metrics/* → redirect a /metrics/*"""
+    return RedirectResponse(url=f"/metrics/{rest}", status_code=307)
+
+@app.get("/api/dashboard/{rest:path}")
+def _alias_dashboard(rest: str, request: Request):
+    """Alias per /api/dashboard/* → redirect a /dashboard/*"""
+    return RedirectResponse(url=f"/dashboard/{rest}", status_code=307)
 
 
 # ===================== Numbers Endpoints =====================

@@ -18,7 +18,7 @@ function e164OrThrow(input) {
 }
 
 export default function SettingsTelephony() {
-  const { t, i18n } = useTranslation('settings.telephony')
+  const { t, i18n } = useTranslation('settings')
   const qc = useQueryClient()
   const [buy, setBuy] = useState({ country: 'US', type: 'local', area_code: '' })
   const [byo, setByo] = useState({ provider: 'twilio', e164: '' })

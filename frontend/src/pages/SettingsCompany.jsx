@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '../components/ui/FormPrimitives.jsx'
 
 export default function SettingsCompany() {
-  const { t } = useTranslation('pages')
+  const { t } = useTranslation('settings')
   
   return (
     <div className="px-6 lg:px-8 py-6">
