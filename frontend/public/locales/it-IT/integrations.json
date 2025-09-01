@@ -14,6 +14,7 @@
     "title": "Errore"
   },
   "hubspot": {
+    "name": "HubSpot",
     "description": "Sincronizza contatti, aziende e deal con HubSpot CRM"
   },
   "mapping": {
@@ -96,6 +97,7 @@
     "coming_soon_desc": "Altre integrazioni saranno disponibili in aggiornamenti futuri"
   },
   "zoho": {
+    "name": "Zoho CRM",
     "description": "Connetti a Zoho CRM con supporto multi-DC"
   }
 }

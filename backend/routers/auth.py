@@ -84,7 +84,7 @@ class LoginIn(BaseModel):
     password: str
 
 @router.get("/me")
-def auth_me(user: User = Depends(get_current_user)):
+def auth_me(request: Request, user: User = Depends(get_current_user)):
     """Get current user info for header"""
     # Check if user is allowed to see demo data
     from backend.config import settings

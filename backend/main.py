@@ -256,14 +256,19 @@ logger.info("CORS middleware configured successfully")
 async def user_trace(request: Request, call_next):
     """Debug middleware: aggiunge header X-Req-User per tracciare utente"""
     try:
-        from backend.auth.session import get_session
-        sess = await get_session(request)
-        response = await call_next(request)
-        response.headers["X-Req-User"] = f"{sess.get('user_id','?')}|{sess.get('email','?')}|{sess.get('workspace_id','?')}"
-        return response
+        from backend.sessions import get_user_id, read_session_cookie
+        session_id = read_session_cookie(request)
+        if session_id:
+            user_id = get_user_id(session_id)
+            if user_id:
+                response = await call_next(request)
+                response.headers["X-Req-User"] = f"{user_id}|session:{session_id[:8]}"
+                return response
     except Exception:
-        response = await call_next(request)
-        return response
+        pass
+    
+    response = await call_next(request)
+    return response
 
 logger.info("User trace middleware configured successfully")
 
@@ -721,6 +726,19 @@ def test_endpoint() -> dict:
         "backend": "FastAPI",
         "deployment": "Railway"
     }
+
+@app.get("/__routes")
+def __routes():
+    """Debug endpoint per vedere tutte le rotte esposte"""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, "path") and hasattr(route, "methods"):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods),
+                "name": getattr(route, "name", "unknown")
+            })
+    return {"routes": routes, "total": len(routes)}
 
 
 @app.get("/me/usage")

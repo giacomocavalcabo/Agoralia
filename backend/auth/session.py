@@ -21,7 +21,7 @@ except Exception:
 
 from backend.config.settings import settings
 
-SESSION_COOKIE_NAME = getattr(settings, "SESSION_COOKIE_NAME", "session_id")
+SESSION_COOKIE_NAME = getattr(settings, "SESSION_COOKIE_NAME", "ag_sess")
 SESSION_TTL_SECONDS = int(getattr(settings, "SESSION_TTL_SECONDS", 86400))
 
 def _redis():
@@ -86,25 +86,26 @@ def set_session_cookie(response: Response, session_id: str):
 from sqlalchemy.orm import Session as OrmSession
 
 async def get_current_user(
-    sess: Dict[str, Any] = Depends(get_session),
+    request: Request,
     db: OrmSession = Depends(get_db),
 ) -> User:
     """
-    Risolve l'utente dalla sessione. Si aspetta almeno `email` in sessione.
+    Risolve l'utente dalla sessione in-memory. Usa il sistema sessions.py.
     """
-    email = sess.get("email")
-    user_id = sess.get("user_id")  # opzionale, se salvate anche l'id
-    if not email and not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session payload")
-
-    q = db.query(User)
-    if user_id:
-        user = q.filter(User.id == user_id).first()
-    else:
-        user = q.filter(User.email.ilike(email)).first()
-
+    from backend.sessions import get_user_id, read_session_cookie
+    
+    session_id = read_session_cookie(request)
+    if not session_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing session")
+    
+    user_id = get_user_id(session_id)
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired")
+    
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    
     return user
 
 def require_admin(user: User = Depends(get_current_user)) -> User:

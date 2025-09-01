@@ -31,6 +31,7 @@
     "test_failed_desc": "Failed to test connection to {provider}"
   },
   "hubspot": {
+    "name": "HubSpot",
     "description": "Sync contacts, companies, and deals with HubSpot CRM"
   },
   "mapping": {
@@ -52,6 +53,7 @@
     "select_provider_desc": "Choose a CRM provider to view sync status"
   },
   "odoo": {
+    "name": "Odoo",
     "description": "Integrate with Odoo CRM using JSON-RPC"
   },
   "portal_id": "Portal ID",
@@ -92,6 +94,7 @@
     "coming_soon_desc": "More integrations will be available in future updates"
   },
   "zoho": {
+    "name": "Zoho CRM",
     "description": "Connect to Zoho CRM with multi-DC support"
   }
 }
