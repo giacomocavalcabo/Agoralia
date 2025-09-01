@@ -46,13 +46,13 @@ export default function ProviderAccounts() {
       </ul>
 
       <form onSubmit={onSave} className="grid md:grid-cols-4 gap-3 p-3 border rounded">
-        <select className="input" name="provider" required defaultValue="telnyx">
+        <select className="rounded-lg border px-3 py-2 text-sm" name="provider" required defaultValue="telnyx">
           <option value="telnyx">Telnyx</option>
           <option value="twilio">Twilio</option>
         </select>
-        <input className="input" name="label" placeholder={t('settings.telephony.providers.label_placeholder', 'Label (opzionale)')} />
-        <input className="input" name="api_key" placeholder={t('settings.telephony.providers.api_key_placeholder', 'API Key (non verrà mostrata)')} required />
-        <button className="btn btn-primary" disabled={m.isPending}>
+        <input className="rounded-lg border px-3 py-2 text-sm" name="label" placeholder={t('settings.telephony.providers.label_placeholder', 'Label (opzionale)')} />
+        <input className="rounded-lg border px-3 py-2 text-sm" name="api_key" placeholder={t('settings.telephony.providers.api_key_placeholder', 'API Key (non verrà mostrata)')} required />
+        <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled={m.isPending}>
           {t('settings.telephony.providers.connect', 'Collega')}
         </button>
       </form>

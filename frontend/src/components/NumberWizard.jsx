@@ -58,7 +58,7 @@ export default function NumberWizard() {
       <div className="p-4 border rounded space-y-3">
         <h4 className="font-semibold">{t('settings.telephony.wizard.buy.title', 'Compra numero')}</h4>
         <form onSubmit={onBuy} className="grid md:grid-cols-2 gap-3">
-          <select name="provider_account_id" className="input" required>
+          <select name="provider_account_id" className="rounded-lg border px-3 py-2 text-sm" required>
             <option value="">{t('settings.telephony.wizard.select_provider', 'Seleziona account provider…')}</option>
             {providers.map(p => (
               <option key={p.id} value={p.id}>
@@ -67,23 +67,23 @@ export default function NumberWizard() {
             ))}
           </select>
           <input 
-            className="input" 
+            className="rounded-lg border px-3 py-2 text-sm" 
             name="country" 
             placeholder={t('settings.telephony.wizard.country_placeholder', 'Paese ISO2 (es. US, IT, IN)')} 
             required 
           />
-          <select name="type" className="input" defaultValue="local">
+          <select name="type" className="rounded-lg border px-3 py-2 text-sm" defaultValue="local">
             <option value="local">{t('settings.telephony.wizard.type.local', 'Local')}</option>
             <option value="mobile">{t('settings.telephony.wizard.type.mobile', 'Mobile')}</option>
             <option value="tollfree">{t('settings.telephony.wizard.type.tollfree', 'Toll-free')}</option>
           </select>
           <input 
-            className="input" 
+            className="rounded-lg border px-3 py-2 text-sm" 
             name="area_code" 
             placeholder={t('settings.telephony.wizard.area_code_placeholder', 'Area code (opzionale)')} 
           />
           <div className="md:col-span-2">
-            <button className="btn btn-primary" disabled={mBuy.isPending}>
+            <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled={mBuy.isPending}>
               {t('settings.telephony.wizard.buy.cta', 'Acquista')}
             </button>
           </div>
@@ -96,7 +96,7 @@ export default function NumberWizard() {
       <div className="p-4 border rounded space-y-3">
         <h4 className="font-semibold">{t('settings.telephony.wizard.import.title', 'Aggiungi numero esistente')}</h4>
         <form onSubmit={onImport} className="grid md:grid-cols-2 gap-3">
-          <select name="provider_account_id" className="input" required>
+          <select name="provider_account_id" className="rounded-lg border px-3 py-2 text-sm" required>
             <option value="">{t('settings.telephony.wizard.select_provider', 'Seleziona account provider…')}</option>
             {providers.map(p => (
               <option key={p.id} value={p.id}>
@@ -105,13 +105,13 @@ export default function NumberWizard() {
             ))}
           </select>
           <input 
-            className="input" 
+            className="rounded-lg border px-3 py-2 text-sm" 
             name="e164" 
             placeholder={t('settings.telephony.wizard.e164_placeholder', 'Numero in E.164 (es. +12125551234)')} 
             required 
           />
           <div className="md:col-span-2">
-            <button className="btn" disabled={mImport.isPending}>
+            <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled={mImport.isPending}>
               {t('settings.telephony.wizard.import.cta', 'Aggiungi')}
             </button>
           </div>
