@@ -29,7 +29,7 @@ from backend.routers import crm, auth, auth_microsoft, compliance, integrations
 from backend.utils.rate_limiter import telephony_rate_limiter
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from backend.services.webhook_verification import require_valid_webhook_verification
+from backend.services.webhook_verification import require_valid_webhook_signature
 from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,

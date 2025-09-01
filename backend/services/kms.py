@@ -6,10 +6,10 @@ Uses APP_KMS_KEY from settings with Fernet encryption
 import base64
 import json
 from cryptography.fernet import Fernet, InvalidToken
-from backend.config.settings import settings
+import os
 
 # Simple key derivation from APP_KMS_KEY
-_key = base64.urlsafe_b64encode(settings.APP_KMS_KEY.encode("utf-8").ljust(32, b"0")[:32])
+_key = base64.urlsafe_b64encode((os.getenv("APP_KMS_KEY", "") or "dev_kms_key_dev_kms_key_32bytes!").encode()[:32])
 _f = Fernet(_key)
 
 def encrypt_str(s: str) -> str:

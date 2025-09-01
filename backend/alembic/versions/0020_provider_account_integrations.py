@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0020_provider_account_integrations"
-down_revision = "0019_compliance"  # aggiorna al tuo head attuale
+down_revision = "0019_merge_all_branches"  # aggiorna al tuo head attuale
 
 def upgrade():
     with op.batch_alter_table("provider_accounts") as batch:
