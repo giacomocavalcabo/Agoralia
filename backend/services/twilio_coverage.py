@@ -13,7 +13,7 @@ SNAPSHOT_FILE = SNAPSHOT_DIR / "twilio_coverage.json"
 REG_SEED_FILE = SNAPSHOT_DIR / "twilio_regulations_seed.json"  # opzionale (seed manuale)
 
 def _twilio_client() -> Client:
-    from config.settings import settings
+    from backend.config.settings import settings
     return Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
 def _fetch_country_list(client: Client) -> List[Dict[str, Any]]:

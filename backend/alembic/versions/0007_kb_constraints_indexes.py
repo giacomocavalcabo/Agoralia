@@ -1,6 +1,6 @@
 """Add KB constraints, unique constraints, and indexes
-Revision ID: 0007
-Revises: 0006_phone_e164_unique
+Revision ID: 0007_kb_constraints_indexes
+Revises: 0006_knowledge_base_system
 Create Date: 2025-01-18 15:00:00.000000
 """
 from alembic import op
@@ -8,8 +8,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '0007'
-down_revision = '0006_phone_e164_unique'
+revision = '0007_kb_constraints_indexes'
+down_revision = '0006_knowledge_base_system'
 branch_labels = None
 depends_on = None
 

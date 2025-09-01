@@ -34,3 +34,6 @@ prometheus-client==0.19.0
 # Telephony Provider dependencies
 cryptography==41.0.7
 twilio==8.10.0
+
+# Worker dependencies
+APScheduler==3.10.4

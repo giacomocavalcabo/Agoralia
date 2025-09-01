@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
 # from backend.models import CallDailyAggregate, CallRecord  # TODO: implement when models exist
-from config.settings import settings
+from backend.config.settings import settings
 
 logger = logging.getLogger(__name__)
 

@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import sqlite
 
 # revision identifiers, used by Alembic.
-revision = '0015'
-down_revision = '0014'
+revision = '0015_gamma_calls_storage'
+down_revision = '0014_kb_structured_cards_and_quality'
 branch_labels = None
 depends_on = None
 

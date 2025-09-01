@@ -192,20 +192,54 @@
         "title": "Telefonia",
         "subtitle": "Gestisci numeri, provider e instradamento chiamate.",
         "numbers": "Numeri di telefono",
+        "policy": {
+          "title": "Policy",
+          "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."
+        },
+        "providers": {
+          "title": "Account provider",
+          "linked": "Collegato",
+          "label_placeholder": "Etichetta (opzionale)",
+          "api_key_placeholder": "API Key (non verrà mostrata)",
+          "connect": "Collega",
+          "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+        },
         "buy": {
-          "title": "Acquista numero (Retell)",
+          "title": "Compra numero",
           "country": "Paese",
           "type": "Tipologia",
           "area_code": "Prefisso (opzionale)",
-          "cta": "Acquista"
+          "cta": "Acquista",
+          "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
+        },
+        "wizard": {
+          "buy": {
+            "title": "Compra numero",
+            "cta": "Acquista",
+            "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
+          },
+          "import": {
+            "title": "Aggiungi numero esistente",
+            "cta": "Aggiungi",
+            "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
+          },
+          "select_provider": "Seleziona account provider...",
+          "country_placeholder": "Paese ISO2 (es. US, IT, IN)",
+          "type": {
+            "local": "Locale",
+            "mobile": "Mobile",
+            "tollfree": "Toll-free"
+          },
+          "area_code_placeholder": "Prefisso (opzionale)"
         },
         "byo": {
-          "title": "Porta il tuo numero",
+          "title": "Aggiungi numero esistente",
           "provider": "Provider",
           "e164": "Numero (E.164)",
-          "cta": "Collega numero",
+          "cta": "Aggiungi",
           "code": "Codice di conferma",
-          "confirm": "Conferma"
+          "confirm": "Conferma",
+          "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
         },
         "route": {
           "title": "Instradamento",
@@ -214,6 +248,38 @@
           "inbound": "Agente inbound",
           "outbound": "Agente outbound",
           "save": "Salva instradamento"
+        },
+        "orders": {
+          "title": "Ordini & Import",
+          "order_id": "ID Ordine",
+          "provider": "Provider",
+          "number": "Numero",
+          "status": "Stato",
+          "empty": "Nessun ordine"
+        },
+        "coverage": {
+          "title": "Copertura & Requisiti",
+          "select_country": "Seleziona Paese",
+          "choose_country": "Scegli un paese...",
+          "origin_country": "Paese di Origine (per pricing)",
+          "what_you_can_buy": "Cosa puoi comprare qui",
+          "features": "Funzionalità",
+          "import_support": "Import/Porting",
+          "outbound_policy": "Outbound Caller ID",
+          "requirements": "Requisiti & Documenti",
+          "notes": "Note",
+          "pricing": "Pricing (stima)",
+          "buy_with_provider": "Compra con questo provider",
+          "add_existing": "Aggiungi numero esistente",
+          "provider_info": {
+            "global_coverage": "Copertura Globale",
+            "twilio_description": "Copertura ampia con numeri locali, mobile e toll-free in molti paesi",
+            "telnyx_description": "Qualità e affidabilità Tier-1, ottimo in Europa/LatAm/APAC"
+          },
+          "status": {
+            "available": "Disponibile",
+            "not_available": "Non disponibile"
+          }
         }
       }
     }

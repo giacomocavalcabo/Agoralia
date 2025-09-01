@@ -10,15 +10,19 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '0006'
+revision = '0006_knowledge_base_system'
 down_revision = '0003_numbers_outcomes'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    # Enable pgvector extension for embeddings
-    op.execute('CREATE EXTENSION IF NOT EXISTS vector')
+    # Enable pgvector extension for embeddings (PostgreSQL only)
+    try:
+        op.execute('CREATE EXTENSION IF NOT EXISTS vector')
+    except:
+        # SQLite doesn't support extensions, skip
+        pass
     
     # Create knowledge_bases table
     op.create_table('knowledge_bases',

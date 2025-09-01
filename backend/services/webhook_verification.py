@@ -5,7 +5,7 @@ import time
 import logging
 from typing import Optional
 from fastapi import HTTPException, Request
-from config.settings import settings
+from backend.config.settings import settings
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 """
 Auth dependencies - Centralized auth and tenant resolution
 """
+import os
 from fastapi import HTTPException, Header, Query, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -143,3 +144,38 @@ def require_recent_auth(
     # In production, check last TOTP verification time
     # For now, just require authentication
     return current_user
+
+
+# Alias per compatibilità con le route esistenti
+def auth_guard(
+    current_user: User = Depends(require_auth)
+) -> User:
+    """
+    Alias per require_auth - compatibilità con route esistenti
+    """
+    return current_user
+
+
+def admin_guard(
+    request: Request, 
+    x_admin_email: Optional[str] = Header(default=None), 
+    admin_email: Optional[str] = Query(default=None)
+) -> None:
+    """
+    Require admin access - compatibilità con route esistenti
+    Usa la stessa logica di require_admin_or_session
+    """
+    # Import localmente per evitare circular imports
+    from backend.main import _require_admin, _get_session
+    
+    chosen = x_admin_email or admin_email
+    wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
+    if wildcard == "*":
+        return
+    if chosen:
+        _require_admin(chosen)
+        return
+    sess = _get_session(request)
+    claims = (sess or {}).get("claims") if sess else None
+    if not claims or not claims.get("is_admin_global"):
+        raise HTTPException(status_code=403, detail="Admin required")

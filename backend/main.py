@@ -41,6 +41,7 @@ from backend.services.billing_service import (
 )
 from backend.services.budget_guard import atomic_ledger_write, atomic_budget_check
 from backend import schemas
+from backend.deps import auth_guard, admin_guard
 
 # Models will be imported locally where needed to avoid duplication
 from typing import Callable, Any, List, Dict
@@ -923,8 +924,7 @@ def require_admin_or_session(request: Request, x_admin_email: str | None = Heade
         raise HTTPException(status_code=403, detail="Admin required")
 
 
-def admin_guard(request: Request, x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
-    return require_admin_or_session(request, x_admin_email, admin_email)
+# admin_guard è ora importato da backend.deps
 
 
 # ===================== Admin read-only endpoints (MVP scaffolding) =====================
@@ -4156,9 +4156,9 @@ async def list_orders(
 # ===================== Telephony Coverage (Twilio) =====================
 from fastapi import Header, HTTPException
 from fastapi.responses import JSONResponse
-from services.coverage_cache import get as get_coverage_cache, set_mem as set_coverage_cache, save_disk, headers as cache_headers
-from services.twilio_coverage import build_twilio_snapshot
-from config.settings import settings
+from backend.services.coverage_cache import get as get_coverage_cache, set_mem as set_coverage_cache, save_disk, headers as cache_headers
+from backend.services.twilio_coverage import build_twilio_snapshot
+from backend.config.settings import settings
 
 @app.get("/settings/telephony/coverage")
 async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
@@ -4438,7 +4438,7 @@ async def twilio_inventory_search(
     """
     Ricerca live (Twilio) – l'inventario NON può essere staticizzato.
     """
-    from config.settings import settings
+    from backend.config.settings import settings
     from twilio.rest import Client as TwilioClient
     
     client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)

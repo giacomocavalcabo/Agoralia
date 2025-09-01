@@ -8,20 +8,21 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '0010'
-down_revision = '0003_numbers_outcomes'
+revision = '0010_kb_constraints_indexes'
+down_revision = '0006_knowledge_base_system'
 branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
     # ===================== KB Constraints & Indexes =====================
     
-    # Unique constraint on kb_fields (kb_id, section_id, key, lang)
-    op.create_unique_constraint(
-        'uq_kb_fields_kb_section_key_lang',
-        'kb_fields',
-        ['kb_id', 'section_id', 'key', 'lang']
-    )
+    # Use batch mode for SQLite compatibility
+    with op.batch_alter_table('kb_fields') as batch_op:
+        # Unique constraint on kb_fields (kb_id, section_id, key, lang)
+        batch_op.create_unique_constraint(
+            'uq_kb_fields_kb_section_key_lang',
+            ['kb_id', 'section_id', 'key', 'lang']
+        )
     
     # Index for performance on kb_fields lookups
     op.create_index(
@@ -73,11 +74,11 @@ def upgrade() -> None:
     )
     
     # Index for idempotency key
-    op.create_unique_constraint(
-        'uq_kb_import_jobs_idempotency_key',
-        'kb_import_jobs',
-        ['idempotency_key']
-    )
+    with op.batch_alter_table('kb_import_jobs') as batch_op:
+        batch_op.create_unique_constraint(
+            'uq_kb_import_jobs_idempotency_key',
+            ['idempotency_key']
+        )
     
     # Index for job progress tracking
     op.create_index(
@@ -105,40 +106,53 @@ def upgrade() -> None:
     # ===================== Add missing columns =====================
     
     # Add version column for optimistic locking
-    op.add_column('kb_fields', sa.Column('version', sa.Integer(), nullable=False, default=1))
+    with op.batch_alter_table('kb_fields') as batch_op:
+        batch_op.add_column(sa.Column('version', sa.Integer(), nullable=False, default=1))
     
     # Add cost tracking columns
-    op.add_column('kb_import_jobs', sa.Column('cost_estimated_cents', sa.Integer(), nullable=True))
-    op.add_column('kb_import_jobs', sa.Column('cost_actual_cents', sa.Integer(), nullable=True))
-    
-    # Add progress tracking
-    op.add_column('kb_import_jobs', sa.Column('progress_json', postgresql.JSONB(), nullable=True))
-    
-    # Add template configuration
-    op.add_column('kb_import_jobs', sa.Column('template_json', postgresql.JSONB(), nullable=True))
-    
-    # Add error details
-    op.add_column('kb_import_jobs', sa.Column('error_details', postgresql.JSONB(), nullable=True))
+    with op.batch_alter_table('kb_import_jobs') as batch_op:
+        batch_op.add_column(sa.Column('cost_estimated_cents', sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column('cost_actual_cents', sa.Integer(), nullable=True))
+        
+        # Add progress tracking
+        batch_op.add_column(sa.Column('progress_json', sa.JSON(), nullable=True))
+        
+        # Add template configuration
+        batch_op.add_column(sa.Column('template_json', sa.JSON(), nullable=True))
+        
+        # Add error details
+        batch_op.add_column(sa.Column('error_details', sa.JSON(), nullable=True))
 
 def downgrade() -> None:
-    # Remove indexes
-    op.drop_index('ix_kb_fields_kb_section_key', 'kb_fields')
-    op.drop_index('ix_kb_fields_lang', 'kb_fields')
-    op.drop_index('ix_kb_fields_completeness_freshness', 'kb_fields')
+    # Use batch mode for SQLite compatibility
+    with op.batch_alter_table('kb_fields') as batch_op:
+        # Remove indexes
+        batch_op.drop_index('ix_kb_fields_kb_section_key')
+        batch_op.drop_index('ix_kb_fields_lang')
+        batch_op.drop_index('ix_kb_fields_completeness_freshness')
+        
+        # Remove unique constraints
+        batch_op.drop_constraint('uq_kb_fields_kb_section_key_lang', type_='unique')
+        
+        # Remove columns
+        batch_op.drop_column('version')
+    
+    with op.batch_alter_table('kb_import_jobs') as batch_op:
+        # Remove indexes
+        batch_op.drop_index('ix_kb_import_jobs_workspace_status')
+        batch_op.drop_index('ix_kb_import_jobs_created_at')
+        
+        # Remove unique constraints
+        batch_op.drop_constraint('uq_kb_import_jobs_idempotency_key', type_='unique')
+        
+        # Remove columns
+        batch_op.drop_column('cost_estimated_cents')
+        batch_op.drop_column('cost_actual_cents')
+        batch_op.drop_column('progress_json')
+        batch_op.drop_column('template_json')
+        batch_op.drop_column('error_details')
+    
+    # Remove other indexes (not in batch mode)
     op.drop_index('ix_kb_sections_kb_id', 'kb_sections')
     op.drop_index('ix_kb_sources_workspace_kb', 'kb_sources')
     op.drop_index('ix_kb_chunks_source_id', 'kb_chunks')
-    op.drop_index('ix_kb_import_jobs_workspace_status', 'kb_import_jobs')
-    op.drop_index('ix_kb_import_jobs_created_at', 'kb_import_jobs')
-    
-    # Remove unique constraints
-    op.drop_constraint('uq_kb_fields_kb_section_key_lang', 'kb_fields', type_='unique')
-    op.drop_constraint('uq_kb_import_jobs_idempotency_key', 'kb_import_jobs', type_='unique')
-    
-    # Remove columns
-    op.drop_column('kb_fields', 'version')
-    op.drop_column('kb_import_jobs', 'cost_estimated_cents')
-    op.drop_column('kb_import_jobs', 'cost_actual_cents')
-    op.drop_column('kb_import_jobs', 'progress_json')
-    op.drop_column('kb_import_jobs', 'template_json')
-    op.drop_column('kb_import_jobs', 'error_details')
