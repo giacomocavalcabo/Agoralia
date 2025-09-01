@@ -17,7 +17,9 @@
     "billing": "Billing",
     "billing_desc": "Manage billing and subscriptions",
     "telephony": "Telephony",
-    "telephony_desc": "Manage phone numbers and routing"
+    "telephony_desc": "Manage phone numbers and routing",
+    "telephony_compliance": "Compliance",
+    "telephony_compliance_desc": "Manage compliance and KYC"
   },
   
   "account": {
@@ -184,12 +186,7 @@
     }
   },
   
-  "nav": {
-    "telephony": "Telephony",
-    "telephony_desc": "Manage phone numbers and routing",
-    "telephony_compliance": "Compliance",
-    "telephony_compliance_desc": "Manage compliance and KYC"
-  },
+
   
   "pages": {
     "settings": {
