@@ -7,8 +7,7 @@ const baseGroups = [
 	{ label: 'Operate', items:[
 		{ label:'Leads', to:'/leads' },
 		{ label:'Campaigns', to:'/campaigns' }, 
-		{ label:'Calendar', to:'/calendar' }, 
-		{ label:'Numbers', to:'/numbers' }
+		{ label:'Calendar', to:'/calendar' }
 	]},
 	{ label: 'Knowledge', items:[
 		{ label:'Overview', to:'/knowledge' }, 

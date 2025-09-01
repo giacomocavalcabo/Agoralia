@@ -73,5 +73,8 @@
   "status": {
     "under_limit": "Under limit",
     "over_limit": "Over limit"
-  }
+  },
+  
+  "hard_stop_banner": "Monthly budget reached. Purchase/Import are disabled.",
+  "hard_stop_detail": "Your monthly budget limit has been reached. Please update your billing settings to continue."
 }

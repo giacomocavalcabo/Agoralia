@@ -91,8 +91,13 @@
   },
   
   "telephony": {
+      "title": "Telephony",
+      "subtitle": "Manage phone numbers, providers and routing",
       "buy_number": "[Buy Number]",
-      "numbers": "[Numbers]",
+      "numbers": "Phone numbers",
+      "connect_provider_title": "Connect a Telephony Provider",
+      "connect_provider_desc": "To purchase or import phone numbers, you need to connect a telephony provider account first.",
+      "connect_provider_cta": "Connect Provider",
       "policy": {
         "title": "Policy",
         "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."
@@ -101,15 +106,41 @@
       "inbound": "Inbound",
       "outbound": "Outbound",
       "save": "Save",
-      "outbound_locked": "Outbound not allowed for forwarded numbers"
+      "outbound_locked": "Outbound not allowed for forwarded numbers",
+      "outbound_requires_hosted": "Outbound requires hosted number"
     },
     "providers": {
       "title": "Provider accounts",
       "linked": "Linked",
-      "label_placeholder": "Label (opzionale)",
-      "api_key_placeholder": "API Key (non verrà mostrata)",
-      "connect": "Collega",
-      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+      "label_placeholder": "Label (optional)",
+      "api_key_placeholder": "API Key (will not be shown)",
+      "connect": "Connect",
+      "description": "API keys are encrypted at rest. You can purchase or add numbers directly below."
+    },
+    "buy": {
+      "title": "Buy number",
+      "country": "Country",
+      "type": "Type",
+      "area_code": "Area code (optional)",
+      "cta": "Purchase",
+      "description": "In some countries, documents/regulatory bundle may be required. Status may remain 'review' until approved by provider."
+    },
+    "byo": {
+      "title": "Add existing number",
+      "provider": "Provider",
+      "e164": "Phone (E.164)",
+      "cta": "Add",
+      "code": "Confirmation code",
+      "confirm": "Confirm",
+      "description": "Outbound is only allowed if the number is **hosted and verified** with the linked provider."
+    },
+    "route": {
+      "title": "Routing",
+      "number": "Number",
+      "select": "Select a number",
+      "inbound": "Inbound agent",
+      "outbound": "Outbound agent",
+      "save": "Save routing"
     },
     "badges": {
       "hosted": "Hosted",
@@ -135,10 +166,27 @@
         "missing": "Compliance required before purchase/import. Complete KYC."
       },
     "coverage": {
+      "title": "Coverage & Requirements",
+      "select_country": "Select Country",
+      "choose_country": "Choose a country...",
+      "origin_country": "Origin Country (for pricing)",
+      "what_you_can_buy": "What you can buy here",
+      "features": "Features",
+      "import_support": "Import/Porting",
+      "outbound_policy": "Outbound Caller ID",
       "last_updated": "Last updated",
       "rebuild_snapshot": "Rebuild snapshot",
       "rebuild_ok": "Snapshot rebuild started",
-      "rebuild_err": "Failed to rebuild snapshot"
+      "rebuild_err": "Failed to rebuild snapshot",
+      "status": {
+        "available": "Available",
+        "not_available": "Not available"
+      },
+      "provider_info": {
+        "global_coverage": "Global Coverage",
+        "twilio_description": "Twilio provides global coverage with competitive pricing and extensive regulatory compliance.",
+        "telnyx_description": "Telnyx offers enterprise-grade telephony with advanced features and global reach."
+      }
     },
     "wizard": {
       "buy": {
@@ -251,6 +299,13 @@
           "inbound": "Inbound agent",
           "outbound": "Outbound agent",
           "save": "Save routing"
+        },
+        "bind": {
+          "inbound": "Inbound",
+          "outbound": "Outbound",
+          "outbound_requires_hosted": "Outbound requires hosted numbers only",
+          "outbound_locked": "Outbound locked for external numbers",
+          "save": "Save binding"
         },
         "orders": {
           "title": "Orders & Import",

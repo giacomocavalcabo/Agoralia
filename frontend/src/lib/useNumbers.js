@@ -49,7 +49,7 @@ export function useNumbers(params = {}) {
         dir: sortDir,
         ...filters
       }
-      const res = await get('/numbers', search, { signal })
+      const res = await get('/settings/telephony/numbers', search, { signal })
       const data = mapResponseShape(res).data.map(n => ({
         id: n.id,
         e164: n.e164,

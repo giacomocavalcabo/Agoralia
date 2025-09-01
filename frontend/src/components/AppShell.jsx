@@ -27,7 +27,7 @@ const navigation = [
   { name: 'Leads', href: '/leads', icon: UserIcon },
   { name: 'Campaigns', href: '/campaigns', icon: PhoneIcon },
   { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
-  { name: 'Numbers', href: '/numbers', icon: HashtagIcon },
+  // Numbers moved to Settings → Telephony
   { name: 'Knowledge Base', href: '/knowledge', icon: BookOpenIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'History', href: '/history', icon: ClockIcon },

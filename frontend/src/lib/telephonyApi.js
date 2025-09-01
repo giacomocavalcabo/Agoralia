@@ -1,60 +1,46 @@
 // frontend/src/lib/telephonyApi.js
-import { apiFetch } from "./api";
+import { http } from './http';
 
-export async function getCoverage(provider) {
-  const r = await fetch(`/api/settings/telephony/coverage?provider=${provider}`);
-  if (!r.ok) throw new Error(`coverage_${r.status}`);
-  return r.json();
-}
+// Numbers management
+export const listNumbers = () => http.get('/settings/telephony/numbers').then(r => r.data);
+export const searchInventory = (params) => http.get('/settings/telephony/inventory/search', { params }).then(r => r.data);
+export const purchaseNumber = (payload) =>
+  http.post('/settings/telephony/numbers/purchase', payload, { 
+    headers: { 'Idempotency-Key': crypto.randomUUID() }
+  }).then(r => r.data);
 
-export async function searchInventoryTwilio({ country, type, areaCode, contains }) {
-  const qs = new URLSearchParams({
-    provider: 'twilio',
-    country,
-    number_type: type,
-  });
-  if (areaCode) qs.set('area_code', areaCode);
-  if (contains) qs.set('contains', contains);
-  
-  const r = await fetch(`/api/settings/telephony/inventory/search?${qs}`);
-  if (!r.ok) throw new Error(`inv_${r.status}`);
-  return r.json();
-}
+export const purchaseRetellNumber = purchaseNumber; // Alias per compatibilità
 
-export async function rebuildTwilioSnapshot() {
-  const r = await fetch('/api/settings/telephony/coverage/rebuild?provider=twilio', {
-    method: 'POST',
-    headers: { 
-      'X-Cron-Secret': import.meta.env.VITE_CRON_SECRET ?? '' // opzionale, solo in local
-    },
-  });
-  if (!r.ok) throw new Error(`rebuild_${r.status}`);
-  return r.json();
-}
+export const importNumber = (payload) =>
+  http.post('/settings/telephony/numbers/import', payload, { 
+    headers: { 'Idempotency-Key': crypto.randomUUID() }
+  }).then(r => r.data);
 
-// Compliance API
-export const getComplianceRequirements = (q) =>
-  apiFetch(`/api/settings/telephony/compliance/requirements?provider=${q.provider}&country=${q.country}&number_type=${q.number_type}&entity_type=${q.entity_type}`);
+export const importNumberApi = importNumber; // Alias per compatibilità
 
-export const createComplianceSubmission = (body) =>
-  apiFetch('/api/settings/telephony/compliance/submissions', { method:'POST', body: JSON.stringify(body) });
+export const bindNumber = (payload) => http.post('/settings/telephony/bind', payload).then(r => r.data);
+export const setRouting = bindNumber; // Alias per compatibilità
 
-export const uploadComplianceFile = (subId, kind, file) => {
-  const fd = new FormData(); 
-  fd.append('kind', kind); 
-  fd.append('f', file);
-  return apiFetch(`/api/settings/telephony/compliance/submissions/${subId}/files`, { method:'POST', body: fd });
-};
+// Stub per compatibilità (non più necessario con il nuovo sistema)
+export const confirmImport = async () => ({ success: true });
 
-// Portability API
-export const checkPortability = (provider, country, type) =>
-  apiFetch(`/api/settings/telephony/portability?provider=${provider}&country=${country}&number_type=${type}`);
+// Provider management
+export const listProviders = () => http.get('/settings/telephony/providers').then(r => r.data);
+export const connectProvider = (payload) => http.post('/settings/telephony/providers', payload).then(r => r.data);
+export const upsertProvider = connectProvider; // Alias per compatibilità
 
-// Mantieni compatibilità con l'API esistente
-export { 
-  listProviders, 
-  upsertProvider, 
-  purchaseNumber, 
-  importNumberApi, 
-  listOrders 
-} from './numbersApi';
+// Coverage and capabilities
+export const getCoverage = () => http.get('/settings/telephony/coverage').then(r => r.data);
+export const rebuildCoverage = () => http.post('/settings/telephony/coverage/rebuild').then(r => r.data);
+export const getCountries = () => http.get('/settings/telephony/countries').then(r => r.data);
+export const getCapabilities = () => http.get('/settings/telephony/capabilities').then(r => r.data);
+
+// Billing and compliance
+export const billingSummary = () => http.get('/settings/billing/summary').then(r => r.data);
+export const complianceRequirements = (params) => http.get('/compliance/requirements', { params }).then(r => r.data);
+
+// Orders
+export const listOrders = () => http.get('/settings/telephony/orders').then(r => r.data);
+
+// Agents for binding
+export const listAgents = () => http.get('/settings/telephony/agents').then(r => r.data);

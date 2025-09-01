@@ -1,3 +1,4 @@
 {
-  "attest": "Attest"
+  "attest": "Attest",
+  "required_message": "Compliance documents are required for this country/type combination. Please complete the compliance process first."
 }

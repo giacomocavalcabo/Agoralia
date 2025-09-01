@@ -46,9 +46,9 @@ export default function CoveragePanel() {
 
   const getStatusText = (enabled) => {
     return enabled ? (
-      <span className="text-green-700 font-medium">✓ {t('settings.telephony.coverage.status.available')}</span>
+      <span className="text-green-700 font-medium">✓ {t('telephony.coverage.status.available')}</span>
     ) : (
-      <span className="text-red-700 font-medium">✗ {t('settings.telephony.coverage.status.not_available')}</span>
+      <span className="text-red-700 font-medium">✗ {t('telephony.coverage.status.not_available')}</span>
     );
   };
 
@@ -56,7 +56,7 @@ export default function CoveragePanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {t('settings.telephony.coverage.title', 'Coverage & Requirements')}
+          {t('telephony.coverage.title', 'Coverage & Requirements')}
         </h3>
         <div className="flex items-center gap-2">
           <select
@@ -78,13 +78,13 @@ export default function CoveragePanel() {
         <div className="flex items-center gap-2 mb-2">
           <InformationCircleIcon className="w-5 h-5 text-blue-600" />
           <span className="font-medium text-blue-900">
-            {selectedProvider.toUpperCase()} - {t('settings.telephony.coverage.provider_info.global_coverage')}
+            {selectedProvider.toUpperCase()} - {t('telephony.coverage.provider_info.global_coverage')}
           </span>
         </div>
         <p className="text-sm text-blue-800">
           {selectedProvider === "twilio" 
-            ? t('settings.telephony.coverage.provider_info.twilio_description')
-            : t('settings.telephony.coverage.provider_info.telnyx_description')
+            ? t('telephony.coverage.provider_info.twilio_description')
+            : t('telephony.coverage.provider_info.telnyx_description')
           }
         </p>
       </div>
@@ -92,7 +92,7 @@ export default function CoveragePanel() {
       {/* Country Selection */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          {t('settings.telephony.coverage.select_country', 'Seleziona Paese')}
+          {t('telephony.coverage.select_country', 'Seleziona Paese')}
         </label>
         <select
           className="input w-full"

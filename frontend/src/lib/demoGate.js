@@ -6,7 +6,7 @@ function demoFor(path, params) {
   if (path.startsWith('/leads')) return { total: 150, data: makeLeads({ total: 150 }) };
   if (path.startsWith('/dashboard/summary')) return makeDashboardSummary({});
   if (path.startsWith('/campaigns')) return makeCampaigns({ total: 12 });
-  if (path.startsWith('/numbers')) return makeNumbers({ total: 25 });
+  if (path.startsWith('/settings/telephony/numbers')) return makeNumbers({ total: 25 });
   if (path.startsWith('/knowledge')) return makeKnowledgeBase({ total: 8 });
   return null; // default: niente demo
 }

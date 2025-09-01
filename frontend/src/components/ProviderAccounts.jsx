@@ -1,11 +1,11 @@
 // frontend/src/components/ProviderAccounts.jsx
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listProviders, upsertProvider } from "../lib/numbersApi";
+import { listProviders, upsertProvider } from "../lib/telephonyApi";
 import { useTranslation } from "react-i18next";
 
 export default function ProviderAccounts() {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation('settings.telephony');
   const qc = useQueryClient();
   const { data: providers = [] } = useQuery({ queryKey: ["providers"], queryFn: listProviders });
   
@@ -29,7 +29,7 @@ export default function ProviderAccounts() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">{t('settings.telephony.providers.title', 'Provider accounts')}</h3>
+      <h3 className="text-lg font-semibold">{t('telephony.providers.title', 'Provider accounts')}</h3>
       
       <ul className="space-y-2">
         {providers.map(p => (
@@ -39,7 +39,7 @@ export default function ProviderAccounts() {
               <div className="text-sm text-muted-foreground">{p.label || p.id}</div>
             </div>
             <span className="text-xs rounded px-2 py-1 bg-emerald-100 text-emerald-700">
-              {t('settings.telephony.providers.linked', 'Linked')}
+              {t('telephony.providers.linked', 'Linked')}
             </span>
           </li>
         ))}
@@ -50,15 +50,15 @@ export default function ProviderAccounts() {
           <option value="telnyx">Telnyx</option>
           <option value="twilio">Twilio</option>
         </select>
-        <input className="rounded-lg border px-3 py-2 text-sm" name="label" placeholder={t('settings.telephony.providers.label_placeholder', 'Label (opzionale)')} />
-        <input className="rounded-lg border px-3 py-2 text-sm" name="api_key" placeholder={t('settings.telephony.providers.api_key_placeholder', 'API Key (non verrà mostrata)')} required />
+        <input className="rounded-lg border px-3 py-2 text-sm" name="label" placeholder={t('telephony.providers.label_placeholder', 'Label (opzionale)')} />
+        <input className="text-sm" name="api_key" placeholder={t('telephony.providers.api_key_placeholder', 'API Key (non verrà mostrata)')} required />
         <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled={m.isPending}>
-          {t('settings.telephony.providers.connect', 'Collega')}
+          {t('telephony.providers.connect', 'Collega')}
         </button>
       </form>
 
       <p className="text-sm text-muted-foreground">
-        {t('settings.telephony.providers.description', 'Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto.')}
+        {t('telephony.providers.description', 'Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto.')}
       </p>
     </div>
   );

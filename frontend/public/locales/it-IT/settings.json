@@ -90,17 +90,20 @@
     "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
   },
   "telephony": {
+    "title": "Telefonia",
+    "subtitle": "Gestisci numeri di telefono, provider e instradamento",
     "buy_number": "[Numero di acquisto]",
-    "numbers": "[Numeri]",
+    "numbers": "Numeri di telefono",
     "policy": {
       "title": "Policy",
       "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."
     },
     "bind": {
-      "inbound": "Inbound",
-      "outbound": "Outbound",
+      "inbound": "In entrata",
+      "outbound": "In uscita",
       "save": "Salva",
-      "outbound_locked": "Outbound non consentito per numeri inoltrati"
+      "outbound_locked": "Outbound non consentito per numeri inoltrati",
+      "outbound_requires_hosted": "Outbound richiede numero ospitato"
     },
     "providers": {
       "title": "Account provider",
@@ -109,6 +112,31 @@
       "api_key_placeholder": "API Key (non verrà mostrata)",
       "connect": "Collega",
       "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+    },
+    "buy": {
+      "title": "Compra numero",
+      "country": "Paese",
+      "type": "Tipologia",
+      "area_code": "Prefisso (opzionale)",
+      "cta": "Acquista",
+      "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
+    },
+    "byo": {
+      "title": "Aggiungi numero esistente",
+      "provider": "Provider",
+      "e164": "Numero (E.164)",
+      "cta": "Aggiungi",
+      "code": "Codice di conferma",
+      "confirm": "Conferma",
+      "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato."
+    },
+    "route": {
+      "title": "Instradamento",
+      "number": "Numero",
+      "select": "Seleziona un numero",
+      "inbound": "Agente inbound",
+      "outbound": "Agente outbound",
+      "save": "Salva instradamento"
     },
     "badges": {
       "hosted": "Ospitato",
@@ -134,10 +162,27 @@
         "missing": "Serve la conformità prima di acquistare/importare. Completa il KYC."
       },
     "coverage": {
+      "title": "Copertura & Requisiti",
+      "select_country": "Seleziona Paese",
+      "choose_country": "Scegli un paese...",
+      "origin_country": "Paese di Origine (per pricing)",
+      "what_you_can_buy": "Cosa puoi comprare qui",
+      "features": "Funzionalità",
+      "import_support": "Import/Porting",
+      "outbound_policy": "Outbound Caller ID",
       "last_updated": "Ultimo aggiornamento",
       "rebuild_snapshot": "Rigenera snapshot",
       "rebuild_ok": "Rigenerazione avviata",
-      "rebuild_err": "Rigenerazione fallita"
+      "rebuild_err": "Rigenerazione fallita",
+      "status": {
+        "available": "Disponibile",
+        "not_available": "Non disponibile"
+      },
+      "provider_info": {
+        "global_coverage": "Copertura Globale",
+        "twilio_description": "Twilio fornisce copertura globale con prezzi competitivi e ampia conformità normativa.",
+        "telnyx_description": "Telnyx offre telefonia di livello enterprise con funzionalità avanzate e copertura globale."
+      }
     },
     "wizard": {
       "buy": {

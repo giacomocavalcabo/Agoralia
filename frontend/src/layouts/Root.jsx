@@ -23,7 +23,7 @@ const Leads = React.lazy(() => import('../pages/Leads'))
 const LeadDetails = React.lazy(() => import('../pages/LeadDetails'))
 const LeadsImport = React.lazy(() => import('../pages/LeadsImport'))
 const LeadsNew = React.lazy(() => import('../pages/LeadsNew'))
-const Numbers = React.lazy(() => import('../pages/Numbers'))
+// Numbers component removed - functionality moved to Settings → Telephony
 import Campaigns from '../pages/Campaigns.jsx'
 import CampaignForm from '../pages/CampaignForm.jsx'
 
@@ -101,7 +101,7 @@ export default function Root() {
                     <Route path="leads/:id" element={<LeadDetails />} />
                     <Route path="leads/import" element={<LeadsImport />} />
                     <Route path="leads/new" element={<LeadsNew />} />
-                    <Route path="numbers" element={<Numbers />} />
+                    <Route path="numbers" element={<Navigate to="/settings/telephony" replace />} />
                     <Route path="campaigns" element={<Campaigns />} />
                     <Route path="campaigns/new" element={<CampaignForm />} />
             
