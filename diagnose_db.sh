@@ -29,6 +29,20 @@ if [ -z "$ALEMBIC_TABLE_EXISTS" ] || [ "$ALEMBIC_TABLE_EXISTS" = "" ]; then
 else
     echo "✅ Tabella alembic_version ESISTE: $ALEMBIC_TABLE_EXISTS"
     
+    # Verifica lunghezza colonna version_num
+    COLUMN_LENGTH=$(psql "$DATABASE_URL" -tAc "SELECT character_maximum_length FROM information_schema.columns WHERE table_schema='public' AND table_name='alembic_version' AND column_name='version_num';" 2>/dev/null || echo "")
+    
+    if [ -n "$COLUMN_LENGTH" ]; then
+        echo "📏 Lunghezza colonna version_num: $COLUMN_LENGTH"
+        if [ "$COLUMN_LENGTH" -lt 64 ]; then
+            echo "⚠️  PROBLEMA: Colonna version_num troppo corta ($COLUMN_LENGTH < 64)"
+            echo "   → Revisioni lunghe come '0020_provider_account_integrations' non ci stanno"
+            echo "   → Errore: StringDataRightTruncation"
+        else
+            echo "✅ Colonna version_num sufficientemente larga"
+        fi
+    fi
+    
     # Verifica contenuto
     VERSION_COUNT=$(psql "$DATABASE_URL" -tAc "SELECT COUNT(*) FROM alembic_version;" 2>/dev/null || echo "0")
     

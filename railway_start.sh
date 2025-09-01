@@ -17,29 +17,51 @@ echo "  PYTHONPATH: $PYTHONPATH"
 echo "  ALEMBIC_CONFIG: $ALEMBIC_CONFIG"
 echo "  DATABASE_URL: ${DATABASE_URL:0:20}..."
 
-# Verifica se la tabella alembic_version esiste
-echo "🔍 Verifica tabella alembic_version..."
-ALEMBIC_TABLE_EXISTS=$(psql "$DATABASE_URL" -tAc "SELECT to_regclass('public.alembic_version');" 2>/dev/null || echo "")
+# --- PREPARA alembic_version CON VARCHAR(255) E TIMBRA A HEAD ---
+echo "🔧 Normalizzo tabella alembic_version a varchar(255) e timbro head..."
 
-if [ -z "$ALEMBIC_TABLE_EXISTS" ] || [ "$ALEMBIC_TABLE_EXISTS" = "" ]; then
-    echo "❌ Tabella alembic_version non esiste"
-    echo "🔧 Creazione tabella e stamp a head..."
-    alembic stamp head
-    echo "✅ Tabella alembic_version creata e timbrata a head"
-else
-    echo "✅ Tabella alembic_version esiste: $ALEMBIC_TABLE_EXISTS"
-    
-    # Verifica se è vuota
-    VERSION_COUNT=$(psql "$DATABASE_URL" -tAc "SELECT COUNT(*) FROM alembic_version;" 2>/dev/null || echo "0")
-    
-    if [ "$VERSION_COUNT" = "0" ]; then
-        echo "⚠️  Tabella alembic_version è vuota"
-        echo "🔧 Stamp a head..."
-        alembic stamp head
-        echo "✅ Stamp a head completato"
-    else
-        echo "✅ Tabella alembic_version ha $VERSION_COUNT versioni"
-    fi
+# 1) Crea tabella se manca (con varchar(255))
+psql "$DATABASE_URL" <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema='public' AND table_name='alembic_version'
+  ) THEN
+    CREATE TABLE public.alembic_version (version_num varchar(255) NOT NULL);
+  END IF;
+END $$;
+SQL
+
+# 2) Se esiste ma la colonna è corta (< 64), allarga a varchar(255)
+psql "$DATABASE_URL" <<'SQL'
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_schema='public' 
+      AND table_name='alembic_version' 
+      AND column_name='version_num'
+      AND (character_maximum_length IS NOT NULL AND character_maximum_length < 64)
+  ) THEN
+    ALTER TABLE public.alembic_version 
+      ALTER COLUMN version_num TYPE varchar(255);
+  END IF;
+END $$;
+SQL
+
+# 3) Prendi l'ID del head (la stringa che Alembic vuole inserire)
+HEAD_REV=$(alembic heads --verbose | awk '/^Rev: /{print $2; exit}')
+echo "🔖 Head revision: ${HEAD_REV}"
+
+# 4) Se la tabella è vuota o ha un valore diverso, imposta il valore a head
+#    (se già presente uguale, non fa nulla)
+CURR_REV=$(psql "$DATABASE_URL" -tAc "SELECT version_num FROM alembic_version LIMIT 1" | tr -d '[:space:]')
+if [ -z "$CURR_REV" ]; then
+  psql "$DATABASE_URL" -c "INSERT INTO alembic_version(version_num) VALUES ('${HEAD_REV}');"
+elif [ "$CURR_REV" != "$HEAD_REV" ]; then
+  psql "$DATABASE_URL" -c "UPDATE alembic_version SET version_num='${HEAD_REV}';"
 fi
 
 # Esegui le migrazioni (sarà no-op se già a head)

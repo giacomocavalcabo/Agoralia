@@ -61,3 +61,8 @@ PYTHON_VERSION = "3.11"
 #    - PRIMA: alembic upgrade head falliva su tabelle esistenti
 #    - ORA: railway_start.sh auto-ripara con alembic stamp head
 #    - Lo script verifica alembic_version e timbra automaticamente
+#
+# 8. RISOLUZIONE PROBLEMA "StringDataRightTruncation":
+#    - PRIMA: alembic_version aveva version_num varchar(32) troppo corto
+#    - ORA: railway_start.sh crea/allarga colonna a varchar(255)
+#    - env.py configurato per usare varchar(255) in futuro
