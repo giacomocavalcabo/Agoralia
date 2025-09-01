@@ -30,9 +30,9 @@ def get_current_user(
     """
     Get current authenticated user from session cookie
     """
-    from backend.main import _get_session
+    from backend.auth.session import get_session
     
-    session = _get_session(request)
+    session = get_session(request)
     if not session:
         return None
     
@@ -166,7 +166,7 @@ def admin_guard(
     Usa la stessa logica di require_admin_or_session
     """
     # Import localmente per evitare circular imports
-    from backend.main import _require_admin, _get_session
+    from backend.auth.session import get_session
     
     chosen = x_admin_email or admin_email
     wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
@@ -175,7 +175,7 @@ def admin_guard(
     if chosen:
         _require_admin(chosen)
         return
-    sess = _get_session(request)
+    sess = get_session(request)
     claims = (sess or {}).get("claims") if sess else None
     if not claims or not claims.get("is_admin_global"):
         raise HTTPException(status_code=403, detail="Admin required")

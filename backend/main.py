@@ -918,7 +918,8 @@ def require_admin_or_session(request: Request, x_admin_email: str | None = Heade
     if chosen:
         _require_admin(chosen)
         return
-    sess = _get_session(request)
+    from backend.auth.session import get_session
+    sess = get_session(request)
     claims = (sess or {}).get("claims") if sess else None
     if not claims or not claims.get("is_admin_global"):
         raise HTTPException(status_code=403, detail="Admin required")
@@ -2251,7 +2252,8 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 @app.get("/auth/me")
 def auth_me(request: Request) -> dict:
-    sess = _get_session(request)
+    from backend.auth.session import get_session
+    sess = get_session(request)
     if not sess:
         return {"authenticated": False}
     

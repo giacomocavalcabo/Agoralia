@@ -72,7 +72,7 @@ export function useLiveCalls() {
       signal: abort.signal,
       cache: 'no-store',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        // Authorization header rimosso - ora usa session cookies
       }
     })
       .then((r) => {

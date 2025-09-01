@@ -46,9 +46,9 @@ export default function CoveragePanel() {
 
   const getStatusText = (enabled) => {
     return enabled ? (
-      <span className="text-green-700 font-medium">✓ Disponibile</span>
+      <span className="text-green-700 font-medium">✓ {t('settings.telephony.coverage.status.available')}</span>
     ) : (
-      <span className="text-red-700 font-medium">✗ Non disponibile</span>
+      <span className="text-red-700 font-medium">✗ {t('settings.telephony.coverage.status.not_available')}</span>
     );
   };
 
@@ -78,13 +78,13 @@ export default function CoveragePanel() {
         <div className="flex items-center gap-2 mb-2">
           <InformationCircleIcon className="w-5 h-5 text-blue-600" />
           <span className="font-medium text-blue-900">
-            {selectedProvider.toUpperCase()} - Copertura Globale
+            {selectedProvider.toUpperCase()} - {t('settings.telephony.coverage.provider_info.global_coverage')}
           </span>
         </div>
         <p className="text-sm text-blue-800">
           {selectedProvider === "twilio" 
-            ? "Copertura ampia con numeri locali, mobile e toll-free in molti paesi"
-            : "Qualità e affidabilità Tier-1, ottimo in Europa/LatAm/APAC"
+            ? t('settings.telephony.coverage.provider_info.twilio_description')
+            : t('settings.telephony.coverage.provider_info.telnyx_description')
           }
         </p>
       </div>

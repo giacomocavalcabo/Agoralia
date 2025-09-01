@@ -138,7 +138,7 @@ export function useRecentEvents() {
           cache: 'no-store',
           signal: AbortSignal.timeout(5000),
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            // Authorization header rimosso - ora usa session cookies
           }
         });
         

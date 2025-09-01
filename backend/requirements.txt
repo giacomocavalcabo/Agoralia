@@ -37,3 +37,7 @@ twilio==8.10.0
 
 # Worker dependencies
 APScheduler==3.10.4
+
+# Redis dependencies
+redis[hiredis]==5.0.1
+redis-asyncio==5.0.1
