@@ -4,7 +4,6 @@ pydantic-settings==2.1.0
 sqlalchemy==2.0.23
 alembic==1.12.1
 psycopg2-binary==2.9.9
-redis==5.0.1
 dramatiq==1.15.0
 passlib[bcrypt]==1.7.4
 email-validator==2.1.1
@@ -40,4 +39,3 @@ APScheduler==3.10.4
 
 # Redis dependencies
 redis[hiredis]==5.0.1
-redis-asyncio==5.0.1
