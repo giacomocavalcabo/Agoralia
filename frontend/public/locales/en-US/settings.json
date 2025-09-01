@@ -264,7 +264,10 @@
           "label_placeholder": "Label (optional)",
           "api_key_placeholder": "API Key (will not be shown)",
           "connect": "Connect",
-          "description": "API keys are encrypted at rest. You can purchase or add numbers directly below."
+          "description": "API keys are encrypted at rest. You can purchase or add numbers directly below.",
+          "twilio": "Twilio",
+          "telnyx": "Telnyx",
+          "zadarma": "Zadarma"
         },
         "buy": {
           "title": "Buy number",

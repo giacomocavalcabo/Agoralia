@@ -2,8 +2,24 @@
 import axios from 'axios';
 
 // Client HTTP con credenziali incluse per session cookies
+function normalizeBaseURL(url) {
+  if (!url) return '/api';
+  // Se è assoluta (http/https), togli solo lo slash finale
+  if (/^https?:\/\//i.test(url)) return url.replace(/\/+$/, '');
+  // Altrimenti forza uno slash iniziale e rimuovi doppi slash finali
+  return '/' + url.replace(/^\/+/, '').replace(/\/+$/, '');
+}
+
+const baseURL = normalizeBaseURL(import.meta.env.VITE_API_BASE_URL);
+
+// Log in sviluppo per debug
+if (import.meta.env.DEV) {
+  console.log('[http] Base URL:', baseURL);
+  console.log('[http] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+}
+
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL,
   withCredentials: true, // IMPORTANTISSIMO per session cookies
   headers: {
     'Content-Type': 'application/json',
