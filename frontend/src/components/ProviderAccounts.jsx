@@ -5,7 +5,7 @@ import { listProviders, upsertProvider } from "../lib/telephonyApi";
 import { useTranslation } from "react-i18next";
 
 export default function ProviderAccounts() {
-  const { t } = useTranslation('settings.telephony');
+  const { t } = useTranslation('settings');
   const qc = useQueryClient();
   const { data: providers = [] } = useQuery({ queryKey: ["providers"], queryFn: listProviders });
   
@@ -47,8 +47,8 @@ export default function ProviderAccounts() {
 
       <form onSubmit={onSave} className="grid md:grid-cols-4 gap-3 p-3 border rounded">
         <select className="rounded-lg border px-3 py-2 text-sm" name="provider" required defaultValue="telnyx">
-          <option value="telnyx">Telnyx</option>
-          <option value="twilio">Twilio</option>
+          <option value="telnyx">{t('telephony.providers.telnyx')}</option>
+          <option value="twilio">{t('telephony.providers.twilio')}</option>
         </select>
         <input className="rounded-lg border px-3 py-2 text-sm" name="label" placeholder={t('telephony.providers.label_placeholder', 'Label (opzionale)')} />
         <input className="text-sm" name="api_key" placeholder={t('telephony.providers.api_key_placeholder', 'API Key (non verrà mostrata)')} required />

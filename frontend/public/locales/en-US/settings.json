@@ -80,6 +80,7 @@
     "title": "Billing",
     "subtitle": "Manage budget and usage limits",
     "demo_banner": "You are viewing the demo version. Amounts are masked and actions are disabled.",
+    "hard_stop_banner": "Budget limit reached. No new purchases allowed.",
     "overview": {
       "balance": "Balance",
       "usage_mtd": "Usage (MTD)",
@@ -98,6 +99,11 @@
       "connect_provider_title": "Connect a Telephony Provider",
       "connect_provider_desc": "To purchase or import phone numbers, you need to connect a telephony provider account first.",
       "connect_provider_cta": "Connect Provider",
+      "providers": {
+        "telnyx": "Telnyx",
+        "twilio": "Twilio",
+        "zadarma": "Zadarma"
+      },
       "policy": {
         "title": "Policy",
         "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."

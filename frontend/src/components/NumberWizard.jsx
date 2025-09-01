@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { nanoid } from "nanoid";
 
 export default function NumberWizard({ budget }) {
-  const { t } = useTranslation('settings.telephony');
+  const { t } = useTranslation('settings');
   const qc = useQueryClient();
   const { data: providers = [] } = useQuery({ queryKey: ["providers"], queryFn: listProviders });
   const { data: orders = [] } = useQuery({ 
@@ -108,7 +108,7 @@ export default function NumberWizard({ budget }) {
             <option value="">{t('telephony.wizard.select_provider', 'Seleziona account provider…')}</option>
             {providers.map(p => (
               <option key={p.id} value={p.id}>
-                {p.provider.toUpperCase()} — {p.label || p.id}
+                {t(`telephony.providers.${p.provider.toLowerCase()}`)} — {p.label || p.id}
               </option>
             ))}
           </select>

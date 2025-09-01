@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { getCoverage, searchInventoryTwilio } from "../lib/telephonyApi";
+import { getCoverage, searchInventory } from "../lib/telephonyApi";
 import { CheckIcon, XMarkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function CoveragePanel() {

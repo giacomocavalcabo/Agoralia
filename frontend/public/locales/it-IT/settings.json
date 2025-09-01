@@ -80,6 +80,7 @@
     "title": "Fatturazione",
     "subtitle": "Gestisci budget e limiti di utilizzo",
     "demo_banner": "Stai visualizzando la Fatturazione in modalità demo. Le azioni sono disabilitate.",
+    "hard_stop_banner": "Limite budget raggiunto. Non sono consentiti nuovi acquisti.",
     "overview": {
       "balance": "Saldo",
       "usage_mtd": "Spesa (mese in corso)",
@@ -94,6 +95,14 @@
     "subtitle": "Gestisci numeri di telefono, provider e instradamento",
     "buy_number": "[Numero di acquisto]",
     "numbers": "Numeri di telefono",
+    "connect_provider_title": "Connetti un Provider Telefonico",
+    "connect_provider_desc": "Per acquistare o importare numeri di telefono, devi prima connettere un account provider telefonico.",
+    "connect_provider_cta": "Connetti Provider",
+    "providers": {
+      "telnyx": "Telnyx",
+      "twilio": "Twilio",
+      "zadarma": "Zadarma"
+    },
     "policy": {
       "title": "Policy",
       "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."

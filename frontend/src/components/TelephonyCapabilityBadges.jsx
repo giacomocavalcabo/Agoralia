@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function TelephonyCapabilityBadges({ number, className = "" }) {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation('settings.telephony');
   
   if (!number) return null;
   
