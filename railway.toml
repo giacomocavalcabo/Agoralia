@@ -66,3 +66,8 @@ PYTHON_VERSION = "3.11"
 #    - PRIMA: alembic_version aveva version_num varchar(32) troppo corto
 #    - ORA: railway_start.sh crea/allarga colonna a varchar(255)
 #    - env.py configurato per usare varchar(255) in futuro
+#
+# 9. RISOLUZIONE PROBLEMA "psql command not found":
+#    - PRIMA: script usava psql che non esiste nel container Railway
+#    - ORA: usa Python/SQLAlchemy per operazioni database
+#    - Nessuna dipendenza da client PostgreSQL esterni
