@@ -28,6 +28,7 @@
     }
   },
   "odoo": {
+    "name": "Odoo",
     "description": "Integra con Odoo CRM usando JSON-RPC"
   },
   "portal_id": "ID Portale",
