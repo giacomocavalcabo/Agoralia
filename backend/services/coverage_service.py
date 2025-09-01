@@ -6,11 +6,11 @@ from sqlalchemy.orm import Session
 from pathlib import Path
 import json
 import logging
-from ..models import ProviderAccount, TelephonyProvider
-from ..services.crypto import dec
+from backend.models import ProviderAccount, TelephonyProvider
+from backend.services.crypto import dec
 from .providers.twilio_adapter import TwilioAdapter
 from .providers.telnyx_adapter import TelnyxAdapter
-from ..schemas_telephony_coverage import Country, Capabilities, PricingInfo
+from backend.schemas_telephony_coverage import Country, Capabilities, PricingInfo
 
 logger = logging.getLogger(__name__)
 

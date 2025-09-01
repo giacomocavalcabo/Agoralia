@@ -1,6 +1,6 @@
 # backend/services/telephony_providers.py
 from .crypto import enc, dec
-from ..models import ProviderAccount, NumberOrder, TelephonyProvider, Number
+from backend.models import ProviderAccount, NumberOrder, TelephonyProvider, Number
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from .providers import twilio, telnyx

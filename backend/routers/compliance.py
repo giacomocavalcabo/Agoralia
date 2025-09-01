@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from ..compliance.rules_loader_v1 import get_rules_v1_response, get_rule_v1
+from backend.compliance.rules_loader_v1 import get_rules_v1_response, get_rule_v1
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])
 

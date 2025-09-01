@@ -1,5 +1,7 @@
 import os
 import json
+import logging
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
 import secrets
 from typing import Optional, List, Dict
@@ -7,6 +9,7 @@ from fastapi import FastAPI, Request, Header, HTTPException, Response, Body
 from fastapi import Query
 from fastapi import Depends, File, UploadFile, Form
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
 
@@ -209,17 +212,29 @@ except Exception as e:
 
 logger.info("Starting Agoralia API initialization...")
 
-app = FastAPI(title="Agoralia API", version="0.1.0")
+# Lifespan sicuro: NON fallisce l'avvio se Redis/DB non rispondono subito
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        # Esempi di init sicuri (facoltativi):
+        #   - ping leggero di Redis/DB avvolto in try/except
+        #   - warmup di cache opzionali
+        # Se qualcosa va giù, logghiamo ma non buttiamo giù il server.
+        logger.info("App startup...")
+        # await maybe_init_things_safely()
+    except Exception:
+        logger.exception("Startup hook failed (continuing with app up).")
+    yield
+    try:
+        logger.info("App shutdown...")
+        # await maybe_close_things_safely()
+    except Exception:
+        logger.exception("Shutdown hook failed.")
+
+app = FastAPI(title="Agoralia API", version="0.1.0", lifespan=lifespan)
 app.state.oauth_state = {}  # per validare 'state' su OAuth callback (temp store)
 
 # ===================== CORS Configuration =====================
-import logging
-import os
-import importlib
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
-from backend.config import settings
-
 # Firma di runtime per identificare quale app sta girando
 GIT_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA") or os.getenv("GIT_SHA") or "unknown"
 GIT_BRANCH = os.getenv("RAILWAY_GIT_BRANCH") or os.getenv("GIT_BRANCH") or "unknown"
@@ -228,15 +243,17 @@ ENTRYPOINT = __name__  # dovrebbe essere "backend.main"
 # logger (evita il NameError visto nei log)
 logger = logging.getLogger("uvicorn.error")
 
-# Log utili all'avvio (appariranno nei log Railway)
-logger.info("CORS allow_origins = %s", settings.cors_allow_origins)
-logger.info("CORS allow_origin_regex = %s", settings.cors_allow_origin_regex)
+# CORS per cookie cross-site da Vercel → Railway
+ALLOWED_ORIGINS = [
+    "https://app.agoralia.app",           # prod SPA
+    # "https://staging.agoralia.app",     # se/quando serve
+    # "http://localhost:5173",            # dev SPA vite
+]
 
 # CORS deve essere l'ULTIMO add_middleware (outermost nello stack)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allow_origins,
-    allow_origin_regex=settings.cors_allow_origin_regex,  # <— usa la property giusta
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -275,39 +292,10 @@ logger.info("User trace middleware configured successfully")
 # ===================== Static Files & SPA Configuration =====================
 import os
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+# StaticFiles non serve più - backend API-only
 
-# Percorso assoluto alla build Vite (frontend/dist)
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
-
-# Verifica che la directory esista
-if os.path.exists(FRONTEND_DIR):
-    logger.info(f"Frontend build directory found: {FRONTEND_DIR}")
-    
-    # Monta gli assets separatamente (MOLTO IMPORTANTE: prima del fallback!)
-    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
-    logger.info("Assets directory mounted at /assets")
-    
-    # Index per root
-    @app.get("/", include_in_schema=False)
-    def serve_index():
-        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
-    
-    # Fallback SPA: serve index.html solo per path SENZA estensione
-    @app.get("/{full_path:path}", include_in_schema=False)
-    def spa_fallback(full_path: str):
-        # Se l'URL ha un punto, è un asset → lascia fare alle altre route/404
-        if "." in full_path:
-            raise HTTPException(status_code=404)
-        # Evita di inglobare le tue API
-        if full_path.startswith(("kb", "metrics", "webhook", "auth", "api", "i18n", "health", "_whoami", "debug", "db")):
-            raise HTTPException(status_code=404)
-        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
-    
-    logger.info("SPA fallback configured for frontend routes")
-else:
-    logger.warning(f"Frontend build directory not found: {FRONTEND_DIR}")
-    logger.warning("Static file serving and SPA fallback disabled")
+# Backend API-only: frontend servito separatamente da Vercel
+logger.info("Backend configurato come API-only - frontend su Vercel (app.agoralia.app)")
 
 logger.info("FastAPI app created successfully")
 
@@ -513,13 +501,7 @@ def setup_user(payload: RegisterRequest):
         raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
 
 # ===================== Boot logging =====================
-@app.on_event("startup")
-async def startup_event():
-    """Log quando l'app è pronta - aiuta debugging Railway"""
-    print("🚀 Agoralia API starting up...")
-    print(f"📅 Boot time: {datetime.now(timezone.utc).isoformat()}")
-    print(f"🔧 Environment: {os.getenv('RAILWAY_ENVIRONMENT', 'local')}")
-    print("✅ Boot OK - app pronta per richieste")
+# Startup event rimosso - ora gestito dal lifespan robusto sopra
 
 # ===================== In-memory store (dev) =====================
 _ATTESTATIONS: dict[str, dict] = {}
@@ -587,39 +569,7 @@ def _time_in_any_window(quiet_hours: dict | None, when: datetime) -> bool:
     return False
 
 _load_compliance_from_disk()
-# Create tables if not exist (dev)
-try:
-    Base.metadata.create_all(bind=engine)
-    # Seed minimal data if empty (dev)
-    with next(get_db()) as db:
-        if not db.query(User).first():
-            db.add_all([
-                User(id="u_1", email="owner@example.com", name="Owner One", is_admin_global=True),
-                User(id="u_2", email="viewer@example.com", name="Viewer V", is_admin_global=False),
-            ])
-        if not db.query(Workspace).first():
-            db.add(Workspace(id="ws_1", name="Demo", plan="core"))
-        if not db.query(Campaign).first():
-            db.add(Campaign(id="c_1", name="RFQ IT", status="running", pacing_npm=10, budget_cap_cents=15000))
-        if not db.query(Call).first():
-            db.add(Call(id="call_1", workspace_id="ws_1", lang="it-IT", iso="IT", status="finished", duration_s=210, cost_cents=42))
-        # Seed simple password auth for demo users if bcrypt available
-        if bcrypt is not None:
-            def _ensure_auth(user_id: str, email: str):
-                exists = db.query(UserAuth).filter(UserAuth.user_id == user_id, UserAuth.provider == "password").first()
-                if not exists:
-                    pwd = "demo1234".encode("utf-8")
-                    hashed = bcrypt.hashpw(pwd, bcrypt.gensalt()).decode("utf-8")
-                    db.add(UserAuth(id=f"ua_{user_id}", user_id=user_id, provider="password", provider_id=email, pass_hash=hashed))
-            u1 = db.query(User).filter(User.id == "u_1").first()
-            u2 = db.query(User).filter(User.id == "u_2").first()
-            if u1:
-                _ensure_auth(u1.id, u1.email)
-            if u2:
-                _ensure_auth(u2.id, u2.email)
-        db.commit()
-except Exception:
-    pass
+# Database setup rimosso - ora gestito da Alembic in Railway
 
 # Optional: auto-migrate on startup if enabled
 try:
@@ -672,31 +622,16 @@ def audit(kind: str, entity: str):
 # Routers already imported above
 logger.info("Importing routers...")
 
-# Include routers
-logger.info("Including CRM router...")
-app.include_router(crm.router)
-logger.info("CRM router included successfully")
-
-logger.info("Including Integrations router...")
-app.include_router(integrations.router, prefix="/settings")
-logger.info("Integrations router included successfully")
-
-logger.info("Including Auth router...")
-app.include_router(auth.router)
-app.include_router(auth_microsoft.router)
-app.include_router(compliance.router)
-logger.info("Auth router included successfully")
-
-# --- NUOVO: alias con /api per compatibilità frontend
-logger.info("Including API aliases...")
+# Tutte le rotte sotto /api (una sola versione, niente duplicati "nudi")
+logger.info("Including API routers...")
 api = APIRouter(prefix="/api")
-api.include_router(auth.router)            # → /api/auth/*
-api.include_router(auth_microsoft.router)  # → /api/auth_microsoft/*
-api.include_router(compliance.router)      # → /api/compliance/*
-api.include_router(crm.router)             # → /api/crm/*
-api.include_router(integrations.router, prefix="/settings")  # → /api/settings/integrations/*
+api.include_router(auth.router, prefix="/auth", tags=["auth"])
+api.include_router(auth_microsoft.router, prefix="/auth", tags=["auth"])
+api.include_router(compliance.router, prefix="/compliance", tags=["compliance"])
+api.include_router(crm.router, prefix="/crm", tags=["crm"])
+api.include_router(integrations.router, prefix="/settings/integrations", tags=["integrations"])
 app.include_router(api)
-logger.info("API aliases included successfully")
+logger.info("API routers included successfully")
 
 # Session management moved to backend/sessions.py to avoid circular imports
 
@@ -8488,20 +8423,6 @@ def kb_search_chunks(
         }
 
 
-# ===================== Root endpoint =====================
-@app.get("/")
-def root():
-    """
-    Root endpoint - API status
-    """
-    return {
-        "status": "ok", 
-        "service": "Agoralia API",
-        "version": "0.1.0",
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-
 # ===================== GAMMA: Retell Webhook Integration =====================
 
 @app.post("/webhooks/retell")
@@ -8854,4 +8775,10 @@ async def metrics_export(
     except Exception as e:
         logger.error(f"Error in metrics export: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ===================== BACKEND API-ONLY (produzione) =====================
+# NO SPA mount - servito separatamente da Vercel (app.agoralia.app)
+# NO fallback custom - solo rotte API esplicite
+logger.info("Backend configurato come API-only per Railway")
 
