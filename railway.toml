@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "sh -c 'PYTHONPATH=/app ALEMBIC_CONFIG=backend/alembic.ini alembic upgrade head && exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1 --loop asyncio --http h11'"
+startCommand = "./railway_start.sh"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
@@ -56,3 +56,8 @@ PYTHON_VERSION = "3.11"
 #    - PRIMA: script_location = alembic (cercava /app/alembic)
 #    - ORA: script_location = backend/alembic (cerca /app/backend/alembic)
 #    - PYTHONPATH=/app permette import backend.* in env.py
+#
+# 7. RISOLUZIONE PROBLEMA "Table already exists":
+#    - PRIMA: alembic upgrade head falliva su tabelle esistenti
+#    - ORA: railway_start.sh auto-ripara con alembic stamp head
+#    - Lo script verifica alembic_version e timbra automaticamente
