@@ -21,6 +21,10 @@ if str(ROOT) not in sys.path:
 from backend.db import Base, engine, get_db
 from backend.logger import logger
 from backend.config import settings
+
+# 🔒 Assert di sicurezza per Base.metadata
+import sqlalchemy as sa
+assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
 from backend.routers import crm, auth, auth_microsoft, compliance
 from backend.utils.rate_limiter import telephony_rate_limiter
 from backend.services.webhook_verification import require_valid_webhook_signature

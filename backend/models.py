@@ -752,13 +752,8 @@ class BillingLedger(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # 🔒 Bridge sicuro per Pydantic/FastAPI (from_orm)
-    @property
-    def metadata(self):
-        return self.metadata_json
-
-    @metadata.setter
-    def metadata(self, value):
-        self.metadata_json = value
+    # NOTA: NON definire property 'metadata' - confligge con SQLAlchemy Base.metadata
+    # Pydantic userà metadata_json direttamente con orm_mode = True
 
 
 # ===================== Compliance & KYC Models =====================
