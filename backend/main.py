@@ -249,6 +249,22 @@ async def _log_origin(request: Request, call_next):
 
 logger.info("CORS middleware configured successfully")
 
+# ===================== User Trace Middleware =====================
+@app.middleware("http")
+async def user_trace(request: Request, call_next):
+    """Debug middleware: aggiunge header X-Req-User per tracciare utente"""
+    try:
+        from backend.auth.session import get_session
+        sess = await get_session(request)
+        response = await call_next(request)
+        response.headers["X-Req-User"] = f"{sess.get('user_id','?')}|{sess.get('email','?')}|{sess.get('workspace_id','?')}"
+        return response
+    except Exception:
+        response = await call_next(request)
+        return response
+
+logger.info("User trace middleware configured successfully")
+
 # ===================== Static Files & SPA Configuration =====================
 import os
 from fastapi.responses import FileResponse

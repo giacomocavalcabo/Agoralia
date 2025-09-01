@@ -30,6 +30,7 @@ from backend.sessions import (
     get_user_id,
     destroy_session,
 )
+from backend.auth.session import get_current_user
 
 logger = logging.getLogger("agoralia.auth")
 
@@ -81,6 +82,15 @@ def auth_register(payload: RegisterIn, response: Response, request: Request, bac
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
+
+@router.get("/me")
+def auth_me(user: User = Depends(get_current_user)):
+    """Get current user info for header"""
+    return {
+        "id": str(user.id), 
+        "email": user.email, 
+        "name": getattr(user, "name", None) or user.email.split("@")[0]
+    }
 
 @router.post("/login")
 def auth_login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):

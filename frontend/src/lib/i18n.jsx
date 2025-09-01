@@ -17,7 +17,7 @@ i18n
     defaultNS: "common",
     backend: {
       // Vercel serve /public come / - file statici sempre disponibili
-      loadPath: "/locales/{{lng}}/{{ns}}.json",
+      loadPath: `/locales/{{lng}}/{{ns}}.json?v=${import.meta.env.VITE_BUILD_ID ?? '1'}`,
       // Cache per performance
       requestOptions: {
         cache: 'default'
