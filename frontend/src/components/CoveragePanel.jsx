@@ -67,8 +67,8 @@ export default function CoveragePanel() {
               setSelectedCountry("");
             }}
           >
-            <option value="twilio">Twilio</option>
-            <option value="telnyx">Telnyx</option>
+            <option value="twilio">{t('telephony.providers.twilio')}</option>
+            <option value="telnyx">{t('telephony.providers.telnyx')}</option>
           </select>
         </div>
       </div>

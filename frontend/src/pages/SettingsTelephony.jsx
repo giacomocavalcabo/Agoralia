@@ -115,9 +115,9 @@ export default function SettingsTelephony() {
             <input className="w-full rounded-lg border px-3 py-2 text-sm" value={buy.country} onChange={e => setBuy(v => ({ ...v, country: e.target.value }))} placeholder="US, IT, GB..." />
             <label className="text-sm">{t('telephony.buy.type')}</label>
             <select className="w-full rounded-lg border px-3 py-2 text-sm" value={buy.type} onChange={e => setBuy(v => ({ ...v, type: e.target.value }))}>
-              <option value="local">Local</option>
-              <option value="tollfree">Toll-free</option>
-              <option value="mobile">Mobile</option>
+              <option value="local">{t('telephony.wizard.type.local')}</option>
+              <option value="tollfree">{t('telephony.wizard.type.tollfree')}</option>
+              <option value="mobile">{t('telephony.wizard.type.mobile')}</option>
             </select>
             <label className="text-sm">{t('telephony.buy.area_code')}</label>
             <input className="w-full rounded-lg border px-3 py-2 text-sm" value={buy.area_code} onChange={e => setBuy(v => ({ ...v, area_code: e.target.value }))} placeholder="415, 02, ..." />
@@ -138,9 +138,9 @@ export default function SettingsTelephony() {
           <div className="grid gap-2">
             <label className="text-sm">{t('telephony.byo.provider')}</label>
             <select className="w-full rounded-lg border px-3 py-2 text-sm" value={byo.provider} onChange={e => setByo(v => ({ ...v, provider: e.target.value }))}>
-              <option value="twilio">Twilio</option>
-              <option value="telnyx">Telnyx</option>
-              <option value="zadarma">Zadarma</option>
+              <option value="twilio">{t('telephony.providers.twilio')}</option>
+              <option value="telnyx">{t('telephony.providers.telnyx')}</option>
+              <option value="zadarma">{t('telephony.providers.zadarma')}</option>
             </select>
             <label className="text-sm">{t('telephony.byo.e164')}</label>
             <input className="w-full rounded-lg border px-3 py-2 text-sm" placeholder="+14155551234" value={byo.e164} onChange={e => setByo(v => ({ ...v, e164: e.target.value }))}/>

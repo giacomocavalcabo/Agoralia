@@ -15,8 +15,19 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Redirect al login se sessione scaduta
-      window.location.href = '/login';
+      // Evita loop di redirect
+      if (window.location.pathname !== '/login') {
+        // Svuota cache utente e sessione
+        try {
+          localStorage.removeItem('user');
+          sessionStorage.clear();
+        } catch (e) {
+          console.warn('Failed to clear user cache:', e);
+        }
+        
+        // Redirect al login (una sola volta)
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

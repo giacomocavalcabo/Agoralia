@@ -200,6 +200,11 @@
         "cta": "Acquista",
         "description": "In alcuni Paesi potrebbero servire documenti/regulatory bundle. Lo stato potrebbe rimanere \"review\" finché approvato dal provider."
       },
+      "type": {
+        "local": "Local",
+        "mobile": "Mobile",
+        "tollfree": "Toll-free"
+      },
       "import": {
         "title": "Aggiungi numero esistente",
         "cta": "Aggiungi",

@@ -146,7 +146,7 @@ export default function NumberWizard({ budget }) {
             <option value="">{t('telephony.wizard.select_provider', 'Seleziona account provider…')}</option>
             {providers.map(p => (
               <option key={p.id} value={p.id}>
-                {p.provider.toUpperCase()} — {p.label || p.id}
+                {t(`telephony.providers.${p.provider.toLowerCase()}`)} — {p.label || p.id}
               </option>
             ))}
           </select>
@@ -197,7 +197,7 @@ export default function NumberWizard({ budget }) {
               {orders.length === 0 && (
                 <tr>
                   <td colSpan={4} className="py-6 text-center text-muted-foreground">
-                    {t('settings.telephony.wizard.orders.empty', 'Nessun ordine')}
+                    {t('telephony.wizard.orders.empty', 'Nessun ordine')}
                   </td>
                 </tr>
               )}
