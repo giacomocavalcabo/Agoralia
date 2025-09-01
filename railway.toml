@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "sh -c 'ALEMBIC_CONFIG=backend/alembic.ini alembic upgrade head && PYTHONPATH=/app exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1 --loop=asyncio --http=h11'"
+startCommand = "sh -c 'PYTHONPATH=/app ALEMBIC_CONFIG=backend/alembic.ini alembic upgrade head && exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1 --loop asyncio --http h11'"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
@@ -32,22 +32,27 @@ PYTHON_VERSION = "3.11"
 # ===================== CONFIGURAZIONE RAILWAY =====================
 # 
 # 1. SERVICE API:
-#    - Start Command: già configurato con ALEMBIC_CONFIG e PYTHONPATH
+#    - Start Command: PYTHONPATH=/app + ALEMBIC_CONFIG=backend/alembic.ini
 #    - Healthcheck: /health (endpoint esistente)
 #    - Port: $PORT (Railway lo imposta automaticamente)
 #
 # 2. WORKER:
-#    - Start Command: python -m backend.worker (no HTTP, no healthcheck)
-#    - PYTHONPATH=/app per import corretto
+#    - Start Command: PYTHONPATH=/app python -m backend.worker (no HTTP, no healthcheck)
+#    - Nessuna migrazione (solo API le esegue)
 #
 # 3. VARIABILI D'AMBIENTE OBBLIGATORIE (impostare manualmente su Railway):
 #    - DATABASE_URL: postgresql+psycopg2://user:pass@host:port/db
-#    - APP_KMS_KEY: chiave simmetrica base64 urlsafe 32+ byte
+#    - APP_KMS_KEY: chiave simmetrica base64 urlsafe 32+ byte (STESSA per tutti i servizi!)
 #    - REDIS_URL: redis://host:port/db (se usi cache/sessioni)
 #
 # 4. GENERAZIONE APP_KMS_KEY:
-#    python -c "import secrets,base64;print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())"
+#    python generate_app_kms_key.py
 #
 # 5. TEST POST-DEPLOY:
 #    curl -i https://api.agoralia.app/health
 #    curl -i https://api.agoralia.app/api/auth/me
+#
+# 6. RISOLUZIONE PROBLEMA ALEMBIC:
+#    - PRIMA: script_location = alembic (cercava /app/alembic)
+#    - ORA: script_location = backend/alembic (cerca /app/backend/alembic)
+#    - PYTHONPATH=/app permette import backend.* in env.py
