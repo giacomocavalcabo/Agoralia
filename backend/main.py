@@ -2251,6 +2251,7 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 
 @app.get("/auth/me")
+@app.get("/api/auth/me")  # Compatibilità con frontend
 def auth_me(request: Request) -> dict:
     from backend.auth.session import get_session
     sess = get_session(request)
