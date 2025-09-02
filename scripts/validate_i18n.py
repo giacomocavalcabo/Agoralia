@@ -13,21 +13,16 @@ def find_i18n_keys_in_code():
     """Trova tutte le chiavi i18n usate nel codice"""
     keys_used = set()
     
-    # Pattern per trovare t('chiave') o t("chiave") - più flessibile
-    patterns = [
-        r"t\(['\"]([^'\"]+)['\"]",  # t('chiave')
-        r"t\(['\"]([^'\"]+)['\"]",  # t("chiave")
-        r"t\(['\"]([^'\"]+)['\"]",  # t(`chiave`)
-    ]
+    # Pattern per trovare t('chiave') o t("chiave")
+    pattern = r"t\(['\"]([^'\"]+)['\"]"
     
     # Cerca in tutti i file .jsx, .js, .ts, .tsx
     for file_path in Path("frontend/src").rglob("*.{js,jsx,ts,tsx}"):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-                for pattern in patterns:
-                    matches = re.findall(pattern, content)
-                    keys_used.update(matches)
+                matches = re.findall(pattern, content)
+                keys_used.update(matches)
         except Exception as e:
             print(f"Errore leggendo {file_path}: {e}")
     

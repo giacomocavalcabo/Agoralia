@@ -84,30 +84,75 @@ class LoginIn(BaseModel):
     password: str
 
 @router.get("/me")
-def auth_me(request: Request, user: User = Depends(get_current_user)):
-    """Get current user info for header"""
-    # Check if user is allowed to see demo data
-    from backend.config import settings
-    is_demo_allowed = user.email.lower() in settings.demo_admin_emails_list
+def auth_me(request: Request, db: Session = Depends(get_db)):
+    """Get current user info for header - fail-closed version that never returns 500"""
+    from fastapi.responses import JSONResponse
+    from backend.sessions import read_session_cookie, get_user_id
     
-    # Build roles list for frontend compatibility
-    roles = []
-    if bool(user.is_admin_global):
-        roles.append("admin")
-    if is_demo_allowed:
-        roles.append("demo")
-    
-    return {
-        "id": str(user.id), 
-        "email": user.email, 
-        "name": getattr(user, "name", None) or user.email.split("@")[0],
-        "locale": getattr(user, 'locale', None) or "en-US",
-        "is_admin_global": bool(user.is_admin_global),
-        "is_admin": bool(user.is_admin_global),  # alias per compatibilità frontend
-        "roles": roles,  # array per compatibilità frontend
-        "email_verified": bool(getattr(user, 'email_verified_at', None)),
-        "is_demo_allowed": is_demo_allowed,
-    }
+    try:
+        # 1) Leggi session cookie
+        session_id = read_session_cookie(request)
+        if not session_id:
+            return JSONResponse(
+                status_code=200,
+                content={"authenticated": False}
+            )
+        
+        # 2) Risolvi user_id dalla sessione
+        user_id = get_user_id(session_id)
+        if not user_id:
+            return JSONResponse(
+                status_code=200,
+                content={"authenticated": False}
+            )
+        
+        # 3) Carica utente
+        user = db.get(User, user_id)
+        if not user:
+            return JSONResponse(
+                status_code=200,
+                content={"authenticated": False}
+            )
+
+        # 4) Normalizza campi (evita None → front crasher)
+        name = getattr(user, "name", None) or (
+            (getattr(user, "email", "") or "").split("@")[0] if getattr(user, "email", None) else "User"
+        )
+        email = getattr(user, "email", None) or ""
+        is_admin = bool(getattr(user, "is_admin_global", False))
+        
+        # Check if user is allowed to see demo data
+        from backend.config import settings
+        is_demo_allowed = email.lower() in getattr(settings, 'demo_admin_emails_list', [])
+        
+        # Build roles list for frontend compatibility
+        roles = []
+        if is_admin:
+            roles.append("admin")
+        if is_demo_allowed:
+            roles.append("demo")
+
+        return {
+            "authenticated": True,
+            "user": {
+                "id": str(getattr(user, "id", "")),
+                "name": name,
+                "email": email,
+                "is_admin": is_admin,
+                "is_admin_global": is_admin,  # alias per compatibilità
+                "roles": roles,
+                "locale": getattr(user, 'locale', None) or "en-US",
+                "email_verified": bool(getattr(user, 'email_verified_at', None)),
+                "is_demo_allowed": is_demo_allowed,
+            }
+        }
+    except Exception as e:
+        # Ultimo paracadute: mai 500
+        logger.error(f"Error in /auth/me: {e}")
+        return JSONResponse(
+            status_code=200,
+            content={"authenticated": False}
+        )
 
 @router.post("/login")
 def auth_login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):

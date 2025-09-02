@@ -21,6 +21,9 @@
     "subtitle": "Manage phone numbers, providers and routing",
     "buy_number": "[Buy Number]",
     "numbers": "Phone numbers",
+    "coverage": {
+      "title": "Coverage & Requirements"
+    },
     "connect_provider_title": "Connect a Telephony Provider",
     "connect_provider_desc": "To purchase or import phone numbers, you need to connect a telephony provider account first.",
     "connect_provider_cta": "Connect Provider",
@@ -37,6 +40,7 @@
     },
     "zero_markup_badge": "Zero markup",
     "zero_markup_sub": "Provider billed directly",
+    "zero_markup_tooltip": "No markup added to provider costs - you pay exactly what Twilio/Telnyx charges",
     "outbound_requires_verification": "Outbound requires Hosted or Verified CLI",
     "verify_cli": "Verify CLI",
     "verify_cli_tooltip": "Verify Caller ID (CLI) with provider",

@@ -21,6 +21,9 @@
     "subtitle": "Gestisci numeri di telefono, provider e instradamento",
     "buy_number": "[Numero di acquisto]",
     "numbers": "Numeri di telefono",
+    "coverage": {
+      "title": "Copertura e Requisiti"
+    },
     "connect_provider_title": "Connetti un Provider Telefonico",
     "connect_provider_desc": "Per acquistare o importare numeri di telefono, devi prima connettere un account provider telefonico.",
     "connect_provider_cta": "Connetti Provider",
@@ -37,6 +40,7 @@
     },
     "zero_markup_badge": "Zero markup",
     "zero_markup_sub": "Fatturato direttamente dal provider",
+    "zero_markup_tooltip": "Nessun markup aggiunto ai costi del provider - paghi esattamente quello che Twilio/Telnyx addebita",
     "outbound_requires_verification": "L'outbound richiede Hosted o Verified CLI",
     "verify_cli": "Verifica CLI",
     "verify_cli_tooltip": "Verifica Caller ID (CLI) con il provider",

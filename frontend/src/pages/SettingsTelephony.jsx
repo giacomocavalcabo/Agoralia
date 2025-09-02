@@ -8,6 +8,7 @@ import BindControls from '../components/BindControls'
 import ProviderAccounts from '../components/ProviderAccounts'
 import NumberWizard from '../components/NumberWizard'
 import CoveragePanel from '../components/CoveragePanel'
+import Tooltip from '../components/ui/Tooltip'
 import { PhoneIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
 
@@ -74,37 +75,56 @@ export default function SettingsTelephony() {
       {/* Zero Markup Badge */}
       <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1 text-emerald-700 text-xs">
         <span>{t('telephony.zero_markup_badge')}</span>
+        <Tooltip content={t('telephony.zero_markup_tooltip')}>
+          <span className="cursor-help opacity-70">?</span>
+        </Tooltip>
         <span className="opacity-70">{t('telephony.zero_markup_sub')}</span>
       </div>
 
       {/* Provider Management */}
-      <ProviderAccounts />
-      
-      {/* Gates condizionali */}
-      {!hasLinked ? (
-        <div className="rounded-lg border p-6 text-center bg-gray-50">
-          <h3 className="text-lg font-medium mb-2">{t('connect_provider_title')}</h3>
-          <p className="text-sm text-muted-foreground mb-4">{t('connect_provider_desc')}</p>
-          <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
-            {t('connect_provider_cta')}
-          </button>
+      <div className="space-y-6">
+        <div className="rounded-lg border p-4">
+          <h2 className="text-lg font-semibold mb-4">{t('telephony.providers.title')}</h2>
+          <ProviderAccounts />
         </div>
-      ) : (
-        <>
-          {budget?.blocked && (
-            <div className="rounded-lg border p-3 bg-red-50 text-red-800 text-sm">
-              <strong>{t('billing.hard_stop_banner')}</strong>
-              <a href="/settings/billing" className="ml-2 underline">Open Billing</a>
+        
+        {/* Gates condizionali */}
+        {!hasLinked ? (
+          <div className="rounded-lg border p-6 text-center bg-gray-50">
+            <h3 className="text-lg font-medium mb-2">{t('telephony.connect_provider_title')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t('telephony.connect_provider_desc')}</p>
+            <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
+              {t('telephony.connect_provider_cta')}
+            </button>
+          </div>
+        ) : (
+          <>
+            {budget?.blocked && (
+              <div className="rounded-lg border p-3 bg-red-50 text-red-800 text-sm">
+                <strong>{t('billing.hard_stop_banner')}</strong>
+                <a href="/settings/billing" className="ml-2 underline">Open Billing</a>
+              </div>
+            )}
+            
+            {/* Numbers Management */}
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">{t('telephony.numbers')}</h2>
+                <div className="flex gap-2">
+                  <NumberWizard budget={budget} />
+                </div>
+              </div>
+              <NumbersTable />
             </div>
-          )}
-          
-          {/* Number Wizard */}
-          <NumberWizard budget={budget} />
-          
-          {/* Coverage & Requirements */}
-          <CoveragePanel />
-        </>
-      )}
+            
+            {/* Coverage & Requirements */}
+            <div className="rounded-lg border p-4">
+              <h2 className="text-lg font-semibold mb-4">{t('telephony.coverage.title')}</h2>
+              <CoveragePanel />
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Actions */}
       <div className="grid md:grid-cols-3 gap-4">
