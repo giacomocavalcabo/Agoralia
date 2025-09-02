@@ -443,8 +443,8 @@
       "description": "Descrizione (opzionale)",
       "description_placeholder": "Inserisci la descrizione della campagna",
       "segment": "Segmento di destinazione",
-      "from_number": "Caller ID",
-      "from_number_placeholder": "Seleziona caller ID (opzionale)",
+      "caller_id": "Caller ID",
+      "caller_id_placeholder": "Seleziona caller ID (opzionale)",
       "no_outbound_numbers": "Nessun numero outbound disponibile. Aggiungi numeri in Impostazioni → Telefonia prima.",
       "success": "Campagna creata con successo!"
     },
