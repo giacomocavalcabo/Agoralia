@@ -625,11 +625,27 @@ logger.info("Importing routers...")
 # Tutte le rotte sotto /api (una sola versione, niente duplicati "nudi")
 logger.info("Including API routers...")
 api = APIRouter(prefix="/api")
-api.include_router(auth.router, prefix="/auth", tags=["auth"])
+
+logger.info("Including Auth router...")
+api.include_router(auth.router, tags=["auth"])
+logger.info("Auth router included successfully")
+
+logger.info("Including Auth Microsoft router...")
 api.include_router(auth_microsoft.router, prefix="/auth", tags=["auth"])
+logger.info("Auth Microsoft router included successfully")
+
+logger.info("Including Compliance router...")
 api.include_router(compliance.router, prefix="/compliance", tags=["compliance"])
+logger.info("Compliance router included successfully")
+
+logger.info("Including CRM router...")
 api.include_router(crm.router, prefix="/crm", tags=["crm"])
-api.include_router(integrations.router, prefix="/settings/integrations", tags=["integrations"])
+logger.info("CRM router included successfully")
+
+logger.info("Including Integrations router...")
+api.include_router(integrations.router, prefix="/settings", tags=["integrations"])
+logger.info("Integrations router included successfully")
+
 app.include_router(api)
 logger.info("API routers included successfully")
 
