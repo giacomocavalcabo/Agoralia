@@ -9,7 +9,7 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [deploy.services]
-worker = "sh -c 'PYTHONPATH=/app exec python -m backend.worker'"
+worker = "./railway_worker_start.sh"
 
 [deploy.environment]
 ENV = "production"
@@ -37,7 +37,8 @@ PYTHON_VERSION = "3.11"
 #    - Port: $PORT (Railway lo imposta automaticamente)
 #
 # 2. WORKER:
-#    - Start Command: PYTHONPATH=/app python -m backend.worker (no HTTP, no healthcheck)
+#    - Start Command: ./railway_worker_start.sh (auto-riparante con test DB)
+#    - Test connessione DB prima di avviare worker
 #    - Nessuna migrazione (solo API le esegue)
 #
 # 3. VARIABILI D'AMBIENTE OBBLIGATORIE (impostare manualmente su Railway):
@@ -76,3 +77,8 @@ PYTHON_VERSION = "3.11"
 #     - PRIMA: PYTHONPATH=/app/backend causava import backend.* falliti
 #     - ORA: forza PYTHONPATH=/app e verifica import prima di Alembic
 #     - Hardening in alembic/env.py per robustezza a working dir
+#
+# 11. RISOLUZIONE PROBLEMA "could not translate host name" (Worker):
+#     - PRIMA: worker usava DATABASE_URL con UUID come hostname
+#     - ORA: railway_worker_start.sh testa connessione DB prima di avviare
+#     - Verifica hostname valido e fallisce con messaggio chiaro se UUID
