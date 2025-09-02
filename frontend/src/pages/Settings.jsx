@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApiWithDemo } from '../lib/demoGate'
 import { useIsDemo } from '../lib/useDemoData'
+import { useAuth } from '../lib/useAuth'
 import { useToast } from '../components/ToastProvider.jsx'
 import { personalSettingsSchema } from '../lib/validation/settings.js'
 import { 
@@ -12,12 +13,14 @@ import {
   FormActions, 
   PageHeader 
 } from '../components/ui/FormPrimitives.jsx'
+import SettingsCompany from './SettingsCompany'
 
 // Personal/Account Tab Component
 function PersonalTab() {
   const { t } = useTranslation('settings')
   const { toast } = useToast()
   const { get, put } = useApiWithDemo()
+  const { user, setUser } = useAuth()
   const isDemo = useIsDemo()
   const [formData, setFormData] = useState({
     name: '',
@@ -39,7 +42,8 @@ function PersonalTab() {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await get('/settings/personal')
+      // Usa endpoint corretto per profilo utente
+      const data = await get('/settings/profile')
       setFormData(data || {
         name: '',
         email: '',
@@ -49,7 +53,16 @@ function PersonalTab() {
       })
     } catch (error) {
       setError(error)
-      if (isDemo) {
+      // Fallback: usa dati da AuthContext se disponibili
+      if (user) {
+        setFormData({
+          name: user.name || user.email?.split('@')[0] || '',
+          email: user.email || '',
+          language: user.locale || 'en-US',
+          timezone: user.timezone || 'UTC',
+          dualTime: false
+        })
+      } else if (isDemo) {
         // In demo, mostra dati fittizi per non far biancheggiare la UI
         setFormData({
           name: 'Demo User',
@@ -90,7 +103,13 @@ function PersonalTab() {
 
     setIsSaving(true)
     try {
-      await put('/settings/personal', formData)
+      // Usa endpoint corretto per aggiornare profilo
+      await put('/auth/me', formData)
+      
+      // Aggiorna AuthContext per header
+      if (user && setUser) {
+        setUser({...user, ...formData})
+      }
       
       toast({
         title: t('settings.account.messages.saved'),
@@ -239,15 +258,45 @@ function PersonalTab() {
 // Main Settings component
 export default function Settings() {
   const { t } = useTranslation('settings')
+  const [activeTab, setActiveTab] = useState('profile')
   
+  const tabs = [
+    { id: 'profile', name: t('settings.tabs.profile') || 'Profile', component: PersonalTab },
+    { id: 'company', name: t('settings.tabs.company') || 'Company', component: SettingsCompany }
+  ]
+
+  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component
+
   return (
     <div className="space-y-6">
-              <PageHeader 
-          title={t('title')}
-          description={t('description')}
-        />
+      <PageHeader 
+        title={t('title')}
+        description={t('description')}
+      />
 
-      <PersonalTab />
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-8">
+        {ActiveComponent && <ActiveComponent />}
+      </div>
     </div>
   )
 }
