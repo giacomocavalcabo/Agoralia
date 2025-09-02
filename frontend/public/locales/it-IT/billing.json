@@ -1,46 +1,56 @@
 {
-  "title": "Fatturazione e Abbonamenti",
-  "subtitle": "Gestisci la tua fatturazione, metodi di pagamento e limiti di utilizzo",
-  
+  "admin": {
+    "title": "👑 AMMINISTRATORE",
+    "unlimited": "💰 Illimitato"
+  },
+  "auto_recharge": {
+    "description": "Ricarica automaticamente {topup} quando il saldo scende sotto {threshold}",
+    "disabled": "Disabilitata",
+    "enable": "Abilita",
+    "enabled": "Abilitata",
+    "on": "Attivo",
+    "threshold": "Soglia",
+    "title": "Ricarica Automatica",
+    "topup": "Importo Ricarica"
+  },
+  "hard_stop_banner": "Il budget mensile è stato raggiunto. Gli acquisti/importazioni sono disattivati.",
+  "hard_stop_detail": "Il limite di budget mensile è stato raggiunto. Per continuare, aggiornare le impostazioni di fatturazione.",
+  "invoices": {
+    "download": "Scarica",
+    "title": "Fatture",
+    "view_all": "Visualizza Tutte"
+  },
   "overview": {
     "balance": "Saldo Attuale",
-    "usage_mtd": "Utilizzo Questo Mese",
-    "minutes_mtd": "Minuti Questo Mese",
+    "balance_amount": "Importo Saldo",
     "cap_status": "Stato Utilizzo",
     "cap_status_desc": "Stato utilizzo attuale",
-    "balance_amount": "Importo Saldo",
+    "minutes_limit": "Limite Minuti",
+    "minutes_mtd": "Minuti Questo Mese",
     "usage_amount": "Importo Utilizzo",
     "usage_limit": "Limite Utilizzo",
-    "minutes_limit": "Limite Minuti"
+    "usage_mtd": "Utilizzo Questo Mese"
   },
-  
   "payment_methods": {
-    "title": "Metodi di Pagamento",
     "add": "Aggiungi Metodo di Pagamento",
     "add_card": "Aggiungi Carta",
     "adding": "Aggiunta in corso...",
     "card_details": "Dettagli Carta",
-    "default": "Predefinito",
-    "unavailable": "Non disponibile",
-    "unavailable_desc": "I metodi di pagamento non sono attualmente disponibili",
     "card_number": "Numero Carta",
+    "default": "Predefinito",
+    "edit": "Modifica",
     "expires": "Scade",
-    "edit": "Modifica"
+    "title": "Metodi di Pagamento",
+    "unavailable": "Non disponibile",
+    "unavailable_desc": "I metodi di pagamento non sono attualmente disponibili"
   },
-  
-  "auto_recharge": {
-    "title": "Ricarica Automatica",
-    "description": "Ricarica automaticamente {topup} quando il saldo scende sotto {threshold}",
-    "enabled": "Abilitata",
-    "disabled": "Disabilitata",
-    "enable": "Abilita",
-    "threshold": "Soglia",
-    "topup": "Importo Ricarica",
-    "on": "Attivo"
+  "status": {
+    "over_limit": "Sopra il limite",
+    "under_limit": "Sotto il limite"
   },
-  
+  "subtitle": "Gestisci la tua fatturazione, metodi di pagamento e limiti di utilizzo",
+  "title": "Fatturazione e Abbonamenti",
   "usage_cap": {
-    "title": "Limite di Utilizzo",
     "current": "Utilizzo Attuale",
     "description": "Limite di utilizzo mensile impostato a {limit} con avvisi a {type}",
     "hard": "Limite Rigido (stop chiamate)",
@@ -49,28 +59,12 @@
     "soft": "Limite Morbido (solo avvisi)",
     "soft_cap": "Limite Morbido",
     "stop_calls": "Ferma chiamate al limite",
+    "title": "Limite di Utilizzo",
     "type": "Tipo Limite",
     "warnings_only": "Solo avvisi"
   },
-  
-  "invoices": {
-    "title": "Fatture",
-    "download": "Scarica",
-    "view_all": "Visualizza Tutte"
-  },
-  
-  "admin": {
-    "title": "👑 AMMINISTRATORE",
-    "unlimited": "💰 Illimitato"
-  },
-  
   "welcome": {
-    "title": "🚀 Benvenuto, Amministratore!",
-    "description": "Hai risorse illimitate e funzionalità premium."
-  },
-  
-  "status": {
-    "under_limit": "Sotto il limite",
-    "over_limit": "Sopra il limite"
+    "description": "Hai risorse illimitate e funzionalità premium.",
+    "title": "🚀 Benvenuto, Amministratore!"
   }
 }

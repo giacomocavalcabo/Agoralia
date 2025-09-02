@@ -1,8 +1,8 @@
 // frontend/src/pages/SettingsTelephony.jsx
-import React from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { listProviders, billingSummary, listNumbers } from '../lib/telephonyApi'
+import { listProviders, billingSummary, listNumbers, verifyCli, bindNumber } from '../lib/telephonyApi'
 import NumbersTable from '../components/NumbersTable'
 import ProviderAccounts from '../components/ProviderAccounts'
 import NumberWizard from '../components/NumberWizard'
@@ -12,6 +12,8 @@ import Tooltip from '../components/ui/Tooltip'
 
 export default function SettingsTelephony() {
   const { t } = useTranslation('settings')
+  const qc = useQueryClient()
+
 
 
   // Gates condizionali per providers e budget
@@ -35,6 +37,47 @@ export default function SettingsTelephony() {
 
   const hasLinked = (providers?.length ?? 0) > 0
   const numbers = numbersData?.items || numbersData || []
+
+  // Mutations
+  const verifyCliMutation = useMutation({
+    mutationFn: verifyCli,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['numbers'] })
+    },
+  })
+
+  const bindNumberMutation = useMutation({
+    mutationFn: ({ numberId, outboundEnabled }) => 
+      bindNumber(numberId, { outbound_enabled: outboundEnabled }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['numbers'] })
+    },
+  })
+
+  // Handlers
+  const handleAddNumber = () => {
+    // Scroll to NumberWizard section
+    const wizardSection = document.querySelector('[data-wizard-section]')
+    if (wizardSection) {
+      wizardSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleBuyNumber = () => {
+    // Scroll to NumberWizard section
+    const wizardSection = document.querySelector('[data-wizard-section]')
+    if (wizardSection) {
+      wizardSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleVerifyCli = (numberId) => {
+    verifyCliMutation.mutate(numberId)
+  }
+
+  const handleToggleOutbound = (numberId, enabled) => {
+    bindNumberMutation.mutate({ numberId, outboundEnabled: enabled })
+  }
 
   return (
     <div className="max-w-5xl">
@@ -95,10 +138,10 @@ export default function SettingsTelephony() {
       {hasLinked && (
         <NumbersTable
           numbers={numbers}
-          onAdd={() => {/* TODO: implement */}}
-          onBuy={() => {/* TODO: implement */}}
-          onVerify={() => {/* TODO: implement */}}
-          onToggleOutbound={() => {/* TODO: implement */}}
+          onAdd={handleAddNumber}
+          onBuy={handleBuyNumber}
+          onVerify={handleVerifyCli}
+          onToggleOutbound={handleToggleOutbound}
         />
       )}
 
@@ -106,7 +149,18 @@ export default function SettingsTelephony() {
       {hasLinked && (
         <section className="rounded-lg border bg-white p-4 mt-6">
           <h3 className="text-base font-semibold mb-4">{t('telephony.coverage.title')}</h3>
-          <CoveragePanel />
+          <CoveragePanel 
+            onBuyWithProvider={handleBuyNumber}
+            onAddExisting={handleAddNumber}
+          />
+        </section>
+      )}
+
+      {/* NumberWizard - sempre visibile quando ci sono provider */}
+      {hasLinked && (
+        <section className="rounded-lg border bg-white p-4 mt-6" data-wizard-section>
+          <h3 className="text-base font-semibold mb-4">{t('telephony.wizard.title')}</h3>
+          <NumberWizard budget={budget} />
         </section>
       )}
     </div>

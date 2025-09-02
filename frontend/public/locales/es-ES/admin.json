@@ -1,4 +1,5 @@
 {
+  "demo_data_enabled": "Datos de demostración habilitados - mostrando métricas de muestra",
   "notices": {
     "impersonating": "Estás suplantando a {id}"
   },

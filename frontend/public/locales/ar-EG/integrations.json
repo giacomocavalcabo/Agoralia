@@ -1,9 +1,19 @@
 {
+  "actions": {
+    "back_to_integrations": "العودة إلى عمليات التكامل",
+    "connect": "الاتصال",
+    "disconnect": "قطع الاتصال",
+    "field_mapping": "رسم الخرائط الميدانية",
+    "go_to_integrations": "الانتقال إلى عمليات التكامل",
+    "sync_status": "حالة المزامنة",
+    "test": "اختبار الاتصال"
+  },
   "connect": "[توصيل]",
   "connected": {
     "description": "تم توصيل التكامل بنجاح",
     "title": "[العنوان]"
   },
+  "description": "توصيل الخدمات والأدوات الخارجية",
   "disconnect": "[قطع الاتصال]",
   "disconnected": {
     "description": "فصل التكامل عن التكامل",
@@ -13,8 +23,14 @@
     "description": "[الوصف]",
     "title": "[العنوان]"
   },
+  "errors": {
+    "connection_failed": "فشل الاتصال",
+    "disconnection_failed": "فشل قطع الاتصال",
+    "load_failed": "فشل تحميل عمليات التكامل"
+  },
   "hubspot": {
-    "description": "[الوصف]"
+    "description": "[الوصف]",
+    "name": "هبسبوت"
   },
   "mapping": {
     "error": {
@@ -24,10 +40,28 @@
     "saved": {
       "description": "[الوصف]",
       "title": "[العنوان]"
-    }
+    },
+    "select_provider": "اختر مزود الخدمة",
+    "select_provider_desc": "اختر موفر CRM لتهيئة تعيين الحقول",
+    "title": "رسم الخرائط الميدانية"
+  },
+  "messages": {
+    "connected": "تم الاتصال بنجاح",
+    "connected_desc": "تم الاتصال بنجاح ب _PH_0__ _PH_0__",
+    "disconnected": "تم قطع الاتصال بنجاح",
+    "disconnected_desc": "تم قطع الاتصال بنجاح من _PH_0___H_0__",
+    "test_failed": "فشل اختبار الاتصال",
+    "test_failed_desc": "فشل في اختبار الاتصال ب _PH_0_____",
+    "test_success": "تم اختبار الاتصال بنجاح",
+    "test_success_desc": "تم اختبار الاتصال ب _PH_0__ _PH_0__ بنجاح"
   },
   "odoo": {
-    "description": "[الوصف]"
+    "description": "[الوصف]",
+    "name": "أودو"
+  },
+  "other": {
+    "coming_soon": "قريباً",
+    "coming_soon_desc": "سيتوفر المزيد من عمليات التكامل في التحديثات المستقبلية"
   },
   "portal_id": "[معرّف البوابة]",
   "status": {
@@ -37,9 +71,16 @@
     "error": "[خطأ]"
   },
   "subtitle": "[العنوان الفرعي]",
+  "sync": {
+    "select_provider": "اختر مزود الخدمة",
+    "select_provider_desc": "اختر موفر CRM لعرض حالة المزامنة",
+    "title": "حالة المزامنة"
+  },
   "tabs": {
     "crm": "[إدارة علاقات العملاء]",
-    "other": "[أخرى]"
+    "mapping": "رسم الخرائط الميدانية",
+    "other": "[أخرى]",
+    "sync": "حالة المزامنة"
   },
   "test": {
     "error": {
@@ -53,6 +94,7 @@
   },
   "title": "[العنوان]",
   "zoho": {
-    "description": "[الوصف]"
+    "description": "[الوصف]",
+    "name": "زوهو CRM"
   }
 }

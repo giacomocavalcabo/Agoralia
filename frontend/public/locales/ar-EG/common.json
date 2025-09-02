@@ -33,7 +33,9 @@
   "actions": {
     "more": "[المزيد]"
   },
+  "active": "نشط",
   "add": "[إضافة]",
+  "agent": "الوكيل",
   "auth": {
     "continue_with_google": "المتابعة مع Google",
     "continue_with_microsoft": "المتابعة مع Microsoft",
@@ -58,27 +60,46 @@
   "connecting": "توصيل...",
   "content-type": "[نوع المحتوى]",
   "disconnecting": "قطع الاتصال...",
+  "duration": "المدة",
   "edit": "تحرير",
+  "error": {
+    "boundary": {
+      "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+      "retry": "إعادة المحاولة",
+      "title": "حدث خطأ ما"
+    }
+  },
   "hubspot": "[هبسبوت]",
   "id": "[المعرف]",
+  "lead": "الرصاص",
+  "live": "على الهواء مباشرة",
+  "live_status": "_PH_0_0__ نشط - مباشر",
   "loading": "[جارٍ التحميل]",
   "next": "التالي",
+  "none": "لا يوجد",
+  "not_available": "غير متاح",
   "odoo": "[أودو]",
   "of_total": "_PH_0___ من {total}___ {from}",
   "off": "إيقاف التشغيل",
   "on": "على",
   "open-create-drawer": "[فتح-إنشاء-دُرج-مفتوح]",
+  "polling": "الاقتراع",
+  "polling_status": "_PH_0___ _PH_0___ نشط - الاقتراع",
   "prev": "السابق",
   "q": "[Q]",
   "range": "النطاق {from}_ إلى {to}___",
   "remove": "[إزالة]",
+  "retry": "إعادة المحاولة",
   "save": "الحفظ",
   "saving": "[توفير]",
   "search": "[بحث]",
+  "started": "بدأت",
+  "status": "الحالة",
   "testing": "اختبار...",
   "toasts": {
     "invite_accepted": "[الدعوة مقبولة]"
   },
   "token": "[الرمز المميز]",
+  "unknown": "غير معروف",
   "zoho": "[زوهو]"
 }

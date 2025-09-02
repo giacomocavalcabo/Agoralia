@@ -30,13 +30,13 @@ def ensure_dirs():
 
 def ensure_target_files():
     """Assicura che tutti i file sorgente esistano anche nelle lingue target"""
-    src_dir = ROOT / "frontend" / "locales" / SRC
+    src_dir = ROOT / "frontend" / "public" / "locales" / SRC
     
     for src_file in src_dir.glob("*.json"):
         namespace = src_file.stem
         
         for locale in TARGETS:
-            target_file = ROOT / "frontend" / "locales" / locale / f"{namespace}.json"
+            target_file = ROOT / "frontend" / "public" / "locales" / locale / f"{namespace}.json"
             
             if not target_file.exists():
                 print(f"📁 Creando file mancante: {locale}/{namespace}.json")
@@ -103,7 +103,12 @@ def unflatten(pairs):
         cur = root
         parts = key.split(".")
         for part in parts[:-1]:
-            cur = cur.setdefault(part, {})
+            if part not in cur:
+                cur[part] = {}
+            elif not isinstance(cur[part], dict):
+                # Se la chiave esiste ma è una stringa, la convertiamo in dict
+                cur[part] = {}
+            cur = cur[part]
         cur[parts[-1]] = value
     return root
 
@@ -311,7 +316,7 @@ def main():
     total_chars_used = 0
     
     for ns in NAMESPACES:
-        src_path = ROOT / "frontend" / "locales" / SRC / f"{ns}.json"
+        src_path = ROOT / "frontend" / "public" / "locales" / SRC / f"{ns}.json"
         if not src_path.exists():
             print(f"⚠️  Namespace {ns} non trovato in {SRC}, saltando...")
             continue
@@ -324,7 +329,7 @@ def main():
             hashes.setdefault(SRC, {}).setdefault(ns, {})[k] = src_hash(str(v))
 
         for locale in TARGETS:
-            tgt_path = ROOT / "frontend" / "locales" / locale / f"{ns}.json"
+            tgt_path = ROOT / "frontend" / "public" / "locales" / locale / f"{ns}.json"
             tgt = read_json(tgt_path)
             tgt_flat = dict(flatten(tgt))
 

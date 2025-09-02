@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { getCoverage, searchInventory } from "../lib/telephonyApi";
 import { CheckIcon, XMarkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
-export default function CoveragePanel() {
+export default function CoveragePanel({ onBuyWithProvider, onAddExisting }) {
   const { t } = useTranslation('settings');
   const [selectedProvider, setSelectedProvider] = useState("twilio");
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -99,7 +99,7 @@ export default function CoveragePanel() {
           value={selectedCountry}
           onChange={(e) => handleCountrySelect(e.target.value)}
         >
-          <option value="">{t('settings.telephony.coverage.choose_country', 'Scegli un paese...')}</option>
+          <option value="">{t('telephony.coverage.choose_country', 'Scegli un paese...')}</option>
           {countries.map((country) => (
             <option key={country.alpha2} value={country.alpha2}>
               {country.name} ({country.alpha2})
@@ -114,7 +114,7 @@ export default function CoveragePanel() {
           {/* What you can buy */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-semibold mb-3 text-gray-900">
-              {t('settings.telephony.coverage.what_you_can_buy', 'Cosa puoi comprare qui')}
+              {t('telephony.coverage.what_you_can_buy', 'Cosa puoi comprare qui')}
             </h4>
             <div className="space-y-2">
                           {Object.entries(capabilities.buy).map(([type, enabled]) => (
@@ -129,7 +129,7 @@ export default function CoveragePanel() {
           {/* Features */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-semibold mb-3 text-gray-900">
-              {t('settings.telephony.coverage.features', 'Funzionalità')}
+              {t('telephony.coverage.features', 'Funzionalità')}
             </h4>
             <div className="space-y-2">
               {Object.entries(capabilities.features).map(([feature, enabled]) => (
@@ -144,7 +144,7 @@ export default function CoveragePanel() {
           {/* Import Support */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-semibold mb-3 text-gray-900">
-              {t('settings.telephony.coverage.import_support', 'Import/Porting')}
+              {t('telephony.coverage.import_support', 'Import/Porting')}
             </h4>
             <div className="flex items-center justify-between">
               <span>Supportato</span>
@@ -155,7 +155,7 @@ export default function CoveragePanel() {
           {/* Outbound CLI Policy */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-semibold mb-3 text-gray-900">
-              {t('settings.telephony.coverage.outbound_policy', 'Outbound Caller ID')}
+              {t('telephony.coverage.outbound_policy', 'Outbound Caller ID')}
             </h4>
             <div className="p-3 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
               <strong>{t('telephony.policy.title')}:</strong> {t('telephony.policy.hosted_only')}
@@ -168,7 +168,7 @@ export default function CoveragePanel() {
       {capabilities && capabilities.regulatory && Object.keys(capabilities.regulatory).length > 0 && (
         <div className="p-4 border rounded-lg">
           <h4 className="font-semibold mb-3 text-gray-900">
-            {t('settings.telephony.coverage.requirements', 'Requisiti & Documenti')}
+            {t('telephony.coverage.requirements', 'Requisiti & Documenti')}
           </h4>
           <div className="space-y-3">
             {Object.entries(capabilities.regulatory).map(([numberType, entities]) => (
@@ -198,7 +198,7 @@ export default function CoveragePanel() {
       {capabilities && capabilities.notes && capabilities.notes.length > 0 && (
         <div className="p-4 border rounded-lg">
           <h4 className="font-semibold mb-3 text-gray-900">
-            {t('settings.telephony.coverage.notes', 'Note')}
+            {t('telephony.coverage.notes', 'Note')}
           </h4>
           <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
             {capabilities.notes.map((note, index) => (
@@ -233,20 +233,18 @@ export default function CoveragePanel() {
           <button
             className="btn btn-primary"
             onClick={() => {
-              // TODO: Open NumberWizard pre-filled with provider+country
-              console.log("Open NumberWizard for", selectedProvider, selectedCountry);
+              onBuyWithProvider && onBuyWithProvider();
             }}
           >
-            {t('settings.telephony.coverage.buy_with_provider', 'Compra con questo provider')}
+            {t('telephony.coverage.buy_with_provider', 'Compra con questo provider')}
           </button>
           <button
             className="btn"
             onClick={() => {
-              // TODO: Open BYO form with provider selected
-              console.log("Open BYO for", selectedProvider);
+              onAddExisting && onAddExisting();
             }}
           >
-            {t('settings.telephony.coverage.add_existing', 'Aggiungi numero esistente')}
+            {t('telephony.coverage.add_existing', 'Aggiungi numero esistente')}
           </button>
         </div>
       )}

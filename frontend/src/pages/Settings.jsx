@@ -112,12 +112,12 @@ function PersonalTab() {
       }
       
       toast({
-        title: t('settings.account.messages.saved'),
+        title: t('account.messages.saved'),
         type: 'success'
       })
     } catch (error) {
       toast({
-        title: t('settings.account.errors.save_failed'),
+        title: t('account.errors.save_failed'),
         description: error.message,
         type: 'error'
       })
@@ -219,10 +219,9 @@ function PersonalTab() {
                 errors.timezone ? 'border-red-300' : 'border-gray-300'
               }`}
             >
-              <option value="UTC">UTC</option>
-              <option value="Europe/Rome">Rome (UTC+1)</option>
-              <option value="Europe/London">London (UTC+0)</option>
-              <option value="America/New_York">New York (UTC-5)</option>
+              {Object.entries(t('account.timezones', { returnObjects: true })).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
             </select>
             <FieldError>{errors.timezone}</FieldError>
           </FormRow>
@@ -261,8 +260,8 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile')
   
   const tabs = [
-    { id: 'profile', name: t('settings.tabs.profile') || 'Profile', component: PersonalTab },
-    { id: 'company', name: t('settings.tabs.company') || 'Company', component: SettingsCompany }
+    { id: 'profile', name: t('tabs.profile'), component: PersonalTab },
+    { id: 'company', name: t('tabs.company'), component: SettingsCompany }
   ]
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component

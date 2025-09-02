@@ -1,13 +1,20 @@
 {
+  "admin": {
+    "title": "👑 ADMIN",
+    "unlimited": "💰 Unbegrenzt"
+  },
   "auto_recharge": {
     "description": "Automatisches Aufladen von {threshold}, wenn der Kontostand unter {topup} fällt",
     "disabled": "Automatische Wiederaufladung deaktiviert",
     "enable": "[Freigeben]",
     "enabled": "Automatische Wiederaufladung aktiviert",
+    "on": "Auf",
     "threshold": "[Schwellenwert]",
     "title": "[Titel]",
     "topup": "[Nachfüllen]"
   },
+  "hard_stop_banner": "Monatliches Budget erreicht. Kauf/Import sind deaktiviert.",
+  "hard_stop_detail": "Ihre monatliche Budgetgrenze wurde erreicht. Bitte aktualisieren Sie Ihre Abrechnungseinstellungen, um fortzufahren.",
   "invoices": {
     "download": "[Download]",
     "title": "[Titel]",
@@ -15,8 +22,13 @@
   },
   "overview": {
     "balance": "[Balance]",
+    "balance_amount": "Saldo Betrag",
     "cap_status": "[Cap Status]",
+    "cap_status_desc": "Aktueller Stand der Nutzung",
+    "minutes_limit": "Minuten Grenze",
     "minutes_mtd": "[Minutes Mtd]",
+    "usage_amount": "Verwendungszweck Betrag",
+    "usage_limit": "Verwendungsgrenze",
     "usage_mtd": "[Usage Mtd]"
   },
   "payment_methods": {
@@ -24,10 +36,17 @@
     "add_card": "[Karte hinzufügen]",
     "adding": "[Hinzufügen]",
     "card_details": "[Kartendetails]",
+    "card_number": "Kartennummer",
     "default": "[Standard]",
+    "edit": "Bearbeiten",
+    "expires": "Abgelaufen",
     "title": "[Titel]",
     "unavailable": "[Nicht verfügbar]",
     "unavailable_desc": "[Nicht verfügbar Desc]"
+  },
+  "status": {
+    "over_limit": "Obergrenze",
+    "under_limit": "Unter Grenze"
   },
   "subtitle": "[Subtitle]",
   "title": "[Titel]",
@@ -43,5 +62,9 @@
     "title": "Verwendungszweck Kappe",
     "type": "Kappen-Typ",
     "warnings_only": "Nur Warnungen"
+  },
+  "welcome": {
+    "description": "Sie verfügen über unbegrenzte Ressourcen und Premiumfunktionen.",
+    "title": "🚀 Willkommen, Admin!"
   }
 }

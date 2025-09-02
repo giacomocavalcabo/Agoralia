@@ -1,9 +1,19 @@
 {
+  "actions": {
+    "back_to_integrations": "Zurück zu Integrationen",
+    "connect": "Verbinden Sie",
+    "disconnect": "Trennen Sie die Verbindung",
+    "field_mapping": "Feldkartierung",
+    "go_to_integrations": "Zu Integrationen gehen",
+    "sync_status": "Sync-Status",
+    "test": "Verbindung testen"
+  },
   "connect": "[Verbinden]",
   "connected": {
     "description": "Integration erfolgreich verbunden",
     "title": "[Titel]"
   },
+  "description": "Externe Dienste und Tools verbinden",
   "disconnect": "[Trennen]",
   "disconnected": {
     "description": "Integration abgekoppelt",
@@ -13,8 +23,14 @@
     "description": "[Beschreibung]",
     "title": "[Titel]"
   },
+  "errors": {
+    "connection_failed": "Verbindung fehlgeschlagen",
+    "disconnection_failed": "Die Verbindung konnte nicht getrennt werden",
+    "load_failed": "Integrationen konnten nicht geladen werden"
+  },
   "hubspot": {
-    "description": "[Beschreibung]"
+    "description": "[Beschreibung]",
+    "name": "HubSpot"
   },
   "mapping": {
     "error": {
@@ -24,10 +40,28 @@
     "saved": {
       "description": "[Beschreibung]",
       "title": "[Titel]"
-    }
+    },
+    "select_provider": "Wählen Sie einen Anbieter",
+    "select_provider_desc": "Wählen Sie einen CRM-Anbieter für die Konfiguration der Feldzuordnung",
+    "title": "Feldkartierung"
+  },
+  "messages": {
+    "connected": "Verbindung erfolgreich hergestellt",
+    "connected_desc": "Erfolgreich verbunden mit {provider}",
+    "disconnected": "Die Verbindung wurde erfolgreich getrennt",
+    "disconnected_desc": "Die Verbindung zu {provider} wurde erfolgreich getrennt",
+    "test_failed": "Verbindungstest fehlgeschlagen",
+    "test_failed_desc": "Verbindung zu {provider} konnte nicht getestet werden",
+    "test_success": "Verbindungstest erfolgreich",
+    "test_success_desc": "Erfolgreich getestete Verbindung zu {provider}"
   },
   "odoo": {
-    "description": "[Beschreibung]"
+    "description": "[Beschreibung]",
+    "name": "Odoo"
+  },
+  "other": {
+    "coming_soon": "Demnächst verfügbar",
+    "coming_soon_desc": "Weitere Integrationen werden in zukünftigen Updates verfügbar sein"
   },
   "portal_id": "[Portal Id]",
   "status": {
@@ -37,9 +71,16 @@
     "error": "[Fehler]"
   },
   "subtitle": "[Subtitle]",
+  "sync": {
+    "select_provider": "Wählen Sie einen Anbieter",
+    "select_provider_desc": "Wählen Sie einen CRM-Anbieter, um den Synchronisierungsstatus anzuzeigen",
+    "title": "Sync-Status"
+  },
   "tabs": {
     "crm": "[Crm]",
-    "other": "[Sonstiges]"
+    "mapping": "Feldkartierung",
+    "other": "[Sonstiges]",
+    "sync": "Sync-Status"
   },
   "test": {
     "error": {
@@ -53,6 +94,7 @@
   },
   "title": "[Titel]",
   "zoho": {
-    "description": "[Beschreibung]"
+    "description": "[Beschreibung]",
+    "name": "Zoho CRM"
   }
 }

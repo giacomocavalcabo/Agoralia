@@ -1,9 +1,19 @@
 {
+  "actions": {
+    "back_to_integrations": "Torna alle Integrazioni",
+    "connect": "Connetti",
+    "disconnect": "Disconnetti",
+    "field_mapping": "Mappatura Campi",
+    "go_to_integrations": "Vai alle Integrazioni",
+    "sync_status": "Stato Sincronizzazione",
+    "test": "Test Connessione"
+  },
   "connect": "Connetti",
   "connected": {
     "description": "L'integrazione è stata collegata con successo",
     "title": "Connesso"
   },
+  "description": "Connetti servizi e strumenti esterni",
   "disconnect": "Disconnetti",
   "disconnected": {
     "description": "Integrazione scollegata",
@@ -13,23 +23,45 @@
     "description": "Si è verificato un errore durante l'elaborazione della richiesta",
     "title": "Errore"
   },
+  "errors": {
+    "connection_failed": "Impossibile connettersi",
+    "disconnection_failed": "Impossibile disconnettersi",
+    "load_failed": "Impossibile caricare le integrazioni"
+  },
   "hubspot": {
-    "name": "HubSpot",
-    "description": "Sincronizza contatti, aziende e deal con HubSpot CRM"
+    "description": "Sincronizza contatti, aziende e deal con HubSpot CRM",
+    "name": "HubSpot"
   },
   "mapping": {
     "error": {
       "description": "Impossibile salvare la mappatura dei campi",
-      "title": "Errore Mappatura"
+      "title": "Errore di mappatura"
     },
     "saved": {
-      "description": "Mappatura dei campi salvata con successo",
-      "title": "Mappatura Salvata"
-    }
+      "description": "La mappatura dei campi è stata salvata con successo",
+      "title": "Mappatura salvata"
+    },
+    "select_provider": "Seleziona un provider",
+    "select_provider_desc": "Scegli un provider CRM per configurare la mappatura dei campi",
+    "title": "Mappatura Campi"
+  },
+  "messages": {
+    "connected": "Connesso con successo",
+    "connected_desc": "Connesso con successo a {provider}",
+    "disconnected": "Disconnesso con successo",
+    "disconnected_desc": "Disconnesso con successo da {provider}",
+    "test_failed": "Test di connessione fallito",
+    "test_failed_desc": "Test di connessione a {provider} fallito",
+    "test_success": "Test di connessione riuscito",
+    "test_success_desc": "Test di connessione a {provider} riuscito"
   },
   "odoo": {
-    "name": "Odoo",
-    "description": "Integra con Odoo CRM usando JSON-RPC"
+    "description": "Integra con Odoo CRM usando JSON-RPC",
+    "name": "Odoo"
+  },
+  "other": {
+    "coming_soon": "Presto Disponibile",
+    "coming_soon_desc": "Altre integrazioni saranno disponibili in aggiornamenti futuri"
   },
   "portal_id": "ID Portale",
   "status": {
@@ -39,9 +71,16 @@
     "error": "Errore"
   },
   "subtitle": "Connetti il tuo CRM e altri strumenti per semplificare il flusso di lavoro",
+  "sync": {
+    "select_provider": "Seleziona un provider",
+    "select_provider_desc": "Scegli un provider CRM per visualizzare lo stato di sincronizzazione",
+    "title": "Stato Sincronizzazione"
+  },
   "tabs": {
     "crm": "Sistemi CRM",
-    "other": "Altri Strumenti"
+    "mapping": "Mappatura Campi",
+    "other": "Altri strumenti",
+    "sync": "Stato Sincronizzazione"
   },
   "test": {
     "error": {
@@ -54,51 +93,8 @@
     }
   },
   "title": "Integrazioni",
-  "description": "Connetti servizi e strumenti esterni",
-  "errors": {
-    "load_failed": "Impossibile caricare le integrazioni",
-    "connection_failed": "Impossibile connettersi",
-    "disconnection_failed": "Impossibile disconnettersi"
-  },
-  "messages": {
-    "connected": "Connesso con successo",
-    "connected_desc": "Connesso con successo a {provider}",
-    "disconnected": "Disconnesso con successo",
-    "disconnected_desc": "Disconnesso con successo da {provider}",
-    "test_success": "Test di connessione riuscito",
-    "test_success_desc": "Test di connessione a {provider} riuscito",
-    "test_failed": "Test di connessione fallito",
-    "test_failed_desc": "Test di connessione a {provider} fallito"
-  },
-  "mapping": {
-    "title": "Mappatura Campi",
-    "select_provider": "Seleziona un provider",
-    "select_provider_desc": "Scegli un provider CRM per configurare la mappatura dei campi"
-  },
-  "sync": {
-    "title": "Stato Sincronizzazione",
-    "select_provider": "Seleziona un provider",
-    "select_provider_desc": "Scegli un provider CRM per visualizzare lo stato di sincronizzazione"
-  },
-  "tabs": {
-    "mapping": "Mappatura Campi",
-    "sync": "Stato Sincronizzazione"
-  },
-  "actions": {
-    "connect": "Connetti",
-    "disconnect": "Disconnetti",
-    "test": "Test Connessione",
-    "field_mapping": "Mappatura Campi",
-    "sync_status": "Stato Sincronizzazione",
-    "back_to_integrations": "Torna alle Integrazioni",
-    "go_to_integrations": "Vai alle Integrazioni"
-  },
-  "other": {
-    "coming_soon": "Presto Disponibile",
-    "coming_soon_desc": "Altre integrazioni saranno disponibili in aggiornamenti futuri"
-  },
   "zoho": {
-    "name": "Zoho CRM",
-    "description": "Connetti a Zoho CRM con supporto multi-DC"
+    "description": "Connetti a Zoho CRM con supporto multi-DC",
+    "name": "Zoho CRM"
   }
 }

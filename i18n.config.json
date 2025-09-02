@@ -1,6 +1,6 @@
 {
   "sourceLocale": "en-US",
-  "targetLocales": ["it-IT", "fr-FR", "es-ES", "de-DE", "ar-EG"],
+  "targetLocales": ["it-IT", "fr-FR", "es-ES", "de-DE", "ar-EG", "hi-IN"],
   "namespaces": ["common", "pages", "admin", "billing", "app", "auth", "kb", "integrations", "settings", "ui", "errors", "compliance"],
   "glossary": ["Agoralia", "Workspace", "Playbook", "Compliance", "ColdAI"],
   "preservePatterns": [

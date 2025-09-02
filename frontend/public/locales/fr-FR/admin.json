@@ -1,4 +1,5 @@
 {
+  "demo_data_enabled": "Données de démonstration activées - affichage d'un échantillon de mesures",
   "notices": {
     "impersonating": "Vous vous faites passer pour {id}"
   },

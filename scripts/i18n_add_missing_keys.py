@@ -82,7 +82,7 @@ def categorize_keys(missing_keys):
 
 def load_or_create_catalog(namespace):
     """Carica o crea un catalogo esistente"""
-    catalog_path = Path(f'frontend/locales/en-US/{namespace}.json')
+    catalog_path = Path(f'frontend/public/locales/en-US/{namespace}.json')
     
     if catalog_path.exists():
         with open(catalog_path, 'r', encoding='utf-8') as f:
@@ -112,7 +112,7 @@ def add_placeholder_key(catalog, key_path, default_value=None):
 
 def save_catalog(namespace, catalog):
     """Salva il catalogo con formattazione consistente"""
-    catalog_path = Path(f'frontend/locales/en-US/{namespace}.json')
+    catalog_path = Path(f'frontend/public/locales/en-US/{namespace}.json')
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(catalog_path, 'w', encoding='utf-8') as f:

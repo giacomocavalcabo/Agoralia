@@ -163,7 +163,7 @@ def scan_codebase() -> Dict[str, Set[str]]:
 
 def extract_catalog_placeholders() -> Dict[str, Set[str]]:
     """Estrae placeholder dai cataloghi i18n esistenti"""
-    locales_dir = ROOT / "frontend" / "locales"
+    locales_dir = ROOT / "frontend" / "public" / "locales"
     src_dir = locales_dir / SRC
     
     if not src_dir.exists():

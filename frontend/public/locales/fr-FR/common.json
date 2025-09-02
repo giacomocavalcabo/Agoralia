@@ -33,7 +33,9 @@
   "actions": {
     "more": "[Plus]"
   },
+  "active": "actif",
   "add": "[Ajouter]",
+  "agent": "Agent",
   "auth": {
     "continue_with_google": "Continuer avec Google",
     "continue_with_microsoft": "Continuer avec Microsoft",
@@ -58,27 +60,46 @@
   "connecting": "Connexion...",
   "content-type": "[Type de contenu]",
   "disconnecting": "Déconnexion...",
+  "duration": "Duration",
   "edit": "Editer",
+  "error": {
+    "boundary": {
+      "description": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      "retry": "Réessayer",
+      "title": "Quelque chose n'a pas fonctionné"
+    }
+  },
   "hubspot": "[Hubspot]",
   "id": "[Id]",
+  "lead": "Plomb",
+  "live": "vivre",
+  "live_status": "{{count}} active • live",
   "loading": "[Chargement]",
   "next": "Suivant",
+  "none": "Aucun",
+  "not_available": "N/A",
   "odoo": "[Odoo]",
   "of_total": "{from} de {total}",
   "off": "Arrêt",
   "on": "Sur",
   "open-create-drawer": "[Ouvrir le tiroir-création]",
+  "polling": "sondage",
+  "polling_status": "{{count}} active • polling",
   "prev": "Précédent",
   "q": "[Q]",
   "range": "Gamme {from} à {to}",
   "remove": "[Retirer]",
+  "retry": "Réessayer",
   "save": "Économiser",
   "saving": "[Sauvegarde]",
   "search": "[Rechercher]",
+  "started": "Commencé",
+  "status": "Statut",
   "testing": "Test...",
   "toasts": {
     "invite_accepted": "[Invitation acceptée]"
   },
   "token": "[Jeton]",
+  "unknown": "Inconnu",
   "zoho": "[Zoho]"
 }

@@ -33,7 +33,9 @@
   "actions": {
     "more": "[Mehr]"
   },
+  "active": "aktiv",
   "add": "[Hinzufügen]",
+  "agent": "Agent",
   "auth": {
     "continue_with_google": "Weiter mit Google",
     "continue_with_microsoft": "Weiter mit Microsoft",
@@ -58,27 +60,46 @@
   "connecting": "Verbinden...",
   "content-type": "[Content-Type]",
   "disconnecting": "Trennen der Verbindung...",
+  "duration": "Duration",
   "edit": "Bearbeiten",
+  "error": {
+    "boundary": {
+      "description": "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "retry": "Wiederholung",
+      "title": "Etwas ist schief gelaufen"
+    }
+  },
   "hubspot": "[Hubspot]",
   "id": "[Id]",
+  "lead": "Blei",
+  "live": "live",
+  "live_status": "{{count}} active - live",
   "loading": "[Laden]",
   "next": "Weiter",
+  "none": "Keine",
+  "not_available": "K.A",
   "odoo": "[Odoo]",
   "of_total": "{from} von {total}",
   "off": "Aus",
   "on": "Auf",
   "open-create-drawer": "[Open-Create-Drawer]",
+  "polling": "abfrage",
+  "polling_status": "{{count}} active - polling",
   "prev": "Vorherige",
   "q": "[Q]",
   "range": "Bereich {from} bis {to}",
   "remove": "[Entfernen]",
+  "retry": "Wiederholung",
   "save": "Speichern Sie",
   "saving": "[Sparen]",
   "search": "[Suche]",
+  "started": "Gestartet",
+  "status": "Status",
   "testing": "Prüfung...",
   "toasts": {
     "invite_accepted": "[Einladung angenommen]"
   },
   "token": "[Token]",
+  "unknown": "Unbekannt",
   "zoho": "[Zoho]"
 }

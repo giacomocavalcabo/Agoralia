@@ -1,9 +1,19 @@
 {
+  "actions": {
+    "back_to_integrations": "Retour à Intégrations",
+    "connect": "Connecter",
+    "disconnect": "Déconnexion",
+    "field_mapping": "Cartographie de terrain",
+    "go_to_integrations": "Aller à Intégrations",
+    "sync_status": "État de la synchronisation",
+    "test": "Test de connexion"
+  },
   "connect": "[Connecter]",
   "connected": {
     "description": "Intégration connectée avec succès",
     "title": "[Titre]"
   },
+  "description": "Connecter des services et des outils externes",
   "disconnect": "[Déconnexion]",
   "disconnected": {
     "description": "Intégration déconnectée",
@@ -13,8 +23,14 @@
     "description": "[Description]",
     "title": "[Titre]"
   },
+  "errors": {
+    "connection_failed": "Échec de la connexion",
+    "disconnection_failed": "Échec de la déconnexion",
+    "load_failed": "Échec du chargement des intégrations"
+  },
   "hubspot": {
-    "description": "[Description]"
+    "description": "[Description]",
+    "name": "HubSpot"
   },
   "mapping": {
     "error": {
@@ -24,10 +40,28 @@
     "saved": {
       "description": "[Description]",
       "title": "[Titre]"
-    }
+    },
+    "select_provider": "Sélectionner un fournisseur",
+    "select_provider_desc": "Choisir un fournisseur CRM pour configurer le mappage des champs",
+    "title": "Cartographie de terrain"
+  },
+  "messages": {
+    "connected": "Connexion réussie",
+    "connected_desc": "Connexion réussie avec {provider}",
+    "disconnected": "Déconnexion réussie",
+    "disconnected_desc": "Déconnexion réussie de {provider}",
+    "test_failed": "Échec du test de connexion",
+    "test_failed_desc": "Échec du test de connexion à {provider}",
+    "test_success": "Test de connexion réussi",
+    "test_success_desc": "La connexion à {provider} a été testée avec succès"
   },
   "odoo": {
-    "description": "[Description]"
+    "description": "[Description]",
+    "name": "Odoo"
+  },
+  "other": {
+    "coming_soon": "Bientôt disponible",
+    "coming_soon_desc": "D'autres intégrations seront disponibles dans les prochaines mises à jour"
   },
   "portal_id": "[Numéro d'identification du portail]",
   "status": {
@@ -37,9 +71,16 @@
     "error": "[Erreur]"
   },
   "subtitle": "[Sous-titre]",
+  "sync": {
+    "select_provider": "Sélectionner un fournisseur",
+    "select_provider_desc": "Choisissez un fournisseur CRM pour voir l'état de la synchronisation",
+    "title": "État de la synchronisation"
+  },
   "tabs": {
     "crm": "[Crm]",
-    "other": "[Autre]"
+    "mapping": "Cartographie de terrain",
+    "other": "[Autre]",
+    "sync": "État de la synchronisation"
   },
   "test": {
     "error": {
@@ -53,6 +94,7 @@
   },
   "title": "[Titre]",
   "zoho": {
-    "description": "[Description]"
+    "description": "[Description]",
+    "name": "Zoho CRM"
   }
 }

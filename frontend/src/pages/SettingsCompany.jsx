@@ -69,12 +69,12 @@ export default function SettingsCompany() {
     try {
       await put('/settings/company', formData)
       toast({
-        title: t('settings.company.messages.saved') || 'Company settings saved',
+        title: t('company.messages.saved'),
         type: 'success'
       })
     } catch (error) {
       toast({
-        title: t('settings.company.errors.save_failed') || 'Failed to save company settings',
+        title: t('company.errors.save_failed'),
         description: error.message,
         type: 'error'
       })
@@ -89,7 +89,7 @@ export default function SettingsCompany() {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="text-center py-12">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {t('settings.company.access_denied') || 'Access Denied'}
+              {t('company.access_denied')}
             </h3>
             <p className="text-gray-500">
               You need admin permissions to access company settings.
@@ -126,7 +126,7 @@ export default function SettingsCompany() {
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('settings.company.title') || 'Company Settings'}
+          {t('company.title')}
         </h3>
         
         <div className="grid grid-cols-2 gap-6">
@@ -228,7 +228,7 @@ export default function SettingsCompany() {
             disabled={isSaving}
             className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? t('common.saving') : t('account.actions.save')}
           </button>
         </div>
       </div>

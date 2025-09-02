@@ -1,4 +1,5 @@
 {
+  "demo_data_enabled": "Demo-Daten aktiviert - mit Beispielen für Metriken",
   "notices": {
     "impersonating": "Sie geben sich als {id} aus"
   },

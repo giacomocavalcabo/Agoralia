@@ -65,6 +65,7 @@ class Workspace(Base):
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     plan = Column(String, default="core")
+    timezone = Column(String, default="UTC")
     created_at = Column(DateTime, default=datetime.utcnow)
     # Numbers: default caller ID for outbound
     default_from_number_e164 = Column(String)

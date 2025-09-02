@@ -27,6 +27,7 @@ class CompanyUpdate(BaseModel):
     support_email: Optional[str] = None
     legal_name: Optional[str] = None
     website_url: Optional[str] = None
+    timezone: Optional[str] = None
 
 # Helper function to check if user is admin/owner
 def require_admin_or_owner(request: Request, db: Session = Depends(get_db)):
@@ -56,16 +57,24 @@ def get_company(request: Request, db: Session = Depends(get_db)):
     """Get company settings - requires admin access"""
     user = require_admin_or_owner(request, db)
     
+    # Get workspace info
+    from backend.models import WorkspaceMember, Workspace
+    workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+    workspace = None
+    if workspace_member:
+        workspace = db.get(Workspace, workspace_member.workspace_id)
+    
     # For now, return mock data - you can implement Organization model later
     return {
-        "company_name": getattr(user, 'company_name', None) or "Your Company",
-        "domain": getattr(user, 'domain', None),
-        "vat_id": getattr(user, 'vat_id', None),
-        "brand_color": getattr(user, 'brand_color', None) or "#0EA5E9",
-        "logo_url": getattr(user, 'logo_url', None),
-        "support_email": getattr(user, 'support_email', None),
-        "legal_name": getattr(user, 'legal_name', None),
-        "website_url": getattr(user, 'website_url', None),
+        "company_name": getattr(workspace, 'name', None) or "Your Company",
+        "domain": getattr(workspace, 'domain', None),
+        "vat_id": getattr(workspace, 'vat_id', None),
+        "brand_color": getattr(workspace, 'brand_color', None) or "#0EA5E9",
+        "logo_url": getattr(workspace, 'logo_url', None),
+        "support_email": getattr(workspace, 'support_email', None),
+        "legal_name": getattr(workspace, 'legal_name', None),
+        "website_url": getattr(workspace, 'website_url', None),
+        "timezone": getattr(workspace, 'timezone', None) or "UTC",
     }
 
 @router.patch("/company")
@@ -74,17 +83,27 @@ def update_company(payload: CompanyUpdate, request: Request, db: Session = Depen
     user = require_admin_or_owner(request, db)
     
     try:
-        # Update user fields (for now - later you can implement Organization model)
+        # Get workspace info
+        from backend.models import WorkspaceMember, Workspace
+        workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+        if not workspace_member:
+            raise HTTPException(status_code=404, detail="Workspace not found")
+        
+        workspace = db.get(Workspace, workspace_member.workspace_id)
+        if not workspace:
+            raise HTTPException(status_code=404, detail="Workspace not found")
+        
+        # Update workspace fields
         updated_fields = []
         for field, value in payload.model_dump(exclude_none=True).items():
-            if hasattr(user, field):
-                setattr(user, field, value)
+            if hasattr(workspace, field):
+                setattr(workspace, field, value)
                 updated_fields.append(field)
         
         if updated_fields:
             db.commit()
-            db.refresh(user)
-            logger.info(f"Updated company settings for user {user.email}: {updated_fields}")
+            db.refresh(workspace)
+            logger.info(f"Updated workspace {workspace.id} fields: {updated_fields}")
 
         return {"ok": True, "updated_fields": updated_fields}
         

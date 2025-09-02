@@ -1,3 +1,5 @@
 {
-  "attest": "Certificado"
+  "attest": "Certificado",
+  "new_submission": "Nueva presentación",
+  "required_message": "se requieren documentos Compliance para esta combinación de país/tipo. Complete primero el proceso de conformidad."
 }

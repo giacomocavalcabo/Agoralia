@@ -91,7 +91,7 @@ def replace_placeholders(text, mapping):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="frontend/locales", help="Cartella radice delle locali")
+    ap.add_argument("--root", default="frontend/public/locales", help="Cartella radice delle locali")
     ap.add_argument("--source", default="en-US", help="Locale sorgente (source of truth)")
     ap.add_argument("--ns", nargs="+", required=False, help="Namespace senza estensione (default: tutti i .json in source)")
     args = ap.parse_args()

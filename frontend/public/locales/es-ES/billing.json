@@ -1,13 +1,20 @@
 {
+  "admin": {
+    "title": "👑 ADMIN",
+    "unlimited": "💰 Ilimitado"
+  },
   "auto_recharge": {
     "description": "Recarga automática de {threshold} cuando el saldo es inferior a {topup}",
     "disabled": "Recarga automática desactivada",
     "enable": "[Activar]",
     "enabled": "Recarga automática activada",
+    "on": "En",
     "threshold": "[Umbral]",
     "title": "[Título]",
     "topup": "[Topup]"
   },
+  "hard_stop_banner": "Presupuesto mensual alcanzado. Compras/Importaciones desactivadas.",
+  "hard_stop_detail": "Se ha alcanzado el límite de su presupuesto mensual. Actualiza tus ajustes de facturación para continuar.",
   "invoices": {
     "download": "[Descargar]",
     "title": "[Título]",
@@ -15,8 +22,13 @@
   },
   "overview": {
     "balance": "[Balance]",
+    "balance_amount": "Saldo Importe",
     "cap_status": "[Cap Status]",
+    "cap_status_desc": "Estado actual de uso",
+    "minutes_limit": "Límite de minutos",
     "minutes_mtd": "[Actas enviadas]",
+    "usage_amount": "Importe de uso",
+    "usage_limit": "Límite de uso",
     "usage_mtd": "[Uso Mtd]"
   },
   "payment_methods": {
@@ -24,10 +36,17 @@
     "add_card": "[Añadir tarjeta]",
     "adding": "[Añadir]",
     "card_details": "[Detalles de la tarjeta]",
+    "card_number": "Número de tarjeta",
     "default": "[Por defecto]",
+    "edit": "Editar",
+    "expires": "Expira en",
     "title": "[Título]",
     "unavailable": "[No disponible]",
     "unavailable_desc": "[Unavailable Desc]"
+  },
+  "status": {
+    "over_limit": "Límite superior",
+    "under_limit": "Bajo límite"
   },
   "subtitle": "[Subtítulo]",
   "title": "[Título]",
@@ -43,5 +62,9 @@
     "title": "Tapa de uso",
     "type": "Tipo de tapa",
     "warnings_only": "Sólo advertencias"
+  },
+  "welcome": {
+    "description": "Dispones de recursos ilimitados y funciones premium.",
+    "title": "🚀 ¡Bienvenido, Admin!"
   }
 }

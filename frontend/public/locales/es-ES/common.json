@@ -33,7 +33,9 @@
   "actions": {
     "more": "[Más]"
   },
+  "active": "activo",
   "add": "[Añadir]",
+  "agent": "Agente",
   "auth": {
     "continue_with_google": "Continuar con Google",
     "continue_with_microsoft": "Continuar con Microsoft",
@@ -58,27 +60,46 @@
   "connecting": "Conectando...",
   "content-type": "[Content-Type]",
   "disconnecting": "Desconectando...",
+  "duration": "Duración",
   "edit": "Editar",
+  "error": {
+    "boundary": {
+      "description": "Se ha producido un error inesperado. Por favor, inténtalo de nuevo.",
+      "retry": "Reintentar",
+      "title": "Algo salió mal"
+    }
+  },
   "hubspot": "[Hubspot]",
   "id": "[Id]",
+  "lead": "Plomo",
+  "live": "en directo",
+  "live_status": "{{count}} activo - vivo",
   "loading": "[Loading]",
   "next": "Siguiente",
+  "none": "Ninguno",
+  "not_available": "N/A",
   "odoo": "[Odoo]",
   "of_total": "{from} de {total}",
   "off": "Fuera de",
   "on": "En",
   "open-create-drawer": "[Abrir-Crear-Cajón]",
+  "polling": "sondeo",
+  "polling_status": "{{count}} activo - sondeo",
   "prev": "Anterior",
   "q": "[Q]",
   "range": "Rango {from} a {to}",
   "remove": "[Eliminar]",
+  "retry": "Reintentar",
   "save": "Guardar",
   "saving": "[Salvar]",
   "search": "[Buscar]",
+  "started": "Comenzó",
+  "status": "Estado",
   "testing": "Probando...",
   "toasts": {
     "invite_accepted": "[Invitación aceptada]"
   },
   "token": "[Token]",
+  "unknown": "Desconocido",
   "zoho": "[Zoho]"
 }
