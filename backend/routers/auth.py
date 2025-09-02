@@ -245,13 +245,6 @@ def oauth_google_callback(code: str, state: str, response: Response, request: Re
                     detail="Failed to create user account. Please try again."
                 )
 
-        # crea sessione unificata
-        from backend.sessions import issue_session
-        issue_session(response, str(user.id))
-        
-        logger.info(f"Session created for user {user.email}")
-        logger.info(f"Redirecting to: {os.getenv('FRONTEND_APP_URL', 'https://app.agoralia.app')}")
-        
         # Commit finale per utenti esistenti
         try:
             db.commit()
@@ -260,9 +253,19 @@ def oauth_google_callback(code: str, state: str, response: Response, request: Re
             logger.error(f"Commit error: {str(commit_error)}")
             # Non facciamo rollback qui perché la sessione è già creata
         
-        # redirect all'app (pagina "me" o dashboard)
+        # redirect all'app (pagina "me" o dashboard) con cookie di sessione
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url=f"{os.getenv('FRONTEND_APP_URL', 'https://app.agoralia.app')}/")
+        redirect_url = f"{os.getenv('FRONTEND_APP_URL', 'https://app.agoralia.app')}/"
+        resp = RedirectResponse(url=redirect_url, status_code=303)  # 303 = post-login più "pulito"
+        
+        # crea sessione unificata sul redirect response
+        from backend.sessions import issue_session
+        issue_session(resp, str(user.id))
+        
+        logger.info(f"Session created for user {user.email}")
+        logger.info(f"Redirecting to: {redirect_url}")
+        
+        return resp
         
     except Exception as e:
         logger.error(f"Google OAuth callback failed: {str(e)}")

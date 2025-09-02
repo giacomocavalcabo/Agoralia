@@ -465,9 +465,7 @@
       "description": "Description (optional)",
       "description_placeholder": "Enter campaign description",
       "segment": "Target segment",
-      "caller_id": "Caller ID",
-      "caller_id_placeholder": "Select caller ID (optional)",
-      "no_outbound_numbers": "No outbound-enabled numbers available. Add numbers in Settings → Telephony first.",
+
       "success": "Campaign created successfully!"
     },
 

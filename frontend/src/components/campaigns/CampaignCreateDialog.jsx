@@ -111,13 +111,13 @@ export default function CampaignCreateDialog({ open, onClose }) {
           </div>
 
           <div className="grid gap-2">
-            <label className="text-sm font-medium">{t('campaigns.create.caller_id')}</label>
+            <label className="text-sm font-medium">{t('campaigns.create.from_number')}</label>
             <select 
               className="w-full rounded-lg border px-3 py-2" 
               value={form.from_number_e164}
               onChange={e => setForm(s => ({ ...s, from_number_e164: e.target.value }))}
             >
-              <option value="">{t('campaigns.create.caller_id_placeholder')}</option>
+              <option value="">{t('campaigns.create.from_number_placeholder')}</option>
               {outboundNumbers.map(number => (
                 <option key={number.id} value={number.phone_e164}>
                   {number.phone_e164} {number.hosted ? '(Hosted)' : '(Verified)'}

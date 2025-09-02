@@ -16,7 +16,7 @@ class Capabilities(BaseModel):
     import_supported: bool
     regulatory: List[Requirement]
     notes: List[str] = []
-    outbound_cli_policy: Literal["hosted_only"] = "hosted_only"  # nostra policy globale
+    outbound_cli_policy: Literal["hosted_or_verified"] = "hosted_or_verified"  # nostra policy globale
 
 class Country(BaseModel):
     code: str                     # "IT"
