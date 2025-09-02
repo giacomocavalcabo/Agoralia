@@ -36,11 +36,14 @@
       "label_placeholder": "Etichetta (opzionale)",
       "api_key_placeholder": "API Key (non verrà mostrata)",
       "connect": "Collega",
-      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
+      "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto.",
+      "helper_text": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
     },
     "zero_markup_badge": "Zero markup",
     "zero_markup_sub": "Fatturato direttamente dal provider",
     "zero_markup_tooltip": "Nessun markup aggiunto ai costi del provider - paghi esattamente quello che Twilio/Telnyx addebita",
+    "zero_markup_tooltip_aria": "Cos'è zero markup?",
+    "zero_markup_tooltip_content": "Non aggiungiamo mai sovrattasse su acquisto numeri o affitto mensile; il provider ti addebita direttamente.",
     "outbound_requires_verification": "L'outbound richiede Hosted o Verified CLI",
     "verify_cli": "Verifica CLI",
     "verify_cli_tooltip": "Verifica Caller ID (CLI) con il provider",
@@ -176,16 +179,31 @@
     "numbers": "Numeri di telefono",
     "numbers_empty": {
       "title": "Nessun numero ancora",
-      "description": "Compra o porta numeri per iniziare a chiamare."
+      "description": "Aggiungi un numero esistente o acquistane uno nuovo per abilitare l'outbound.",
+      "add_existing": "Aggiungi esistente",
+      "buy_number": "Acquista numero"
     },
     "numbers_columns": {
       "number": "Numero",
       "country": "Paese",
       "provider": "Provider",
       "capabilities": "Capacità",
+      "status": "Stato",
+      "outbound": "Outbound",
       "created": "Creato",
       "actions": "Azioni"
-    }
+    },
+    "status": {
+      "hosted": "Hosted",
+      "verified_cli": "CLI Verificato"
+    },
+    "outbound": {
+      "enabled": "Abilitato",
+      "requires_verification": "Richiede Hosted o CLI Verificato"
+    },
+    "outbound_tooltip": "Abilita outbound solo per Hosted o CLI Verificato",
+    "outbound_tooltip_aria": "Requisiti outbound",
+    "outbound_tooltip_content": "Abilita outbound solo quando il numero è Hosted o il suo Caller ID è verificato con il provider."
   },
 
   "billing": {

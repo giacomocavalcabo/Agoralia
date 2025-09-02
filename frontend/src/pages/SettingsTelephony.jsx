@@ -2,7 +2,7 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { listProviders, billingSummary } from '../lib/telephonyApi'
+import { listProviders, billingSummary, listNumbers } from '../lib/telephonyApi'
 import NumbersTable from '../components/NumbersTable'
 import ProviderAccounts from '../components/ProviderAccounts'
 import NumberWizard from '../components/NumberWizard'
@@ -27,72 +27,88 @@ export default function SettingsTelephony() {
     staleTime: 60_000,
   })
 
+  const { data: numbersData } = useQuery({
+    queryKey: ['numbers'],
+    queryFn: listNumbers,
+    staleTime: 60_000,
+  })
+
   const hasLinked = (providers?.length ?? 0) > 0
+  const numbers = numbersData?.items || numbersData || []
 
   return (
-    <div className="space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{t('telephony.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('telephony.subtitle')}</p>
-        </div>
-      </header>
-
-      {/* Zero Markup Badge */}
-      <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1 text-emerald-700 text-xs">
-        <span>{t('telephony.zero_markup_badge')}</span>
-        <Tooltip content={t('telephony.zero_markup_tooltip')}>
-          <span className="cursor-help opacity-70">?</span>
-        </Tooltip>
-        <span className="opacity-70">{t('telephony.zero_markup_sub')}</span>
-      </div>
-
-      {/* Provider Management */}
-      <div className="space-y-6">
-        <div className="rounded-lg border p-4">
-          <h2 className="text-lg font-semibold mb-4">{t('telephony.providers.title')}</h2>
-          <ProviderAccounts />
-        </div>
+    <div className="max-w-5xl">
+      {/* Header con badge + tooltip */}
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold">{t('telephony.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('telephony.subtitle')}</p>
         
-        {/* Gates condizionali */}
-        {!hasLinked ? (
-          <div className="rounded-lg border p-6 text-center bg-gray-50">
-            <h3 className="text-lg font-medium mb-2">{t('telephony.connect_provider_title')}</h3>
-            <p className="text-sm text-muted-foreground mb-4">{t('telephony.connect_provider_desc')}</p>
-            <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
-              {t('telephony.connect_provider_cta')}
-            </button>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1 text-emerald-700 text-xs">
+            <span>{t('telephony.zero_markup_badge')}</span>
+            <Tooltip 
+              label={t('telephony.zero_markup_tooltip')}
+              ariaLabel={t('telephony.zero_markup_tooltip_aria')}
+            >
+              {t('telephony.zero_markup_tooltip_content')}
+            </Tooltip>
+            <span className="opacity-70">{t('telephony.zero_markup_sub')}</span>
           </div>
-        ) : (
-          <>
-            {budget?.blocked && (
-              <div className="rounded-lg border p-3 bg-red-50 text-red-800 text-sm">
-                <strong>{t('billing.hard_stop_banner')}</strong>
-                <a href="/settings/billing" className="ml-2 underline">{t('billing.open_settings')}</a>
-              </div>
-            )}
-            
-            {/* Numbers Management */}
-            <div className="rounded-lg border p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">{t('telephony.numbers')}</h2>
-                <div className="flex gap-2">
-                  <NumberWizard budget={budget} />
-                </div>
-              </div>
-              <NumbersTable />
-            </div>
-            
-            {/* Coverage & Requirements */}
-            <div className="rounded-lg border p-4">
-              <h2 className="text-lg font-semibold mb-4">{t('telephony.coverage.title')}</h2>
-              <CoveragePanel />
-            </div>
-          </>
-        )}
+        </div>
       </div>
 
+      {/* Provider accounts */}
+      <section className="rounded-lg border bg-white p-4 mb-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-semibold">{t('telephony.providers.title')}</h3>
+        </div>
+        <ProviderAccounts />
+        
+        {/* helper text ben allineato sotto al form */}
+        <p className="mt-3 text-sm text-gray-600">
+          {t('telephony.providers.helper_text')}
+        </p>
+      </section>
 
+      {/* Se nessun provider connesso, empty card chiara */}
+      {!hasLinked && (
+        <div className="rounded-lg border bg-white p-6 text-center mb-6">
+          <div className="text-lg font-medium">{t('telephony.connect_provider_title')}</div>
+          <p className="mt-1 text-sm text-gray-600">
+            {t('telephony.connect_provider_desc')}
+          </p>
+          <button className="btn btn-primary mt-4">
+            {t('telephony.connect_provider_cta')}
+          </button>
+        </div>
+      )}
+
+      {/* Budget warning */}
+      {hasLinked && budget?.blocked && (
+        <div className="rounded-lg border p-3 bg-red-50 text-red-800 text-sm mb-6">
+          <strong>{t('billing.hard_stop_banner')}</strong>
+          <a href="/settings/billing" className="ml-2 underline">{t('billing.open_settings')}</a>
+        </div>
+      )}
+
+      {/* Tabella numeri sempre visibile: se vuota mostra empty state con CTA */}
+      {hasLinked && (
+        <NumbersTable
+          numbers={numbers}
+          onAdd={() => {/* TODO: implement */}}
+          onBuy={() => {/* TODO: implement */}}
+          onVerify={() => {/* TODO: implement */}}
+          onToggleOutbound={() => {/* TODO: implement */}}
+        />
+      )}
+
+      {/* Coverage & Requirements */}
+      {hasLinked && (
+        <section className="rounded-lg border bg-white p-4 mt-6">
+          <h3 className="text-base font-semibold mb-4">{t('telephony.coverage.title')}</h3>
+          <CoveragePanel />
+        </section>
+      )}
     </div>
   )
 }

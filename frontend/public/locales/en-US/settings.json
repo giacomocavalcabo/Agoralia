@@ -36,11 +36,14 @@
       "label_placeholder": "Label (optional)",
       "api_key_placeholder": "API Key (will not be shown)",
       "connect": "Connect",
-      "description": "API keys are encrypted at rest. You can purchase or add numbers directly below."
+      "description": "API keys are encrypted at rest. You can purchase or add numbers directly below.",
+      "helper_text": "API keys are encrypted at rest. You can purchase or add numbers directly below."
     },
     "zero_markup_badge": "Zero markup",
     "zero_markup_sub": "Provider billed directly",
     "zero_markup_tooltip": "No markup added to provider costs - you pay exactly what Twilio/Telnyx charges",
+    "zero_markup_tooltip_aria": "What is zero markup?",
+    "zero_markup_tooltip_content": "We never add a surcharge on number purchase or monthly rental; your provider bills you directly.",
     "outbound_requires_verification": "Outbound requires Hosted or Verified CLI",
     "verify_cli": "Verify CLI",
     "verify_cli_tooltip": "Verify Caller ID (CLI) with provider",
@@ -176,16 +179,31 @@
     "numbers": "Phone numbers",
     "numbers_empty": {
       "title": "No numbers yet",
-      "description": "Buy or port numbers to start calling."
+      "description": "Add an existing number or purchase a new one to enable outbound.",
+      "add_existing": "Add existing",
+      "buy_number": "Buy number"
     },
     "numbers_columns": {
       "number": "Number",
       "country": "Country",
       "provider": "Provider",
       "capabilities": "Capabilities",
+      "status": "Status",
+      "outbound": "Outbound",
       "created": "Created",
       "actions": "Actions"
-    }
+    },
+    "status": {
+      "hosted": "Hosted",
+      "verified_cli": "Verified CLI"
+    },
+    "outbound": {
+      "enabled": "Enabled",
+      "requires_verification": "Requires Hosted or Verified CLI"
+    },
+    "outbound_tooltip": "Enable outbound only for Hosted or Verified CLI",
+    "outbound_tooltip_aria": "Outbound requirements",
+    "outbound_tooltip_content": "Enable outbound only when the number is Hosted or its Caller ID is verified with the provider."
   },
 
   "billing": {
