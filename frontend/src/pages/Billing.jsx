@@ -571,7 +571,7 @@ function BudgetAndLimits() {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Budget</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('billing.error_loading')}</h3>
           <p className="text-sm text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadBudget}
@@ -711,7 +711,7 @@ function BudgetAndLimits() {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Monthly Budget:</span>
+            <span className="text-sm text-gray-600">{t('billing.monthly_budget')}:</span>
             <span className="text-sm font-medium text-gray-900">
               ${(monthlyBudget / 100).toFixed(2)}
             </span>

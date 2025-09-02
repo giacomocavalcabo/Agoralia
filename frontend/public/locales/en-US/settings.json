@@ -46,6 +46,10 @@
     "verify_cli_tooltip": "Verify Caller ID (CLI) with provider",
     "verify_cli_success": "CLI verification successful",
     "verify_cli_error": "CLI verification failed",
+    "policy": {
+      "title": "Agoralia Policy",
+      "hosted_only": "Only hosted numbers (no unverified external caller IDs)"
+    },
     "bind": {
       "inbound": "Inbound",
       "outbound": "Outbound",
@@ -202,7 +206,10 @@
       "cap_status_label": "Cap status",
       "of_cap": "of {{cap}}"
     },
-    "load_warning": "Some billing data could not be loaded. Showing safe defaults."
+    "load_warning": "Some billing data could not be loaded. Showing safe defaults.",
+    "open_settings": "Open Billing",
+    "error_loading": "Error Loading Budget",
+    "monthly_budget": "Monthly Budget"
   },
 
   "workspace": {

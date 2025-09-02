@@ -158,7 +158,7 @@ export default function CoveragePanel() {
               {t('settings.telephony.coverage.outbound_policy', 'Outbound Caller ID')}
             </h4>
             <div className="p-3 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
-              <strong>Policy Agoralia:</strong> Solo numeri hosted (niente caller ID esterni non verificati)
+              <strong>{t('telephony.policy.title')}:</strong> {t('telephony.policy.hosted_only')}
             </div>
           </div>
         </div>

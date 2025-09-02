@@ -46,6 +46,10 @@
     "verify_cli_tooltip": "Verifica Caller ID (CLI) con il provider",
     "verify_cli_success": "Verifica CLI completata con successo",
     "verify_cli_error": "Verifica CLI fallita",
+    "policy": {
+      "title": "Policy Agoralia",
+      "hosted_only": "Solo numeri hosted (niente caller ID esterni non verificati)"
+    },
     "bind": {
       "inbound": "In entrata",
       "outbound": "In uscita",
@@ -202,7 +206,10 @@
       "cap_status_label": "Stato limite",
       "of_cap": "di {{cap}}"
     },
-    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza."
+    "load_warning": "Alcuni dati di fatturazione non sono disponibili. Mostro valori di sicurezza.",
+    "open_settings": "Apri Fatturazione",
+    "error_loading": "Errore Caricamento Budget",
+    "monthly_budget": "Budget Mensile"
   },
 
   "workspace": {

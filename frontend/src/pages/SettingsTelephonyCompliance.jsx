@@ -70,7 +70,7 @@ export default function SettingsTelephonyCompliance() {
               className="btn btn-primary"
               onClick={()=>createMut.mutate({ provider, country, number_type:numberType, entity })}
               disabled={createMut.isPending}
-            >Nuova Sottomissione</button>
+            >{t('compliance.new_submission')}</button>
           </div>
 
           {subsQ.isLoading ? <div className="text-sm opacity-70">Loading…</div> :

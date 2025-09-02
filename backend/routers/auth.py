@@ -17,6 +17,7 @@ from pydantic import BaseModel, EmailStr, constr
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from backend.config import settings
 from backend.db import get_db
@@ -82,6 +83,13 @@ def auth_register(payload: RegisterIn, response: Response, request: Request, bac
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
+
+class MeUpdate(BaseModel):
+    name: Optional[str] = None
+    locale: Optional[str] = None
+    timezone: Optional[str] = None
+    notify_email: Optional[bool] = None
+    avatar_url: Optional[str] = None
 
 @router.get("/me")
 def auth_me(request: Request, db: Session = Depends(get_db)):
@@ -152,6 +160,58 @@ def auth_me(request: Request, db: Session = Depends(get_db)):
         return JSONResponse(
             status_code=200,
             content={"authenticated": False}
+        )
+
+@router.patch("/me")
+def update_me(payload: MeUpdate, request: Request, db: Session = Depends(get_db)):
+    """Update current user profile - fail-closed version"""
+    from fastapi.responses import JSONResponse
+    from backend.sessions import read_session_cookie, get_user_id
+    
+    try:
+        # 1) Leggi session cookie
+        session_id = read_session_cookie(request)
+        if not session_id:
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Missing session"}
+            )
+        
+        # 2) Risolvi user_id dalla sessione
+        user_id = get_user_id(session_id)
+        if not user_id:
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Session expired"}
+            )
+        
+        # 3) Carica utente
+        user = db.get(User, user_id)
+        if not user:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "User not found"}
+            )
+
+        # 4) Aggiorna campi
+        updated_fields = []
+        for field, value in payload.model_dump(exclude_none=True).items():
+            if hasattr(user, field):
+                setattr(user, field, value)
+                updated_fields.append(field)
+        
+        if updated_fields:
+            db.commit()
+            db.refresh(user)
+            logger.info(f"Updated user {user.email} fields: {updated_fields}")
+
+        return {"ok": True, "updated_fields": updated_fields}
+        
+    except Exception as e:
+        logger.error(f"Error updating user profile: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Update failed"}
         )
 
 @router.post("/login")

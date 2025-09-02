@@ -35,7 +35,7 @@ from backend.models import (
 # 🔒 Assert di sicurezza per Base.metadata
 import sqlalchemy as sa
 assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
-from backend.routers import crm, auth, auth_microsoft, compliance, integrations
+from backend.routers import crm, auth, auth_microsoft, compliance, integrations, settings
 from backend.utils.rate_limiter import telephony_rate_limiter
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
@@ -650,6 +650,10 @@ logger.info("CRM router included successfully")
 logger.info("Including Integrations router...")
 api.include_router(integrations.router, prefix="/settings", tags=["integrations"])
 logger.info("Integrations router included successfully")
+
+logger.info("Including Settings router...")
+api.include_router(settings.router, tags=["settings"])
+logger.info("Settings router included successfully")
 
 app.include_router(api)
 logger.info("API routers included successfully")
