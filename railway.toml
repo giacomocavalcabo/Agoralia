@@ -13,7 +13,7 @@ worker = "./railway_worker_start.sh"
 
 [deploy.environment]
 ENV = "production"
-APP_BASE_URL = "https://api.agoralia.app"
+BACKEND_BASE_PATH = "/api"
 FRONTEND_BASE_URL = "https://app.agoralia.app"
 LOG_LEVEL = "INFO"
 ENABLE_METRICS = "true"

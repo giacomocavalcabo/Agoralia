@@ -115,7 +115,7 @@ VITE_DEMO_MODE=true
 VITE_DEMO_WHITELIST=admin@example.com,test@example.com
 
 # Base URL API
-VITE_API_BASE_URL=https://api.agoralia.app
+VITE_API_BASE_URL=/api
 ```
 
 ### URL Parameters
