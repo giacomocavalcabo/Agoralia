@@ -3243,11 +3243,31 @@ def ws_invites() -> dict:
 
 
 @app.post("/workspaces/members/invite")
-@audit("invite", "member")
 @require_role("admin")
-async def ws_invite(payload: dict, request: Request) -> dict:
+async def ws_invite(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
     invite = {"id": f"inv_{len(_WORKSPACE_INVITES)+1}", "email": payload.get("email"), "role": payload.get("role","viewer"), "token": "demo-token", "invited_at": "2025-08-18T10:00:00Z"}
     _WORKSPACE_INVITES.append(invite)
+    
+    # Log audit event
+    from backend.audit import log_event
+    from backend.models import WorkspaceMember
+    from backend.sessions import read_session_cookie, get_user_id
+    
+    try:
+        session_id = read_session_cookie(request)
+        if session_id:
+            user_id = get_user_id(session_id)
+            if user_id:
+                workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user_id).first()
+                workspace_id = workspace_member.workspace_id if workspace_member else "unknown"
+                
+                log_event(db, workspace_id=workspace_id, user_id=user_id, 
+                         action="member.invite", resource_type="member", 
+                         resource_id=invite["id"], request=request,
+                         meta={"email": payload.get("email"), "role": payload.get("role","viewer")})
+    except Exception:
+        pass  # Don't fail the invite if audit logging fails
+    
     return invite
 
 

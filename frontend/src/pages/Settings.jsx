@@ -14,6 +14,7 @@ import {
   PageHeader 
 } from '../components/ui/FormPrimitives.jsx'
 import SettingsCompany from './SettingsCompany'
+import SettingsAudit from './SettingsAudit'
 import tzdata from "../lib/timezones.js"
 
 // Personal/Account Tab Component
@@ -258,12 +259,20 @@ function PersonalTab() {
 // Main Settings component
 export default function Settings() {
   const { t } = useTranslation('settings')
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
+  
+  const isAdmin = user?.roles?.includes('admin') || user?.is_admin
   
   const tabs = [
     { id: 'profile', name: t('tabs.profile'), component: PersonalTab },
     { id: 'company', name: t('tabs.company'), component: SettingsCompany }
   ]
+  
+  // Add audit tab for admins
+  if (isAdmin) {
+    tabs.push({ id: 'audit', name: 'Activity Log', component: SettingsAudit })
+  }
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component
 

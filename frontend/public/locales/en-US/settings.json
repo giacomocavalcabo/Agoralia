@@ -539,7 +539,8 @@
       "saved": "Profile updated successfully"
     },
     "errors": {
-      "save_failed": "Failed to save profile settings"
+      "save_failed": "Failed to save profile settings",
+      "load_failed": "Failed to load account settings"
     }
   },
   

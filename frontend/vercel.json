@@ -6,7 +6,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://m.stripe.network; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com; connect-src 'self' https://app.agoralia.app https://api.stripe.com https://m.stripe.network; frame-src https://js.stripe.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://m.stripe.network; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.stripe.com; connect-src 'self' https://app.agoralia.app https://api.stripe.com https://m.stripe.network; frame-src https://js.stripe.com https://m.stripe.network; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
         }
       ]
     },
