@@ -2,6 +2,13 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool, Column, String
 from alembic import context
 import os
+import sys
+
+# --- ensure project root on sys.path ---
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+# --------------------------------------
 
 import sys
 import os

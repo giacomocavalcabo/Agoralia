@@ -71,3 +71,8 @@ PYTHON_VERSION = "3.11"
 #    - PRIMA: script usava psql che non esiste nel container Railway
 #    - ORA: usa Python/SQLAlchemy per operazioni database
 #    - Nessuna dipendenza da client PostgreSQL esterni
+#
+# 10. RISOLUZIONE PROBLEMA "ModuleNotFoundError: No module named 'backend'":
+#     - PRIMA: PYTHONPATH=/app/backend causava import backend.* falliti
+#     - ORA: forza PYTHONPATH=/app e verifica import prima di Alembic
+#     - Hardening in alembic/env.py per robustezza a working dir

@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PYTHONPATH=${PYTHONPATH:-/app}
+# Forza PYTHONPATH a /app (root del progetto)
+PROJECT_ROOT=/app
+export PYTHONPATH="$PROJECT_ROOT"
 export ALEMBIC_CONFIG=${ALEMBIC_CONFIG:-backend/alembic.ini}
+
 echo "🚀 Railway Start Script - Auto-riparante"
 echo "📍 Configurazione:"
 echo "  PYTHONPATH: ${PYTHONPATH}"
 echo "  ALEMBIC_CONFIG: ${ALEMBIC_CONFIG}"
 echo "  DATABASE_URL: ${DATABASE_URL:-<missing>}"
+
+echo "🧪 Verifico che 'import backend' funzioni..."
+python - <<'PY'
+import sys, os
+try:
+    import backend
+    print("✅ import backend OK - path:", os.path.dirname(backend.__file__))
+except Exception as e:
+    print("❌ import backend FAILED:", e)
+    print("sys.path:", sys.path)
+    raise
+PY
 
 echo "🔧 Normalizzo tabella alembic_version a varchar(255)..."
 python - <<'PY'
@@ -46,10 +61,10 @@ print("👌 Tabella/colonna pronta.")
 PY
 
 echo "🔖 Stamp a head con Alembic..."
-alembic -c "${ALEMBIC_CONFIG}" stamp head
+PYTHONPATH=/app alembic -c "${ALEMBIC_CONFIG}" stamp head
 
 echo "⬆️  Upgrade head (no-op se già a posto)..."
-alembic -c "${ALEMBIC_CONFIG}" upgrade head
+PYTHONPATH=/app alembic -c "${ALEMBIC_CONFIG}" upgrade head
 
 echo "🚦 Avvio Uvicorn..."
 exec uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --loop asyncio --http h11
