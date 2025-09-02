@@ -20,7 +20,7 @@ export default function CampaignCreateDialog({ open, onClose }) {
   });
 
   // Filter numbers that can be used for outbound (hosted or verified)
-  const outboundNumbers = numbers.filter(n => n.outbound_enabled && (n.hosted || n.verified_cli));
+  const outboundNumbers = numbers.filter(n => n.outbound_enabled && !!(n.hosted || n.verified_cli));
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -111,11 +111,15 @@ export default function CampaignCreateDialog({ open, onClose }) {
           </div>
 
           <div className="grid gap-2">
-            <label className="text-sm font-medium">{t('campaigns.create.caller_id')}</label>
+            <label className="text-sm font-medium" htmlFor="caller-id-select">
+              {t('campaigns.create.caller_id')}
+            </label>
             <select 
+              id="caller-id-select"
               className="w-full rounded-lg border px-3 py-2" 
               value={form.from_number_e164}
               onChange={e => setForm(s => ({ ...s, from_number_e164: e.target.value }))}
+              aria-describedby="caller-id-help"
             >
               <option value="">{t('campaigns.create.caller_id_placeholder')}</option>
               {outboundNumbers.map(number => (
@@ -125,7 +129,7 @@ export default function CampaignCreateDialog({ open, onClose }) {
               ))}
             </select>
             {outboundNumbers.length === 0 && (
-              <p className="text-xs text-amber-600">
+              <p id="caller-id-help" className="text-xs text-amber-600">
                 {t('campaigns.create.no_outbound_numbers')}
               </p>
             )}

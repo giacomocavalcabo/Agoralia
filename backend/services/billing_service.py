@@ -138,11 +138,14 @@ def append_ledger(session: Session, workspace_id: str, amount_cents: int,
     # Pass-through pricing: zero markup for purchase/rental operations
     final_amount = amount_cents
     final_metadata = metadata or {}
+    pass_through = False
     
     if kind in ("purchase_number", "monthly_rental", "number_purchase", "number_rental"):
         final_amount = 0
+        pass_through = True
         final_metadata["note"] = "pass-through (provider billed)"
         final_metadata["original_amount_cents"] = amount_cents
+        final_metadata["pass_through"] = True
     
     entry = BillingLedger(
         id=str(uuid4()),

@@ -871,11 +871,29 @@ async def ws_set_default_from(ws_id: str, payload: dict, db: Session = Depends(g
 
 
 @app.patch("/campaigns/{cid}/from_number")
-async def campaign_set_from(cid: str, payload: dict, db: Session = Depends(get_db)) -> dict:
-    c = db.query(Campaign).filter(Campaign.id == cid).first()
+async def campaign_set_from(cid: str, payload: dict, db: Session = Depends(get_db), user=Depends(auth_guard)) -> dict:
+    c = db.query(Campaign).filter(Campaign.id == cid, Campaign.workspace_id == user.workspace_id).first()
     if not c:
-        raise HTTPException(status_code=404, detail="Not found")
-    c.from_number_e164 = payload.get("e164")
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    e164 = payload.get("e164")
+    if e164:
+        # Validate number belongs to workspace and can be used for outbound
+        number = db.query(Number).filter(
+            Number.phone_e164 == e164,
+            Number.workspace_id == user.workspace_id
+        ).first()
+        
+        if not number:
+            raise HTTPException(status_code=400, detail="Number not found in workspace")
+        
+        if not number.outbound_enabled:
+            raise HTTPException(status_code=400, detail="Number not enabled for outbound")
+        
+        if not (number.hosted or number.verified_cli):
+            raise HTTPException(status_code=400, detail="Number must be hosted or verified for outbound")
+    
+    c.from_number_e164 = e164
     db.add(c); db.commit()
     return {"ok": True}
 
@@ -3575,9 +3593,17 @@ class VerifyCliPayload(BaseModel):
 
 @app.post("/settings/telephony/numbers/verify-cli")
 def telephony_verify_cli(payload: VerifyCliPayload, db: Session = Depends(get_db), user=Depends(auth_guard)):
+    # Rate limiting: max 5 requests per minute per user
+    from backend.utils.rate_limiter import rate_limit
+    rate_limit(f"verify_cli:{user.id}", max_requests=5, window_seconds=60)
+    
     n = db.query(Number).filter(Number.id==payload.number_id, Number.workspace_id==user.workspace_id).first()
     if not n:
         raise HTTPException(status_code=404, detail="Number not found")
+
+    # Idempotency: if already verified, return success
+    if n.verified_cli:
+        return {"ok": True, "verified_cli": True}
 
     # Qui puoi integrare provider reali (Twilio Outgoing Caller ID / Telnyx verify)
     # Per ora: segniamo verified_cli=True se BYO e provider ∈ {twilio, telnyx}
@@ -3588,6 +3614,16 @@ def telephony_verify_cli(payload: VerifyCliPayload, db: Session = Depends(get_db
         n.verified_cli = True
         n.last_updated_at = datetime.utcnow()
         db.add(n); db.commit()
+        
+        # Audit trail
+        from backend.logger import logger
+        logger.info(f"Number CLI verified", extra={
+            "user_id": user.id,
+            "number_id": n.id,
+            "provider": n.provider,
+            "phone_e164": n.phone_e164
+        })
+        
         return {"ok": True, "verified_cli": True}
 
     raise HTTPException(status_code=400, detail="Provider does not support CLI verification")

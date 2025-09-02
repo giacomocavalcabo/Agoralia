@@ -33,8 +33,15 @@ def enforce_outbound_policy(number) -> None:
     - oppure numero.verified_cli == True
     E blocca se il paese o il provider segnalano restriction specifiche.
     """
+    import os
+    
     if not (getattr(number, "outbound_enabled", False)):
         raise HTTPException(status_code=400, detail="Outbound disabled for this number.")
+
+    # Feature flag: fallback to hosted-only if disabled
+    if not os.getenv("TELEPHONY_OUTBOUND_VERIFIED_ENABLED", "true").lower() == "true":
+        if not getattr(number, "hosted", False):
+            raise HTTPException(status_code=400, detail="Outbound requires hosted number (verified CLI disabled).")
 
     # Regola principale
     if not (getattr(number, "hosted", False) or getattr(number, "verified_cli", False)):

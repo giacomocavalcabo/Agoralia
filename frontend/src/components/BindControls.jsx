@@ -10,9 +10,7 @@ export default function BindControls({ number }) {
   const { data: agents = [] } = useQuery(["tel_agents"], listAgents);
 
   const isExternal = number.origin === "external_forward" || (number.provider && number.provider !== "retell");
-  const isHosted = number.hosted !== false; // Default to true if not specified
-  const isVerified = number.verified_cli === true;
-  const canOutbound = (isHosted || isVerified) && !isExternal;
+  const canOutbound = !!(number.hosted || number.verified_cli);
 
   const [inboundEnabled, setInboundEnabled] = React.useState(!!number.inbound_enabled);
   const [outboundEnabled, setOutboundEnabled] = React.useState(!!number.outbound_enabled && canOutbound);

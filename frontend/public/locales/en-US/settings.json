@@ -39,6 +39,7 @@
     "zero_markup_sub": "Provider billed directly",
     "outbound_requires_verification": "Outbound requires Hosted or Verified CLI",
     "verify_cli": "Verify CLI",
+    "verify_cli_tooltip": "Verify Caller ID (CLI) with provider",
     "verify_cli_success": "CLI verification successful",
     "verify_cli_error": "CLI verification failed",
     "bind": {

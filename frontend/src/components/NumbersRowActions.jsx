@@ -73,6 +73,7 @@ export default function NumbersRowActions({ row, onView, onAssign, onRelease }) 
           onClick={() => verifyCliMutation.mutate()}
           disabled={verifyCliMutation.isPending}
           aria-label={t('telephony.verify_cli')}
+          title={t('telephony.verify_cli_tooltip')}
         >
           {t('telephony.verify_cli')}
         </button>
