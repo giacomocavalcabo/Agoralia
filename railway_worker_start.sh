@@ -1,85 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export PYTHONPATH=/app
 
-# Railway Worker Start Script - Auto-riparante con test DB
-# Risolve automaticamente il problema "could not translate host name"
+# ripulisci variabili che possono sporcare libpq/URL
+unset PGHOST PGPORT PGUSER PGPASSWORD PGDATABASE
+unset POSTGRES_HOST POSTGRES_PORT POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB
+unset DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME
+unset SQLALCHEMY_DATABASE_URI
 
-echo "🚀 Railway Worker Start Script - Auto-riparante"
-echo "=============================================="
-
-# Forza PYTHONPATH a /app (root del progetto)
-PROJECT_ROOT=/app
-export PYTHONPATH="$PROJECT_ROOT"
-
-echo "📍 Configurazione:"
-echo "  PYTHONPATH: ${PYTHONPATH}"
-echo "  DATABASE_URL: ${DATABASE_URL:-<missing>}"
-
-echo "🧪 Verifico che 'import backend' funzioni..."
-python - <<'PY'
-import sys, os
-try:
-    import backend
-    print("✅ import backend OK - path:", os.path.dirname(backend.__file__))
-except Exception as e:
-    print("❌ import backend FAILED:", e)
-    print("sys.path:", sys.path)
-    raise
-PY
-
-echo "🔍 Test connessione database..."
-python - <<'PY'
-import os, sys
+python - << "PY"
+import os, re, sys
+from sqlalchemy.engine import make_url
 from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError
 
-db_url = os.environ.get("DATABASE_URL")
-print("Worker DATABASE_URL:", db_url or "<missing>")
-
-if not db_url:
-    print("❌ DATABASE_URL mancante", file=sys.stderr)
-    sys.exit(1)
-
-# Verifica che l'URL contenga un hostname valido (non UUID)
-if "@" in db_url:
-    host_part = db_url.split("@")[1].split("/")[0].split(":")[0]
-    print(f"🔍 Hostname rilevato: {host_part}")
-    
-    # Se è un UUID (contiene solo lettere, numeri e trattini), è sbagliato
-    if len(host_part) > 20 and "-" in host_part and "." not in host_part:
-        print(f"⚠️  WARNING: Hostname sembra essere un UUID: {host_part}")
-        print("   Questo causerà 'could not translate host name'")
-        print("   Verifica che DATABASE_URL sia corretto nel servizio worker")
-    else:
-        print("✅ Hostname sembra valido")
-
+raw = os.getenv("DATABASE_URL")
+print("[worker] DATABASE_URL raw:", raw)
+if not raw:
+    print("[worker] ERROR: DATABASE_URL mancante", file=sys.stderr); sys.exit(1)
+raw = raw.strip().strip('"').strip("'")
 try:
-    # Crea engine con pool_pre_ping per test
-    engine = create_engine(
-        db_url, 
-        pool_pre_ping=True, 
-        pool_size=1, 
-        max_overflow=0,
-        connect_args={"connect_timeout": 10}
-    )
-    
-    # Test connessione
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT version()"))
-        version = result.scalar()
-        print("✅ DB OK:", version[:50] + "..." if len(version) > 50 else version)
-        
-except OperationalError as e:
-    print(f"❌ Errore connessione DB: {e}")
-    if "could not translate host name" in str(e):
-        print("   → Problema: hostname non risolvibile (probabilmente UUID)")
-        print("   → Soluzione: verifica DATABASE_URL nel servizio worker")
-        print("   → Deve essere: postgresql+psycopg2://user:pass@hopper.proxy.rlwy.net:22594/db")
-    sys.exit(1)
+    url = make_url(raw)
 except Exception as e:
-    print(f"❌ Errore inaspettato: {e}")
-    sys.exit(1)
+    print("[worker] ERROR URL:", e, file=sys.stderr); sys.exit(2)
+
+user, host = url.username, url.host
+print(f"[worker] Using host={host}, user={user}")
+if re.fullmatch(r"[0-9a-fA-F-]{36}postgresql\\+\\w+", user or ""):
+    print("[worker] ERROR: username malformato (concatenazione con driver)", file=sys.stderr); sys.exit(3)
+
+eng = create_engine(raw, pool_pre_ping=True, pool_size=1, max_overflow=0)
+with eng.connect() as c:
+    v = c.execute(text("select version()")).scalar()
+    print("[worker] ✅ DB OK:", v)
 PY
 
-echo "🚦 Avvio Worker..."
 exec python -m backend.worker

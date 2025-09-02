@@ -80,5 +80,6 @@ PYTHON_VERSION = "3.11"
 #
 # 11. RISOLUZIONE PROBLEMA "could not translate host name" (Worker):
 #     - PRIMA: worker usava DATABASE_URL con UUID come hostname
-#     - ORA: railway_worker_start.sh testa connessione DB prima di avviare
-#     - Verifica hostname valido e fallisce con messaggio chiaro se UUID
+#     - ORA: railway_worker_start.sh pulisce variabili ambiente e testa DB
+#     - Unset PGHOST/POSTGRES_*/DB_* che possono sporcare la connessione
+#     - Validazione URL con make_url e test connessione con pool_pre_ping
