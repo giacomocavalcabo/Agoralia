@@ -658,6 +658,38 @@ logger.info("API routers included successfully")
 # CSRF middleware removed - using sessions.py for session management
 
 
+# --- Google OAuth aliases (retrocompatibilità) ---
+# Google Console ha il redirect URI senza /api, ma le route reali sono sotto /api
+
+@app.get("/auth/oauth/google/callback")
+async def _alias_google_callback(request: Request):
+    # preserve querystring (state, code, ecc.)
+    qs = request.url.query
+    target = "/api/auth/oauth/google/callback"
+    if qs:
+        target = f"{target}?{qs}"
+    # 307 = keep method
+    return RedirectResponse(url=target, status_code=307)
+
+@app.post("/auth/oauth/google/start")
+async def _alias_google_start():
+    # il frontend/estensioni potrebbero ancora chiamare questo path
+    return RedirectResponse(url="/api/auth/oauth/google/start", status_code=307)
+
+# --- Microsoft OAuth aliases (retrocompatibilità) ---
+
+@app.get("/auth/oauth/microsoft/callback")
+async def _alias_ms_callback(request: Request):
+    qs = request.url.query
+    target = "/api/auth/oauth/microsoft/callback"
+    if qs:
+        target = f"{target}?{qs}"
+    return RedirectResponse(url=target, status_code=307)
+
+@app.post("/auth/oauth/microsoft/start")
+async def _alias_ms_start():
+    return RedirectResponse(url="/api/auth/oauth/microsoft/start", status_code=307)
+
 @app.get("/health")
 def healthcheck() -> dict:
     return {
@@ -2285,46 +2317,46 @@ def auth_me(request: Request) -> dict:
     try:
         from backend.auth.session import get_session
         sess = get_session(request)
-        if not sess:
+    if not sess:
+        return {"authenticated": False}
+    
+    # Get fresh user data from DB
+    with next(get_db()) as db:
+        user_id = sess.get("claims", {}).get("user_id")
+        if not user_id:
             return {"authenticated": False}
         
-        # Get fresh user data from DB
-        with next(get_db()) as db:
-            user_id = sess.get("claims", {}).get("user_id")
-            if not user_id:
-                return {"authenticated": False}
-            
-            user = db.query(User).filter(User.id == user_id).first()
-            if not user:
-                return {"authenticated": False}
-            
-            # Get workspace memberships
-            memberships = []
-            for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-                workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
-                memberships.append({
-                    "workspace_id": wm.workspace_id,
-                    "workspace_name": workspace.name if workspace else "Unknown",
-                    "role": wm.role
-                })
-            
-            return {
-                "authenticated": True,
-                "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "name": user.name,
-                    "locale": user.locale,
-                    "tz": user.tz,
-                    "is_admin_global": bool(user.is_admin_global),
-                    "email_verified": bool(user.email_verified_at),
-                    "totp_enabled": bool(user.totp_enabled),
-                    "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
-                    "created_at": user.created_at.isoformat() if user.created_at else None
-                },
-                "memberships": memberships,
-                "csrf": sess.get("csrf")
-            }
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return {"authenticated": False}
+        
+        # Get workspace memberships
+        memberships = []
+        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
+            workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
+            memberships.append({
+                "workspace_id": wm.workspace_id,
+                "workspace_name": workspace.name if workspace else "Unknown",
+                "role": wm.role
+            })
+        
+        return {
+            "authenticated": True,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "locale": user.locale,
+                "tz": user.tz,
+                "is_admin_global": bool(user.is_admin_global),
+                "email_verified": bool(user.email_verified_at),
+                "totp_enabled": bool(user.totp_enabled),
+                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            },
+            "memberships": memberships,
+            "csrf": sess.get("csrf")
+        }
     except Exception as e:
         # Log error for debugging but return 401 instead of 500
         logger.error(f"Error in /api/auth/me: {str(e)}")
@@ -3975,9 +4007,9 @@ async def purchase_number(
         # If idempotent, return existing order info
         if budget_check.get("idempotent"):
             existing_order = db.query(NumberOrder).filter_by(
-                workspace_id=wsid,
+        workspace_id=wsid, 
                 idempotency_key=idempotency_key
-            ).first()
+    ).first()
             if existing_order:
                 return {
                     "order_id": existing_order.id, 
@@ -4153,7 +4185,7 @@ async def import_number(
     )
     
     db.add(order)
-    db.commit()
+        db.commit()
     
     # Log the transaction in billing ledger (atomic)
     ledger_entry = atomic_ledger_write(
@@ -4255,7 +4287,7 @@ async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
     p = Path(__file__).parent / "static" / "telephony" / "telnyx_coverage.json"
     if p.exists():
         try:
-            import json
+        import json
             data = json.loads(p.read_text("utf-8"))
             # Salva in cache
             set_coverage_cache(provider, data)
@@ -4446,13 +4478,13 @@ async def rebuild_coverage(
     
     try:
         # Costruisci snapshot
-        payload = build_twilio_snapshot()
+    payload = build_twilio_snapshot()
         
         # Salva in cache e disco
         set_coverage_cache(provider, payload)
         save_disk(provider, payload)
         
-        return {"ok": True, "updated": payload.get("last_updated")}
+    return {"ok": True, "updated": payload.get("last_updated")}
     except Exception as e:
         import logging
         logging.error(f"Failed to rebuild coverage: {e}")
@@ -8441,7 +8473,7 @@ def kb_search_chunks(
             "total": len(chunks),
             "query": query,
             "search_type": "hybrid" if use_semantic else "text_only"
-        }
+    }
 
 
 # ===================== GAMMA: Retell Webhook Integration =====================

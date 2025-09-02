@@ -90,12 +90,21 @@ def auth_me(request: Request, user: User = Depends(get_current_user)):
     from backend.config import settings
     is_demo_allowed = user.email.lower() in settings.demo_admin_emails_list
     
+    # Build roles list for frontend compatibility
+    roles = []
+    if bool(user.is_admin_global):
+        roles.append("admin")
+    if is_demo_allowed:
+        roles.append("demo")
+    
     return {
         "id": str(user.id), 
         "email": user.email, 
         "name": getattr(user, "name", None) or user.email.split("@")[0],
         "locale": getattr(user, 'locale', None) or "en-US",
         "is_admin_global": bool(user.is_admin_global),
+        "is_admin": bool(user.is_admin_global),  # alias per compatibilità frontend
+        "roles": roles,  # array per compatibilità frontend
         "email_verified": bool(getattr(user, 'email_verified_at', None)),
         "is_demo_allowed": is_demo_allowed,
     }
