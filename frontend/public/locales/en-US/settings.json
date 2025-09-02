@@ -2,6 +2,14 @@
   "nav": {
     "title": "Settings",
     "subtitle": "Manage your account and preferences",
+    
+    "account": {
+      "title": "Account Settings",
+      "errors": {
+        "load_failed": "Failed to load account settings"
+      },
+      "timezones": "Timezone Settings"
+    },
     "profile": "Profile",
     "profile_desc": "Personal information and preferences",
     "company": "Company",

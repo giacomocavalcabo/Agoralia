@@ -84,11 +84,11 @@
   },
   "test": {
     "error": {
-      "description": "Verbindungstest fehlgeschlagen",
+      "description": "Verbindungstest fehlgeschlagen {provider}",
       "title": "[Titel]"
     },
     "success": {
-      "description": "Verbindungstest erfolgreich",
+      "description": "Verbindungstest erfolgreich {provider}",
       "title": "[Titel]"
     }
   },

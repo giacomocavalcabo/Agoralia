@@ -226,7 +226,6 @@
     "title": "Facturación",
     "usage": "Utilización"
   },
-  "coming_soon": "[Próximamente]",
   "common": {
     "none": "Ninguno",
     "retry": "Reintentar"
@@ -259,6 +258,13 @@
     "webhooks": "Webhooks"
   },
   "nav": {
+    "account": {
+      "errors": {
+        "load_failed": "Failed to load account settings"
+      },
+      "timezones": "Timezone Settings",
+      "title": "Account Settings"
+    },
     "billing": "Facturación",
     "billing_desc": "Gestionar el presupuesto y el uso",
     "company": "Empresa",
@@ -283,14 +289,6 @@
     "sms": "Notificaciones por SMS",
     "title": "Preferencias de notificación"
   },
-  "personal": {
-    "dual_time": "Visualización de la hora dual",
-    "email": "admin@example.com",
-    "language": "Inglés",
-    "name": "Usuario administrador",
-    "timezone": "UTC",
-    "title": "Información personal"
-  },
   "profile": {
     "contact_details": "Datos de contacto",
     "description": "Actualice sus datos personales y preferencias",
@@ -300,7 +298,6 @@
     "security": "Seguridad",
     "title": "Configuración del perfil"
   },
-  "save": "Guardar",
   "security": {
     "api_keys": "Claves API",
     "audit_log": "Registro de auditoría",
@@ -310,18 +307,9 @@
     "title": "Ajustes de seguridad",
     "two_factor": "Autenticación de dos factores"
   },
-  "subtitle": "Gestione su cuenta y sus preferencias de espacio de trabajo",
   "tabs": {
-    "audit": "Auditoría",
-    "billing": "Facturación",
     "company": "Empresa",
-    "compliance": "Compliance",
-    "integrations": "Integraciones",
-    "members": "Miembros",
-    "personal": "Personal",
-    "profile": "Perfil",
-    "telephony": "Telefonía",
-    "workspace": "Workspace"
+    "profile": "Perfil"
   },
   "team": {
     "activity": "Registro de actividades",
@@ -491,7 +479,6 @@
     "zero_markup_tooltip_aria": "¿Qué es el recargo cero?",
     "zero_markup_tooltip_content": "Nunca añadimos un recargo en la compra de números ni en el alquiler mensual; su proveedor le factura directamente."
   },
-  "title": "Ajustes",
   "workspace": {
     "accepting": "[Aceptando]",
     "domain": "[Dominio]",

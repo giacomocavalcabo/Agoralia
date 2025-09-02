@@ -249,10 +249,9 @@
       "kb": "Wissensdatenbank",
       "lead": "Blei",
       "submit": "Einreichen",
-      "submit_done": "[Abschicken Erledigt]",
       "title": "[Titel]"
     },
-    "range": "Von {fromStr} bis {toStr}",
+    "range": "Von {from} bis {to}",
     "time": {
       "now": "Zeit"
     },
@@ -271,7 +270,6 @@
     "actions": {
       "activate": "Aktivieren Sie",
       "create": "Kampagne erstellen",
-      "create_schedule": "Erstellen & Planen",
       "pause": "Pause",
       "resume": "Lebenslauf",
       "view": "Siehe"
@@ -313,23 +311,9 @@
       "title": "Fehler beim Laden von Kampagnen"
     },
     "fields": {
-      "agent": "Agent ID",
-      "audience": "Publikum (durch Komma getrennte Lead-IDs)",
-      "budget": "Haushaltsobergrenze (in Cent)",
-      "dow": "Wochentage (1=Mo...7=So)",
-      "from": "Von Nummer",
-      "goal": "Goal",
-      "kb": "Wissensdatenbank-ID",
-      "lang": "Standardsprache",
       "name": "Name der Kampagne",
-      "pacing": "Pacing (Anrufe pro Minute)",
-      "quiet_hours": "Ruhezeiten einhalten",
-      "role": "Rolle",
       "segment": "Segment (JSON)",
-      "start_at": "Startdatum/-zeit",
-      "status": "Status",
-      "template": "Ergebnisvorlage",
-      "template_select": "Vorlage auswählen..."
+      "status": "Status"
     },
     "states": {
       "empty": "Keine Ergebnisse",
@@ -570,176 +554,8 @@
     "title": "Anrufverlauf und Ergebnisse"
   },
   "import": {
-    "attributes": {
-      "bulk": {
-        "apply_to": "Auf die Auswahl anwenden",
-        "clear": "Klar",
-        "set": "Satz"
-      },
-      "class": {
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "unknown": "Unbekannt"
-      },
-      "columns": {
-        "class": "Klasse",
-        "dnc": "Nationale DNC",
-        "existing": "Bestehende Beziehung",
-        "notes": "Anmerkungen",
-        "opt_in": "Opt-in"
-      },
-      "dnc": {
-        "in": "In der Registratur",
-        "not_in": "Nicht in der Registry",
-        "unknown": "Unbekannt"
-      },
-      "existing": {
-        "no": "Nein",
-        "unknown": "Unbekannt",
-        "yes": "Ja"
-      },
-      "hints": {
-        "b2c_optin_only": "Das Opt-in ist nur in Opt-in-Ländern (B2C) erforderlich.",
-        "dnc_only": "Das nationale DNC gilt nur, wenn ein Register existiert."
-      },
-      "optin": {
-        "no": "Nein",
-        "unknown": "Unbekannt",
-        "yes": "Ja"
-      },
-      "title": "Agoralia Attribute"
-    },
-    "commit": {
-      "done": "Import abgeschlossen",
-      "errors_csv": "Fehler herunterladen CSV",
-      "progress": "Importieren..",
-      "start": "Import starten",
-      "title": "Bestätigen & importieren"
-    },
-    "dedupe": {
-      "check_on": "[Überprüfen]",
-      "merge": "[Zusammenführung]",
-      "resolve_strategy": "[Strategie auflösen]",
-      "skip": "[Überspringen]",
-      "title": "[Titel]"
-    },
-    "launch": {
-      "launch": "[Launch]",
-      "launching": "[Launching]",
-      "new_import": "[Neueinfuhr]",
-      "success": "[Erfolg]",
-      "success_desc": "[Success Desc]",
-      "view_job": "[Job ansehen]"
-    },
     "legal": {
       "disclosure": "[Offenlegung]"
-    },
-    "mapping": {
-      "actions": {
-        "auto": "Auto-Map",
-        "reset": "Reset"
-      },
-      "columns": {
-        "email": "Unternehmen",
-        "name": "Name",
-        "phone": "Telefon"
-      },
-      "fields": "[Felder]",
-      "required": "Erforderlich",
-      "subtitle": "[Subtitle]",
-      "title": "[Titel]"
-    },
-    "nav": {
-      "back": "Zurück",
-      "next": "Weiter"
-    },
-    "paste": {
-      "label": "[Etikett]",
-      "placeholder": "[Platzhalter]",
-      "process": "[Prozess]",
-      "processing": "[Verarbeitung]"
-    },
-    "prefix": {
-      "apply_to_all": "[Anwenden auf alle]",
-      "auto": "[Auto]",
-      "default_country": "[Standardland]",
-      "force_0039": "[Force 0039]",
-      "force_39": "[Force 39]",
-      "no_prefix": "[Kein Präfix]",
-      "strategy": "[Strategie]",
-      "title": "[Titel]"
-    },
-    "preview": {
-      "continue": "[Weiter]",
-      "delimiter": "[Begrenzungszeichen]",
-      "fields": "[Felder]",
-      "rows": "[Zeilen]",
-      "showing": "[Zeigen]",
-      "title": "[Titel]",
-      "total": "[Gesamt]"
-    },
-    "processing": "[Verarbeitung]",
-    "review": {
-      "category": {
-        "allowed": "Erlaubt",
-        "blocked": "Blockiert",
-        "conditional": "Bedingt"
-      },
-      "columns": {
-        "category": "Kategorie",
-        "why": "Warum"
-      },
-      "config": "[Config]",
-      "cost": "[Kosten]",
-      "cost_desc": "[Cost Desc]",
-      "cost_note": "[Kostenhinweis]",
-      "legend": "Legende: 🟢 Erlaubt - 🟡 Bedingt - 🔴 Gesperrt",
-      "subtitle": "[Subtitle]",
-      "summary": "[Zusammenfassung]",
-      "title": "[Titel]"
-    },
-    "sheet": {
-      "subtitle": "[Subtitle]",
-      "title": "[Titel]",
-      "upload_csv": "[Csv hochladen]"
-    },
-    "steps": {
-      "attributes": "Agoralia Attribute",
-      "commit": "Bestätigen & importieren",
-      "mapping": "[Mapping]",
-      "raw": "Rohdaten",
-      "review": "[Rückblick]",
-      "source": "Quelle",
-      "subset": "Zeilen auswählen",
-      "upload": "[Hochladen]"
-    },
-    "subset": {
-      "filters": "Filters",
-      "select_all": "Alle auswählen",
-      "selected": "{{count}} ausgewählt",
-      "title": "Zu importierende Zeilen auswählen"
-    },
-    "tabs": {
-      "csv": "CSV hochladen",
-      "hubspot": "HubSpot",
-      "paste": "Paste Data",
-      "sheet": "Google-Blatt",
-      "zoho": "Zoho (demnächst)"
-    },
-    "title": "Importieren",
-    "toast": {
-      "file_too_big": "Die Datei ist größer als 50 MB.",
-      "missing_required": "Telefon und Name sind erforderlich.",
-      "nothing_selected": "Wählen Sie mindestens eine Zeile aus."
-    },
-    "upload": {
-      "drag_drop": "[Drag Drop]",
-      "drop_here": "[Drop Here]",
-      "or_click": "[Oder klicken]",
-      "paste_placeholder": "Zeilen hier einfügen (CSV oder TSV)",
-      "subtitle": "[Subtitle]",
-      "supported_formats": "[Unterstützte Formate]",
-      "title": "[Titel]"
     }
   },
   "integrations": {
@@ -805,17 +621,6 @@
     }
   },
   "kb": {
-    "/": "Wissensdatenbank mit {params}",
-    "assignments": {
-      "confirm": {
-        "assign_desc": "Sind Sie sicher, dass Sie dieses Wissensdatenbank-Element zuweisen möchten?",
-        "assign_title": "Wissensdatenbank zuweisen",
-        "cancel": "Abbrechen",
-        "confirm": "Bestätigen"
-      },
-      "description": "Weisen Sie Wissensdatenbank-Elemente Agenten und Kampagnen zu",
-      "title": "Wissensdatenbank-Zuweisungen"
-    },
     "auth": {
       "description": "Melden Sie sich an, um Ihre Wissensdatenbank und den Ingestionsfortschritt anzuzeigen",
       "title": "Anmeldung erforderlich"
@@ -870,8 +675,7 @@
     "empty": {
       "how_to_start": "Beginnen Sie damit, ein Dokument zu importieren oder eine Quelle hinzuzufügen.",
       "import": "Import Dokumente",
-      "no_data": "Noch kein Inhalt",
-      "workspace_blocked": "Arbeitsbereich im Demo-Modus nicht verfügbar"
+      "no_data": "Noch kein Inhalt"
     },
     "error": {
       "description": "Wir konnten die Wissensdatenbank-Daten nicht laden. Bitte versuchen Sie es erneut.",
@@ -879,76 +683,8 @@
       "title": "Ladefehler"
     },
     "import": {
-      "actions": {
-        "cancel": "Abbrechen",
-        "commit": "Import bestätigen",
-        "start": "Import starten"
-      },
-      "file_upload": {
-        "drag_drop": "Dateien hierher ziehen und ablegen, oder klicken Sie zum Auswählen",
-        "or_click": "oder klicken Sie zum Durchsuchen",
-        "subtitle": "Laden Sie PDFs, DOCX oder andere Dokumentformate hoch",
-        "supported_formats": "Unterstützte Formate: PDF, DOCX, TXT",
-        "title": "Dateien hochladen"
-      },
-      "progress": {
-        "chunking": "Chunks werden erstellt...",
-        "embedding": "Embeddings werden generiert...",
-        "parsing": "Dokumente werden analysiert..."
-      },
-      "tabs": {
-        "file": "Datei hochladen",
-        "paste": "Text einfügen",
-        "url": "URL crawlen"
-      },
-      "title": "Dokumente importieren",
-      "url_crawl": {
-        "depth": "Crawl-Tiefe",
-        "max_pages": "Maximale Seiten",
-        "placeholder": "Website-URL eingeben (z.B. https://example.com)",
-        "subtitle": "Inhalt von Webseiten extrahieren",
-        "title": "Website crawlen"
-      }
+      "title": "Dokumente importieren"
     },
-    "imports": {
-      "actions": {
-        "new_import": "Neuer Import"
-      },
-      "add_field": "[Feld hinzufügen]",
-      "apply_merge": "[Zusammenführung anwenden]",
-      "conflicts": "[Konflikte]",
-      "description": "Importieren und verwalten Sie Wissensdatenbank-Inhalte aus externen Quellen",
-      "download_errors": "Fehler CSV herunterladen",
-      "empty": {
-        "description": "Starten Sie Ihren ersten Wissensdatenbank-Import",
-        "title": "Keine Importe"
-      },
-      "existing_fields": "[Bestehende Felder]",
-      "existing_value": "[Bestehender Wert]",
-      "field_changes": "[Feldänderungen]",
-      "field_new": "[Neues Feld]",
-      "field_update": "[Feldaktualisierung]",
-      "field_value": "[Feldwert]",
-      "imported_fields": "[Importierte Felder]",
-      "keep_existing": "[Bestehendes beibehalten]",
-      "merge_strategy": "[Zusammenführungsstrategie]",
-      "merge_summary": "[Zusammenfassung der Zusammenführung]",
-      "merge_values": "[Werte zusammenführen]",
-      "merged_preview": "[Vorschau der Zusammenführung]",
-      "merging": "[Zusammenführung]",
-      "new_fields": "[Neue Felder]",
-      "new_value": "[Neuer Wert]",
-      "no_diff_available": "[Kein Unterschied verfügbar]",
-      "no_value": "[Kein Wert]",
-      "ready_to_merge": "[Bereit zur Zusammenführung]",
-      "strategy_auto_merge": "[Strategie Auto-Zusammenführung]",
-      "strategy_auto_new": "[Strategie Auto-Neu]",
-      "strategy_manual": "[Manuelle Strategie]",
-      "title": "Wissensdatenbank-Importe",
-      "updated": "[Aktualisiert]",
-      "use_new": "[Neues verwenden]"
-    },
-    "index": "Wissensdatenbank",
     "overview": {
       "actions": {
         "add_source": "Quelle hinzufügen",
@@ -956,12 +692,9 @@
         "import_documents": "Dokumente importieren",
         "open": "Öffnen"
       },
-      "chunks_count": "{{count}} Chunks",
       "chunks_count_one": "{{count}} chunk",
       "chunks_count_other": "{{count}}-Brocken",
       "completeness": "Vollständigkeit",
-      "description": "Verwalten Sie den Inhalt und die Zuweisungen Ihrer Wissensdatenbank",
-      "documents_count": "{{count}} Dokumente",
       "documents_count_one": "{{count}} Dokument",
       "documents_count_other": "{{count}} Dokumente",
       "kpi": {
@@ -979,7 +712,7 @@
           "title": "Dokumente"
         },
         "offer_packs": {
-          "available": "{{count}} Angebotspakete verfügbar",
+          "available": "{{}} Angebotspakete verfügbar",
           "create_first": "Erstellen Sie Ihr erstes Angebotspaket",
           "empty": "Keine Angebotspakete verfügbar",
           "manage": "Angebotspakete verwalten",
@@ -1003,51 +736,20 @@
       },
       "no_data": "Keine Daten verfügbar",
       "recent_changes": "Letzte Änderungen",
-      "sources_count": "{{count}} Quellen",
       "sources_count_one": "{{count}} Quelle",
       "sources_count_other": "{{count}} Quellen",
       "subtitle": "Verwalten Sie Ihre Wissensdatenbank und Datenquellen",
       "table": {
         "columns": {
           "actions": "Aktionen",
-          "category": "Kategorie",
           "name": "Name",
-          "owner": "Besitzer",
           "progress": "Fortschritt",
           "status": "Status",
-          "title": "Titel",
-          "type": "Typ",
-          "updated_at": "Aktualisiert"
-        },
-        "empty": {
-          "cta_new": "Wissensdatenbank erstellen",
-          "description": "Erstellen Sie Ihr erstes Wissensdatenbank-Element, um zu beginnen",
-          "title": "Keine Wissensdatenbank-Elemente"
-        },
-        "error": {
-          "description": "Wir konnten die Wissensdatenbank-Daten nicht laden",
-          "retry": "Wiederholen",
-          "title": "Ladefehler"
+          "type": "Typ"
         },
         "title": "Wissensdatenbank-Elemente"
       },
-      "title": "Wissensdatenbank",
-      "toolbar": {
-        "bulk": {
-          "assign": "Zuweisen",
-          "delete": "Löschen",
-          "export": "Exportieren",
-          "import": "Importieren",
-          "new_offer_pack": "Neues Angebotspaket"
-        },
-        "filter": {
-          "all": "Alle",
-          "archived": "Archiviert",
-          "drafts": "Entwürfe",
-          "published": "Veröffentlicht"
-        },
-        "search_placeholder": "In der Wissensdatenbank suchen..."
-      }
+      "title": "Wissensdatenbank"
     },
     "quality": {
       "breakdown": "Aufschlüsselung der Qualität",
@@ -1069,9 +771,7 @@
       "last_refresh": "Zuletzt aktualisiert",
       "refresh": "Aktualisieren",
       "status": {
-        "active": "Aktiv",
         "error": "Fehler",
-        "inactive": "Inaktiv",
         "processing": "Verarbeitung",
         "ready": "Bereit"
       },
@@ -1112,172 +812,40 @@
   "leads": {
     "actions": {
       "add": "[Hinzufügen]",
-      "assign": "Zuweisen",
-      "confirm_delete": "Diese Spur löschen? Dies kann nicht rückgängig gemacht werden.",
-      "delete": "Löschen",
-      "edit": "Bearbeiten",
-      "import": "[Import]",
-      "schedule": "[Zeitplan]",
-      "view": "Siehe"
-    },
-    "add_title": "[Titel hinzufügen]",
-    "cols": {
-      "class": "[Klasse]",
-      "company": "[Unternehmen]",
-      "compliance": "[Compliance]",
-      "consent": "[Zustimmen]",
-      "country": "[Land]",
-      "lang": "[Lang]",
-      "name": "[Name]",
-      "phone": "[Telefon]",
-      "role": "[Rolle]"
-    },
-    "columns": {
-      "actions": "Aktionen",
-      "category": "Kategorie",
-      "compliance": "Compliance",
-      "country": "Land",
-      "last_contact": "Letzter Kontakt",
-      "name": "Name",
-      "owner": "Eigentümer",
-      "phone": "Telefon",
-      "score": "Punktzahl",
-      "stage": "Stage",
-      "status": "Status",
-      "updated": "Aktualisiert"
-    },
-    "delete": {
-      "message": "Diese Aktion kann nicht rückgängig gemacht werden.",
-      "title": "Blei löschen?"
-    },
-    "description": "Verwalten und überprüfen Sie Ihre Kontakte.",
-    "details": {
-      "basic_info": "Grundlegende Informationen",
-      "description": "Grundlegende Informationen und Zeitplan",
-      "error": {
-        "description": "Dieser Lead konnte nicht geladen werden.",
-        "title": "Blei nicht verfügbar"
-      },
-      "fields": {
-        "company": "Unternehmen",
-        "created_at": "Erstellt",
-        "email": "E-Mail",
-        "last_contact": "Letzter Kontakt",
-        "phone": "Telefon",
-        "status": "Status"
-      },
-      "status_timeline": "Status und Zeitplan",
-      "title": "Leitung {{name}}"
+      "import": "[Import]"
     },
     "dialogs": {
       "assign": {
-        "success": "Erfolgreich zugewiesene Leads",
-        "title": "Leads zuweisen"
+        "agent": "Assign Agent",
+        "cancel": "Cancel",
+        "confirm": "Confirm Assignment"
       },
       "delete": {
-        "description": "Sind Sie sicher, dass Sie die ausgewählten Leads löschen möchten?",
-        "success": "Leads erfolgreich gelöscht",
-        "title": "Leads löschen"
+        "body": "Are you sure you want to delete this lead?",
+        "cancel": "Cancel",
+        "confirm": "Delete Lead"
       }
     },
-    "empty": {
-      "desc": "[Desc]",
-      "title": "[Titel]"
-    },
-    "errors": {
-      "e164": "[E164]"
-    },
-    "export": {
-      "starting": "Export ab..."
-    },
-    "fields": {
-      "company": "[Unternehmen]",
-      "consent": "[Zustimmen]",
-      "country": "[Land]",
-      "lang": "[Lang]",
-      "name": "[Name]",
-      "phone": "[Telefon]",
-      "role": "[Rolle]"
-    },
     "filters": {
-      "add": "Hinzufügen",
-      "added": "Hinzugefügt",
-      "category": {
-        "allowed": "Erlaubt",
-        "any": "Jede Kategorie",
-        "blocked": "Blockiert",
-        "conditional": "Bedingt",
-        "unknown": "Unbekannt"
-      },
-      "class": {
-        "any": "Jede Klasse",
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "unknown": "Unbekannt"
-      },
-      "country": "Land",
-      "empty": "Keine Filter angewendet",
-      "load_segment": "Segment laden",
-      "multiselect_hint": "Trennen Sie mehrere Werte durch Kommas",
-      "save_segment": "Segment speichern",
-      "select_field": "Wählen Sie ein Feld",
-      "stage": {
-        "any": "Jede Stufe",
-        "cold": "Kalt",
-        "hot": "Heiß",
-        "warm": "Warm"
-      },
-      "status": {
-        "any": "Jeder Status",
-        "contacted": "Kontaktiert",
-        "lost": "Verloren",
-        "new": "Neu",
-        "qualified": "Qualifiziert"
-      },
-      "updated": "Aktualisiert",
-      "value_placeholder": "Wert"
+      "category": "Category",
+      "class": "Class",
+      "stage": "Stage",
+      "status": "Status"
     },
-    "new": {
-      "coming_soon": "Demnächst verfügbar",
-      "description": "Manuell einen neuen Lead erstellen",
-      "title": "Neue Leitung"
-    },
-    "placeholders": {
-      "e164": "[E164]"
-    },
-    "stage": {
-      "cold": "Kalt",
-      "hot": "Heiß",
-      "warm": "Warm"
-    },
-    "status": {
-      "contacted": "Kontaktiert",
-      "lost": "Verloren",
-      "new": "Neu",
-      "qualified": "Qualifiziert"
+    "import": {
+      "coming_soon": "Coming Soon",
+      "description": "Import leads from external sources",
+      "title": "Import Leads"
     },
     "table": {
       "columns": {
-        "actions": "Aktionen",
-        "company": "Unternehmen",
-        "country": "Land",
-        "name": "Name",
-        "phone": "Telefon",
-        "status": "Status"
+        "campaign": "Campaign",
+        "email": "Email",
+        "last_contact": "Last Contact",
+        "owner": "Owner",
+        "score": "Score",
+        "stage": "Stage"
       }
-    },
-    "title": "[Titel]",
-    "toasts": {
-      "added": "[Hinzugefügt]"
-    },
-    "toolbar": {
-      "bulk": {
-        "assign": "Zuweisen",
-        "delete": "Löschen",
-        "export": "Exportieren"
-      },
-      "search_aria": "Suche führt",
-      "search_placeholder": "Die Suche führt.."
     }
   },
   "nav": {

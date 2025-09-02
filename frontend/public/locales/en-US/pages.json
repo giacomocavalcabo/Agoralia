@@ -1259,5 +1259,51 @@
     "hide": "Hide",
     "show": "Show",
     "no_data": "No data available"
+  },
+  
+  "leads": {
+    "actions": {
+      "add": "Add Lead",
+      "import": "Import Leads"
+    },
+    "dialogs": {
+      "assign": {
+        "agent": "Assign Agent",
+        "cancel": "Cancel",
+        "confirm": "Confirm Assignment"
+      },
+      "delete": {
+        "body": "Are you sure you want to delete this lead?",
+        "cancel": "Cancel",
+        "confirm": "Delete Lead"
+      }
+    },
+    "filters": {
+      "category": "Category",
+      "class": "Class",
+      "stage": "Stage",
+      "status": "Status"
+    },
+    "import": {
+      "coming_soon": "Coming Soon",
+      "description": "Import leads from external sources",
+      "title": "Import Leads"
+    },
+    "table": {
+      "columns": {
+        "campaign": "Campaign",
+        "email": "Email",
+        "last_contact": "Last Contact",
+        "owner": "Owner",
+        "score": "Score",
+        "stage": "Stage"
+      }
+    }
+  },
+  
+  "import": {
+    "legal": {
+      "disclosure": "Legal Disclosure"
+    }
   }
 }

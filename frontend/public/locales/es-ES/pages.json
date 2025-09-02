@@ -249,10 +249,9 @@
       "kb": "Base de conocimientos",
       "lead": "Plomo",
       "submit": "Enviar",
-      "submit_done": "[Enviar Hecho]",
       "title": "[Título]"
     },
-    "range": "De {fromStr} a {toStr}",
+    "range": "De {from} a {to}",
     "time": {
       "now": "Tiempo"
     },
@@ -271,7 +270,6 @@
     "actions": {
       "activate": "Activar",
       "create": "Crear campaña",
-      "create_schedule": "Crear y programar",
       "pause": "Pausa",
       "resume": "Currículum",
       "view": "Ver"
@@ -313,23 +311,9 @@
       "title": "Error al cargar las campañas"
     },
     "fields": {
-      "agent": "ID de agente",
-      "audience": "Audiencia (identificadores separados por comas)",
-      "budget": "Límite presupuestario (céntimos)",
-      "dow": "Días de la semana (1=lunes...7=domingos)",
-      "from": "De Número",
-      "goal": "Objetivo",
-      "kb": "Base de conocimientos ID",
-      "lang": "Idioma por defecto",
       "name": "Nombre de la campaña",
-      "pacing": "Ritmo (llamadas por minuto)",
-      "quiet_hours": "Respetar las horas de silencio",
-      "role": "Papel",
       "segment": "Segmento (JSON)",
-      "start_at": "Fecha/hora de inicio",
-      "status": "Estado",
-      "template": "Plantilla de resultados",
-      "template_select": "Seleccionar plantilla..."
+      "status": "Estado"
     },
     "states": {
       "empty": "Sin resultados",
@@ -548,7 +532,7 @@
     },
     "loading": "Cargando historial..",
     "pagination": {
-      "total": "resultados"
+      "total": "resultados {count}"
     },
     "search_aria": "Buscar en la historia",
     "search_placeholder": "Búsqueda por ID, contacto, notas..",
@@ -570,176 +554,8 @@
     "title": "Historial de llamadas y resultados"
   },
   "import": {
-    "attributes": {
-      "bulk": {
-        "apply_to": "Aplicar a la selección",
-        "clear": "Claro",
-        "set": "Establecer"
-      },
-      "class": {
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "unknown": "Desconocido"
-      },
-      "columns": {
-        "class": "Clase",
-        "dnc": "DNC nacional",
-        "existing": "Relación existente",
-        "notes": "Notas",
-        "opt_in": "Opt-in"
-      },
-      "dnc": {
-        "in": "En registro",
-        "not_in": "No en el registro",
-        "unknown": "Desconocido"
-      },
-      "existing": {
-        "no": "No",
-        "unknown": "Desconocido",
-        "yes": "Sí"
-      },
-      "hints": {
-        "b2c_optin_only": "El opt-in sólo es necesario en los países con opt-in (B2C).",
-        "dnc_only": "El DNC nacional sólo se aplica cuando existe un registro."
-      },
-      "optin": {
-        "no": "No",
-        "unknown": "Desconocido",
-        "yes": "Sí"
-      },
-      "title": "atributos __GL_0"
-    },
-    "commit": {
-      "done": "Importación completada",
-      "errors_csv": "Descargar CSV de errores",
-      "progress": "Importar..",
-      "start": "Iniciar importación",
-      "title": "Confirmar e importar"
-    },
-    "dedupe": {
-      "check_on": "[Check On]",
-      "merge": "[Fusionar]",
-      "resolve_strategy": "[Resolver Estrategia]",
-      "skip": "[Skip]",
-      "title": "[Título]"
-    },
-    "launch": {
-      "launch": "[Lanzamiento]",
-      "launching": "[Lanzamiento]",
-      "new_import": "[Nueva importación]",
-      "success": "[Éxito]",
-      "success_desc": "[Success Desc]",
-      "view_job": "[Ver Trabajo]"
-    },
     "legal": {
       "disclosure": "[Divulgación]"
-    },
-    "mapping": {
-      "actions": {
-        "auto": "Mapa automático",
-        "reset": "Restablecer"
-      },
-      "columns": {
-        "email": "Empresa",
-        "name": "Nombre",
-        "phone": "Teléfono"
-      },
-      "fields": "[Campos]",
-      "required": "Requerido",
-      "subtitle": "[Subtítulo]",
-      "title": "[Título]"
-    },
-    "nav": {
-      "back": "Volver",
-      "next": "Continúe en"
-    },
-    "paste": {
-      "label": "[Etiqueta]",
-      "placeholder": "[Marcador de posición]",
-      "process": "[Proceso]",
-      "processing": "[Procesamiento]"
-    },
-    "prefix": {
-      "apply_to_all": "[Aplicar a todos]",
-      "auto": "[Coche]",
-      "default_country": "[País por defecto]",
-      "force_0039": "[Fuerza 0039]",
-      "force_39": "[Fuerza 39]",
-      "no_prefix": "[Sin prefijo]",
-      "strategy": "[Estrategia]",
-      "title": "[Título]"
-    },
-    "preview": {
-      "continue": "[Continuar]",
-      "delimiter": "[Delimitador]",
-      "fields": "[Campos]",
-      "rows": "[Filas]",
-      "showing": "[Mostrando]",
-      "title": "[Título]",
-      "total": "[Total]"
-    },
-    "processing": "[Procesamiento]",
-    "review": {
-      "category": {
-        "allowed": "Permitido",
-        "blocked": "Bloqueado",
-        "conditional": "Condicional"
-      },
-      "columns": {
-        "category": "Categoría",
-        "why": "Por qué"
-      },
-      "config": "[Config]",
-      "cost": "[Coste]",
-      "cost_desc": "[Cost Desc]",
-      "cost_note": "[Nota de costes]",
-      "legend": "Leyenda: 🟢 Permitido - 🟡 Condicional - 🔴 Bloqueado",
-      "subtitle": "[Subtítulo]",
-      "summary": "[Resumen]",
-      "title": "[Título]"
-    },
-    "sheet": {
-      "subtitle": "[Subtítulo]",
-      "title": "[Título]",
-      "upload_csv": "[Cargar Csv]"
-    },
-    "steps": {
-      "attributes": "atributos __GL_0",
-      "commit": "Confirmar e importar",
-      "mapping": "[Cartografía]",
-      "raw": "Datos brutos",
-      "review": "[Revisión]",
-      "source": "Fuente",
-      "subset": "Seleccionar filas",
-      "upload": "[Subir]"
-    },
-    "subset": {
-      "filters": "Filtros",
-      "select_all": "Seleccionar todo",
-      "selected": "{{count}} seleccionado",
-      "title": "Seleccionar filas para importar"
-    },
-    "tabs": {
-      "csv": "Cargar CSV",
-      "hubspot": "HubSpot",
-      "paste": "Pegar datos",
-      "sheet": "Hoja de Google",
-      "zoho": "Zoho (próximamente)"
-    },
-    "title": "Importar",
-    "toast": {
-      "file_too_big": "El archivo supera los 50 MB.",
-      "missing_required": "El teléfono y el nombre son obligatorios.",
-      "nothing_selected": "Seleccione al menos una fila."
-    },
-    "upload": {
-      "drag_drop": "[Drag Drop]",
-      "drop_here": "[Drop Here]",
-      "or_click": "[O haga clic]",
-      "paste_placeholder": "Pegue aquí las filas (CSV o TSV)",
-      "subtitle": "[Subtítulo]",
-      "supported_formats": "[Formatos admitidos]",
-      "title": "[Título]"
     }
   },
   "integrations": {
@@ -805,17 +621,6 @@
     }
   },
   "kb": {
-    "/": "Base de Conocimiento con {params}",
-    "assignments": {
-      "confirm": {
-        "assign_desc": "¿Estás seguro de que quieres asignar este elemento de base de conocimiento?",
-        "assign_title": "Asignar Base de Conocimiento",
-        "cancel": "Cancelar",
-        "confirm": "Confirmar"
-      },
-      "description": "Asigna elementos de base de conocimiento a agentes y campañas",
-      "title": "Asignaciones de Base de Conocimiento"
-    },
     "auth": {
       "description": "Inicia sesión para ver tu base de conocimiento y el progreso de ingestión",
       "title": "Inicio de sesión requerido"
@@ -870,8 +675,7 @@
     "empty": {
       "how_to_start": "Empieza importando un documento o añadiendo una fuente.",
       "import": "Importar documentos",
-      "no_data": "Aún no hay contenido",
-      "workspace_blocked": "Espacio de trabajo no disponible en modo demo"
+      "no_data": "Aún no hay contenido"
     },
     "error": {
       "description": "No pudimos cargar los datos de la base de conocimiento. Por favor, inténtalo de nuevo.",
@@ -879,76 +683,8 @@
       "title": "Error de carga"
     },
     "import": {
-      "actions": {
-        "cancel": "Cancelar",
-        "commit": "Confirmar Importación",
-        "start": "Iniciar Importación"
-      },
-      "file_upload": {
-        "drag_drop": "Arrastra y suelta archivos aquí, o haz clic para seleccionar",
-        "or_click": "o haz clic para explorar",
-        "subtitle": "Sube PDFs, DOCX u otros formatos de documento",
-        "supported_formats": "Formatos soportados: PDF, DOCX, TXT",
-        "title": "Subir Archivos"
-      },
-      "progress": {
-        "chunking": "Creando fragmentos...",
-        "embedding": "Generando embeddings...",
-        "parsing": "Analizando documentos..."
-      },
-      "tabs": {
-        "file": "Subir Archivo",
-        "paste": "Pegar Texto",
-        "url": "Explorar URL"
-      },
-      "title": "Importar Documentos",
-      "url_crawl": {
-        "depth": "Profundidad de Exploración",
-        "max_pages": "Páginas Máximas",
-        "placeholder": "Ingresa la URL del sitio web (ej. https://example.com)",
-        "subtitle": "Extraer contenido de páginas web",
-        "title": "Explorar Sitio Web"
-      }
+      "title": "Importar Documentos"
     },
-    "imports": {
-      "actions": {
-        "new_import": "Nueva Importación"
-      },
-      "add_field": "[Agregar Campo]",
-      "apply_merge": "[Aplicar Fusión]",
-      "conflicts": "[Conflictos]",
-      "description": "Importa y gestiona contenido de base de conocimiento desde fuentes externas",
-      "download_errors": "Descargar errores CSV",
-      "empty": {
-        "description": "Inicia tu primera importación de base de conocimiento",
-        "title": "No hay importaciones"
-      },
-      "existing_fields": "[Campos Existentes]",
-      "existing_value": "[Valor Existente]",
-      "field_changes": "[Cambios de Campo]",
-      "field_new": "[Campo Nuevo]",
-      "field_update": "[Actualización de Campo]",
-      "field_value": "[Valor de Campo]",
-      "imported_fields": "[Campos Importados]",
-      "keep_existing": "[Mantener Existente]",
-      "merge_strategy": "[Estrategia de Fusión]",
-      "merge_summary": "[Resumen de Fusión]",
-      "merge_values": "[Fusionar Valores]",
-      "merged_preview": "[Vista Previa de Fusión]",
-      "merging": "[Fusión]",
-      "new_fields": "[Campos Nuevos]",
-      "new_value": "[Nuevo Valor]",
-      "no_diff_available": "[No Hay Diferencia Disponible]",
-      "no_value": "[Sin Valor]",
-      "ready_to_merge": "[Listo para Fusionar]",
-      "strategy_auto_merge": "[Estrategia Auto-Fusión]",
-      "strategy_auto_new": "[Estrategia Auto-Nuevo]",
-      "strategy_manual": "[Estrategia Manual]",
-      "title": "Importaciones de Base de Conocimiento",
-      "updated": "[Actualizado]",
-      "use_new": "[Usar Nuevo]"
-    },
-    "index": "Base de Conocimiento",
     "overview": {
       "actions": {
         "add_source": "Agregar fuente",
@@ -956,12 +692,9 @@
         "import_documents": "Importar documentos",
         "open": "Abrir"
       },
-      "chunks_count": "{{count}} fragmentos",
       "chunks_count_one": "{{count}} chunk",
       "chunks_count_other": "{{count}} trozos",
       "completeness": "Completitud",
-      "description": "Gestiona el contenido y las asignaciones de tu base de conocimiento",
-      "documents_count": "{{count}} documentos",
       "documents_count_one": "{{count}} documento",
       "documents_count_other": "{{count}} documentos",
       "kpi": {
@@ -979,7 +712,7 @@
           "title": "Documentos"
         },
         "offer_packs": {
-          "available": "{{count}} paquetes de ofertas disponibles",
+          "available": "{{}} paquetes de ofertas disponibles",
           "create_first": "Crea tu primer paquete de ofertas",
           "empty": "No hay paquetes de ofertas disponibles",
           "manage": "Gestionar paquetes de ofertas",
@@ -1003,51 +736,20 @@
       },
       "no_data": "No hay datos disponibles",
       "recent_changes": "Cambios Recientes",
-      "sources_count": "{{count}} fuentes",
       "sources_count_one": "{{count}} fuente",
       "sources_count_other": "{{count}} fuentes",
       "subtitle": "Gestiona tu base de conocimiento y fuentes de datos",
       "table": {
         "columns": {
           "actions": "Acciones",
-          "category": "Categoría",
           "name": "Nombre",
-          "owner": "Propietario",
           "progress": "Progreso",
           "status": "Estado",
-          "title": "Título",
-          "type": "Tipo",
-          "updated_at": "Actualizado"
-        },
-        "empty": {
-          "cta_new": "Crear Base de Conocimiento",
-          "description": "Crea tu primer elemento de base de conocimiento para comenzar",
-          "title": "No hay elementos de base de conocimiento"
-        },
-        "error": {
-          "description": "No pudimos cargar los datos de la base de conocimiento",
-          "retry": "Reintentar",
-          "title": "Error de carga"
+          "type": "Tipo"
         },
         "title": "Elementos de la Base de Conocimiento"
       },
-      "title": "Base de Conocimiento",
-      "toolbar": {
-        "bulk": {
-          "assign": "Asignar",
-          "delete": "Eliminar",
-          "export": "Exportar",
-          "import": "Importar",
-          "new_offer_pack": "Nuevo Paquete de Oferta"
-        },
-        "filter": {
-          "all": "Todos",
-          "archived": "Archivados",
-          "drafts": "Borradores",
-          "published": "Publicados"
-        },
-        "search_placeholder": "Buscar en la base de conocimiento..."
-      }
+      "title": "Base de Conocimiento"
     },
     "quality": {
       "breakdown": "Desglose de la calidad",
@@ -1069,9 +771,7 @@
       "last_refresh": "Última actualización",
       "refresh": "Actualizar",
       "status": {
-        "active": "Activo",
         "error": "Error",
-        "inactive": "Inactivo",
         "processing": "Procesando",
         "ready": "Listo"
       },
@@ -1112,172 +812,40 @@
   "leads": {
     "actions": {
       "add": "[Añadir]",
-      "assign": "Asignar",
-      "confirm_delete": "¿Borrar esta pista? Esto no se puede deshacer.",
-      "delete": "Borrar",
-      "edit": "Editar",
-      "import": "[Import]",
-      "schedule": "[Horario]",
-      "view": "Ver"
-    },
-    "add_title": "[Añadir título]",
-    "cols": {
-      "class": "[Clase]",
-      "company": "[Empresa]",
-      "compliance": "[Compliance]",
-      "consent": "[Consentimiento]",
-      "country": "[País]",
-      "lang": "[Lang]",
-      "name": "[Nombre]",
-      "phone": "[Teléfono]",
-      "role": "[Papel]"
-    },
-    "columns": {
-      "actions": "Acciones",
-      "category": "Categoría",
-      "compliance": "Compliance",
-      "country": "País",
-      "last_contact": "Último contacto",
-      "name": "Nombre",
-      "owner": "Propietario",
-      "phone": "Teléfono",
-      "score": "Puntuación",
-      "stage": "Escenario",
-      "status": "Estado",
-      "updated": "Actualizado"
-    },
-    "delete": {
-      "message": "Esta acción no puede deshacerse.",
-      "title": "¿Borrar el plomo?"
-    },
-    "description": "Gestiona y revisa tus contactos.",
-    "details": {
-      "basic_info": "Información básica",
-      "description": "Información básica y calendario",
-      "error": {
-        "description": "Esta pista no se ha podido cargar.",
-        "title": "Plomo no disponible"
-      },
-      "fields": {
-        "company": "Empresa",
-        "created_at": "Creado",
-        "email": "Correo electrónico",
-        "last_contact": "Último contacto",
-        "phone": "Teléfono",
-        "status": "Estado"
-      },
-      "status_timeline": "Situación y calendario",
-      "title": "Plomo {{name}}"
+      "import": "[Import]"
     },
     "dialogs": {
       "assign": {
-        "success": "Leads asignados con éxito",
-        "title": "Asignar clientes potenciales"
+        "agent": "Assign Agent",
+        "cancel": "Cancel",
+        "confirm": "Confirm Assignment"
       },
       "delete": {
-        "description": "¿Está seguro de que desea eliminar los clientes potenciales seleccionados?",
-        "success": "Contactos eliminados correctamente",
-        "title": "Borrar pistas"
+        "body": "Are you sure you want to delete this lead?",
+        "cancel": "Cancel",
+        "confirm": "Delete Lead"
       }
     },
-    "empty": {
-      "desc": "[Desc]",
-      "title": "[Título]"
-    },
-    "errors": {
-      "e164": "[E164]"
-    },
-    "export": {
-      "starting": "Exportación a partir de..."
-    },
-    "fields": {
-      "company": "[Empresa]",
-      "consent": "[Consentimiento]",
-      "country": "[País]",
-      "lang": "[Lang]",
-      "name": "[Nombre]",
-      "phone": "[Teléfono]",
-      "role": "[Papel]"
-    },
     "filters": {
-      "add": "Añadir",
-      "added": "Añadido",
-      "category": {
-        "allowed": "Permitido",
-        "any": "Cualquier categoría",
-        "blocked": "Bloqueado",
-        "conditional": "Condicional",
-        "unknown": "Desconocido"
-      },
-      "class": {
-        "any": "Cualquier clase",
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "unknown": "Desconocido"
-      },
-      "country": "País",
-      "empty": "No se aplican filtros",
-      "load_segment": "Segmento de carga",
-      "multiselect_hint": "Separe los valores múltiples con comas",
-      "save_segment": "Guardar segmento",
-      "select_field": "Seleccione un campo",
-      "stage": {
-        "any": "Cualquier etapa",
-        "cold": "Frío",
-        "hot": "Caliente",
-        "warm": "Caliente"
-      },
-      "status": {
-        "any": "Cualquier estado",
-        "contacted": "Contacto",
-        "lost": "Perdido",
-        "new": "Nuevo",
-        "qualified": "Cualificado"
-      },
-      "updated": "Actualizado",
-      "value_placeholder": "Valor"
+      "category": "Category",
+      "class": "Class",
+      "stage": "Stage",
+      "status": "Status"
     },
-    "new": {
-      "coming_soon": "Próximamente",
-      "description": "Crear un nuevo cliente potencial manualmente",
-      "title": "Plomo nuevo"
-    },
-    "placeholders": {
-      "e164": "[E164]"
-    },
-    "stage": {
-      "cold": "Frío",
-      "hot": "Caliente",
-      "warm": "Caliente"
-    },
-    "status": {
-      "contacted": "Contacto",
-      "lost": "Perdido",
-      "new": "Nuevo",
-      "qualified": "Cualificado"
+    "import": {
+      "coming_soon": "Coming Soon",
+      "description": "Import leads from external sources",
+      "title": "Import Leads"
     },
     "table": {
       "columns": {
-        "actions": "Acciones",
-        "company": "Empresa",
-        "country": "País",
-        "name": "Nombre",
-        "phone": "Teléfono",
-        "status": "Estado"
+        "campaign": "Campaign",
+        "email": "Email",
+        "last_contact": "Last Contact",
+        "owner": "Owner",
+        "score": "Score",
+        "stage": "Stage"
       }
-    },
-    "title": "[Título]",
-    "toasts": {
-      "added": "[Añadido]"
-    },
-    "toolbar": {
-      "bulk": {
-        "assign": "Asignar",
-        "delete": "Borrar",
-        "export": "Exportar"
-      },
-      "search_aria": "Buscar pistas",
-      "search_placeholder": "Buscar pistas.."
     }
   },
   "nav": {

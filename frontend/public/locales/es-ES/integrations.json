@@ -84,11 +84,11 @@
   },
   "test": {
     "error": {
-      "description": "Error en la prueba de conexión",
+      "description": "Error en la prueba de conexión {provider}",
       "title": "[Título]"
     },
     "success": {
-      "description": "Prueba de conexión correcta",
+      "description": "Prueba de conexión correcta {provider}",
       "title": "[Título]"
     }
   },

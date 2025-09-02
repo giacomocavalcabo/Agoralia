@@ -84,11 +84,11 @@
   },
   "test": {
     "error": {
-      "description": "Échec du test de connexion",
+      "description": "Échec du test de connexion {provider}",
       "title": "[Titre]"
     },
     "success": {
-      "description": "Test de connexion réussi",
+      "description": "Test de connexion réussi {provider}",
       "title": "[Titre]"
     }
   },

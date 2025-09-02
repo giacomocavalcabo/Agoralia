@@ -655,6 +655,11 @@ logger.info("Including Settings router...")
 api.include_router(settings.router, tags=["settings"])
 logger.info("Settings router included successfully")
 
+logger.info("Including Audit router...")
+from backend.routers import audit
+api.include_router(audit.router, tags=["audit"])
+logger.info("Audit router included successfully")
+
 app.include_router(api)
 logger.info("API routers included successfully")
 

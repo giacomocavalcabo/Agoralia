@@ -13,6 +13,16 @@
     "title": "Ricarica Automatica",
     "topup": "Importo Ricarica"
   },
+  "budget": {
+    "blocked": "Budget Blocked",
+    "hard_stop": "Hard Stop Reached",
+    "monthly": "Monthly Budget",
+    "progress": "Budget Progress",
+    "resets": "Budget Resets",
+    "saved": "Budget Saved",
+    "title": "Budget Management",
+    "warn80": "80% Budget Warning"
+  },
   "hard_stop_banner": "Il budget mensile è stato raggiunto. Gli acquisti/importazioni sono disattivati.",
   "hard_stop_detail": "Il limite di budget mensile è stato raggiunto. Per continuare, aggiornare le impostazioni di fatturazione.",
   "invoices": {

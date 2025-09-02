@@ -93,6 +93,9 @@ def update_company(payload: CompanyUpdate, request: Request, db: Session = Depen
         if not workspace:
             raise HTTPException(status_code=404, detail="Workspace not found")
         
+        # Track timezone change for audit
+        old_timezone = getattr(workspace, 'timezone', None)
+        
         # Update workspace fields
         updated_fields = []
         for field, value in payload.model_dump(exclude_none=True).items():
@@ -104,6 +107,21 @@ def update_company(payload: CompanyUpdate, request: Request, db: Session = Depen
             db.commit()
             db.refresh(workspace)
             logger.info(f"Updated workspace {workspace.id} fields: {updated_fields}")
+            
+            # Log audit events
+            from backend.audit import log_event
+            
+            # Log timezone change specifically
+            if payload.timezone and payload.timezone != old_timezone:
+                log_event(db, workspace_id=str(workspace.id), user_id=str(user.id), 
+                         action="timezone.change", resource_type="workspace", 
+                         resource_id=str(workspace.id), request=request, 
+                         meta={"old": old_timezone, "new": payload.timezone})
+            
+            # Log general workspace update
+            log_event(db, workspace_id=str(workspace.id), user_id=str(user.id), 
+                     action="workspace.update", resource_type="workspace", 
+                     resource_id=str(workspace.id), request=request)
 
         return {"ok": True, "updated_fields": updated_fields}
         

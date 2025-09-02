@@ -2,6 +2,17 @@
   "title": "Billing & Subscriptions",
   "subtitle": "Manage your billing, payment methods, and usage limits",
   
+  "budget": {
+    "title": "Budget Management",
+    "blocked": "Budget Blocked",
+    "hard_stop": "Hard Stop Reached",
+    "monthly": "Monthly Budget",
+    "progress": "Budget Progress",
+    "resets": "Budget Resets",
+    "saved": "Budget Saved",
+    "warn80": "80% Budget Warning"
+  },
+  
   "overview": {
     "balance": "Current Balance",
     "usage_mtd": "Usage This Month",

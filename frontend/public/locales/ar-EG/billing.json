@@ -13,6 +13,16 @@
     "title": "[العنوان]",
     "topup": "[تعبئة رصيد]"
   },
+  "budget": {
+    "blocked": "Budget Blocked",
+    "hard_stop": "Hard Stop Reached",
+    "monthly": "Monthly Budget",
+    "progress": "Budget Progress",
+    "resets": "Budget Resets",
+    "saved": "Budget Saved",
+    "title": "Budget Management",
+    "warn80": "80% Budget Warning"
+  },
   "hard_stop_banner": "تم الوصول إلى الميزانية الشهرية. تم تعطيل الشراء/الاستيراد.",
   "hard_stop_detail": "تم الوصول إلى حد ميزانيتك الشهرية. يرجى تحديث إعدادات الفوترة الخاصة بك للمتابعة.",
   "invoices": {

@@ -232,21 +232,39 @@ def update_me(payload: MeUpdate, request: Request, db: Session = Depends(get_db)
         )
 
 @router.post("/login")
-def auth_login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):
+def auth_login(payload: LoginIn, response: Response, request: Request, db: Session = Depends(get_db)):
     email = payload.email.lower().strip()
 
     user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
     if not user:
+        # Log failed login attempt
+        from backend.audit import log_event
+        log_event(db, workspace_id="unknown", user_id=None, action="login.failed", 
+                 request=request, meta={"email": email})
         raise HTTPException(status_code=401, detail="Invalid email or password. Please try again.")
 
     ua = db.execute(
         select(UserAuth).where(UserAuth.user_id == user.id, UserAuth.provider == "password")
     ).scalar_one_or_none()
     if not ua or not pwd_context.verify(payload.password, ua.pass_hash):
+        # Log failed login attempt
+        from backend.audit import log_event
+        log_event(db, workspace_id="unknown", user_id=str(user.id), action="login.failed", 
+                 request=request, meta={"email": email})
         raise HTTPException(status_code=401, detail="Invalid email or password. Please try again.")
 
     from backend.sessions import issue_session
     issue_session(response, str(user.id))
+    
+    # Log successful login
+    from backend.audit import log_event
+    from backend.models import WorkspaceMember
+    workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).first()
+    workspace_id = workspace_member.workspace_id if workspace_member else "unknown"
+    
+    log_event(db, workspace_id=workspace_id, user_id=str(user.id), action="login.success", 
+             request=request, meta={"email": email})
+    
     return {"user": {"id": str(user.id), "email": user.email, "name": user.name or user.email.split("@")[0]}}
 
 @router.post("/oauth/google/start")

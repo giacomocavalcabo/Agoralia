@@ -47,13 +47,13 @@
   },
   "messages": {
     "connected": "تم الاتصال بنجاح",
-    "connected_desc": "تم الاتصال بنجاح ب _PH_0__ _PH_0__",
+    "connected_desc": "تم الاتصال بنجاح ب _PH_0__ _PH_0__ {provider}",
     "disconnected": "تم قطع الاتصال بنجاح",
-    "disconnected_desc": "تم قطع الاتصال بنجاح من _PH_0___H_0__",
+    "disconnected_desc": "تم قطع الاتصال بنجاح من _PH_0___H_0__ {provider}",
     "test_failed": "فشل اختبار الاتصال",
-    "test_failed_desc": "فشل في اختبار الاتصال ب _PH_0_____",
+    "test_failed_desc": "فشل في اختبار الاتصال ب _PH_0_____ {provider}",
     "test_success": "تم اختبار الاتصال بنجاح",
-    "test_success_desc": "تم اختبار الاتصال ب _PH_0__ _PH_0__ بنجاح"
+    "test_success_desc": "تم اختبار الاتصال ب _PH_0__ _PH_0__ بنجاح {provider}"
   },
   "odoo": {
     "description": "[الوصف]",
@@ -84,11 +84,11 @@
   },
   "test": {
     "error": {
-      "description": "فشل اختبار الاتصال",
+      "description": "فشل اختبار الاتصال {provider}",
       "title": "[العنوان]"
     },
     "success": {
-      "description": "تم اختبار الاتصال بنجاح",
+      "description": "تم اختبار الاتصال بنجاح {provider}",
       "title": "[العنوان]"
     }
   },

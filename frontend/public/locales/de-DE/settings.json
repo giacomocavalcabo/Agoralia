@@ -226,7 +226,6 @@
     "title": "Rechnungsstellung",
     "usage": "Verwendung"
   },
-  "coming_soon": "[Demnächst]",
   "common": {
     "none": "Keine",
     "retry": "Wiederholung"
@@ -259,6 +258,13 @@
     "webhooks": "Webhaken"
   },
   "nav": {
+    "account": {
+      "errors": {
+        "load_failed": "Failed to load account settings"
+      },
+      "timezones": "Timezone Settings",
+      "title": "Account Settings"
+    },
     "billing": "Rechnungsstellung",
     "billing_desc": "Verwaltung von Budget und Nutzung",
     "company": "Unternehmen",
@@ -283,14 +289,6 @@
     "sms": "SMS-Benachrichtigungen",
     "title": "Präferenzen für Benachrichtigungen"
   },
-  "personal": {
-    "dual_time": "Duale Zeitanzeige",
-    "email": "admin@example.com",
-    "language": "Englisch",
-    "name": "Admin Benutzer",
-    "timezone": "UTC",
-    "title": "Persönliche Informationen"
-  },
   "profile": {
     "contact_details": "Kontakt Details",
     "description": "Aktualisieren Sie Ihre persönlichen Informationen und Präferenzen",
@@ -300,7 +298,6 @@
     "security": "Sicherheit",
     "title": "Profil-Einstellungen"
   },
-  "save": "Speichern Sie",
   "security": {
     "api_keys": "API-Schlüssel",
     "audit_log": "Audit Log",
@@ -310,18 +307,9 @@
     "title": "Sicherheitseinstellungen",
     "two_factor": "Zwei-Faktoren-Authentifizierung"
   },
-  "subtitle": "Verwalten Sie Ihr Konto und Ihre Arbeitsbereichseinstellungen",
   "tabs": {
-    "audit": "Prüfung",
-    "billing": "Rechnungsstellung",
     "company": "Unternehmen",
-    "compliance": "Compliance",
-    "integrations": "Integrationen",
-    "members": "Mitglieder",
-    "personal": "Persönlich",
-    "profile": "Profil",
-    "telephony": "Telefonie",
-    "workspace": "Workspace"
+    "profile": "Profil"
   },
   "team": {
     "activity": "Aktivitätsprotokoll",
@@ -491,7 +479,6 @@
     "zero_markup_tooltip_aria": "Was ist ein Null-Zuschlag?",
     "zero_markup_tooltip_content": "Wir erheben keinen Aufschlag auf den Nummernkauf oder die monatliche Miete; Ihr Anbieter rechnet direkt mit Ihnen ab."
   },
-  "title": "Einstellungen",
   "workspace": {
     "accepting": "[Akzeptieren]",
     "domain": "[Domain]",

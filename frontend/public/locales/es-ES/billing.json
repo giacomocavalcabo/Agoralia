@@ -13,6 +13,16 @@
     "title": "[Título]",
     "topup": "[Topup]"
   },
+  "budget": {
+    "blocked": "Budget Blocked",
+    "hard_stop": "Hard Stop Reached",
+    "monthly": "Monthly Budget",
+    "progress": "Budget Progress",
+    "resets": "Budget Resets",
+    "saved": "Budget Saved",
+    "title": "Budget Management",
+    "warn80": "80% Budget Warning"
+  },
   "hard_stop_banner": "Presupuesto mensual alcanzado. Compras/Importaciones desactivadas.",
   "hard_stop_detail": "Se ha alcanzado el límite de su presupuesto mensual. Actualiza tus ajustes de facturación para continuar.",
   "invoices": {

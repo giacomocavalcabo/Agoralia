@@ -14,6 +14,7 @@ import {
   PageHeader 
 } from '../components/ui/FormPrimitives.jsx'
 import SettingsCompany from './SettingsCompany'
+import tzdata from "../lib/timezones.js"
 
 // Personal/Account Tab Component
 function PersonalTab() {
@@ -219,8 +220,8 @@ function PersonalTab() {
                 errors.timezone ? 'border-red-300' : 'border-gray-300'
               }`}
             >
-              {Object.entries(t('account.timezones', { returnObjects: true })).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              {tzdata.map((tz) => (
+                <option key={tz} value={tz}>{tz}</option>
               ))}
             </select>
             <FieldError>{errors.timezone}</FieldError>

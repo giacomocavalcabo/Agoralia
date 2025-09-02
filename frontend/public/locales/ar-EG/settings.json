@@ -218,7 +218,7 @@
       "balance": "الرصيد",
       "cap_status_label": "حالة الغطاء",
       "minutes_mtd": "الدقائق (MTD)",
-      "of_cap": "من _PH_0___",
+      "of_cap": "من _PH_0___ {cap}",
       "usage_mtd": "الاستخدام (MTD)"
     },
     "payment_methods": "طرق الدفع",
@@ -226,7 +226,6 @@
     "title": "الفواتير",
     "usage": "الاستخدام"
   },
-  "coming_soon": "[قريباً]",
   "common": {
     "none": "لا يوجد",
     "retry": "إعادة المحاولة"
@@ -259,6 +258,13 @@
     "webhooks": "خطافات الويب"
   },
   "nav": {
+    "account": {
+      "errors": {
+        "load_failed": "Failed to load account settings"
+      },
+      "timezones": "Timezone Settings",
+      "title": "Account Settings"
+    },
     "billing": "الفواتير",
     "billing_desc": "إدارة الميزانية والاستخدام",
     "company": "الشركة",
@@ -283,14 +289,6 @@
     "sms": "إشعارات الرسائل النصية القصيرة",
     "title": "تفضيلات الإشعارات"
   },
-  "personal": {
-    "dual_time": "عرض الوقت المزدوج",
-    "email": "admin@example.com",
-    "language": "اللغة الإنجليزية",
-    "name": "مستخدم إداري",
-    "timezone": "يو تي سي",
-    "title": "المعلومات الشخصية"
-  },
   "profile": {
     "contact_details": "تفاصيل الاتصال",
     "description": "تحديث معلوماتك وتفضيلاتك الشخصية",
@@ -300,7 +298,6 @@
     "security": "الأمن",
     "title": "إعدادات الملف الشخصي"
   },
-  "save": "الحفظ",
   "security": {
     "api_keys": "مفاتيح واجهة برمجة التطبيقات",
     "audit_log": "سجل التدقيق",
@@ -310,18 +307,9 @@
     "title": "إعدادات الأمان",
     "two_factor": "المصادقة الثنائية"
   },
-  "subtitle": "إدارة حسابك وتفضيلات مساحة العمل الخاصة بك",
   "tabs": {
-    "audit": "التدقيق",
-    "billing": "الفواتير",
     "company": "الشركة",
-    "compliance": "_GL_3___",
-    "integrations": "عمليات الدمج",
-    "members": "الأعضاء",
-    "personal": "شخصي",
-    "profile": "الملف الشخصي",
-    "telephony": "الاتصالات الهاتفية",
-    "workspace": "_GL_1____"
+    "profile": "الملف الشخصي"
   },
   "team": {
     "activity": "سجل النشاط",
@@ -491,7 +479,6 @@
     "zero_markup_tooltip_aria": "ما هو الترميز الصفري؟",
     "zero_markup_tooltip_content": "نحن لا نضيف أبداً أي رسوم إضافية على شراء الأرقام أو الإيجار الشهري؛ حيث يقوم مزود الخدمة بإرسال الفواتير إليك مباشرةً."
   },
-  "title": "الإعدادات",
   "workspace": {
     "accepting": "[قبول]",
     "domain": "[المجال]",

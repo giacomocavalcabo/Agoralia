@@ -226,7 +226,6 @@
     "title": "Facturation",
     "usage": "Utilisation"
   },
-  "coming_soon": "[Prochainement]",
   "common": {
     "none": "Aucun",
     "retry": "Réessayer"
@@ -259,6 +258,13 @@
     "webhooks": "Crochets Web"
   },
   "nav": {
+    "account": {
+      "errors": {
+        "load_failed": "Failed to load account settings"
+      },
+      "timezones": "Timezone Settings",
+      "title": "Account Settings"
+    },
     "billing": "Facturation",
     "billing_desc": "Gérer le budget et l'utilisation",
     "company": "Entreprise",
@@ -283,14 +289,6 @@
     "sms": "Notifications par SMS",
     "title": "Préférences de notification"
   },
-  "personal": {
-    "dual_time": "Double affichage de l'heure",
-    "email": "admin@example.com",
-    "language": "Anglais",
-    "name": "Utilisateur Admin",
-    "timezone": "UTC",
-    "title": "Informations personnelles"
-  },
   "profile": {
     "contact_details": "Coordonnées",
     "description": "Mettre à jour vos informations personnelles et vos préférences",
@@ -300,7 +298,6 @@
     "security": "Sécurité",
     "title": "Paramètres du profil"
   },
-  "save": "Économiser",
   "security": {
     "api_keys": "Clés API",
     "audit_log": "Audit Log",
@@ -310,18 +307,9 @@
     "title": "Paramètres de sécurité",
     "two_factor": "Authentification à deux facteurs"
   },
-  "subtitle": "Gérer les préférences de votre compte et de votre espace de travail",
   "tabs": {
-    "audit": "Audit",
-    "billing": "Facturation",
     "company": "Entreprise",
-    "compliance": "Compliance",
-    "integrations": "Intégrations",
-    "members": "Les membres",
-    "personal": "Personnel",
-    "profile": "Profil",
-    "telephony": "Téléphonie",
-    "workspace": "Workspace_"
+    "profile": "Profil"
   },
   "team": {
     "activity": "Journal d'activité",
@@ -491,7 +479,6 @@
     "zero_markup_tooltip_aria": "Qu'est-ce que la majoration zéro ?",
     "zero_markup_tooltip_content": "Nous n'ajoutons jamais de supplément à l'achat d'un numéro ou à la location mensuelle ; votre fournisseur vous facture directement."
   },
-  "title": "Paramètres",
   "workspace": {
     "accepting": "[Accepter]",
     "domain": "[Domain]",
