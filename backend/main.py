@@ -25,6 +25,13 @@ from backend.db import Base, engine, get_db
 from backend.logger import logger
 from backend.config import settings
 
+# Import di tutti i modelli all'inizio per evitare conflitti SQLAlchemy
+from backend.models import (
+    User, UserAuth, Workspace, WorkspaceMember, ProviderAccount, 
+    TelephonyProvider, NumberOrder, Number, MagicLink, 
+    RegulatorySubmission, KnowledgeBase, KbUsage
+)
+
 # 🔒 Assert di sicurezza per Base.metadata
 import sqlalchemy as sa
 assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
@@ -380,7 +387,6 @@ def setup_admin():
     Da rimuovere dopo il primo utilizzo
     """
     try:
-        from backend.models import User, UserAuth
         import bcrypt
         
         db = next(get_db())
@@ -443,7 +449,6 @@ def setup_user(payload: RegisterRequest):
     Endpoint per creare utenti normali (non admin)
     """
     try:
-        from backend.models import User, UserAuth
         import bcrypt
         
         email = payload.email
@@ -1540,92 +1545,11 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 
 
 # ===================== Auth endpoints =====================
-@app.post("/auth/register")
-async def auth_register(payload: dict, request: Request) -> Response:
-    """Register new user with email/password"""
-    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
-    from backend.models import User, UserAuth
-    
-    # Rate limiting
-    require_rate_limit(request, "auth")
-    
-    email = (payload.get("email") or "").strip().lower()
-    password = payload.get("password", "")
-    name = (payload.get("name") or "").strip()
-    
-    if not email or not password or not name:
-        raise HTTPException(status_code=400, detail="Missing email, password, or name")
-    
-    if len(password) < 8:
-        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
-    
-    with next(get_db()) as db:
-        # Check if user already exists
-        existing_user = db.query(User).filter(User.email.ilike(email)).first()
-        if existing_user:
-            raise HTTPException(status_code=409, detail="User already exists")
-        
-        # Hash password
-        salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-        
-        # Create user
-        user = User(
-            id=f"u_{secrets.token_urlsafe(16)}",
-            email=email,
-            name=name,
-            email_verified_at=datetime.now(timezone.utc),  # Auto-verify for now
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
-        )
-        db.add(user)
-        db.flush()  # Get the user ID
-        
-        # Create user auth record
-        ua = UserAuth(
-            user_id=user.id,
-            provider="password",
-            pass_hash=hashed.decode("utf-8"),
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
-        )
-        db.add(ua)
-        
-        # Auto-promote to admin if email is in allowlist
-        admin_emails = os.getenv("ADMIN_EMAIL_ALLOWLIST", "").split(",")
-        if user.email.strip() in [e.strip() for e in admin_emails]:
-            user.is_admin_global = True
-            print(f"✅ Auto-promoted {user.email} to global admin during registration")
-        
-        db.commit()
-        
-        return Response(
-            content=json.dumps({
-                "ok": True,
-                "message": "User created successfully",
-                "user_id": user.id
-            }),
-            media_type="application/json"
-        )
+# NOTE: All auth endpoints are now handled by backend/routers/auth.py
+# under /api/auth/* prefix. Legacy endpoints removed to avoid conflicts.
 
-# /auth/login endpoint moved to backend/routers/auth.py
-    """
-    Enhanced login endpoint with:
-    - Rate limiting and anti-bruteforce protection
-    - Password policy validation
-    - Audit logging
-    - Clear error handling (401/403/503)
-    - Session rotation for security
-    """
-    import time
-    import traceback
-    from backend.models import User, UserAuth, WorkspaceMember
-    from backend.utils.auth_security import (
-        auth_rate_limiter, 
-        auth_audit_logger, 
-        session_manager,
-        password_policy
-    )
+
+# All auth endpoints moved to backend/routers/auth.py
     
     start_time = time.time()
     request_id = f"login_{int(time.time())}_{hash(str(payload)) % 1000}"
@@ -1901,7 +1825,7 @@ async def auth_register(payload: dict, request: Request) -> Response:
     """
     import time
     import traceback
-    from backend.models import User, UserAuth, WorkspaceMember
+
     from backend.utils.auth_security import (
         auth_audit_logger, 
         session_manager,
@@ -2092,7 +2016,7 @@ async def auth_register(payload: dict, request: Request) -> Response:
     import time
     import traceback
     from backend.utils.rate_limiter import rate_limiter, require_rate_limit
-    from backend.models import User, UserAuth, WorkspaceMember
+
     
     start_time = time.time()
     request_id = f"login_{int(time.time())}_{hash(str(payload)) % 1000}"
@@ -2311,116 +2235,17 @@ async def auth_register(payload: dict, request: Request) -> Response:
 
 
 
-@app.get("/auth/me")
-@app.get("/api/auth/me")  # Compatibilità con frontend
-def auth_me(request: Request) -> dict:
-    try:
-        from backend.auth.session import get_session
-        sess = get_session(request)
-    if not sess:
-        return {"authenticated": False}
-    
-    # Get fresh user data from DB
-    with next(get_db()) as db:
-        user_id = sess.get("claims", {}).get("user_id")
-        if not user_id:
-            return {"authenticated": False}
-        
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
-            return {"authenticated": False}
-        
-        # Get workspace memberships
-        memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-            workspace = db.query(Workspace).filter(Workspace.id == wm.workspace_id).first()
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "workspace_name": workspace.name if workspace else "Unknown",
-                "role": wm.role
-            })
-        
-        return {
-            "authenticated": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "locale": user.locale,
-                "tz": user.tz,
-                "is_admin_global": bool(user.is_admin_global),
-                "email_verified": bool(user.email_verified_at),
-                "totp_enabled": bool(user.totp_enabled),
-                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
-                "created_at": user.created_at.isoformat() if user.created_at else None
-            },
-            "memberships": memberships,
-            "csrf": sess.get("csrf")
-        }
-    except Exception as e:
-        # Log error for debugging but return 401 instead of 500
-        logger.error(f"Error in /api/auth/me: {str(e)}")
-        return {"authenticated": False, "error": "Authentication service temporarily unavailable"}
+# Auth endpoints moved to backend/routers/auth.py
 
 
 # /auth/logout endpoint moved to backend/routers/auth.py
 
 
-@app.post("/auth/totp/verify")
-async def auth_totp_verify(payload: dict, request: Request) -> Response:
-    """Verify TOTP code and complete login"""
-    user_id = payload.get("user_id")
-    code = payload.get("code", "").strip()
-    
-    if not user_id or not code:
-        raise HTTPException(status_code=400, detail="User ID and TOTP code required")
-    
-    with next(get_db()) as db:
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user or not user.totp_enabled:
-            raise HTTPException(status_code=400, detail="Invalid user or TOTP not enabled")
-        
-        ua = db.query(UserAuth).filter(UserAuth.user_id == user.id, UserAuth.provider == "password").first()
-        if not ua or not ua.totp_secret:
-            raise HTTPException(status_code=400, detail="TOTP not configured")
-        
-        # Verify TOTP code
-        try:
-            totp = pyotp.TOTP(ua.totp_secret)
-            if not totp.verify(code, valid_window=1):
-                raise HTTPException(status_code=400, detail="Invalid TOTP code")
-        except Exception:
-            raise HTTPException(status_code=400, detail="Invalid TOTP code")
-        
-        # Build claims with workspace memberships
-        memberships = []
-        for wm in db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user.id).all():
-            memberships.append({
-                "workspace_id": wm.workspace_id,
-                "role": wm.role
-            })
-        
-        claims = {
-            "user_id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin_global": bool(user.is_admin_global),
-            "email_verified": bool(user.email_verified_at),
-            "memberships": memberships,
-        }
-        
-        # Update last login
-        user.last_login_at = datetime.now(timezone.utc)
-        db.add(user)
-        db.commit()
-    
-    resp = Response(content=json.dumps({"ok": True, "user": claims}), media_type="application/json")
-    _create_session(resp, claims)
-    return resp
-    try:
-        return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
-    except Exception:
-        return {"items": []}
+# TOTP endpoints moved to backend/routers/auth.py
+# @app.post("/auth/totp/verify")
+# async def auth_totp_verify(payload: dict, request: Request) -> Response:
+    # Function body removed - moved to backend/routers/auth.py
+    pass
 
 # ===================== Sprint 2 stubs =====================
 
@@ -3517,98 +3342,17 @@ async def list_templates(request: Request):
 
 # ===================== Sprint 6: Auth & RBAC =====================
 
-@app.post("/auth/magic/request")
-async def auth_magic_request(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
-    """Request magic link authentication"""
-    from backend.utils.rate_limiter import rate_limiter, require_rate_limit
-    from backend.models import User, MagicLink
-    
-    # Rate limiting for magic link requests
-    require_rate_limit(request, "auth")
-    
-    email = payload.get("email", "").strip().lower()
-    if not email:
-        raise HTTPException(status_code=400, detail="Email required")
-    
-    # Anti-enumeration: same response for existing/non-existing users
-    user = db.query(User).filter(User.email == email).first()
-    
-    # Always return success to prevent email enumeration
-    # In production, send email with magic link
-    if user:
-        # Generate magic link token
-        import secrets
-        token = secrets.token_urlsafe(32)
-        token_hash = hashlib.sha256(token.encode()).hexdigest()
-        
-        # Create magic link record
-        magic_link = MagicLink(
-            id=f"ml_{secrets.token_urlsafe(16)}",
-            user_id=user.id,
-            token_hash=token_hash,
-            expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
-        )
-        db.add(magic_link)
-        db.commit()
-        
-        # Log magic link request for security
-        client_ip = request.client.host
-        print(f"Magic link requested - IP: {client_ip}, Email: {email}")
-    
-    # Return same message regardless of user existence
-    return {
-        "message": "If an account exists with this email, a magic link has been sent",
-        "expires_in": "15 minutes"
-    }
+# Magic link endpoints moved to backend/routers/auth.py
+# @app.post("/auth/magic/request")
+# async def auth_magic_request(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
+    # Function body removed - moved to backend/routers/auth.py
+    pass
 
 
-@app.post("/auth/magic/verify")
-async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dict:
-    """Verify magic link token"""
-    from backend.models import MagicLink, User
-    token = payload.get("token", "").strip()
-    if not token:
-        raise HTTPException(status_code=400, detail="Token required")
-    
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    
-    # Find magic link
-    magic_link = db.query(MagicLink).filter(
-        MagicLink.token_hash == token_hash,
-        MagicLink.expires_at > datetime.now(timezone.utc),
-        MagicLink.used_at.is_(None)
-    ).first()
-    
-    if not magic_link:
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-    
-    # Mark as used
-    magic_link.used_at = datetime.now(timezone.utc)
-    db.add(magic_link)
-    
-    # Get user
-    user = db.query(User).filter(User.id == magic_link.user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Update last login
-    user.last_login_at = datetime.now(timezone.utc)
-    db.add(user)
-    db.commit()
-    
-    # Create session (in production, use proper session management)
-    session_id = f"session_{secrets.token_urlsafe(32)}"
-    
-    return {
-        "message": "Magic link verified successfully",
-        "session_id": session_id,
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin_global": user.is_admin_global
-        }
-    }
+# @app.post("/auth/magic/verify")
+# async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dict:
+    # Function body removed - moved to backend/routers/auth.py
+    pass
 
 
 # Microsoft OAuth spostato in backend/routers/auth.py per consistenza
@@ -3620,48 +3364,16 @@ async def auth_magic_verify(payload: dict, db: Session = Depends(get_db)) -> dic
     # Microsoft OAuth callback spostato in backend/routers/auth.py per consistenza
 
 
-@app.post("/auth/totp/setup")
-async def auth_totp_setup(request: Request, db: Session = Depends(get_db)) -> dict:
-    """Setup TOTP 2FA for user"""
-    # Get user from session (in production)
-    user_id = "u_1"  # Mock for now
-    
-    # Generate TOTP secret
-    import pyotp
-    secret = pyotp.random_base32()
-    
-    # Generate QR code URL
-    totp = pyotp.TOTP(secret)
-    qr_url = totp.provisioning_uri(
-        name="admin@example.com",
-        issuer_name="Agoralia"
-    )
-    
-    # Save secret to user_auth (in production)
-    return {
-        "secret": secret,  # Remove in production
-        "qr_url": qr_url,
-        "message": "Scan QR code with authenticator app"
-    }
+# @app.post("/auth/totp/setup")
+# async def auth_totp_setup(request: Request, db: Session = Depends(get_db)) -> dict:
+    # Function body removed - moved to backend/routers/auth.py
+    pass
 
 
-@app.post("/auth/totp/verify")
-async def auth_totp_verify(payload: dict) -> dict:
-    """Verify TOTP code"""
-    code = payload.get("code", "").strip()
-    secret = payload.get("secret", "").strip()
-    
-    if not code or not secret:
-        raise HTTPException(status_code=400, detail="Code and secret required")
-    
-    # Verify TOTP code
-    import pyotp
-    totp = pyotp.TOTP(secret)
-    
-    if totp.verify(code):
-        return {"message": "TOTP verified successfully"}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid TOTP code")
+# @app.post("/auth/totp/verify")
+# async def auth_totp_verify(payload: dict) -> dict:
+    # Function body removed - moved to backend/routers/auth.py
+    pass
 
 
 # ===================== Sprint 6: Numbers Provisioning (Retell) =====================
@@ -3817,7 +3529,7 @@ from pydantic import BaseModel
 from backend.services.telephony import assert_e164, enforce_outbound_policy, validate_number_binding
 from backend.services.telephony_providers import start_purchase, start_import, finalize_activate_number
 from backend.services.crypto import enc, dec
-from backend.models import ProviderAccount, TelephonyProvider, NumberOrder, Number, Workspace
+
 from backend.services.coverage_service import get_countries, get_capabilities, get_pricing_twilio
 from backend.services.twilio_coverage import build_twilio_snapshot, save_twilio_snapshot, load_twilio_snapshot
 
@@ -4185,7 +3897,7 @@ async def import_number(
     )
     
     db.add(order)
-        db.commit()
+    db.commit()
     
     # Log the transaction in billing ledger (atomic)
     ledger_entry = atomic_ledger_write(
@@ -4287,7 +3999,7 @@ async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
     p = Path(__file__).parent / "static" / "telephony" / "telnyx_coverage.json"
     if p.exists():
         try:
-        import json
+            import json
             data = json.loads(p.read_text("utf-8"))
             # Salva in cache
             set_coverage_cache(provider, data)
@@ -4306,7 +4018,7 @@ async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
 # ===================== Telephony Compliance (KYC) =====================
 from backend.schemas_compliance import ComplianceRequirements, ComplianceCreate, ComplianceUploadAck, ComplianceSubmission
 from backend.services.compliance_service import get_requirements, ensure_compliance_or_raise
-from backend.models import RegulatorySubmission
+
 from fastapi import UploadFile, File, Form
 import os
 
@@ -4478,13 +4190,13 @@ async def rebuild_coverage(
     
     try:
         # Costruisci snapshot
-    payload = build_twilio_snapshot()
+        payload = build_twilio_snapshot()
         
         # Salva in cache e disco
         set_coverage_cache(provider, payload)
         save_disk(provider, payload)
         
-    return {"ok": True, "updated": payload.get("last_updated")}
+        return {"ok": True, "updated": payload.get("last_updated")}
     except Exception as e:
         import logging
         logging.error(f"Failed to rebuild coverage: {e}")
@@ -6070,7 +5782,7 @@ def generate_prompt_bricks(
 
 def _build_kb_context_for_ai(kb, fields_map: dict, lang: str) -> str:
     """Build context text for AI prompt bricks generation"""
-    from backend.models import KnowledgeBase
+
     context_parts = []
     
     # Basic KB info
@@ -6088,7 +5800,7 @@ def _build_kb_context_for_ai(kb, fields_map: dict, lang: str) -> str:
 
 def _generate_fallback_bricks(kb, fields_map: dict, lang: str) -> tuple:
     """Generate fallback prompt bricks without AI"""
-    from backend.models import KnowledgeBase
+
     rules = []
     style = []
     
@@ -6147,7 +5859,7 @@ def _extract_disclaimers(fields_map: dict) -> list:
 
 def _track_prompt_bricks_usage(db: Session, kb_id: str, kind: str, success: bool, lang: str):
     """Track prompt bricks usage for analytics"""
-    from backend.models import KbUsage
+
     try:
         usage = KbUsage(
             id=f"usage_{secrets.token_urlsafe(8)}",
