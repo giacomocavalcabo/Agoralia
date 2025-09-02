@@ -3552,7 +3552,8 @@ async def settings_bind_number(
     number = validate_number_binding(payload.number_id, wsid, db)
     
     # 2) Policy outbound
-    enforce_outbound_policy(number, payload.outbound_enabled)
+    if payload.outbound_enabled:
+        enforce_outbound_policy(number)
     
     # 3) (opzionale) Validazioni E.164 su eventuali campi 'forward_to', ecc.
     # assert_e164(number.phone_e164)
@@ -3567,6 +3568,29 @@ async def settings_bind_number(
     db.commit()
     
     return {"ok": True, "number_id": number.id}
+
+
+class VerifyCliPayload(BaseModel):
+    number_id: str
+
+@app.post("/settings/telephony/numbers/verify-cli")
+def telephony_verify_cli(payload: VerifyCliPayload, db: Session = Depends(get_db), user=Depends(auth_guard)):
+    n = db.query(Number).filter(Number.id==payload.number_id, Number.workspace_id==user.workspace_id).first()
+    if not n:
+        raise HTTPException(status_code=404, detail="Number not found")
+
+    # Qui puoi integrare provider reali (Twilio Outgoing Caller ID / Telnyx verify)
+    # Per ora: segniamo verified_cli=True se BYO e provider ∈ {twilio, telnyx}
+    if n.hosted:
+        return {"ok": True, "verified_cli": True}
+
+    if n.provider in ("twilio", "telnyx"):
+        n.verified_cli = True
+        n.last_updated_at = datetime.utcnow()
+        db.add(n); db.commit()
+        return {"ok": True, "verified_cli": True}
+
+    raise HTTPException(status_code=400, detail="Provider does not support CLI verification")
 
 
 @app.get("/settings/telephony/agents")

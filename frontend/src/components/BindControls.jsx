@@ -11,9 +11,11 @@ export default function BindControls({ number }) {
 
   const isExternal = number.origin === "external_forward" || (number.provider && number.provider !== "retell");
   const isHosted = number.hosted !== false; // Default to true if not specified
+  const isVerified = number.verified_cli === true;
+  const canOutbound = (isHosted || isVerified) && !isExternal;
 
   const [inboundEnabled, setInboundEnabled] = React.useState(!!number.inbound_enabled);
-  const [outboundEnabled, setOutboundEnabled] = React.useState(!!number.outbound_enabled && !isExternal);
+  const [outboundEnabled, setOutboundEnabled] = React.useState(!!number.outbound_enabled && canOutbound);
   const [inboundAgent, setInboundAgent] = React.useState(number.inbound_agent_id || "");
   const [outboundAgent, setOutboundAgent] = React.useState(number.outbound_agent_id || "");
 
@@ -51,24 +53,23 @@ export default function BindControls({ number }) {
           type="checkbox"
           checked={outboundEnabled}
           onChange={(e) => setOutboundEnabled(e.target.checked)}
-          disabled={isExternal || !isHosted}
-          title={!isHosted ? t("telephony.bind.outbound_requires_hosted") : 
-                 isExternal ? t("telephony.bind.outbound_locked") : ""}
+          disabled={!canOutbound}
+          title={!canOutbound ? t("telephony.outbound_requires_verification") : ""}
         />
         <select
           className="input"
           value={outboundAgent}
           onChange={(e) => setOutboundAgent(e.target.value)}
-          disabled={isExternal || !outboundEnabled || !isHosted}
+          disabled={!canOutbound || !outboundEnabled}
         >
           <option value="">{t("common.none")}</option>
           {agents.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
         </select>
-        {!isHosted && (
+        {!canOutbound && (
           <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-            {t("telephony.bind.outbound_requires_hosted")}
+            {t("telephony.outbound_requires_verification")}
           </span>
         )}
       </div>
@@ -85,9 +86,9 @@ export default function BindControls({ number }) {
           m.mutate({
             number_id: number.id,
             inbound_enabled: inboundEnabled,
-            outbound_enabled: isExternal ? false : outboundEnabled,
+            outbound_enabled: canOutbound ? outboundEnabled : false,
             inbound_agent_id: inboundAgent || null,
-            outbound_agent_id: isExternal ? null : (outboundAgent || null),
+            outbound_agent_id: canOutbound ? (outboundAgent || null) : null,
           })
         }
       >

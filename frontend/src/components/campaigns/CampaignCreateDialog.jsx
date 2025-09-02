@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
+import { listNumbers } from '../../lib/telephonyApi';
 import FilterBuilder from '../filters/FilterBuilder';
 import { useToast } from '../ToastProvider';
 
@@ -9,7 +10,17 @@ export default function CampaignCreateDialog({ open, onClose }) {
   const { t } = useTranslation('pages');
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: '', description: '', segment: { all: [] } });
+  const [form, setForm] = useState({ name: '', description: '', segment: { all: [] }, from_number_e164: '' });
+
+  // Fetch numbers for caller ID selection
+  const { data: numbers = [] } = useQuery({
+    queryKey: ['numbers'],
+    queryFn: listNumbers,
+    enabled: open
+  });
+
+  // Filter numbers that can be used for outbound (hosted or verified)
+  const outboundNumbers = numbers.filter(n => n.outbound_enabled && (n.hosted || n.verified_cli));
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -18,7 +29,8 @@ export default function CampaignCreateDialog({ open, onClose }) {
         name: form.name, 
         status: 'draft', 
         segment: form.segment,
-        description: form.description || null
+        description: form.description || null,
+        from_number_e164: form.from_number_e164 || null
       })).data;
     },
     onSuccess: (data) => { 
@@ -96,6 +108,27 @@ export default function CampaignCreateDialog({ open, onClose }) {
               onChange={segment => setForm(s => ({ ...s, segment }))}
               i18n={i18nFB}
             />
+          </div>
+
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">{t('campaigns.create.caller_id')}</label>
+            <select 
+              className="w-full rounded-lg border px-3 py-2" 
+              value={form.from_number_e164}
+              onChange={e => setForm(s => ({ ...s, from_number_e164: e.target.value }))}
+            >
+              <option value="">{t('campaigns.create.caller_id_placeholder')}</option>
+              {outboundNumbers.map(number => (
+                <option key={number.id} value={number.phone_e164}>
+                  {number.phone_e164} {number.hosted ? '(Hosted)' : '(Verified)'}
+                </option>
+              ))}
+            </select>
+            {outboundNumbers.length === 0 && (
+              <p className="text-xs text-amber-600">
+                {t('campaigns.create.no_outbound_numbers')}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

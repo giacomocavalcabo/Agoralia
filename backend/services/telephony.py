@@ -26,13 +26,27 @@ def is_hosted(number) -> bool:
         return True
     return False
 
-def enforce_outbound_policy(number, outbound_enabled: bool):
-    """Policy corrente: outbound SOLO con caller ID ospitato (Hosted)"""
-    if outbound_enabled and not is_hosted(number):
-        raise HTTPException(
-            status_code=400, 
-            detail="Outbound not allowed: caller ID must be Retell-hosted."
-        )
+def enforce_outbound_policy(number) -> None:
+    """
+    Consente outbound se:
+    - numero.hosted == True
+    - oppure numero.verified_cli == True
+    E blocca se il paese o il provider segnalano restriction specifiche.
+    """
+    if not (getattr(number, "outbound_enabled", False)):
+        raise HTTPException(status_code=400, detail="Outbound disabled for this number.")
+
+    # Regola principale
+    if not (getattr(number, "hosted", False) or getattr(number, "verified_cli", False)):
+        raise HTTPException(status_code=400, detail="Outbound requires Hosted or Verified CLI.")
+
+    # Regole per paese/provider se già presenti (stub sicuro)
+    if is_country_outbound_blocked(number.country_code, number.provider):
+        raise HTTPException(status_code=400, detail="Outbound not allowed by country/provider policy.")
+
+def is_country_outbound_blocked(country_code: str | None, provider: str | None) -> bool:
+    # Estendibile: blocklist o regole specifiche.
+    return False
 
 def validate_number_binding(number_id: str, workspace_id: str, db) -> "Number":
     """Validate number exists and belongs to workspace"""

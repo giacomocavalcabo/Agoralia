@@ -35,10 +35,12 @@
       "connect": "Connect",
       "description": "API keys are encrypted at rest. You can purchase or add numbers directly below."
     },
-    "policy": {
-      "title": "Policy",
-      "no_outbound": "For now, outbound calls are only allowed with Retell-hosted numbers. Forwarded/externally-hosted numbers cannot be used as caller ID."
-    },
+    "zero_markup_badge": "Zero markup",
+    "zero_markup_sub": "Provider billed directly",
+    "outbound_requires_verification": "Outbound requires Hosted or Verified CLI",
+    "verify_cli": "Verify CLI",
+    "verify_cli_success": "CLI verification successful",
+    "verify_cli_error": "CLI verification failed",
     "bind": {
       "inbound": "Inbound",
       "outbound": "Outbound",

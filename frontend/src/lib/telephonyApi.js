@@ -44,3 +44,7 @@ export const listOrders = () => http.get('/settings/telephony/orders').then(r =>
 
 // Agents for binding
 export const listAgents = () => http.get('/settings/telephony/agents').then(r => r.data);
+
+// CLI verification
+export const verifyCli = (numberId) => 
+  http.post('/settings/telephony/numbers/verify-cli', { number_id: numberId }).then(r => r.data);

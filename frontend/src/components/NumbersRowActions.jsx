@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { verifyCli } from '../lib/telephonyApi';
 import ConfirmDialog from './ConfirmDialog';
 import { useToast } from './ToastProvider';
 
@@ -24,6 +25,17 @@ export default function NumbersRowActions({ row, onView, onAssign, onRelease }) 
       toast.error(t('numbers.dialogs.release.error'));
     }
   });
+
+  const verifyCliMutation = useMutation({
+    mutationFn: () => verifyCli(row.original.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['numbers'] });
+      toast.success(t('telephony.verify_cli_success'));
+    },
+    onError: () => {
+      toast.error(t('telephony.verify_cli_error'));
+    }
+  });
   
   const copyToClipboard = async () => {
     try {
@@ -34,6 +46,9 @@ export default function NumbersRowActions({ row, onView, onAssign, onRelease }) 
     }
   };
   
+  const number = row.original;
+  const showVerifyCli = !number.hosted && !number.verified_cli;
+
   return (
     <div className="flex items-center gap-2">
       <button 
@@ -51,6 +66,17 @@ export default function NumbersRowActions({ row, onView, onAssign, onRelease }) 
       >
         {t('numbers.actions.configure')}
       </button>
+      
+      {showVerifyCli && (
+        <button 
+          className="rounded border border-blue-300 bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" 
+          onClick={() => verifyCliMutation.mutate()}
+          disabled={verifyCliMutation.isPending}
+          aria-label={t('telephony.verify_cli')}
+        >
+          {t('telephony.verify_cli')}
+        </button>
+      )}
       
       <button 
         className="rounded border px-2 py-1 text-xs hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1" 

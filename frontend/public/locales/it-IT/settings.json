@@ -35,10 +35,12 @@
       "connect": "Collega",
       "description": "Le API key vengono cifrate a riposo. Potrai acquistare o aggiungere numeri direttamente qui sotto."
     },
-    "policy": {
-      "title": "Policy",
-      "no_outbound": "Per ora, le chiamate in uscita sono consentite solo con numeri ospitati in Retell. I numeri inoltrati/esterni non possono essere usati come caller ID."
-    },
+    "zero_markup_badge": "Zero markup",
+    "zero_markup_sub": "Fatturato direttamente dal provider",
+    "outbound_requires_verification": "L'outbound richiede Hosted o Verified CLI",
+    "verify_cli": "Verifica CLI",
+    "verify_cli_success": "Verifica CLI completata con successo",
+    "verify_cli_error": "Verifica CLI fallita",
     "bind": {
       "inbound": "In entrata",
       "outbound": "In uscita",

@@ -71,9 +71,10 @@ export default function SettingsTelephony() {
         </div>
       </header>
 
-      {/* Policy Banner */}
-      <div className="rounded-lg border p-3 bg-amber-50 text-amber-800 text-sm">
-        <strong>{t('telephony.policy.title')}:</strong> {t('telephony.policy.no_outbound')}
+      {/* Zero Markup Badge */}
+      <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1 text-emerald-700 text-xs">
+        <span>{t('telephony.zero_markup_badge')}</span>
+        <span className="opacity-70">{t('telephony.zero_markup_sub')}</span>
       </div>
 
       {/* Provider Management */}
