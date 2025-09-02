@@ -132,7 +132,7 @@ def oauth_google_start(request: Request, response: Response):
     state = base64.urlsafe_b64encode(secrets.token_bytes(24)).decode().rstrip("=")
     
     client_id = os.getenv("OAUTH_GOOGLE_CLIENT_ID")
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "https://api.agoralia.app/auth/oauth/google/callback")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", f"{os.getenv('FRONTEND_BASE_URL', 'https://app.agoralia.app')}/api/auth/oauth/google/callback")
     
     logger.info(f"Google OAuth start - Client ID: {client_id[:10] if client_id else 'NOT_SET'}...")
     logger.info(f"Google OAuth start - Redirect URI: {redirect_uri}")
@@ -174,7 +174,7 @@ def oauth_google_callback(code: str, state: str, response: Response, request: Re
             "code": code,
             "client_id": os.getenv("OAUTH_GOOGLE_CLIENT_ID"),
             "client_secret": os.getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
-            "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", "https://api.agoralia.app/auth/oauth/google/callback"),
+            "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI", f"{os.getenv('FRONTEND_BASE_URL', 'https://app.agoralia.app')}/api/auth/oauth/google/callback"),
             "grant_type": "authorization_code",
         }
         
@@ -255,7 +255,7 @@ def oauth_google_callback(code: str, state: str, response: Response, request: Re
         
         # redirect all'app (pagina "me" o dashboard) con cookie di sessione
         from fastapi.responses import RedirectResponse
-        redirect_url = f"{os.getenv('FRONTEND_APP_URL', 'https://app.agoralia.app')}/"
+        redirect_url = f"{os.getenv('FRONTEND_BASE_URL', 'https://app.agoralia.app')}/"
         resp = RedirectResponse(url=redirect_url, status_code=303)  # 303 = post-login più "pulito"
         
         # crea sessione unificata sul redirect response

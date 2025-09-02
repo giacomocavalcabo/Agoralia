@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     SESSION_COOKIE_NAME: str = "ag_sess"
     SESSION_TTL_SECONDS: int = 60 * 60 * 24 * 30
 
-    APP_BASE_URL: str = "https://api.agoralia.app"
-    FRONTEND_APP_URL: str = "https://app.agoralia.app"
+    FRONTEND_BASE_URL: str = "https://app.agoralia.app"
+    BACKEND_BASE_PATH: str = "/api"
 
     CORS_DEBUG: bool = True
 
@@ -37,13 +37,13 @@ class Settings(BaseSettings):
     # OAuth Google
     OAUTH_GOOGLE_CLIENT_ID: str = ""
     OAUTH_GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "https://api.agoralia.app/auth/oauth/google/callback"
+    GOOGLE_REDIRECT_URI: str = f"{os.getenv('FRONTEND_BASE_URL', 'https://app.agoralia.app')}/api/auth/oauth/google/callback"
 
     # OAuth Microsoft
     OAUTH_MS_CLIENT_ID: str = ""
     OAUTH_MS_CLIENT_SECRET: str = ""
     OAUTH_MS_TENANT: str = "common"
-    MICROSOFT_REDIRECT_URI: str = "https://api.agoralia.app/auth/oauth/microsoft/callback"
+    MICROSOFT_REDIRECT_URI: str = f"{os.getenv('FRONTEND_BASE_URL', 'https://app.agoralia.app')}/api/auth/oauth/microsoft/callback"
 
     @property
     def cors_allow_origins(self) -> List[str]:
