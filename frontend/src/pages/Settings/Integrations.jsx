@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
 import { useToast } from '../../components/ToastProvider';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../components/ui/FormPrimitives';
 import { useAuth } from '../../lib/useAuth';
-import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
-import CRMSyncStatus from '../../components/CRMSyncStatus';
+import { apiFetch } from '../../lib/api';
 
 const Integrations = () => {
   const { t } = useTranslation('integrations');
@@ -21,171 +19,154 @@ const Integrations = () => {
     odoo: { connected: false, status: 'disconnected' }
   });
   const [loading, setLoading] = useState({});
-  const [activeTab, setActiveTab] = useState('crm');
-  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[Integrations] Component mounted');
+    
     const ready = !isLoading;
     const authenticated = isAuthenticated;
+    
+    console.log('[Integrations] Auth state:', { ready, authenticated, user: user?.email });
     
     // Load integration status only when auth is ready and user is authenticated
     if (ready && authenticated) {
       loadIntegrationStatus();
+    } else if (ready && !authenticated) {
+      setStatusLoading(false);
     }
-  }, [isLoading, isAuthenticated]);
+    
+    return () => console.log('[Integrations] Component unmounted');
+  }, [isLoading, isAuthenticated, user]);
 
   const loadIntegrationStatus = async () => {
     try {
-      // In production, fetch from API
-      if (process.env.NODE_ENV === 'production') {
-        const response = await fetch('/api/settings/integrations/status', { 
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Handle 401 gracefully - user not authenticated
-            console.log('User not authenticated for integrations status');
-            setIntegrations({
-              hubspot: { connected: false, status: 'disconnected' },
-              zoho: { connected: false, status: 'disconnected' },
-              odoo: { connected: false, status: 'disconnected' }
-            });
-            return;
-          }
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setIntegrations(data);
-      } else {
-        // Demo data only in development
-        const mockStatus = {
-          hubspot: { connected: true, status: 'connected', portal_id: '12345' },
-          zoho: { connected: false, status: 'disconnected' },
-          odoo: { connected: false, status: 'disconnected' }
-        };
-        setIntegrations(mockStatus);
-      }
-    } catch (error) {
-      console.error('Failed to load integration status:', error);
-      // Set default disconnected state on error
-      setIntegrations({
+      console.log('[Integrations] Loading integration status...');
+      setStatusLoading(true);
+      
+      const data = await apiFetch('/api/settings/integrations/status', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      console.log('[Integrations] Status loaded:', data);
+      setIntegrations(data || {
         hubspot: { connected: false, status: 'disconnected' },
         zoho: { connected: false, status: 'disconnected' },
         odoo: { connected: false, status: 'disconnected' }
       });
       
-      // Only show toast for non-401 errors
-      if (!error.message?.includes('401')) {
+    } catch (error) {
+      console.error('[Integrations] Failed to load integration status:', error);
+      
+      // Handle different error types gracefully
+      if (error.message?.includes('401')) {
+        console.log('[Integrations] User not authenticated');
         toast({
-          title: t('errors.load_failed'),
-          description: error.message,
-          type: 'error'
+          title: t('auth_required'),
+          description: t('auth_required_desc'),
+          variant: 'warning'
+        });
+      } else if (error.message?.includes('403')) {
+        console.log('[Integrations] User not authorized');
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to view integrations',
+          variant: 'error'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to load integrations status',
+          variant: 'error'
         });
       }
+      
+      // Set safe default state
+      setIntegrations({
+        hubspot: { connected: false, status: 'disconnected' },
+        zoho: { connected: false, status: 'disconnected' },
+        odoo: { connected: false, status: 'disconnected' }
+      });
+    } finally {
+      setStatusLoading(false);
     }
   };
 
   const handleConnect = async (provider) => {
-    setLoading(prev => ({ ...prev, [provider]: true }));
-    
     try {
-      // In production, this would start OAuth flow
-      if (process.env.NODE_ENV === 'production') {
-        const response = await fetch(`/api/settings/integrations/${provider}/connect`, { 
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            toast({
-              title: t('errors.auth_required'),
-              description: t('errors.auth_required_desc'),
-              type: 'error'
-            });
-            return;
-          }
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Navigate to OAuth URL (not fetch!)
-        if (data.url) {
-          window.location.href = data.url;
-          return; // Don't show success toast, user is being redirected
-        }
+      console.log(`[Integrations] Connecting to ${provider}...`);
+      setLoading(prev => ({ ...prev, [provider]: true }));
+      
+      const response = await apiFetch(`/api/settings/integrations/${provider}/connect`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      
+      console.log(`[Integrations] ${provider} connect response:`, response);
+      
+      if (response.authorize_url) {
+        // Redirect to OAuth provider
+        console.log(`[Integrations] Redirecting to ${provider} OAuth...`);
+        window.location.href = response.authorize_url;
       } else {
-        // Simulate API call in development
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        throw new Error('No authorize URL received');
       }
       
-      setIntegrations(prev => ({
-        ...prev,
-        [provider]: { 
-          connected: true, 
-          status: 'connected', 
-          portal_id: provider === 'hubspot' ? '12345' : undefined 
-        }
-      }));
-      
-      toast({
-        title: t('messages.connected'),
-        description: t('messages.connected_desc', {
-          provider: provider.toUpperCase() 
-        }),
-        type: 'success'
-      });
-      
     } catch (error) {
-      toast({
-        title: t('errors.connection_failed'),
-        description: error.message,
-        type: 'error'
-      });
+      console.error(`[Integrations] Failed to connect to ${provider}:`, error);
+      
+      if (error.message?.includes('403')) {
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to connect integrations',
+          variant: 'error'
+        });
+      } else {
+        toast({
+          title: 'Connection Failed',
+          description: `Failed to start ${provider} connection`,
+          variant: 'error'
+        });
+      }
     } finally {
       setLoading(prev => ({ ...prev, [provider]: false }));
     }
   };
 
   const handleDisconnect = async (provider) => {
-    setLoading(prev => ({ ...prev, [provider]: true }));
-    
     try {
-      // In production, this would revoke tokens
-      if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/settings/integrations/${provider}/disconnect`, { 
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } else {
-        // Simulate API call in development
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      console.log(`[Integrations] Disconnecting from ${provider}...`);
+      setLoading(prev => ({ ...prev, [provider]: true }));
       
-      setIntegrations(prev => ({
-        ...prev,
-        [provider]: { connected: false, status: 'disconnected' }
-      }));
-      
-      toast({
-                title: t('messages.disconnected'),
-        description: t('messages.disconnected_desc', {
-          provider: provider.toUpperCase() 
-        }),
-        type: 'success'
+      const response = await apiFetch(`/api/settings/integrations/${provider}/disconnect`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
       
+      console.log(`[Integrations] ${provider} disconnect response:`, response);
+      
+      if (response.ok) {
+        toast({
+          title: 'Disconnected',
+          description: `Successfully disconnected from ${provider}`,
+          variant: 'success'
+        });
+        
+        // Reload status
+        await loadIntegrationStatus();
+      }
+      
     } catch (error) {
+      console.error(`[Integrations] Failed to disconnect from ${provider}:`, error);
       toast({
-        title: t('errors.disconnection_failed'),
-        description: error.message,
-        type: 'error'
+        title: 'Disconnect Failed',
+        description: `Failed to disconnect from ${provider}`,
+        variant: 'error'
       });
     } finally {
       setLoading(prev => ({ ...prev, [provider]: false }));
@@ -193,447 +174,210 @@ const Integrations = () => {
   };
 
   const handleTest = async (provider) => {
-    setLoading(prev => ({ ...prev, [`${provider}_test`]: true }));
-    
     try {
-      // In production, this would test the connection
-      if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/settings/integrations/${provider}/test`, { 
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } else {
-        // Simulate API call in development
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      console.log(`[Integrations] Testing ${provider} connection...`);
+      setLoading(prev => ({ ...prev, [`${provider}_test`]: true }));
       
-      toast({
-                title: t('messages.test_success'),
-        description: t('messages.test_success_desc', {
-          provider: provider.toUpperCase() 
-        }),
-        type: 'success'
+      const response = await apiFetch(`/api/settings/integrations/${provider}/test`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
       
+      console.log(`[Integrations] ${provider} test response:`, response);
+      
+      if (response.ok) {
+        toast({
+          title: 'Connection Test',
+          description: `${provider} connection is working`,
+          variant: 'success'
+        });
+      }
+      
     } catch (error) {
+      console.error(`[Integrations] Failed to test ${provider}:`, error);
       toast({
-                title: t('messages.test_failed'),
-        description: t('messages.test_failed_desc', {
-          provider: provider.toUpperCase() 
-        }),
-        type: 'error'
+        title: 'Test Failed',
+        description: `Failed to test ${provider} connection`,
+        variant: 'error'
       });
     } finally {
       setLoading(prev => ({ ...prev, [`${provider}_test`]: false }));
     }
   };
 
-  const handleMappingUpdate = (objectType, mapping, picklists) => {
-    // In production, this would update the mapping in the backend
-    if (process.env.NODE_ENV === 'production') {
-      fetch('/api/settings/integrations/mapping', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ objectType, mapping, picklists })
-      });
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'connected': return 'success';
-      case 'connecting': return 'warning';
-      case 'error': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'connected': return t('status.connected');
-      case 'connecting': return t('status.connecting');
-      case 'error': return t('status.error');
-      default: return t('status.disconnected');
-    }
-  };
-
-  const openMappingEditor = (provider) => {
-    setSelectedProvider(provider);
-    setActiveTab('mapping');
-  };
-
-  const openSyncStatus = (provider) => {
-    setSelectedProvider(provider);
-    setActiveTab('sync');
-  };
-
-  // Show loading state while auth is initializing
+  // Show loading state
   if (isLoading) {
     return (
       <div className="space-y-6">
         <PageHeader
-          title={t('title')}
-          description={t('description')}
+          title={t('title', 'Integrations')}
+          description={t('description', 'Connect your CRM and other tools')}
         />
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="text-center py-12">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading integrations...</p>
+            <p className="text-gray-600">Loading integrations...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Show auth required message if not authenticated
+  // Show authentication required
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
         <PageHeader
-          title={t('title')}
-          description={t('description')}
+          title={t('title', 'Integrations')}
+          description={t('description', 'Connect your CRM and other tools')}
         />
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Authentication Required
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Please log in to manage integrations.
-            </p>
-            <button 
-              onClick={() => window.location.href = '/login'}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Go to Login
-            </button>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {t('auth_required', 'Authentication Required')}
+              </h3>
+              <p className="text-gray-600">
+                {t('auth_required_desc', 'Please log in to manage integrations')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show status loading
+  if (statusLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title={t('title', 'Integrations')}
+          description={t('description', 'Connect your CRM and other tools')}
+        />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading integrations status...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  const integrationCards = [
+    {
+      id: 'hubspot',
+      name: 'HubSpot',
+      description: 'Connect your HubSpot CRM to sync contacts, companies, and deals',
+      logo: '🟠',
+      connected: integrations.hubspot?.connected || false,
+      status: integrations.hubspot?.status || 'disconnected'
+    },
+    {
+      id: 'zoho',
+      name: 'Zoho CRM',
+      description: 'Sync your Zoho CRM data with Agoralia',
+      logo: '🔵',
+      connected: integrations.zoho?.connected || false,
+      status: integrations.zoho?.status || 'disconnected'
+    },
+    {
+      id: 'odoo',
+      name: 'Odoo',
+      description: 'Connect your Odoo ERP system',
+      logo: '🟢',
+      connected: integrations.odoo?.connected || false,
+      status: integrations.odoo?.status || 'disconnected'
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('title')}
-        description={t('description')}
+        title={t('title', 'Integrations')}
+        description={t('description', 'Connect your CRM and other tools to sync data and automate workflows')}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-                      <TabsTrigger value="crm">{t('tabs.crm')}</TabsTrigger>
-            <TabsTrigger value="mapping">{t('tabs.mapping')}</TabsTrigger>
-            <TabsTrigger value="sync">{t('tabs.sync')}</TabsTrigger>
-            <TabsTrigger value="other">{t('tabs.other')}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="crm" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* HubSpot Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <span className="text-orange-600 font-bold">H</span>
-                  </div>
-                  {t('hubspot.name')}
-                  <Badge variant={getStatusColor(integrations.hubspot.status)}>
-                    {getStatusText(integrations.hubspot.status)}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('hubspot.description')}
-                </p>
-                
-                {integrations.hubspot.connected && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <p><strong>{t('portal_id')}:</strong> {integrations.hubspot.portal_id}</p>
-                  </div>
-                )}
-                
-                <div className="flex gap-2">
-                  {!integrations.hubspot.connected ? (
-                    <Button 
-                      onClick={() => handleConnect('hubspot')}
-                      disabled={loading.hubspot}
-                      className="flex-1"
-                    >
-                      {loading.hubspot ? t('common.connecting') : t('actions.connect')}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline"
-                        onClick={() => handleTest('hubspot')}
-                        disabled={loading.hubspot_test}
-                        className="flex-1"
-                      >
-                        {loading.hubspot_test ? t('common.testing') : t('actions.test')}
-                      </Button>
-                      <Button 
-                        variant="destructive"
-                        onClick={() => handleDisconnect('hubspot')}
-                        disabled={loading.hubspot}
-                        className="flex-1"
-                      >
-                        {loading.hubspot ? t('common.disconnecting') : t('actions.disconnect')}
-                      </Button>
-                    </>
-                  )}
-                </div>
-                
-                {integrations.hubspot.connected && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      variant="outline"
-                      onClick={() => openMappingEditor('hubspot')}
-                      className="w-full"
-                    >
-                      {t('actions.field_mapping')}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => openSyncStatus('hubspot')}
-                      className="w-full"
-                    >
-                      {t('actions.sync_status')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Zoho Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 font-bold">Z</span>
-                  </div>
-                  {t('zoho.name')}
-                  <Badge variant={getStatusColor(integrations.zoho.status)}>
-                    {getStatusText(integrations.zoho.status)}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('zoho.description')}
-                </p>
-                
-                <div className="flex gap-2">
-                  {!integrations.zoho.connected ? (
-                    <Button 
-                      onClick={() => handleConnect('zoho')}
-                      disabled={loading.zoho}
-                      className="flex-1"
-                    >
-                      {loading.zoho ? t('common.connecting') : t('actions.connect')}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline"
-                        onClick={() => handleTest('zoho')}
-                        disabled={loading.zoho_test}
-                        className="flex-1"
-                      >
-                        {loading.zoho_test ? t('common.testing') : t('actions.test')}
-                      </Button>
-                      <Button 
-                        variant="destructive"
-                        onClick={() => handleDisconnect('zoho')}
-                        disabled={loading.zoho}
-                        className="flex-1"
-                      >
-                        {loading.zoho_test ? t('common.disconnecting') : t('actions.disconnect')}
-                      </Button>
-                    </>
-                  )}
-                </div>
-                
-                {integrations.zoho.connected && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      variant="outline"
-                      onClick={() => openMappingEditor('zoho')}
-                      className="w-full"
-                    >
-                      {t('actions.field_mapping')}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => openSyncStatus('zoho')}
-                      className="w-full"
-                    >
-                      {t('actions.sync_status')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Odoo Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <span className="text-green-600 font-bold">O</span>
-                  </div>
-                  {t('odoo.name')}
-                  <Badge variant={getStatusColor(integrations.odoo.status)}>
-                    {getStatusText(integrations.odoo.status)}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('odoo.description')}
-                </p>
-                
-                <div className="flex gap-2">
-                  {!integrations.odoo.connected ? (
-                    <Button 
-                      onClick={() => handleConnect('odoo')}
-                      disabled={loading.odoo}
-                      className="flex-1"
-                    >
-                      {loading.odoo ? t('common.connecting') : t('actions.connect')}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline"
-                        onClick={() => handleTest('odoo')}
-                        disabled={loading.odoo}
-                        className="flex-1"
-                      >
-                        {loading.odoo ? t('common.testing') : t('actions.test')}
-                      </Button>
-                      <Button 
-                        variant="destructive"
-                        onClick={() => handleDisconnect('odoo')}
-                        disabled={loading.odoo}
-                        className="flex-1"
-                      >
-                        {loading.odoo_test ? t('common.disconnecting') : t('actions.disconnect')}
-                      </Button>
-                    </>
-                  )}
-                </div>
-                
-                {integrations.odoo.connected && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      variant="outline"
-                      onClick={() => openMappingEditor('odoo')}
-                      className="w-full"
-                    >
-                      {t('actions.field_mapping')}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => openSyncStatus('odoo')}
-                      className="w-full"
-                    >
-                      {t('actions.sync_status')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="mapping" className="space-y-6">
-          {selectedProvider ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {t('mapping.title')} - {selectedProvider.toUpperCase()}
-                </h2>
-                <Button 
-                  variant="outline"
-                  onClick={() => setActiveTab('crm')}
-                >
-                  {t('actions.back_to_integrations')}
-                </Button>
-              </div>
-              
-              <CRMFieldMappingEditor
-                workspaceId="ws_1"
-                provider={selectedProvider}
-                onMappingUpdate={handleMappingUpdate}
-              />
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                {t('mapping.select_provider')}  
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('mapping.select_provider_desc')}
-              </p>
-              <Button onClick={() => setActiveTab('crm')}>
-                  {t('actions.go_to_integrations')}
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="sync" className="space-y-6">
-          {selectedProvider ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {t('sync.title')} - {selectedProvider.toUpperCase()}
-                </h2>
-                <Button 
-                  variant="outline"
-                  onClick={() => setActiveTab('crm')}
-                >
-                  {t('actions.back_to_integrations')}
-                </Button>
-              </div>
-              
-              <CRMSyncStatus
-                workspaceId="ws_1"
-                provider={selectedProvider}
-              />
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                {t('sync.select_provider')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('sync.select_provider_desc')}
-              </p>
-              <Button onClick={() => setActiveTab('crm')}>
-                {t('actions.go_to_integrations')}
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="other" className="space-y-6">
-          <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {integrationCards.map((integration) => (
+          <Card key={integration.id} className="relative">
             <CardHeader>
-              <CardTitle>{t('other.coming_soon')}</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{integration.logo}</span>
+                  <div>
+                    <CardTitle className="text-lg">{integration.name}</CardTitle>
+                    <Badge 
+                      variant={integration.connected ? "success" : "secondary"}
+                      className="mt-1"
+                    >
+                      {integration.connected ? 'Connected' : 'Disconnected'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-                              <p className="text-gray-600 dark:text-gray-400">
-                  {t('other.coming_soon_desc')}
-                </p>
-              </CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                {integration.description}
+              </p>
+              
+              <div className="flex space-x-2">
+                {integration.connected ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTest(integration.id)}
+                      disabled={loading[`${integration.id}_test`]}
+                    >
+                      {loading[`${integration.id}_test`] ? 'Testing...' : 'Test'}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDisconnect(integration.id)}
+                      disabled={loading[integration.id]}
+                    >
+                      {loading[integration.id] ? 'Disconnecting...' : 'Disconnect'}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => handleConnect(integration.id)}
+                    disabled={loading[integration.id]}
+                    className="w-full"
+                  >
+                    {loading[integration.id] ? 'Connecting...' : 'Connect'}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        ))}
+      </div>
+
+      {/* Connection Status Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Connection Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center space-x-2">
+              <Badge variant="success" className="w-2 h-2 p-0 rounded-full"></Badge>
+              <span>Connected - Integration is active and syncing data</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="w-2 h-2 p-0 rounded-full"></Badge>
+              <span>Disconnected - Click Connect to set up integration</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

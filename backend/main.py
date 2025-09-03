@@ -648,7 +648,7 @@ api.include_router(crm.router, prefix="/crm", tags=["crm"])
 logger.info("CRM router included successfully")
 
 logger.info("Including Integrations router...")
-api.include_router(integrations.router, prefix="/settings", tags=["integrations"])
+api.include_router(integrations.router, tags=["integrations"])
 logger.info("Integrations router included successfully")
 
 logger.info("Including Settings router...")
