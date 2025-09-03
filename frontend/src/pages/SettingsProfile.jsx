@@ -42,7 +42,7 @@ export default function SettingsProfile() {
     setError(null)
     try {
       // Usa endpoint corretto per profilo utente
-      const data = await get('/api/settings/profile')
+      const data = await get('/settings/profile')
       setFormData(data || {
         name: '',
         email: '',
@@ -109,7 +109,7 @@ export default function SettingsProfile() {
       };
       
       // Usa endpoint corretto per aggiornare profilo
-      await put('/api/settings/profile', payload)
+      await put('/settings/profile', payload)
       
       // Aggiorna AuthContext per header
       if (user && setUser) {
