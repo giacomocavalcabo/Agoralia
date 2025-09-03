@@ -6,12 +6,12 @@
 import { apiFetch } from "./api";
 
 export const getBudget = async () => {
-  const res = await apiFetch("/settings/billing/budget");
+  const res = await apiFetch("/api/settings/billing/budget");
   return res; // { monthly_budget_cents, budget_currency, budget_hard_stop, mtd_spend_cents, minutes_mtd }
 };
 
 export const updateBudget = async (payload) => {
-  return await apiFetch("/settings/billing/budget", {
+  return await apiFetch("/api/settings/billing/budget", {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -26,7 +26,7 @@ export const updateBudget = async (payload) => {
  */
 export const getLedger = async ({ page = 1, page_size = 20 } = {}) => {
   try {
-    const response = await apiFetch(`/settings/billing/ledger?page=${page}&page_size=${page_size}`)
+    const response = await apiFetch(`/api/settings/billing/ledger?page=${page}&page_size=${page_size}`)
     return response
   } catch (error) {
     console.error('Failed to fetch ledger:', error)

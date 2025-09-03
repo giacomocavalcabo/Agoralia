@@ -4387,74 +4387,7 @@ def require_workspace_admin(request: Request, db: Session = Depends(get_db)):
     # For now, allow all authenticated users
     return workspace
 
-@app.get("/settings/billing/budget", response_model=BudgetState)
-async def get_budget(
-    current_ws: Workspace = Depends(get_current_workspace),
-    db: Session = Depends(get_db)
-):
-    """Get current budget state for workspace"""
-    budget_state = get_workspace_budget_state(current_ws, db)
-    return BudgetState(
-        settings=BudgetSettings(
-            monthly_budget_cents=budget_state["monthly_budget_cents"],
-            budget_currency=budget_state["budget_currency"],
-            budget_resets_day=budget_state["budget_resets_day"],
-            budget_hard_stop=budget_state["budget_hard_stop"],
-            budget_thresholds=budget_state["budget_thresholds"],
-        ),
-        spend_month_to_date_cents=budget_state["spend_month_to_date_cents"],
-        blocked=budget_state["blocked"],
-        threshold_hit=budget_state["threshold_hit"],
-        billing_period=budget_state["billing_period"]
-    )
-
-@app.put("/settings/billing/budget", response_model=BudgetState)
-async def update_budget(
-    payload: BudgetUpdateRequest,
-    current_ws: Workspace = Depends(require_workspace_admin),
-    db: Session = Depends(get_db)
-):
-    # DEMO mode guard
-    if os.getenv("DEMO_MODE") == "1":
-        raise HTTPException(
-            status_code=422, 
-            detail={
-                "error": "demo_mode",
-                "message": "Budget updates are disabled in demo mode"
-            }
-        )
-    """Update budget settings for workspace (admin only)"""
-    # Update only provided fields
-    if payload.monthly_budget_cents is not None:
-        current_ws.monthly_budget_cents = payload.monthly_budget_cents
-    if payload.budget_currency is not None:
-        current_ws.budget_currency = payload.budget_currency
-    if payload.budget_resets_day is not None:
-        current_ws.budget_resets_day = payload.budget_resets_day
-    if payload.budget_hard_stop is not None:
-        current_ws.budget_hard_stop = payload.budget_hard_stop
-    if payload.budget_thresholds is not None:
-        current_ws.budget_thresholds = payload.budget_thresholds
-    
-    db.add(current_ws)
-    db.commit()
-    db.refresh(current_ws)
-    
-    # Return updated state
-    budget_state = get_workspace_budget_state(current_ws, db)
-    return BudgetState(
-        settings=BudgetSettings(
-            monthly_budget_cents=budget_state["monthly_budget_cents"],
-            budget_currency=budget_state["budget_currency"],
-            budget_resets_day=budget_state["budget_resets_day"],
-            budget_hard_stop=budget_state["budget_hard_stop"],
-            budget_thresholds=budget_state["budget_thresholds"],
-        ),
-        spend_month_to_date_cents=budget_state["spend_month_to_date_cents"],
-        blocked=budget_state["blocked"],
-        threshold_hit=budget_state["threshold_hit"],
-        billing_period=budget_state["billing_period"]
-    )
+# Billing endpoints moved to /api/settings/billing/* in settings router
 
 # ===================== Sprint 6: Outcomes & CRM =====================
 

@@ -231,3 +231,29 @@ def check_idempotency(session: Session, idempotency_key: str) -> Optional[Billin
     
     query = select(BillingLedger).where(BillingLedger.idempotency_key == idempotency_key)
     return session.execute(query).scalar_one_or_none()
+
+
+def update_workspace_budget(workspace: Workspace, payload, session: Session):
+    """
+    Update workspace budget settings
+    
+    Args:
+        workspace: Workspace object to update
+        payload: BudgetUpdateRequest with new values
+        session: Database session
+    """
+    # Update only provided fields
+    if payload.monthly_budget_cents is not None:
+        workspace.monthly_budget_cents = payload.monthly_budget_cents
+    if payload.budget_currency is not None:
+        workspace.budget_currency = payload.budget_currency
+    if payload.budget_resets_day is not None:
+        workspace.budget_resets_day = payload.budget_resets_day
+    if payload.budget_hard_stop is not None:
+        workspace.budget_hard_stop = payload.budget_hard_stop
+    if payload.budget_thresholds is not None:
+        workspace.budget_thresholds = payload.budget_thresholds
+    
+    session.add(workspace)
+    session.commit()
+    session.refresh(workspace)
