@@ -31,7 +31,7 @@ const Integrations = () => {
     try {
       // In production, fetch from API
       if (process.env.NODE_ENV === 'production') {
-        const response = await fetch('/api/integrations/status');
+        const response = await fetch('/api/settings/integrations/status');
         const data = await response.json();
         setIntegrations(data);
       } else {
@@ -58,7 +58,7 @@ const Integrations = () => {
     try {
       // In production, this would start OAuth flow
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/integrations/${provider}/connect`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/connect`, { method: 'POST' });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -98,7 +98,7 @@ const Integrations = () => {
     try {
       // In production, this would revoke tokens
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/integrations/${provider}/disconnect`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/disconnect`, { method: 'POST' });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -134,7 +134,7 @@ const Integrations = () => {
     try {
       // In production, this would test the connection
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/integrations/${provider}/test`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/test`, { method: 'POST' });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -164,7 +164,7 @@ const Integrations = () => {
   const handleMappingUpdate = (objectType, mapping, picklists) => {
     // In production, this would update the mapping in the backend
     if (process.env.NODE_ENV === 'production') {
-      fetch('/api/integrations/mapping', {
+      fetch('/api/settings/integrations/mapping', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objectType, mapping, picklists })
