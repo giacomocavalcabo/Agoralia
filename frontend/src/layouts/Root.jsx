@@ -29,7 +29,7 @@ import CampaignForm from '../pages/CampaignForm.jsx'
 
 import CampaignDetail from '../pages/CampaignDetail.jsx'
 const Calendar = React.lazy(() => import('../pages/Calendar'))
-const Settings = React.lazy(() => import('../pages/Settings.jsx'))
+// Settings.jsx removed - using SettingsLayout instead
 const SettingsProfile = React.lazy(() => import('../pages/SettingsProfile.jsx'))
 const SettingsCompany = React.lazy(() => import('../pages/SettingsCompany.jsx'))
 const SettingsTelephony = React.lazy(() => import('../pages/SettingsTelephony.jsx'))

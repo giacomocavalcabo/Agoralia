@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const response = await api.get('/auth/me');
+      const response = await api.get('/api/auth/me');
       
       // Gestisce sia {user:{...}} che {...}
       const u = response?.user ?? response;
