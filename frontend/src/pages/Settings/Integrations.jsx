@@ -44,7 +44,7 @@ const Integrations = () => {
       console.log('[Integrations] Loading integration status...');
       setStatusLoading(true);
       
-      const data = await apiFetch('/api/settings/integrations/status', {
+      const data = await apiFetch('/api/integrations/status', {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -98,7 +98,7 @@ const Integrations = () => {
       console.log(`[Integrations] Connecting to ${provider}...`);
       setLoading(prev => ({ ...prev, [provider]: true }));
       
-      const response = await apiFetch(`/api/settings/integrations/${provider}/connect`, {
+      const response = await apiFetch(`/api/integrations/${provider}/connect`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -141,7 +141,7 @@ const Integrations = () => {
       console.log(`[Integrations] Disconnecting from ${provider}...`);
       setLoading(prev => ({ ...prev, [provider]: true }));
       
-      const response = await apiFetch(`/api/settings/integrations/${provider}/disconnect`, {
+      const response = await apiFetch(`/api/integrations/${provider}/disconnect`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -178,7 +178,7 @@ const Integrations = () => {
       console.log(`[Integrations] Testing ${provider} connection...`);
       setLoading(prev => ({ ...prev, [`${provider}_test`]: true }));
       
-      const response = await apiFetch(`/api/settings/integrations/${provider}/test`, {
+      const response = await apiFetch(`/api/integrations/${provider}/test`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

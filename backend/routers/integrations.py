@@ -74,50 +74,66 @@ def get_adapter_or_404(provider: str) -> CRMAdapter:
 @router.get("/status")
 def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Get status of all integrations - accessible to all authenticated users"""
-    ws_id = user.workspace_id
-    
-    # Query existing integrations
-    q = (
-        db.query(ProviderAccount)
-        .filter(ProviderAccount.workspace_id == ws_id)
-        .filter(ProviderAccount.category.in_(["crm", "telephony"]))
-    )
-    accounts = q.all()
-    
-    # Build status object with provider as keys (frontend expects this format)
-    status = {}
-    
-    # Add connected integrations
-    for acc in accounts:
-        status[acc.provider] = {
-            "connected": True,
-            "status": getattr(acc, "status", None) or "connected",
-            "id": acc.id,
-            "label": getattr(acc, "label", None),
-            "category": getattr(acc, "category", None),
-            "auth_type": getattr(acc, "auth_type", None),
-            "scopes": (getattr(acc, "scopes", None) or "").split(",") if getattr(acc, "scopes", None) else [],
-            "created_at": getattr(acc, "created_at", None),
-            "updated_at": getattr(acc, "updated_at", None),
+    try:
+        ws_id = user.workspace_id
+        
+        # Query existing integrations with safe error handling
+        q = (
+            db.query(ProviderAccount)
+            .filter(ProviderAccount.workspace_id == ws_id)
+            .filter(ProviderAccount.category.in_(["crm", "telephony"]))
+        )
+        accounts = q.all()
+        
+        # Build status object with provider as keys (frontend expects this format)
+        status = {}
+        
+        # Add connected integrations
+        for acc in accounts:
+            if acc and acc.provider:
+                status[acc.provider] = {
+                    "connected": True,
+                    "status": getattr(acc, "status", None) or "connected",
+                    "id": acc.id,
+                    "label": getattr(acc, "label", None),
+                    "category": getattr(acc, "category", None),
+                    "auth_type": getattr(acc, "auth_type", None),
+                    "scopes": (getattr(acc, "scopes", None) or "").split(",") if getattr(acc, "scopes", None) else [],
+                    "created_at": getattr(acc, "created_at", None),
+                    "updated_at": getattr(acc, "updated_at", None),
+                }
+        
+        # Add disconnected integrations for supported providers
+        connected_providers = {acc.provider for acc in accounts if acc and acc.provider}
+        for provider in SUPPORTED_CRM:
+            if provider not in connected_providers:
+                status[provider] = {
+                    "connected": False,
+                    "status": "disconnected"
+                }
+        
+        return status
+        
+    except Exception as e:
+        # Log error but return safe default status
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error getting integrations status: {e}")
+        
+        # Return safe default status for all supported providers
+        return {
+            provider: {"connected": False, "status": "disconnected"}
+            for provider in SUPPORTED_CRM
         }
-    
-    # Add disconnected integrations for supported providers
-    connected_providers = {acc.provider for acc in accounts}
-    for provider in SUPPORTED_CRM:
-        if provider not in connected_providers:
-            status[provider] = {
-                "connected": False,
-                "status": "disconnected"
-            }
-    
-    return status
 
 @router.post("/{provider}/connect")
 def integrations_connect(provider: str, payload: ConnectPayload,
                          request: Request,
                          db: Session = Depends(get_db),
                          user=Depends(get_current_user)):
-    require_not_demo()
+    # Check demo mode but provide better error message
+    if getattr(settings, "DEMO_MODE", False):
+        raise HTTPException(status_code=403, detail="Integration connections are disabled in demo mode")
 
     adapter = get_adapter_or_404(provider)
     ws_id = user.workspace_id
@@ -168,7 +184,9 @@ def integrations_disconnect(provider: str,
                             body: DisconnectPayload,
                             db: Session = Depends(get_db),
                             user=Depends(get_current_user)):
-    require_not_demo()
+    # Check demo mode but provide better error message
+    if getattr(settings, "DEMO_MODE", False):
+        raise HTTPException(status_code=403, detail="Integration disconnections are disabled in demo mode")
     ws_id = user.workspace_id
     q = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
@@ -191,17 +209,25 @@ def integrations_disconnect(provider: str,
 def integrations_test(provider: str,
                       db: Session = Depends(get_db),
                       user=Depends(get_current_user)):
-    ws_id = user.workspace_id
-    acc = db.query(ProviderAccount).filter(
-        ProviderAccount.workspace_id == ws_id,
-        ProviderAccount.provider == provider,
-        ProviderAccount.category == "crm",
-    ).first()
-    if not acc:
-        raise HTTPException(status_code=404, detail="not_connected")
-    adapter = get_adapter_or_404(provider)
-    ok = adapter.test_connection(acc)
-    return {"ok": bool(ok)}
+    try:
+        ws_id = user.workspace_id
+        acc = db.query(ProviderAccount).filter(
+            ProviderAccount.workspace_id == ws_id,
+            ProviderAccount.provider == provider,
+            ProviderAccount.category == "crm",
+        ).first()
+        if not acc:
+            raise HTTPException(status_code=404, detail="not_connected")
+        adapter = get_adapter_or_404(provider)
+        ok = adapter.test_connection(acc)
+        return {"ok": bool(ok)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error testing {provider} connection: {e}")
+        return {"ok": False, "error": "Connection test failed"}
 
 @router.get("/mapping")
 def get_mapping(provider: str,
