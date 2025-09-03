@@ -195,7 +195,7 @@ export default function Calendar(){
                           if (dragStart && dragStart.getTime()!==slot.getTime()){
                             if (selected){
                               try{
-                                const resp = await fetch(`${API_BASE_URL}/schedule/${selected.id}`, {
+                                const resp = await fetch(`${API_BASE_URL}/api/schedule/${selected.id}`, {
                                   method:'PATCH',
                                   headers:{ 'Content-Type':'application/json' },
                                   body: JSON.stringify({ at: slot.toISOString() })

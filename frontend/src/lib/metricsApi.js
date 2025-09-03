@@ -6,7 +6,7 @@ export async function fetchMetricsOverview({ days=30, campaignId, agentId, lang,
   if (lang) params.set("lang", lang);
   if (country) params.set("country", country);
 
-  const res = await fetch(`/metrics/overview?${params.toString()}`);
+  const res = await fetch(`/api/metrics/overview?${params.toString()}`);
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
     throw new Error(err?.detail?.message || `Metrics error ${res.status}`);

@@ -42,7 +42,7 @@ export default function SettingsProfile() {
     setError(null)
     try {
       // Usa endpoint corretto per profilo utente
-      const data = await get('/settings/profile')
+      const data = await get('/api/settings/profile')
       setFormData(data || {
         name: '',
         email: '',
@@ -102,12 +102,18 @@ export default function SettingsProfile() {
 
     setIsSaving(true)
     try {
+      // Invia solo name e timezone, non email o locale
+      const payload = { 
+        name: formData.name, 
+        timezone: formData.timezone 
+      };
+      
       // Usa endpoint corretto per aggiornare profilo
-      await put('/auth/me', formData)
+      await put('/api/settings/profile', payload)
       
       // Aggiorna AuthContext per header
       if (user && setUser) {
-        setUser({...user, ...formData})
+        setUser({...user, ...payload})
       }
       
       toast({
@@ -149,11 +155,6 @@ export default function SettingsProfile() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title={t('profile.title')}
-        description={t('profile.description')}
-      />
-      
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           {t('settings.account.title', { ns: 'pages' })}
@@ -192,24 +193,7 @@ export default function SettingsProfile() {
             </FieldHelp>
           </FormRow>
           
-          <FormRow>
-            <FieldLabel htmlFor="language" required>
-              {t('account.fields.language')}
-            </FieldLabel>
-            <select
-              id="language"
-              value={formData.language}
-              onChange={(e) => setFormData({...formData, language: e.target.value})}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                errors.language ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="en-US">{t('account.languages.english')}</option>
-              <option value="it-IT">{t('account.languages.italian')}</option>
-              <option value="fr-FR">{t('account.languages.french')}</option>
-            </select>
-            <FieldError>{errors.language}</FieldError>
-          </FormRow>
+
           
           <FormRow>
             <FieldLabel htmlFor="timezone" required>

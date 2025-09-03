@@ -11,7 +11,7 @@ export default function WebCallButton({ label = 'Start Web Call', className = 'b
     if (loading) return
     setLoading(true)
     try {
-      const res = await fetch('http://127.0.0.1:8000/calls/retell/web', {
+      const res = await fetch('/api/calls/retell/web', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})

@@ -126,11 +126,6 @@ export default function SettingsCompany() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title={t('company.title')}
-        description={t('company.description')}
-      />
-      
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           {t('company.branding.title')}

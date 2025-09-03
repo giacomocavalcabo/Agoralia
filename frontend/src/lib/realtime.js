@@ -34,7 +34,7 @@ export function createRealtimeClient({ user, isDemo }) {
       if (closed) return;
       
       try {
-        const response = await fetch('/events/recent?limit=20', { 
+        const response = await fetch('/api/events/recent?limit=20', { 
           cache: 'no-store',
           signal: AbortSignal.timeout(5000)
         });

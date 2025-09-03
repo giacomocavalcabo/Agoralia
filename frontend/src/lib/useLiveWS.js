@@ -41,8 +41,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 		
 		try {
 			const [liveResponse, eventsResponse] = await Promise.all([
-				fetch('/calls/live', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] })),
-				fetch('/events/recent?limit=20', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] }))
+				fetch('/api/calls/live', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] })),
+				fetch('/api/events/recent?limit=20', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] }))
 			])
 			
 			setLiveCalls(liveResponse.items || [])

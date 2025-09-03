@@ -4,7 +4,7 @@ import { generateDemoLeads } from './demo/fakes';
 import { leadsSegmentToQuery } from './filters/leadsSegment';
 
 const DEFAULT_SIZE = Number(import.meta.env.VITE_LEADS_PAGE_SIZE_DEFAULT) || 25;
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://service-1-production.up.railway.app';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 function adaptLead(row) {
   if (!row) return null;

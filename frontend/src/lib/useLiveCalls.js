@@ -68,7 +68,7 @@ export function useLiveCalls() {
     
     setStatus('connecting');
     
-    fetch('/calls/live', { 
+    fetch('/api/calls/live', { 
       signal: abort.signal,
       cache: 'no-store',
       headers: {

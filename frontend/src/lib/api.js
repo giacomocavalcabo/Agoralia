@@ -2,8 +2,27 @@ export const API_BASE_URL = import.meta.env.DEV
   ? '/api'  // Usa proxy in dev
   : '/api';  // Usa proxy anche in produzione (vercel.json)
 
+function assertApiPrefix(url) {
+  try {
+    // absolute => ignore (CSP will handle)
+    const u = new URL(url, window.location.origin);
+    if (u.origin !== window.location.origin) return;
+    const p = u.pathname;
+
+    const allow = [
+      /^\/$/, /^\/(login|logout|settings)(\/|$)/,
+      /^\/(_next|assets|static|favicon|locales|manifest\.webmanifest|sw\.js)(\/|$)/,
+    ];
+
+    if (!p.startsWith('/api/') && !allow.some(rx => rx.test(p))) {
+      console.warn('[API WARNING] missing /api prefix:', p);
+    }
+  } catch {}
+}
+
 export async function apiFetch(path, options = {}) {
 	const url = `${API_BASE_URL}${path}`;
+	assertApiPrefix(url);
 	const resp = await fetch(url, {
 		method: options.method || 'GET',
 		headers: {
