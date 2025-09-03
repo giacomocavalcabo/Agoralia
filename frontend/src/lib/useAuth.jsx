@@ -14,29 +14,22 @@ export function AuthProvider({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    console.log('[AuthProvider] checkAuth called');
     try {
-      console.log('[AuthProvider] Calling /auth/me...');
       const response = await api.get('/auth/me');
-      console.log('[AuthProvider] /auth/me response:', response);
       
       // Gestisce sia {user:{...}} che {...}
       const u = response?.user ?? response;
       if (u && u.id && u.email) {
-        console.log('[AuthProvider] User authenticated:', u.email);
         setUser(u);
         setIsAuthenticated(true);
       } else {
-        console.log('[AuthProvider] Invalid user data:', u);
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.log('[AuthProvider] checkAuth error:', error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
-      console.log('[AuthProvider] Setting isLoading to false');
       setIsLoading(false);
     }
   };
@@ -98,8 +91,6 @@ export function AuthProvider({ children }) {
     logout,
     checkAuth
   };
-  
-  console.log('[AuthProvider] Current value:', { user: user?.email, isAuthenticated, isLoading });
 
   return (
     <AuthContext.Provider value={value}>

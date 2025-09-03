@@ -51,13 +51,14 @@ const settingsNavigation = [
     icon: PhoneIcon,
     description: 'nav.telephony_desc'
   },
-  { 
-    id: 'telephony-compliance', 
-    name: 'nav.telephony_compliance',
-    href: 'telephony/compliance', 
-    icon: ShieldCheckIcon,
-    description: 'nav.telephony_compliance_desc'
-  }
+  // Temporarily disabled until backend routes are implemented
+  // { 
+  //   id: 'telephony-compliance', 
+  //   name: 'nav.telephony_compliance',
+  //   href: 'telephony/compliance', 
+  //   icon: ShieldCheckIcon,
+  //   description: 'nav.telephony_compliance_desc'
+  // }
 ]
 
 export default function SettingsNav({ className }) {
