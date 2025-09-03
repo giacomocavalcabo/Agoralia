@@ -11,9 +11,13 @@ import CRMFieldMappingEditor from '../../components/CRMFieldMappingEditor';
 import CRMSyncStatus from '../../components/CRMSyncStatus';
 
 const Integrations = () => {
+  console.log('[Integrations] Component mounted');
+  
   const { t } = useTranslation('integrations');
   const { toast } = useToast();
   const { user, ready, authenticated } = useAuth();
+  
+  console.log('[Integrations] Auth state:', { ready, authenticated, user: user?.email });
   
   const [integrations, setIntegrations] = useState({
     hubspot: { connected: false, status: 'disconnected' },
@@ -25,10 +29,19 @@ const Integrations = () => {
   const [selectedProvider, setSelectedProvider] = useState(null);
 
   useEffect(() => {
+    console.log('[Integrations] useEffect triggered:', { ready, authenticated, user: user?.email });
+    
     // Load integration status only when auth is ready and user is authenticated
     if (ready && authenticated) {
+      console.log('[Integrations] Loading integration status...');
       loadIntegrationStatus();
+    } else {
+      console.log('[Integrations] Skipping load - not ready or not authenticated');
     }
+    
+    return () => {
+      console.log('[Integrations] useEffect cleanup');
+    };
   }, [ready, authenticated]);
 
   const loadIntegrationStatus = async () => {
@@ -312,6 +325,8 @@ const Integrations = () => {
     );
   }
 
+  console.log('[Integrations] Rendering component');
+  
   return (
     <div className="space-y-6">
       <PageHeader
