@@ -15,9 +15,9 @@ const Integrations = () => {
   
   const { t } = useTranslation('integrations');
   const { toast } = useToast();
-  const { user, ready, authenticated } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   
-  console.log('[Integrations] Auth state:', { ready, authenticated, user: user?.email });
+  console.log('[Integrations] Auth state:', { ready: !isLoading, authenticated: isAuthenticated, user: user?.email });
   
   const [integrations, setIntegrations] = useState({
     hubspot: { connected: false, status: 'disconnected' },
@@ -29,6 +29,9 @@ const Integrations = () => {
   const [selectedProvider, setSelectedProvider] = useState(null);
 
   useEffect(() => {
+    const ready = !isLoading;
+    const authenticated = isAuthenticated;
+    
     console.log('[Integrations] useEffect triggered:', { ready, authenticated, user: user?.email });
     
     // Load integration status only when auth is ready and user is authenticated
@@ -42,7 +45,7 @@ const Integrations = () => {
     return () => {
       console.log('[Integrations] useEffect cleanup');
     };
-  }, [ready, authenticated]);
+  }, [isLoading, isAuthenticated]);
 
   const loadIntegrationStatus = async () => {
     try {
@@ -280,7 +283,7 @@ const Integrations = () => {
   };
 
   // Show loading state while auth is initializing
-  if (!ready) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <PageHeader
@@ -298,7 +301,7 @@ const Integrations = () => {
   }
 
   // Show auth required message if not authenticated
-  if (!authenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="space-y-6">
         <PageHeader
