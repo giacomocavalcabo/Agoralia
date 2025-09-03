@@ -34,8 +34,8 @@ DEEPL_URL = "https://api-free.deepl.com/v2/translate"  # usa api.deepl.com se pi
 
 # Configurazione sicura per limiti DeepL
 MONTHLY_CAP = int(os.getenv("DEEPL_MONTHLY_CAP", str(CFG.get("deepl", {}).get("monthly_cap", 500000))))
-# Aggiornato: 200.000 caratteri già utilizzati
-ALREADY_USED = 200000
+# Aggiornato: 465.000 caratteri già utilizzati
+ALREADY_USED = 465000
 SOFT_WARN = int(os.getenv("DEEPL_SOFT_WARN", str(CFG.get("deepl", {}).get("soft_warn", 400000))))
 BATCH_SIZE = int(os.getenv("DEEPL_BATCH_SIZE", str(CFG.get("deepl", {}).get("batch_size", 5))))
 MAX_BATCH_CHARS = int(os.getenv("DEEPL_MAX_BATCH_CHARS", str(CFG.get("deepl", {}).get("max_batch_chars", 20000))))
