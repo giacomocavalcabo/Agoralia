@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 from backend.db import get_db
 from backend.models import ProviderAccount
-from backend.auth.deps import admin_guard
 from backend.auth.session import get_current_user
 from backend.config.settings import settings
 from backend.services.kms import encrypt_str, decrypt_str, encrypt_json, decrypt_json
@@ -117,7 +116,7 @@ def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_
 def integrations_connect(provider: str, payload: ConnectPayload,
                          request: Request,
                          db: Session = Depends(get_db),
-                         user=Depends(admin_guard)):
+                         user=Depends(get_current_user)):
     require_not_demo()
 
     adapter = get_adapter_or_404(provider)
@@ -168,7 +167,7 @@ def integrations_connect(provider: str, payload: ConnectPayload,
 def integrations_disconnect(provider: str,
                             body: DisconnectPayload,
                             db: Session = Depends(get_db),
-                            user=Depends(admin_guard)):
+                            user=Depends(get_current_user)):
     require_not_demo()
     ws_id = user.workspace_id
     q = db.query(ProviderAccount).filter(
@@ -191,7 +190,7 @@ def integrations_disconnect(provider: str,
 @router.post("/{provider}/test")
 def integrations_test(provider: str,
                       db: Session = Depends(get_db),
-                      user=Depends(admin_guard)):
+                      user=Depends(get_current_user)):
     ws_id = user.workspace_id
     acc = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
@@ -207,7 +206,7 @@ def integrations_test(provider: str,
 @router.get("/mapping")
 def get_mapping(provider: str,
                 db: Session = Depends(get_db),
-                user=Depends(admin_guard)):
+                user=Depends(get_current_user)):
     ws_id = user.workspace_id
     acc = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
@@ -224,7 +223,7 @@ def get_mapping(provider: str,
 @router.post("/mapping")
 def set_mapping(payload: MappingPayload,
                 db: Session = Depends(get_db),
-                user=Depends(admin_guard)):
+                user=Depends(get_current_user)):
     ws_id = user.workspace_id
     acc = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
