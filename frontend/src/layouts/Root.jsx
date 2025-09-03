@@ -30,6 +30,7 @@ import CampaignForm from '../pages/CampaignForm.jsx'
 import CampaignDetail from '../pages/CampaignDetail.jsx'
 const Calendar = React.lazy(() => import('../pages/Calendar'))
 const Settings = React.lazy(() => import('../pages/Settings.jsx'))
+const SettingsProfile = React.lazy(() => import('../pages/SettingsProfile.jsx'))
 const SettingsCompany = React.lazy(() => import('../pages/SettingsCompany.jsx'))
 const SettingsTelephony = React.lazy(() => import('../pages/SettingsTelephony.jsx'))
 // Temporarily disabled until backend routes are implemented
@@ -115,8 +116,8 @@ export default function Root() {
                     {/* Settings routes with nested layout */}
                     <Route path="settings" element={<SettingsLayout />}>
                       <Route index element={<Navigate to="profile" replace />} />
-                      <Route path="profile" element={<Settings />} />
-                      <Route path="company" element={<Settings />} />
+                      <Route path="profile" element={<SettingsProfile />} />
+                      <Route path="company" element={<SettingsCompany />} />
                       <Route path="telephony" element={<SettingsTelephony />} />
                       {/* Temporarily disabled until backend routes are implemented */}
                       {/* <Route path="telephony/compliance" element={<SettingsTelephonyCompliance />} /> */}
