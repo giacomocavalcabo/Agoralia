@@ -14,14 +14,14 @@
     "topup": "Importo Ricarica"
   },
   "budget": {
-    "blocked": "Budget Blocked",
-    "hard_stop": "Hard Stop Reached",
-    "monthly": "Monthly Budget",
-    "progress": "Budget Progress",
-    "resets": "Budget Resets",
-    "saved": "Budget Saved",
-    "title": "Budget Management",
-    "warn80": "80% Budget Warning"
+    "blocked": "Bilancio bloccato",
+    "hard_stop": "Arresto duro raggiunto",
+    "monthly": "Bilancio mensile",
+    "progress": "Stato di avanzamento del bilancio",
+    "resets": "Azzeramento del budget",
+    "saved": "Bilancio risparmiato",
+    "title": "Gestione del budget",
+    "warn80": "avvertenza sul bilancio dell'80%"
   },
   "hard_stop_banner": "Il budget mensile è stato raggiunto. Gli acquisti/importazioni sono disattivati.",
   "hard_stop_detail": "Il limite di budget mensile è stato raggiunto. Per continuare, aggiornare le impostazioni di fatturazione.",

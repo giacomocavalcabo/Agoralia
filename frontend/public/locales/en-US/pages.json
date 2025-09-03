@@ -849,16 +849,7 @@
     },
     "delete": { "title": "Delete lead?", "message": "This action cannot be undone." },
 
-    "table": {
-      "columns": {
-        "name": "Name",
-        "company": "Company",
-        "phone": "Phone",
-        "country": "Country",
-        "status": "Status",
-        "actions": "Actions"
-      }
-    },
+
 
     "export": {
       "starting": "Export starting..."

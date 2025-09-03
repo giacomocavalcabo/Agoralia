@@ -14,14 +14,14 @@
     "topup": "[تعبئة رصيد]"
   },
   "budget": {
-    "blocked": "Budget Blocked",
-    "hard_stop": "Hard Stop Reached",
-    "monthly": "Monthly Budget",
-    "progress": "Budget Progress",
-    "resets": "Budget Resets",
-    "saved": "Budget Saved",
-    "title": "Budget Management",
-    "warn80": "80% Budget Warning"
+    "blocked": "الميزانية المحظورة",
+    "hard_stop": "تم الوصول إلى نقطة التوقف الصعب",
+    "monthly": "الميزانية الشهرية",
+    "progress": "التقدم المحرز في الميزانية",
+    "resets": "إعادة تعيين الميزانية",
+    "saved": "الميزانية الموفرة",
+    "title": "إدارة الميزانية",
+    "warn80": "80٪ تحذير الميزانية"
   },
   "hard_stop_banner": "تم الوصول إلى الميزانية الشهرية. تم تعطيل الشراء/الاستيراد.",
   "hard_stop_detail": "تم الوصول إلى حد ميزانيتك الشهرية. يرجى تحديث إعدادات الفوترة الخاصة بك للمتابعة.",

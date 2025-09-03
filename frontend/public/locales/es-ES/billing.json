@@ -14,14 +14,14 @@
     "topup": "[Topup]"
   },
   "budget": {
-    "blocked": "Budget Blocked",
-    "hard_stop": "Hard Stop Reached",
-    "monthly": "Monthly Budget",
-    "progress": "Budget Progress",
-    "resets": "Budget Resets",
-    "saved": "Budget Saved",
-    "title": "Budget Management",
-    "warn80": "80% Budget Warning"
+    "blocked": "Presupuesto bloqueado",
+    "hard_stop": "Se alcanza el tope duro",
+    "monthly": "Presupuesto mensual",
+    "progress": "Progresos presupuestarios",
+    "resets": "Reajustes presupuestarios",
+    "saved": "Presupuesto ahorrado",
+    "title": "Gestión presupuestaria",
+    "warn80": "advertencia presupuestaria del 80"
   },
   "hard_stop_banner": "Presupuesto mensual alcanzado. Compras/Importaciones desactivadas.",
   "hard_stop_detail": "Se ha alcanzado el límite de su presupuesto mensual. Actualiza tus ajustes de facturación para continuar.",

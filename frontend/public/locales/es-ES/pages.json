@@ -554,8 +554,175 @@
     "title": "Historial de llamadas y resultados"
   },
   "import": {
+    "attributes": {
+      "bulk": {
+        "apply_to": "Aplicar a la selección",
+        "clear": "Claro",
+        "set": "Establecer"
+      },
+      "class": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "unknown": "Desconocido"
+      },
+      "columns": {
+        "class": "Clase",
+        "dnc": "DNC nacional",
+        "existing": "Relación existente",
+        "notes": "Notas",
+        "opt_in": "Opt-in"
+      },
+      "dnc": {
+        "in": "En registro",
+        "not_in": "No en el registro",
+        "unknown": "Desconocido"
+      },
+      "existing": {
+        "no": "No",
+        "unknown": "Desconocido",
+        "yes": "Sí"
+      },
+      "hints": {
+        "b2c_optin_only": "El opt-in sólo es necesario en los países con opt-in (B2C).",
+        "dnc_only": "El DNC nacional sólo se aplica cuando existe un registro."
+      },
+      "optin": {
+        "no": "No",
+        "unknown": "Desconocido",
+        "yes": "Sí"
+      },
+      "title": "atributos __GL_0"
+    },
+    "commit": {
+      "done": "Importación completada",
+      "errors_csv": "Descargar CSV de errores",
+      "progress": "Importar..",
+      "start": "Iniciar importación",
+      "title": "Confirmar e importar"
+    },
+    "dedupe": {
+      "check_on": "Compruebe si hay duplicados en:",
+      "merge": "Fusionar y actualizar las existentes",
+      "resolve_strategy": "Cuando se encuentran duplicados:",
+      "skip": "Omitir duplicados",
+      "title": "Reglas de deduplicación"
+    },
+    "launch": {
+      "launch": "Iniciar importación",
+      "launching": "Lanzamiento...",
+      "new_import": "Iniciar nueva importación",
+      "success": "Lanzamiento del trabajo de importación",
+      "success_desc": "Su trabajo de importación se ha puesto en cola y comenzará a procesarse en breve.",
+      "view_job": "Ver el estado del trabajo"
+    },
     "legal": {
       "disclosure": "[Divulgación]"
+    },
+    "mapping": {
+      "actions": {
+        "auto": "Mapa automático",
+        "reset": "Restablecer"
+      },
+      "columns": {
+        "email": "Empresa",
+        "name": "Nombre",
+        "phone": "Teléfono"
+      },
+      "fields": "Cartografía de campo",
+      "required": "Requerido",
+      "subtitle": "En la medida de lo posible, premaquetamos las cabeceras. Teléfono y Nombre son obligatorios.",
+      "title": "Campos del mapa"
+    },
+    "nav": {
+      "back": "Volver",
+      "next": "Continúe en"
+    },
+    "paste": {
+      "label": "Pegar datos CSV",
+      "placeholder": "Pegue aquí sus datos CSV (con cabeceras)...",
+      "process": "Datos de proceso",
+      "processing": "Procesando..."
+    },
+    "prefix": {
+      "apply_to_all": "Aplicar reglas de prefijo a todos los números de teléfono",
+      "auto": "Detección automática (+39, 0039, ninguna)",
+      "default_country": "País por defecto",
+      "force_0039": "Fuerza 0039 prefijo",
+      "force_39": "Prefijo Fuerza +39",
+      "no_prefix": "Sin prefijo (mantener como está)",
+      "strategy": "Estrategia de prefijos",
+      "title": "Configuración del prefijo del número de teléfono"
+    },
+    "preview": {
+      "continue": "Continuar con la cartografía",
+      "delimiter": "Delimitador",
+      "fields": "Campos",
+      "rows": "Filas",
+      "showing": "Mostrando las 5 primeras filas de",
+      "title": "Vista previa de datos",
+      "total": "total de filas"
+    },
+    "processing": "Tratamiento de sus datos...",
+    "review": {
+      "category": {
+        "allowed": "Permitido",
+        "blocked": "Bloqueado",
+        "conditional": "Condicional"
+      },
+      "columns": {
+        "category": "Categoría",
+        "why": "Por qué"
+      },
+      "config": "Revisión de la configuración",
+      "cost": "Coste estimado",
+      "cost_desc": "En función de su plan actual y de los nuevos contactos estimados",
+      "cost_note": "El coste real puede variar en función de los resultados finales del tratamiento",
+      "legend": "Leyenda: 🟢 Permitido - 🟡 Condicional - 🔴 Bloqueado",
+      "subtitle": "Revise la configuración de importación e inicie el trabajo",
+      "summary": "Resumen de importación",
+      "title": "Revisión jurídica"
+    },
+    "sheet": {
+      "subtitle": "Próximamente Puedes exportar tu Google Sheet como CSV y subirlo aquí.",
+      "title": "Integración de Google Sheets",
+      "upload_csv": "Cargar CSV en su lugar"
+    },
+    "steps": {
+      "attributes": "atributos __GL_0",
+      "commit": "Confirmar e importar",
+      "mapping": "Cartografía de campo",
+      "raw": "Datos brutos",
+      "review": "Revisión jurídica",
+      "source": "Fuente",
+      "subset": "Seleccionar filas"
+    },
+    "subset": {
+      "filters": "Filtros",
+      "select_all": "Seleccionar todo",
+      "selected": "{{count}} seleccionado",
+      "title": "Seleccionar filas para importar"
+    },
+    "tabs": {
+      "csv": "Cargar CSV",
+      "hubspot": "HubSpot",
+      "paste": "Pegar datos",
+      "sheet": "Hoja de Google",
+      "zoho": "Zoho (próximamente)"
+    },
+    "title": "Importar",
+    "toast": {
+      "file_too_big": "El archivo supera los 50 MB.",
+      "missing_required": "El teléfono y el nombre son obligatorios.",
+      "nothing_selected": "Seleccione al menos una fila."
+    },
+    "upload": {
+      "drag_drop": "Arrastre y suelte su CSV aquí",
+      "drop_here": "Suelte el archivo aquí",
+      "or_click": "o haga clic para seleccionar un archivo",
+      "paste_placeholder": "Pegue aquí las filas (CSV o TSV)",
+      "subtitle": "CSV de hasta 50 MB. Detectamos automáticamente el delimitador y la codificación.",
+      "supported_formats": "Compatible: .csv, .xls, .xlsx",
+      "title": "Cargue sus datos"
     }
   },
   "integrations": {
@@ -628,7 +795,7 @@
     "cards": {
       "company": "Empresa",
       "contacts": "Contactos",
-      "faq": "FAQ",
+      "faq": "PREGUNTAS FRECUENTES",
       "policies": "Políticas",
       "pricing": "Precios",
       "products": "Productos"
@@ -812,40 +979,148 @@
   "leads": {
     "actions": {
       "add": "[Añadir]",
-      "import": "[Import]"
+      "delete": "Borrar plomo",
+      "edit": "Editar Jefe",
+      "import": "[Import]",
+      "view": "Ver Plomo"
+    },
+    "columns": {
+      "actions": "Acciones",
+      "category": "Categoría",
+      "compliance": "Compliance",
+      "country": "País",
+      "last_contact": "Último contacto",
+      "name": "Nombre",
+      "owner": "Propietario",
+      "phone": "Teléfono",
+      "score": "Puntuación",
+      "stage": "Escenario",
+      "status": "Estado",
+      "updated": "Actualizado"
+    },
+    "delete": {
+      "message": "Esta acción no puede deshacerse.",
+      "title": "¿Borrar el plomo?"
+    },
+    "description": "Gestiona y revisa tus contactos.",
+    "details": {
+      "basic_info": "Información básica",
+      "description": "Información básica y calendario",
+      "error": {
+        "description": "Esta pista no se ha podido cargar.",
+        "title": "Plomo no disponible"
+      },
+      "fields": {
+        "company": "Empresa",
+        "created_at": "Creado",
+        "email": "Correo electrónico",
+        "last_contact": "Último contacto",
+        "phone": "Teléfono",
+        "status": "Estado"
+      },
+      "status_timeline": "Situación y calendario",
+      "title": "Plomo {{name}}"
     },
     "dialogs": {
       "assign": {
-        "agent": "Assign Agent",
-        "cancel": "Cancel",
-        "confirm": "Confirm Assignment"
+        "agent": "Asignar agente",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar asignación",
+        "success": "Plomo asignado con éxito",
+        "title": "Asignar responsable"
       },
       "delete": {
-        "body": "Are you sure you want to delete this lead?",
-        "cancel": "Cancel",
-        "confirm": "Delete Lead"
+        "body": "¿Está seguro de que desea eliminar esta pista?",
+        "cancel": "Cancelar",
+        "confirm": "Borrar plomo",
+        "success": "Plomo eliminado con éxito",
+        "title": "Borrar plomo"
       }
     },
+    "errors": {
+      "e164": "Formato E164 requerido"
+    },
+    "export": {
+      "starting": "Exportación a partir de..."
+    },
+    "fields": {
+      "company": "Empresa",
+      "consent": "Consentimiento",
+      "country": "País",
+      "lang": "Idioma",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "role": "Papel"
+    },
     "filters": {
-      "category": "Category",
-      "class": "Class",
-      "stage": "Stage",
-      "status": "Status"
+      "add": "Añadir filtro",
+      "added": "Filtro añadido",
+      "category": "Categoría",
+      "class": "Clase",
+      "country": "País",
+      "empty": "No se aplican filtros",
+      "load_segment": "Segmento de carga",
+      "multiselect_hint": "Seleccionar varios valores",
+      "save_segment": "Guardar segmento",
+      "select_field": "Seleccionar campo",
+      "stage": "Escenario",
+      "status": "Estado",
+      "updated": "Filtro actualizado",
+      "value_placeholder": "Introduzca el valor"
     },
     "import": {
-      "coming_soon": "Coming Soon",
-      "description": "Import leads from external sources",
-      "title": "Import Leads"
+      "coming_soon": "Próximamente",
+      "description": "Importar clientes potenciales de fuentes externas",
+      "title": "Importar clientes potenciales"
+    },
+    "new": {
+      "coming_soon": "Próximamente",
+      "description": "Crear un nuevo cliente potencial manualmente",
+      "title": "Plomo nuevo"
+    },
+    "placeholders": {
+      "e164": "+1..."
+    },
+    "stage": {
+      "cold": "Frío",
+      "hot": "Caliente",
+      "warm": "Caliente"
+    },
+    "status": {
+      "contacted": "Contacto",
+      "lost": "Perdido",
+      "new": "Nuevo",
+      "qualified": "Cualificado"
     },
     "table": {
       "columns": {
-        "campaign": "Campaign",
-        "email": "Email",
-        "last_contact": "Last Contact",
-        "owner": "Owner",
-        "score": "Score",
-        "stage": "Stage"
+        "actions": "Acciones",
+        "campaign": "Campaña",
+        "category": "Categoría",
+        "country": "País",
+        "email": "Correo electrónico",
+        "last_contact": "Último contacto",
+        "name": "Nombre",
+        "owner": "Propietario",
+        "phone": "Teléfono",
+        "score": "Puntuación",
+        "stage": "Escenario",
+        "status": "Estado",
+        "updated": "Actualizado"
       }
+    },
+    "title": "Plomos",
+    "toasts": {
+      "added": "Plomo añadido"
+    },
+    "toolbar": {
+      "bulk": {
+        "assign": "Asignar",
+        "delete": "Borrar",
+        "export": "Exportar"
+      },
+      "search_aria": "Buscar pistas",
+      "search_placeholder": "Buscar pistas.."
     }
   },
   "nav": {

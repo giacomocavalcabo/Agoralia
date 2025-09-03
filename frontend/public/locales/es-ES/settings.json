@@ -4,6 +4,7 @@
       "save": "Guardar cambios"
     },
     "errors": {
+      "load_failed": "Error al cargar la configuración de la cuenta",
       "save_failed": "No se ha podido guardar la configuración del perfil"
     },
     "fields": {
@@ -260,10 +261,10 @@
   "nav": {
     "account": {
       "errors": {
-        "load_failed": "Failed to load account settings"
+        "load_failed": "Error al cargar la configuración de la cuenta"
       },
-      "timezones": "Timezone Settings",
-      "title": "Account Settings"
+      "timezones": "Configuración de la zona horaria",
+      "title": "Configuración de la cuenta"
     },
     "billing": "Facturación",
     "billing_desc": "Gestionar el presupuesto y el uso",

@@ -4,6 +4,7 @@
       "save": "Enregistrer les modifications"
     },
     "errors": {
+      "load_failed": "Échec du chargement des paramètres du compte",
       "save_failed": "Échec de l'enregistrement des paramètres du profil"
     },
     "fields": {
@@ -260,10 +261,10 @@
   "nav": {
     "account": {
       "errors": {
-        "load_failed": "Failed to load account settings"
+        "load_failed": "Échec du chargement des paramètres du compte"
       },
-      "timezones": "Timezone Settings",
-      "title": "Account Settings"
+      "timezones": "Paramètres du fuseau horaire",
+      "title": "Paramètres du compte"
     },
     "billing": "Facturation",
     "billing_desc": "Gérer le budget et l'utilisation",

@@ -114,7 +114,7 @@
       "reached_other": "{{count}} Anrufe erreicht"
     },
     "metrics": {
-      "agents_one": "{{count}} agent",
+      "agents_one": "{{count}} Agent",
       "agents_other": "{{count}} Mittel",
       "avg_duration": "Durchschnittliche Dauer",
       "avg_duration_one": "{{count}} Minute",
@@ -554,8 +554,175 @@
     "title": "Anrufverlauf und Ergebnisse"
   },
   "import": {
+    "attributes": {
+      "bulk": {
+        "apply_to": "Auf die Auswahl anwenden",
+        "clear": "Klar",
+        "set": "Satz"
+      },
+      "class": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "unknown": "Unbekannt"
+      },
+      "columns": {
+        "class": "Klasse",
+        "dnc": "Nationale DNC",
+        "existing": "Bestehende Beziehung",
+        "notes": "Anmerkungen",
+        "opt_in": "Opt-in"
+      },
+      "dnc": {
+        "in": "In der Registratur",
+        "not_in": "Nicht in der Registry",
+        "unknown": "Unbekannt"
+      },
+      "existing": {
+        "no": "Nein",
+        "unknown": "Unbekannt",
+        "yes": "Ja"
+      },
+      "hints": {
+        "b2c_optin_only": "Das Opt-in ist nur in Opt-in-Ländern (B2C) erforderlich.",
+        "dnc_only": "Das nationale DNC gilt nur, wenn ein Register existiert."
+      },
+      "optin": {
+        "no": "Nein",
+        "unknown": "Unbekannt",
+        "yes": "Ja"
+      },
+      "title": "Agoralia Attribute"
+    },
+    "commit": {
+      "done": "Import abgeschlossen",
+      "errors_csv": "Fehler herunterladen CSV",
+      "progress": "Importieren..",
+      "start": "Import starten",
+      "title": "Bestätigen & importieren"
+    },
+    "dedupe": {
+      "check_on": "Prüfen Sie auf Duplikate auf:",
+      "merge": "Zusammenführung und Aktualisierung bestehender",
+      "resolve_strategy": "Wenn Duplikate gefunden werden:",
+      "skip": "Duplikate überspringen",
+      "title": "Deduplizierungsregeln"
+    },
+    "launch": {
+      "launch": "Import starten",
+      "launching": "Starten...",
+      "new_import": "Neuen Import starten",
+      "success": "Importauftrag gestartet!",
+      "success_desc": "Ihr Importauftrag wurde in die Warteschlange aufgenommen und wird in Kürze bearbeitet.",
+      "view_job": "Job-Status anzeigen"
+    },
     "legal": {
       "disclosure": "[Offenlegung]"
+    },
+    "mapping": {
+      "actions": {
+        "auto": "Auto-Map",
+        "reset": "Reset"
+      },
+      "columns": {
+        "email": "Unternehmen",
+        "name": "Name",
+        "phone": "Telefon"
+      },
+      "fields": "Feldkartierung",
+      "required": "Erforderlich",
+      "subtitle": "Wenn möglich, haben wir die Kopfzeilen vordefiniert. Telefon und Name sind erforderlich.",
+      "title": "Karte Felder"
+    },
+    "nav": {
+      "back": "Zurück",
+      "next": "Weiter"
+    },
+    "paste": {
+      "label": "CSV-Daten einfügen",
+      "placeholder": "Fügen Sie Ihre CSV-Daten hier ein (mit Kopfzeilen)...",
+      "process": "Prozessdaten",
+      "processing": "Verarbeitung..."
+    },
+    "prefix": {
+      "apply_to_all": "Vorwahlregeln auf alle Rufnummern anwenden",
+      "auto": "Automatische Erkennung (+39, 0039, keine)",
+      "default_country": "Standard Land",
+      "force_0039": "Kraft 0039 Präfix",
+      "force_39": "Kraft +39 Präfix",
+      "no_prefix": "Kein Präfix (unverändert beibehalten)",
+      "strategy": "Präfix-Strategie",
+      "title": "Konfiguration der Rufnummernvorwahl"
+    },
+    "preview": {
+      "continue": "Weiter zu Mapping",
+      "delimiter": "Begrenzungszeichen",
+      "fields": "Felder",
+      "rows": "Zeilen",
+      "showing": "Zeigt die ersten 5 Zeilen von",
+      "title": "Datenvorschau",
+      "total": "gesamtanzahl Zeilen"
+    },
+    "processing": "Verarbeitung Ihrer Daten...",
+    "review": {
+      "category": {
+        "allowed": "Erlaubt",
+        "blocked": "Blockiert",
+        "conditional": "Bedingt"
+      },
+      "columns": {
+        "category": "Kategorie",
+        "why": "Warum"
+      },
+      "config": "Überprüfung der Konfiguration",
+      "cost": "Geschätzte Kosten",
+      "cost_desc": "Basierend auf Ihrem aktuellen Plan und den geschätzten neuen Kontakten",
+      "cost_note": "Die tatsächlichen Kosten können je nach den endgültigen Verarbeitungsergebnissen variieren",
+      "legend": "Legende: 🟢 Erlaubt - 🟡 Bedingt - 🔴 Gesperrt",
+      "subtitle": "Überprüfen Sie Ihre Importkonfiguration und starten Sie den Auftrag",
+      "summary": "Zusammenfassung importieren",
+      "title": "Juristische Überprüfung"
+    },
+    "sheet": {
+      "subtitle": "Demnächst verfügbar! Sie können Ihr Google Sheet als CSV exportieren und es hier hochladen.",
+      "title": "Google Sheets-Integration",
+      "upload_csv": "Stattdessen CSV hochladen"
+    },
+    "steps": {
+      "attributes": "Agoralia Attribute",
+      "commit": "Bestätigen & importieren",
+      "mapping": "Feldkartierung",
+      "raw": "Rohdaten",
+      "review": "Juristische Überprüfung",
+      "source": "Quelle",
+      "subset": "Zeilen auswählen"
+    },
+    "subset": {
+      "filters": "Filters",
+      "select_all": "Alle auswählen",
+      "selected": "{{count}} ausgewählt",
+      "title": "Zu importierende Zeilen auswählen"
+    },
+    "tabs": {
+      "csv": "CSV hochladen",
+      "hubspot": "HubSpot",
+      "paste": "Paste Data",
+      "sheet": "Google-Blatt",
+      "zoho": "Zoho (demnächst)"
+    },
+    "title": "Importieren",
+    "toast": {
+      "file_too_big": "Die Datei ist größer als 50 MB.",
+      "missing_required": "Telefon und Name sind erforderlich.",
+      "nothing_selected": "Wählen Sie mindestens eine Zeile aus."
+    },
+    "upload": {
+      "drag_drop": "Ziehen Sie Ihr CSV per Drag & Drop hierher",
+      "drop_here": "Legen Sie die Datei hier ab",
+      "or_click": "oder klicken Sie, um eine Datei auszuwählen",
+      "paste_placeholder": "Zeilen hier einfügen (CSV oder TSV)",
+      "subtitle": "CSV bis zu 50 MB. Wir erkennen automatisch Trennzeichen und Kodierung.",
+      "supported_formats": "Unterstützt: .csv, .xls, .xlsx",
+      "title": "Laden Sie Ihre Daten hoch"
     }
   },
   "integrations": {
@@ -812,40 +979,148 @@
   "leads": {
     "actions": {
       "add": "[Hinzufügen]",
-      "import": "[Import]"
+      "delete": "Blei löschen",
+      "edit": "Blei bearbeiten",
+      "import": "[Import]",
+      "view": "Ansicht Blei"
+    },
+    "columns": {
+      "actions": "Aktionen",
+      "category": "Kategorie",
+      "compliance": "Compliance",
+      "country": "Land",
+      "last_contact": "Letzter Kontakt",
+      "name": "Name",
+      "owner": "Eigentümer",
+      "phone": "Telefon",
+      "score": "Punktzahl",
+      "stage": "Stage",
+      "status": "Status",
+      "updated": "Aktualisiert"
+    },
+    "delete": {
+      "message": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Blei löschen?"
+    },
+    "description": "Verwalten und überprüfen Sie Ihre Kontakte.",
+    "details": {
+      "basic_info": "Grundlegende Informationen",
+      "description": "Grundlegende Informationen und Zeitplan",
+      "error": {
+        "description": "Dieser Lead konnte nicht geladen werden.",
+        "title": "Blei nicht verfügbar"
+      },
+      "fields": {
+        "company": "Unternehmen",
+        "created_at": "Erstellt",
+        "email": "E-Mail",
+        "last_contact": "Letzter Kontakt",
+        "phone": "Telefon",
+        "status": "Status"
+      },
+      "status_timeline": "Status und Zeitplan",
+      "title": "Leitung {{name}}"
     },
     "dialogs": {
       "assign": {
-        "agent": "Assign Agent",
-        "cancel": "Cancel",
-        "confirm": "Confirm Assignment"
+        "agent": "Agent zuweisen",
+        "cancel": "Abbrechen",
+        "confirm": "Zuweisung bestätigen",
+        "success": "Blei erfolgreich zugeordnet",
+        "title": "Blei zuweisen"
       },
       "delete": {
-        "body": "Are you sure you want to delete this lead?",
-        "cancel": "Cancel",
-        "confirm": "Delete Lead"
+        "body": "Sind Sie sicher, dass Sie diesen Hinweis löschen möchten?",
+        "cancel": "Abbrechen",
+        "confirm": "Blei löschen",
+        "success": "Lead erfolgreich gelöscht",
+        "title": "Blei löschen"
       }
     },
+    "errors": {
+      "e164": "E164-Format erforderlich"
+    },
+    "export": {
+      "starting": "Export ab..."
+    },
+    "fields": {
+      "company": "Unternehmen",
+      "consent": "Zustimmung",
+      "country": "Land",
+      "lang": "Sprache",
+      "name": "Name",
+      "phone": "Telefon",
+      "role": "Rolle"
+    },
     "filters": {
-      "category": "Category",
-      "class": "Class",
+      "add": "Add Filter",
+      "added": "Filter hinzugefügt",
+      "category": "Kategorie",
+      "class": "Klasse",
+      "country": "Land",
+      "empty": "Keine Filter angewendet",
+      "load_segment": "Segment laden",
+      "multiselect_hint": "Mehrere Werte auswählen",
+      "save_segment": "Segment speichern",
+      "select_field": "Feld auswählen",
       "stage": "Stage",
-      "status": "Status"
+      "status": "Status",
+      "updated": "Filter aktualisiert",
+      "value_placeholder": "Wert eingeben"
     },
     "import": {
-      "coming_soon": "Coming Soon",
-      "description": "Import leads from external sources",
-      "title": "Import Leads"
+      "coming_soon": "Demnächst verfügbar",
+      "description": "Leads aus externen Quellen importieren",
+      "title": "Leads importieren"
+    },
+    "new": {
+      "coming_soon": "Demnächst verfügbar",
+      "description": "Manuell einen neuen Lead erstellen",
+      "title": "Neue Leitung"
+    },
+    "placeholders": {
+      "e164": "+1..."
+    },
+    "stage": {
+      "cold": "Kalt",
+      "hot": "Heiß",
+      "warm": "Warm"
+    },
+    "status": {
+      "contacted": "Kontaktiert",
+      "lost": "Verloren",
+      "new": "Neu",
+      "qualified": "Qualifiziert"
     },
     "table": {
       "columns": {
-        "campaign": "Campaign",
-        "email": "Email",
-        "last_contact": "Last Contact",
-        "owner": "Owner",
-        "score": "Score",
-        "stage": "Stage"
+        "actions": "Aktionen",
+        "campaign": "Kampagne",
+        "category": "Kategorie",
+        "country": "Land",
+        "email": "E-Mail",
+        "last_contact": "Letzter Kontakt",
+        "name": "Name",
+        "owner": "Eigentümer",
+        "phone": "Telefon",
+        "score": "Punktzahl",
+        "stage": "Stage",
+        "status": "Status",
+        "updated": "Aktualisiert"
       }
+    },
+    "title": "Führt",
+    "toasts": {
+      "added": "Blei hinzugefügt"
+    },
+    "toolbar": {
+      "bulk": {
+        "assign": "Zuweisen",
+        "delete": "Löschen",
+        "export": "Exportieren"
+      },
+      "search_aria": "Suche führt",
+      "search_placeholder": "Die Suche führt.."
     }
   },
   "nav": {

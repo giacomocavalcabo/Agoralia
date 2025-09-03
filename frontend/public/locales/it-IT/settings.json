@@ -4,6 +4,7 @@
       "save": "Salva Modifiche"
     },
     "errors": {
+      "load_failed": "Impossibile caricare le impostazioni dell'account",
       "save_failed": "Impossibile salvare le impostazioni del profilo"
     },
     "fields": {
@@ -37,16 +38,16 @@
       "Africa/Bujumbura": "Bujumbura (CAT)",
       "Africa/Cairo": "Il Cairo (EET/EEST)",
       "Africa/Cape_Verde": "Capo Verde (CVT)",
-      "Africa/Casablanca": "Casablanca (WET/WEST)",
+      "Africa/Casablanca": "Casablanca (UMIDO/OVEST)",
       "Africa/Ceuta": "Ceuta (CET/CEST)",
       "Africa/Comoro": "Comore (EAT)",
       "Africa/Conakry": "Conakry (GMT)",
       "Africa/Cotonou": "Cotonou (WAT)",
       "Africa/Dakar": "Dakar (GMT)",
       "Africa/Dar_es_Salaam": "Dar es Salaam (EAT)",
-      "Africa/Djibouti": "Djibouti (EAT)",
+      "Africa/Djibouti": "Gibuti (EAT)",
       "Africa/Douala": "Douala (WAT)",
-      "Africa/El_Aaiun": "El Aaiún (WET/WEST)",
+      "Africa/El_Aaiun": "El Aaiún (UMIDO/OVEST)",
       "Africa/Freetown": "Freetown (GMT)",
       "Africa/Gaborone": "Gaborone (CAT)",
       "Africa/Harare": "Harare (CAT)",
@@ -74,8 +75,8 @@
       "Africa/Niamey": "Niamey (WAT)",
       "Africa/Ouagadougou": "Ouagadougou (GMT)",
       "Africa/Porto-Novo": "Porto-Novo (WAT)",
-      "Africa/Praia": "Praia (CVT)",
-      "Africa/Reunion": "Réunion (RET)",
+      "Africa/Praia": "Spiaggia (CVT)",
+      "Africa/Reunion": "Riunione (RET)",
       "Africa/Sao_Tome": "São Tomé (GMT)",
       "Africa/Seychelles": "Seychelles (SCT)",
       "Africa/Tripoli": "Tripoli (EET)",
@@ -84,7 +85,7 @@
       "Africa/Yaounde": "Yaoundé (WAT)",
       "America/Anchorage": "Anchorage (AKST/AKDT)",
       "America/Asuncion": "Asunción (PYT)",
-      "America/Bogota": "Bogotá (COT)",
+      "America/Bogota": "Bogotà (TOC)",
       "America/Buenos_Aires": "Buenos Aires (ART)",
       "America/Caracas": "Caracas (VET)",
       "America/Chicago": "Chicago (CST/CDT)",
@@ -92,7 +93,7 @@
       "America/Guayaquil": "Guayaquil (ECT)",
       "America/Honolulu": "Honolulu (HST)",
       "America/La_Paz": "La Paz (BOT)",
-      "America/Lima": "Lima (PET)",
+      "America/Lima": "Cinque (PET)",
       "America/Los_Angeles": "Los Angeles (PST/PDT)",
       "America/Mexico_City": "Città del Messico (CST/CDT)",
       "America/Montevideo": "Montevideo (UYT)",
@@ -100,24 +101,24 @@
       "America/New_York": "New York (EST/EDT)",
       "America/Phoenix": "Phoenix (MST)",
       "America/Santiago": "Santiago (CLT)",
-      "America/Sao_Paulo": "São Paulo (BRT)",
+      "America/Sao_Paulo": "San Paolo (BRT)",
       "America/Toronto": "Toronto (EST/EDT)",
       "America/Vancouver": "Vancouver (PST/PDT)",
       "Asia/Amman": "Amman (EET/EEST)",
       "Asia/Anadyr": "Anadyr (ANAT)",
       "Asia/Baghdad": "Baghdad (AST)",
-      "Asia/Bahrain": "Bahrain (AST)",
+      "Asia/Bahrain": "Bahrein (AST)",
       "Asia/Baku": "Baku (AZT)",
-      "Asia/Bangkok": "Bangkok (ICT)",
-      "Asia/Beirut": "Beirut (EET/EEST)",
+      "Asia/Bangkok": "Bangkok (TIC)",
+      "Asia/Beirut": "Beirut (EET/EAST)",
       "Asia/Colombo": "Colombo (SLST)",
-      "Asia/Damascus": "Damascus (EET/EEST)",
+      "Asia/Damascus": "Damasco (EET/EEST)",
       "Asia/Dhaka": "Dhaka (BST)",
       "Asia/Dubai": "Dubai (GST)",
       "Asia/Ho_Chi_Minh": "Ho Chi Minh City (ICT)",
       "Asia/Hong_Kong": "Hong Kong (HKT)",
       "Asia/Irkutsk": "Irkutsk (IRKT)",
-      "Asia/Jakarta": "Jakarta (WIB)",
+      "Asia/Jakarta": "Giacarta (WIB)",
       "Asia/Jerusalem": "Gerusalemme (IST/IDT)",
       "Asia/Kamchatka": "Kamchatka (PETT)",
       "Asia/Karachi": "Karachi (PKT)",
@@ -137,11 +138,11 @@
       "Asia/Singapore": "Singapore (SGT)",
       "Asia/Taipei": "Taipei (CST)",
       "Asia/Tbilisi": "Tbilisi (GET)",
-      "Asia/Tehran": "Tehran (IRST)",
+      "Asia/Tehran": "Teheran (IRST)",
       "Asia/Tokyo": "Tokyo (JST)",
       "Asia/Vladivostok": "Vladivostok (VLAT)",
       "Asia/Yakutsk": "Yakutsk (YAKT)",
-      "Asia/Yekaterinburg": "Yekaterinburg (YEKT)",
+      "Asia/Yekaterinburg": "Ekaterinburg (YEKT)",
       "Asia/Yerevan": "Yerevan (AMT)",
       "Australia/Adelaide": "Adelaide (ACST/ACDT)",
       "Australia/Brisbane": "Brisbane (AEST)",
@@ -174,12 +175,12 @@
       "Europe/Vilnius": "Vilnius (EET/EEST)",
       "Europe/Warsaw": "Varsavia (CET/CEST)",
       "Europe/Zurich": "Zurigo (CET/CEST)",
-      "Pacific/Apia": "Apia (WST)",
+      "Pacific/Apia": "Apia (JTS)",
       "Pacific/Auckland": "Auckland (NZST/NZDT)",
       "Pacific/Chatham": "Chatham (CHAST/CHADT)",
       "Pacific/Easter": "Isola di Pasqua (EAST/EASST)",
-      "Pacific/Fiji": "Fiji (FJT)",
-      "Pacific/Galapagos": "Galápagos (GALT)",
+      "Pacific/Fiji": "Figi (FJT)",
+      "Pacific/Galapagos": "Galapagos (GALT)",
       "Pacific/Gambier": "Gambier (GAMT)",
       "Pacific/Guam": "Guam (ChST)",
       "Pacific/Honolulu": "Honolulu (HST)",
@@ -187,7 +188,7 @@
       "Pacific/Majuro": "Majuro (MHT)",
       "Pacific/Marquesas": "Marchesi (MART)",
       "Pacific/Midway": "Midway (SST)",
-      "Pacific/Noumea": "Nouméa (NCT)",
+      "Pacific/Noumea": "Noumea (NCT)",
       "Pacific/Pago_Pago": "Pago Pago (SST)",
       "Pacific/Pitcairn": "Pitcairn (PST)",
       "Pacific/Port_Moresby": "Port Moresby (PGT)",
@@ -249,21 +250,21 @@
     "title": "Impostazioni Azienda"
   },
   "integrations": {
-    "analytics": "Analytics",
+    "analytics": "Analisi",
     "automation": "Automazione",
     "communication": "Comunicazione",
     "crm_systems": "Sistemi CRM",
     "description": "Connetti servizi e strumenti esterni",
     "title": "Integrazioni",
-    "webhooks": "Webhooks"
+    "webhooks": "Ganci web"
   },
   "nav": {
     "account": {
       "errors": {
-        "load_failed": "Failed to load account settings"
+        "load_failed": "Impossibile caricare le impostazioni dell'account"
       },
       "timezones": "Timezone Settings",
-      "title": "Account Settings"
+      "title": "Impostazioni dell'account"
     },
     "billing": "Fatturazione",
     "billing_desc": "Gestisci budget e utilizzo",
@@ -358,7 +359,7 @@
       "cta": "Aggiungi",
       "description": "L'Outbound è consentito solo se il numero risulta **ospitato e verificato** presso il provider collegato.",
       "e164": "Numero (E.164)",
-      "provider": "Provider",
+      "provider": "Fornitore",
       "title": "Aggiungi numero esistente"
     },
     "compliance": {
@@ -376,7 +377,7 @@
       "submissions": "Sottomissioni",
       "title": "Conformità / KYC",
       "types": {
-        "business": "Business",
+        "business": "Affari",
         "local": "Locale"
       },
       "upload": "Carica file"
@@ -387,10 +388,10 @@
     "coverage": {
       "choose_country": "Scegli un paese...",
       "features": "Funzionalità",
-      "import_support": "Import/Porting",
+      "import_support": "Importazione/Porting",
       "last_updated": "Ultimo aggiornamento",
       "origin_country": "Paese di Origine (per pricing)",
-      "outbound_policy": "Outbound Caller ID",
+      "outbound_policy": "ID chiamante in uscita",
       "provider_info": {
         "global_coverage": "Copertura Globale",
         "telnyx_description": "Telnyx offre telefonia di livello enterprise con funzionalità avanzate e copertura globale.",
@@ -418,8 +419,8 @@
       "country": "Paese",
       "created": "Creato",
       "number": "Numero",
-      "outbound": "Outbound",
-      "provider": "Provider",
+      "outbound": "In uscita",
+      "provider": "Fornitore",
       "status": "Stato"
     },
     "numbers_empty": {
@@ -461,7 +462,7 @@
       "title": "Instradamento"
     },
     "status": {
-      "hosted": "Hosted",
+      "hosted": "Ospitato",
       "verified_cli": "CLI Verificato"
     },
     "subtitle": "Gestisci numeri di telefono, provider e instradamento",

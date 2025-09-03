@@ -4,6 +4,7 @@
       "save": "حفظ التغييرات"
     },
     "errors": {
+      "load_failed": "فشل تحميل إعدادات الحساب",
       "save_failed": "فشل في حفظ إعدادات ملف التعريف"
     },
     "fields": {
@@ -260,10 +261,10 @@
   "nav": {
     "account": {
       "errors": {
-        "load_failed": "Failed to load account settings"
+        "load_failed": "فشل تحميل إعدادات الحساب"
       },
-      "timezones": "Timezone Settings",
-      "title": "Account Settings"
+      "timezones": "إعدادات المنطقة الزمنية",
+      "title": "إعدادات الحساب"
     },
     "billing": "الفواتير",
     "billing_desc": "إدارة الميزانية والاستخدام",

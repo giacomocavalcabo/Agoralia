@@ -14,14 +14,14 @@
     "topup": "[Nachfüllen]"
   },
   "budget": {
-    "blocked": "Budget Blocked",
-    "hard_stop": "Hard Stop Reached",
-    "monthly": "Monthly Budget",
-    "progress": "Budget Progress",
-    "resets": "Budget Resets",
-    "saved": "Budget Saved",
+    "blocked": "Gesperrter Haushalt",
+    "hard_stop": "Harter Anschlag erreicht",
+    "monthly": "Monatlicher Haushalt",
+    "progress": "Fortschritte im Haushalt",
+    "resets": "Haushaltsrückstellungen",
+    "saved": "Eingespartes Budget",
     "title": "Budget Management",
-    "warn80": "80% Budget Warning"
+    "warn80": "80%ige Haushaltswarnung"
   },
   "hard_stop_banner": "Monatliches Budget erreicht. Kauf/Import sind deaktiviert.",
   "hard_stop_detail": "Ihre monatliche Budgetgrenze wurde erreicht. Bitte aktualisieren Sie Ihre Abrechnungseinstellungen, um fortzufahren.",

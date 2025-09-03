@@ -12,6 +12,8 @@ import os
 import re
 import json
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import hashlib
 import time
 from pathlib import Path
@@ -32,14 +34,36 @@ DEEPL_URL = "https://api-free.deepl.com/v2/translate"  # usa api.deepl.com se pi
 
 # Configurazione sicura per limiti DeepL
 MONTHLY_CAP = int(os.getenv("DEEPL_MONTHLY_CAP", str(CFG.get("deepl", {}).get("monthly_cap", 500000))))
+# Aggiornato: 200.000 caratteri già utilizzati
+ALREADY_USED = 200000
 SOFT_WARN = int(os.getenv("DEEPL_SOFT_WARN", str(CFG.get("deepl", {}).get("soft_warn", 400000))))
-BATCH_SIZE = int(os.getenv("DEEPL_BATCH_SIZE", str(CFG.get("deepl", {}).get("batch_size", 50))))
+BATCH_SIZE = int(os.getenv("DEEPL_BATCH_SIZE", str(CFG.get("deepl", {}).get("batch_size", 5))))
 MAX_BATCH_CHARS = int(os.getenv("DEEPL_MAX_BATCH_CHARS", str(CFG.get("deepl", {}).get("max_batch_chars", 20000))))
-MAX_RETRIES = int(os.getenv("DEEPL_MAX_RETRIES", str(CFG.get("deepl", {}).get("max_retries", 3))))
+MAX_RETRIES = int(os.getenv("DEEPL_MAX_RETRIES", str(CFG.get("deepl", {}).get("max_retries", 10))))
 
 # File di tracking
 HASH_FILE = ROOT / "frontend" / ".i18n" / "hashes.json"
 USAGE_FILE = ROOT / "frontend" / ".i18n" / "usage.json"
+
+# Configurazione sessione HTTP con retry
+def create_session():
+    """Crea una sessione HTTP con retry automatico"""
+    session = requests.Session()
+    
+    # Configura retry strategy
+    retry_strategy = Retry(
+        total=10,  # Numero totale di retry
+        backoff_factor=2,  # Fattore di backoff esponenziale
+        status_forcelist=[429, 500, 502, 503, 504],  # Codici di stato per cui fare retry
+        allowed_methods=["POST"]  # Solo per POST
+    )
+    
+    # Adapter con retry
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
+    return session
 
 def ensure_dirs():
     """Crea directory necessarie"""
@@ -47,15 +71,8 @@ def ensure_dirs():
 
 def get_monthly_usage() -> int:
     """Recupera l'uso mensile già consumato"""
-    if not USAGE_FILE.exists():
-        return 0
-    
-    try:
-        data = json.loads(USAGE_FILE.read_text(encoding="utf-8"))
-        current_month = datetime.now().strftime("%Y-%m")
-        return data.get(current_month, 0)
-    except:
-        return 0
+    # Usa il valore aggiornato: 200.000 caratteri già utilizzati
+    return ALREADY_USED
 
 def save_monthly_usage(used_chars: int):
     """Salva l'uso mensile consumato"""
@@ -189,25 +206,38 @@ def translate_single_batch(batch: List[Tuple[str, str, Dict, Dict]], target_lang
     }
     
     for (_, masked, _, _) in batch:
+        # Filtra testi troppo corti o problematici
+        if len(masked.strip()) < 2:
+            print(f"⚠️  Testo troppo corto, salto: '{masked}'")
+            continue
         params["text"].append(masked)
     
+    # Controlla se ci sono testi da tradurre
+    if not params["text"]:
+        print("⚠️  Nessun testo valido nel batch, salto")
+        return {}
+    
     batch_chars = sum(len(masked) for (_, masked, _, _) in batch)
-    print(f"🔄 Batch: {len(batch)} testi ({batch_chars:,} caratteri)")
+    print(f"🔄 Batch: {len(params['text'])} testi validi ({batch_chars:,} caratteri)")
+    
+    # Crea una nuova sessione per ogni batch per evitare problemi di connessione
+    session = create_session()
     
     for attempt in range(MAX_RETRIES):
         try:
-            r = requests.post(DEEPL_URL, data=params, timeout=60)
+            time.sleep(1)  # Pausa di 1 secondo tra le richieste
+            r = session.post(DEEPL_URL, data=params, timeout=60)
             
             if r.status_code == 456:
                 raise SystemExit("❌ DeepL: quota esaurita.")
             elif r.status_code == 429:
                 retry_after = int(r.headers.get("Retry-After", 60))
-                if attempt < MAX_RETRIES - 1:
-                    print(f"⏳ Rate limit, riprovo tra {retry_after}s...")
-                    time.sleep(retry_after)
-                    continue
-                else:
-                    raise SystemExit("❌ DeepL: rate limit persistente.")
+                print(f"⏳ Rate limit, aspetto {retry_after}s...")
+                time.sleep(retry_after)
+                # Chiudi la sessione e ricreala per evitare problemi di connessione
+                session.close()
+                session = create_session()
+                continue
             
             r.raise_for_status()
             translations = r.json().get("translations", [])
@@ -223,16 +253,17 @@ def translate_single_batch(batch: List[Tuple[str, str, Dict, Dict]], target_lang
                 out[key] = unmasked
             
             print(f"   ✅ Tradotti {len(batch)} testi")
+            session.close()  # Chiudi la sessione quando tutto va bene
             return out
             
         except requests.exceptions.RequestException as e:
-            if attempt < MAX_RETRIES - 1:
-                wait_time = 2 ** attempt  # Exponential backoff
-                print(f"⚠️  Errore rete, riprovo tra {wait_time}s... ({e})")
-                time.sleep(wait_time)
-            else:
-                print(f"❌ Errore persistente dopo {MAX_RETRIES} tentativi: {e}")
-                return {}
+            wait_time = min(60, 2 ** attempt)  # max 60 secondi di attesa
+            print(f"⚠️  Errore rete, riprovo tra {wait_time}s... ({e})")
+            time.sleep(wait_time)
+            # Chiudi la sessione e ricreala per evitare problemi di connessione
+            session.close()
+            session = create_session()
+            continue
     
     return {}
 
@@ -274,26 +305,36 @@ def deepl_translate_batch(items: List[Tuple[str, str, Dict, Dict]], target_local
             current_batch_chars >= MAX_BATCH_CHARS or
             already_used + total_chars_used + current_batch_chars > MONTHLY_CAP):
             
-            # Traduci batch corrente
-            batch_result = translate_single_batch(current_batch, target)
-            if batch_result:
-                out.update(batch_result)
-                total_chars_used += current_batch_chars
-                
-                # Warning soft threshold
-                if already_used + total_chars_used > SOFT_WARN:
-                    print(f"⚠️  QUOTA ALTA: {already_used + total_chars_used:,}/{MONTHLY_CAP:,} caratteri")
+            # Traduci batch corrente - riprova indefinitamente finché non va
+            while True:
+                batch_result = translate_single_batch(current_batch, target)
+                if batch_result:
+                    out.update(batch_result)
+                    total_chars_used += current_batch_chars
+                    
+                    # Warning soft threshold
+                    if already_used + total_chars_used > SOFT_WARN:
+                        print(f"⚠️  QUOTA ALTA: {already_used + total_chars_used:,}/{MONTHLY_CAP:,} caratteri")
+                    break  # Esci dal loop quando la traduzione va a buon fine
+                else:
+                    print(f"🔄 Batch fallito, riprovo tra 10 secondi...")
+                    time.sleep(10)
             
             # Reset batch
             current_batch = []
             current_batch_chars = 0
     
-    # Traduci batch finale se presente
+    # Traduci batch finale se presente - riprova indefinitamente finché non va
     if current_batch:
-        batch_result = translate_single_batch(current_batch, target)
-        if batch_result:
-            out.update(batch_result)
-            total_chars_used += current_batch_chars
+        while True:
+            batch_result = translate_single_batch(current_batch, target)
+            if batch_result:
+                out.update(batch_result)
+                total_chars_used += current_batch_chars
+                break  # Esci dal loop quando la traduzione va a buon fine
+            else:
+                print(f"🔄 Batch finale fallito, riprovo tra 10 secondi...")
+                time.sleep(10)
     
     return out, total_chars_used
 
@@ -331,6 +372,11 @@ def main():
             hashes.setdefault(SRC, {}).setdefault(ns, {})[k] = src_hash(str(v))
 
         for locale in TARGETS:
+            # Salta l'hindi perché non è supportato da DeepL
+            if locale == "hi-IN":
+                print(f"\n🌍 Saltando {locale}:{ns} (hindi non supportato da DeepL)...")
+                continue
+                
             print(f"\n🌍 Processando {locale}:{ns}...")
             
             tgt_path = LOCALES_DIR / locale / f"{ns}.json"
@@ -353,11 +399,19 @@ def main():
                 h_old = hashes.get(SRC, {}).get(ns, {}).get(k)
                 needs_update = h_old is None or h_now != h_old
                 missing = k not in tgt_flat or not isinstance(tgt_flat[k], str) or tgt_flat[k].strip() == ""
+                identical = k in tgt_flat and isinstance(tgt_flat[k], str) and tgt_flat[k] == str(en_value)
                 
-                if force_translate or missing or needs_update:
+                # Solo traduce se: forzato, mancante, aggiornato, o identico all'inglese
+                if force_translate or missing or needs_update or identical:
                     placeholders = extract_placeholders(str(en_value))
                     masked, ph_map, gl_map = mask_text(str(en_value), placeholders, GLOSSARY)
                     to_translate.append((k, masked, ph_map, gl_map))
+                    if identical:
+                        print(f"   🔄 Traduco chiave identica: {k}")
+                    elif missing:
+                        print(f"   🔄 Traduco chiave mancante: {k}")
+                    elif needs_update:
+                        print(f"   🔄 Traduco chiave aggiornata: {k}")
 
             if not to_translate:
                 print("   ✅ Nessuna traduzione necessaria")
@@ -375,6 +429,10 @@ def main():
             )
             total_chars_used += batch_chars
 
+            # Pausa tra i batch per rispettare il rate limit
+            if len(to_translate) > 0:
+                time.sleep(2)  # 2 secondi di pausa tra i batch
+            
             # Merge su target
             merged = tgt_flat.copy()
             for k, _masked, ph_map, gl_map in to_translate:

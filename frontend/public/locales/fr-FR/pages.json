@@ -554,8 +554,175 @@
     "title": "Historique des appels et résultats"
   },
   "import": {
+    "attributes": {
+      "bulk": {
+        "apply_to": "Appliquer à la sélection",
+        "clear": "Clair",
+        "set": "Set (jeu de mots)"
+      },
+      "class": {
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "unknown": "Inconnu"
+      },
+      "columns": {
+        "class": "Classe",
+        "dnc": "DNC national",
+        "existing": "Relation existante",
+        "notes": "Notes",
+        "opt_in": "Opt-in"
+      },
+      "dnc": {
+        "in": "Dans le registre",
+        "not_in": "Pas dans le registre",
+        "unknown": "Inconnu"
+      },
+      "existing": {
+        "no": "Non",
+        "unknown": "Inconnu",
+        "yes": "Oui"
+      },
+      "hints": {
+        "b2c_optin_only": "L'acceptation n'est requise que dans les pays où l'acceptation est obligatoire (B2C).",
+        "dnc_only": "La DNC nationale ne s'applique que lorsqu'un registre existe."
+      },
+      "optin": {
+        "no": "Non",
+        "unknown": "Inconnu",
+        "yes": "Oui"
+      },
+      "title": "attributs Agoralia"
+    },
+    "commit": {
+      "done": "Importation terminée",
+      "errors_csv": "Télécharger les erreurs au format CSV",
+      "progress": "Importation..",
+      "start": "Démarrer l'importation",
+      "title": "Confirmer et importer"
+    },
+    "dedupe": {
+      "check_on": "Vérifier s'il y a des doublons sur :",
+      "merge": "Fusionner et mettre à jour les",
+      "resolve_strategy": "Lorsque des doublons sont trouvés :",
+      "skip": "Sauter les doublons",
+      "title": "Règles de déduplication"
+    },
+    "launch": {
+      "launch": "Lancer l'importation",
+      "launching": "Lancement...",
+      "new_import": "Démarrer une nouvelle importation",
+      "success": "Lancement de l'emploi d'importateur !",
+      "success_desc": "Votre demande d'importation a été mise en file d'attente et sera traitée sous peu.",
+      "view_job": "Voir le statut de l'emploi"
+    },
     "legal": {
       "disclosure": "[Divulgation]"
+    },
+    "mapping": {
+      "actions": {
+        "auto": "Auto-map",
+        "reset": "Réinitialisation"
+      },
+      "columns": {
+        "email": "Entreprise",
+        "name": "Nom",
+        "phone": "Téléphone"
+      },
+      "fields": "Cartographie de terrain",
+      "required": "Exigée",
+      "subtitle": "Dans la mesure du possible, les en-têtes sont pré-maquettés. Le téléphone et le nom sont obligatoires.",
+      "title": "Champs de la carte"
+    },
+    "nav": {
+      "back": "Retour",
+      "next": "Continuer"
+    },
+    "paste": {
+      "label": "Coller les données CSV",
+      "placeholder": "Collez vos données CSV ici (avec les en-têtes)...",
+      "process": "Données du processus",
+      "processing": "Traitement..."
+    },
+    "prefix": {
+      "apply_to_all": "Appliquer les règles de préfixe à tous les numéros de téléphone",
+      "auto": "Détection automatique (+39, 0039, aucun)",
+      "default_country": "Pays par défaut",
+      "force_0039": "Préfixe Force 0039",
+      "force_39": "Préfixe Force +39",
+      "no_prefix": "Pas de préfixe (conserver tel quel)",
+      "strategy": "Stratégie des préfixes",
+      "title": "Configuration du préfixe du numéro de téléphone"
+    },
+    "preview": {
+      "continue": "Continuer à cartographier",
+      "delimiter": "Délimiteur",
+      "fields": "Domaines",
+      "rows": "Rangs",
+      "showing": "Afficher les 5 premières lignes de",
+      "title": "Aperçu des données",
+      "total": "nombre total de lignes"
+    },
+    "processing": "Le traitement de vos données...",
+    "review": {
+      "category": {
+        "allowed": "Autorisé",
+        "blocked": "Bloqué",
+        "conditional": "Conditionnel"
+      },
+      "columns": {
+        "category": "Catégorie",
+        "why": "Pourquoi"
+      },
+      "config": "Examen de la configuration",
+      "cost": "Coût estimé",
+      "cost_desc": "Sur la base de votre plan actuel et des nouveaux contacts estimés",
+      "cost_note": "Le coût réel peut varier en fonction des résultats finaux du traitement",
+      "legend": "Légende : 🟢 Autorisé - 🟡 Conditionnel - 🔴 Bloqué",
+      "subtitle": "Vérifiez la configuration de l'importation et lancez le travail",
+      "summary": "Résumé des importations",
+      "title": "Révision juridique"
+    },
+    "sheet": {
+      "subtitle": "Bientôt disponible ! Vous pouvez exporter votre feuille Google au format CSV et la télécharger ici.",
+      "title": "Intégration de Google Sheets",
+      "upload_csv": "Télécharger plutôt un fichier CSV"
+    },
+    "steps": {
+      "attributes": "attributs Agoralia",
+      "commit": "Confirmer et importer",
+      "mapping": "Cartographie de terrain",
+      "raw": "Données brutes",
+      "review": "Révision juridique",
+      "source": "Source",
+      "subset": "Sélectionner les lignes"
+    },
+    "subset": {
+      "filters": "Filtres",
+      "select_all": "Sélectionner tout",
+      "selected": "{{count}} sélectionné",
+      "title": "Sélectionner les lignes à importer"
+    },
+    "tabs": {
+      "csv": "Télécharger le CSV",
+      "hubspot": "HubSpot",
+      "paste": "Coller les données",
+      "sheet": "Feuille Google",
+      "zoho": "Zoho (bientôt)"
+    },
+    "title": "Importation",
+    "toast": {
+      "file_too_big": "Le fichier dépasse 50 Mo.",
+      "missing_required": "Le téléphone et le nom sont obligatoires.",
+      "nothing_selected": "Sélectionnez au moins une ligne."
+    },
+    "upload": {
+      "drag_drop": "Glissez-déposez votre CSV ici",
+      "drop_here": "Déposez le fichier ici",
+      "or_click": "ou cliquez pour sélectionner un fichier",
+      "paste_placeholder": "Coller les lignes ici (CSV ou TSV)",
+      "subtitle": "CSV jusqu'à 50 MB. Nous détectons automatiquement le délimiteur et l'encodage.",
+      "supported_formats": "Pris en charge : .csv, .xls, .xlsx",
+      "title": "Téléchargez vos données"
     }
   },
   "integrations": {
@@ -812,40 +979,148 @@
   "leads": {
     "actions": {
       "add": "[Ajouter]",
-      "import": "[Import]"
+      "delete": "Supprimer le plomb",
+      "edit": "Chef d'édition",
+      "import": "[Import]",
+      "view": "Voir le plomb"
+    },
+    "columns": {
+      "actions": "Actions",
+      "category": "Catégorie",
+      "compliance": "Compliance",
+      "country": "Pays",
+      "last_contact": "Dernier contact",
+      "name": "Nom",
+      "owner": "Propriétaire",
+      "phone": "Téléphone",
+      "score": "Score",
+      "stage": "Stage",
+      "status": "Statut",
+      "updated": "Mise à jour"
+    },
+    "delete": {
+      "message": "Cette action ne peut être annulée.",
+      "title": "Supprimer le plomb ?"
+    },
+    "description": "Gérez et consultez vos contacts.",
+    "details": {
+      "basic_info": "Informations de base",
+      "description": "Informations de base et calendrier",
+      "error": {
+        "description": "Cette piste n'a pas pu être chargée.",
+        "title": "Plomb non disponible"
+      },
+      "fields": {
+        "company": "Entreprise",
+        "created_at": "Créée",
+        "email": "Courriel",
+        "last_contact": "Dernier contact",
+        "phone": "Téléphone",
+        "status": "Statut"
+      },
+      "status_timeline": "Statut et calendrier",
+      "title": "Chef de file {{name}}"
     },
     "dialogs": {
       "assign": {
-        "agent": "Assign Agent",
-        "cancel": "Cancel",
-        "confirm": "Confirm Assignment"
+        "agent": "Affecter un agent",
+        "cancel": "Annuler",
+        "confirm": "Confirmer l'affectation",
+        "success": "Diriger avec succès",
+        "title": "Attribuer un responsable"
       },
       "delete": {
-        "body": "Are you sure you want to delete this lead?",
-        "cancel": "Cancel",
-        "confirm": "Delete Lead"
+        "body": "Êtes-vous sûr de vouloir supprimer cette piste ?",
+        "cancel": "Annuler",
+        "confirm": "Supprimer le plomb",
+        "success": "Piste supprimée avec succès",
+        "title": "Supprimer le plomb"
       }
     },
+    "errors": {
+      "e164": "Format E164 requis"
+    },
+    "export": {
+      "starting": "L'exportation commence..."
+    },
+    "fields": {
+      "company": "Entreprise",
+      "consent": "Consentement",
+      "country": "Pays",
+      "lang": "Langue",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "role": "Rôle"
+    },
     "filters": {
-      "category": "Category",
-      "class": "Class",
+      "add": "Ajouter un filtre",
+      "added": "Filtre ajouté",
+      "category": "Catégorie",
+      "class": "Classe",
+      "country": "Pays",
+      "empty": "Aucun filtre n'est appliqué",
+      "load_segment": "Segment de charge",
+      "multiselect_hint": "Sélectionner plusieurs valeurs",
+      "save_segment": "Sauvegarder le segment",
+      "select_field": "Sélectionner un champ",
       "stage": "Stage",
-      "status": "Status"
+      "status": "Statut",
+      "updated": "Mise à jour du filtre",
+      "value_placeholder": "Saisir la valeur"
     },
     "import": {
-      "coming_soon": "Coming Soon",
-      "description": "Import leads from external sources",
-      "title": "Import Leads"
+      "coming_soon": "Bientôt disponible",
+      "description": "Importer des prospects à partir de sources externes",
+      "title": "Importation de prospects"
+    },
+    "new": {
+      "coming_soon": "Prochainement",
+      "description": "Créer manuellement un nouveau lead",
+      "title": "Nouveau chef de file"
+    },
+    "placeholders": {
+      "e164": "+1..."
+    },
+    "stage": {
+      "cold": "Froid",
+      "hot": "Chaud",
+      "warm": "Chaud"
+    },
+    "status": {
+      "contacted": "Contacté",
+      "lost": "Perdu",
+      "new": "Nouveau",
+      "qualified": "Qualifié"
     },
     "table": {
       "columns": {
-        "campaign": "Campaign",
-        "email": "Email",
-        "last_contact": "Last Contact",
-        "owner": "Owner",
+        "actions": "Actions",
+        "campaign": "Campagne",
+        "category": "Catégorie",
+        "country": "Pays",
+        "email": "Courriel",
+        "last_contact": "Dernier contact",
+        "name": "Nom",
+        "owner": "Propriétaire",
+        "phone": "Téléphone",
         "score": "Score",
-        "stage": "Stage"
+        "stage": "Stage",
+        "status": "Statut",
+        "updated": "Mise à jour"
       }
+    },
+    "title": "Pistes",
+    "toasts": {
+      "added": "Plomb ajouté"
+    },
+    "toolbar": {
+      "bulk": {
+        "assign": "Attribuer",
+        "delete": "Supprimer",
+        "export": "Exportation"
+      },
+      "search_aria": "Recherche de pistes",
+      "search_placeholder": "Recherche de pistes.."
     }
   },
   "nav": {
