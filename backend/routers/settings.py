@@ -17,7 +17,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/settings", tags=["settings"])
+router = APIRouter(tags=["settings"])
 
 # Company settings model
 class CompanyUpdate(BaseModel):
@@ -244,105 +244,4 @@ async def update_budget(
         billing_period=budget_state["billing_period"]
     )
 
-# Integrations endpoints
-@router.get("/integrations/status")
-def get_integrations_status(request: Request, db: Session = Depends(get_db)):
-    """Get status of all integrations"""
-    # Get current user
-    session_id = read_session_cookie(request)
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Missing session")
-    
-    user_id = get_user_id(session_id)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Session expired")
-    
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # For now, return mock data - implement real integration status later
-    return {
-        "hubspot": {
-            "connected": False,
-            "status": "disconnected"
-        },
-        "zoho": {
-            "connected": False,
-            "status": "disconnected"
-        },
-        "odoo": {
-            "connected": False,
-            "status": "disconnected"
-        }
-    }
-
-@router.post("/integrations/{provider}/connect")
-def connect_integration(provider: str, request: Request, db: Session = Depends(get_db)):
-    """Start OAuth flow for integration provider"""
-    # Get current user
-    session_id = read_session_cookie(request)
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Missing session")
-    
-    user_id = get_user_id(session_id)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Session expired")
-    
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # For now, return mock OAuth URL - implement real OAuth flow later
-    if provider == "hubspot":
-        return {
-            "url": "https://app.hubspot.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=mock"
-        }
-    elif provider == "zoho":
-        return {
-            "url": "https://accounts.zoho.com/oauth/v2/auth?client_id=mock&redirect_uri=mock&scope=mock"
-        }
-    elif provider == "odoo":
-        return {
-            "url": "https://www.odoo.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=mock"
-        }
-    else:
-        raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
-
-@router.post("/integrations/{provider}/disconnect")
-def disconnect_integration(provider: str, request: Request, db: Session = Depends(get_db)):
-    """Disconnect integration provider"""
-    # Get current user
-    session_id = read_session_cookie(request)
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Missing session")
-    
-    user_id = get_user_id(session_id)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Session expired")
-    
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # For now, just return success - implement real disconnect logic later
-    return {"ok": True, "message": f"Disconnected from {provider}"}
-
-@router.post("/integrations/{provider}/test")
-def test_integration(provider: str, request: Request, db: Session = Depends(get_db)):
-    """Test integration connection"""
-    # Get current user
-    session_id = read_session_cookie(request)
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Missing session")
-    
-    user_id = get_user_id(session_id)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Session expired")
-    
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # For now, just return success - implement real test logic later
-    return {"ok": True, "message": f"Connection to {provider} is working"}
+# Integrations endpoints moved to integrations.py router

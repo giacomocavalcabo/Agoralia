@@ -652,7 +652,7 @@ api.include_router(integrations.router, prefix="/settings", tags=["integrations"
 logger.info("Integrations router included successfully")
 
 logger.info("Including Settings router...")
-api.include_router(settings.router, tags=["settings"])
+api.include_router(settings.router, prefix="/settings", tags=["settings"])
 logger.info("Settings router included successfully")
 
 logger.info("Including Audit router...")

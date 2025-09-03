@@ -10,6 +10,7 @@ from typing import Optional, List, Dict, Any
 from backend.db import get_db
 from backend.models import ProviderAccount
 from backend.auth.deps import admin_guard
+from backend.auth.session import get_current_user
 from backend.config.settings import settings
 from backend.services.kms import encrypt_str, decrypt_str, encrypt_json, decrypt_json
 from datetime import datetime
@@ -72,36 +73,45 @@ def get_adapter_or_404(provider: str) -> CRMAdapter:
 # ---- Endpoints
 
 @router.get("/status")
-def integrations_status(db: Session = Depends(get_db), user=Depends(admin_guard)):
-    ws_id = user.workspace_id  # adatta se diverso
+def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Get status of all integrations - accessible to all authenticated users"""
+    ws_id = user.workspace_id
+    
+    # Query existing integrations
     q = (
         db.query(ProviderAccount)
         .filter(ProviderAccount.workspace_id == ws_id)
-        .filter(ProviderAccount.category.in_(["crm", "telephony"]))  # puoi limitare a 'crm'
+        .filter(ProviderAccount.category.in_(["crm", "telephony"]))
     )
     accounts = q.all()
-    out = []
+    
+    # Build status object with provider as keys (frontend expects this format)
+    status = {}
+    
+    # Add connected integrations
     for acc in accounts:
-        out.append({
+        status[acc.provider] = {
+            "connected": True,
+            "status": getattr(acc, "status", None) or "connected",
             "id": acc.id,
-            "provider": acc.provider,
             "label": getattr(acc, "label", None),
             "category": getattr(acc, "category", None),
             "auth_type": getattr(acc, "auth_type", None),
-            "status": getattr(acc, "status", None) or "connected",
             "scopes": (getattr(acc, "scopes", None) or "").split(",") if getattr(acc, "scopes", None) else [],
             "created_at": getattr(acc, "created_at", None),
             "updated_at": getattr(acc, "updated_at", None),
-        })
-    # includi anche provider supportati ma non connessi
-    connected = {a["provider"] for a in out}
-    for p in SUPPORTED_CRM:
-        if p not in connected:
-            out.append({
-                "id": None, "provider": p, "label": None, "category": "crm",
-                "auth_type": "api_key", "status": "disconnected", "scopes": []
-            })
-    return {"items": out, "ts": _now_iso()}
+        }
+    
+    # Add disconnected integrations for supported providers
+    connected_providers = {acc.provider for acc in accounts}
+    for provider in SUPPORTED_CRM:
+        if provider not in connected_providers:
+            status[provider] = {
+                "connected": False,
+                "status": "disconnected"
+            }
+    
+    return status
 
 @router.post("/{provider}/connect")
 def integrations_connect(provider: str, payload: ConnectPayload,

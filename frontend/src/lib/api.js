@@ -30,7 +30,15 @@ function assertApiPrefix(url) {
 
 export async function apiFetch(path, options = {}) {
 	// Se il path inizia già con /api/, non aggiungere API_BASE_URL
-	const fullPath = path.startsWith('/api/') ? path : `${API_BASE_URL}${path}`;
+	// Se il path inizia con /api/, rimuovi il prefisso /api/ e aggiungi API_BASE_URL
+	let fullPath;
+	if (path.startsWith('/api/')) {
+		// Path già completo, usalo così
+		fullPath = path;
+	} else {
+		// Path relativo, aggiungi API_BASE_URL
+		fullPath = `${API_BASE_URL}${path}`;
+	}
 	const url = normalizeUrl(fullPath);
 	assertApiPrefix(url);
 	const resp = await fetch(url, {
