@@ -13,7 +13,7 @@ import {
   FormActions, 
   PageHeader 
 } from '../components/ui/FormPrimitives.jsx'
-import tzdata from "../lib/timezones.js"
+import { getTimezonesWithTranslations } from "../lib/timezones.js"
 
 export default function SettingsProfile() {
   const { t } = useTranslation('settings')
@@ -207,8 +207,8 @@ export default function SettingsProfile() {
                 errors.timezone ? 'border-red-300' : 'border-gray-300'
               }`}
             >
-              {tzdata.map((tz) => (
-                <option key={tz} value={tz}>{tz}</option>
+              {getTimezonesWithTranslations(t).map((tz) => (
+                <option key={tz.value} value={tz.value}>{tz.label}</option>
               ))}
             </select>
             <FieldError>{errors.timezone}</FieldError>

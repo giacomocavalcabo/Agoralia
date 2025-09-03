@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRequirements, listSubmissions, createSubmission, uploadComplianceFile } from '../lib/complianceApi';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsTelephonyCompliance() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [provider, setProvider] = useState('twilio'); // default, oppure leggi dai provider collegati
   const [country, setCountry] = useState('IT');

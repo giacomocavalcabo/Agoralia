@@ -2,6 +2,14 @@ export const API_BASE_URL = import.meta.env.DEV
   ? '/api'  // Usa proxy in dev
   : '/api';  // Usa proxy anche in produzione (vercel.json)
 
+function normalizeUrl(url) {
+  // Forza tutto a passare dal proxy /api
+  if (/^https?:\/\/api\.agoralia\.app\//.test(url)) {
+    return url.replace(/^https?:\/\/api\.agoralia\.app/, '');
+  }
+  return url;
+}
+
 function assertApiPrefix(url) {
   try {
     // absolute => ignore (CSP will handle)
@@ -21,7 +29,7 @@ function assertApiPrefix(url) {
 }
 
 export async function apiFetch(path, options = {}) {
-	const url = `${API_BASE_URL}${path}`;
+	const url = normalizeUrl(`${API_BASE_URL}${path}`);
 	assertApiPrefix(url);
 	const resp = await fetch(url, {
 		method: options.method || 'GET',

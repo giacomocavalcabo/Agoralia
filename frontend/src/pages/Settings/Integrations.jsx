@@ -31,7 +31,25 @@ const Integrations = () => {
     try {
       // In production, fetch from API
       if (process.env.NODE_ENV === 'production') {
-        const response = await fetch('/api/settings/integrations/status');
+        const response = await fetch('/api/settings/integrations/status', { 
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Handle 401 gracefully - user not authenticated
+            console.log('User not authenticated for integrations status');
+            setIntegrations({
+              hubspot: { connected: false, status: 'disconnected' },
+              zoho: { connected: false, status: 'disconnected' },
+              odoo: { connected: false, status: 'disconnected' }
+            });
+            return;
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         setIntegrations(data);
       } else {
@@ -44,11 +62,22 @@ const Integrations = () => {
         setIntegrations(mockStatus);
       }
     } catch (error) {
-      toast({
-        title: t('errors.load_failed'),
-        description: error.message,
-        type: 'error'
+      console.error('Failed to load integration status:', error);
+      // Set default disconnected state on error
+      setIntegrations({
+        hubspot: { connected: false, status: 'disconnected' },
+        zoho: { connected: false, status: 'disconnected' },
+        odoo: { connected: false, status: 'disconnected' }
       });
+      
+      // Only show toast for non-401 errors
+      if (!error.message?.includes('401')) {
+        toast({
+          title: t('errors.load_failed'),
+          description: error.message,
+          type: 'error'
+        });
+      }
     }
   };
 
@@ -58,7 +87,11 @@ const Integrations = () => {
     try {
       // In production, this would start OAuth flow
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/settings/integrations/${provider}/connect`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/connect`, { 
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -98,7 +131,11 @@ const Integrations = () => {
     try {
       // In production, this would revoke tokens
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/settings/integrations/${provider}/disconnect`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/disconnect`, { 
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -134,7 +171,11 @@ const Integrations = () => {
     try {
       // In production, this would test the connection
       if (process.env.NODE_ENV === 'production') {
-        await fetch(`/api/settings/integrations/${provider}/test`, { method: 'POST' });
+        await fetch(`/api/settings/integrations/${provider}/test`, { 
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
       } else {
         // Simulate API call in development
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -166,6 +207,7 @@ const Integrations = () => {
     if (process.env.NODE_ENV === 'production') {
       fetch('/api/settings/integrations/mapping', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objectType, mapping, picklists })
       });
