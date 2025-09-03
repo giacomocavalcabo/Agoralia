@@ -12,7 +12,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: "en-US",
-    supportedLngs: ["en-US","it-IT","de-DE","fr-FR","es-ES","ar-EG"],
+    supportedLngs: ["ar-EG","bg-BG","cs-CZ","da-DK","de-DE","el-GR","en-US","es-ES","et-EE","fi-FI","fr-FR","he-IL","hu-HU","id-ID","it-IT","ja-JP","ko-KR","lt-LT","lv-LV","nb-NO","nl-NL","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SI","sv-SE","th-TH","tr-TR","uk-UA","vi-VN","zh-HANS"],
     ns: ["common","pages","settings","billing"],
     defaultNS: "common",
     backend: {

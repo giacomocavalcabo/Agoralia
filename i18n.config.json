@@ -1,6 +1,6 @@
 {
   "sourceLocale": "en-US",
-  "targetLocales": ["it-IT", "fr-FR", "es-ES", "de-DE", "ar-EG", "hi-IN"],
+  "targetLocales": ["ar-EG", "bg-BG", "cs-CZ", "da-DK", "de-DE", "el-GR", "es-ES", "et-EE", "fi-FI", "fr-FR", "he-IL", "hu-HU", "id-ID", "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK", "sl-SI", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-HANS"],
   "namespaces": ["common", "pages", "admin", "billing", "app", "auth", "kb", "integrations", "settings", "ui", "errors", "compliance"],
   "glossary": ["Agoralia", "Workspace", "Playbook", "Compliance", "ColdAI"],
   "preservePatterns": [

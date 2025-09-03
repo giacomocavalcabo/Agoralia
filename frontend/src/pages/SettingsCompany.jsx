@@ -4,7 +4,6 @@ import { useApiWithDemo } from '../lib/demoGate'
 import { useAuth } from '../lib/useAuth'
 import { useToast } from '../components/ToastProvider.jsx'
 import { PageHeader } from '../components/ui/FormPrimitives.jsx'
-import tzdata from "../lib/timezones.js"
 
 export default function SettingsCompany() {
   const { t } = useTranslation('settings')
@@ -20,8 +19,7 @@ export default function SettingsCompany() {
     logo_url: '',
     support_email: '',
     legal_name: '',
-    website_url: '',
-    timezone: 'UTC'
+    website_url: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -47,8 +45,7 @@ export default function SettingsCompany() {
         logo_url: data?.logo_url || '',
         support_email: data?.support_email || '',
         legal_name: data?.legal_name || '',
-        website_url: data?.website_url || '',
-        timezone: data?.timezone || 'UTC'
+        website_url: data?.website_url || ''
       })
     } catch (error) {
       // Fallback per demo o errori
@@ -60,8 +57,7 @@ export default function SettingsCompany() {
         logo_url: '',
         support_email: '',
         legal_name: '',
-        website_url: '',
-        timezone: 'UTC'
+        website_url: ''
       })
     } finally {
       setIsLoading(false)
@@ -130,9 +126,14 @@ export default function SettingsCompany() {
 
   return (
     <div className="space-y-6">
+      <PageHeader 
+        title={t('company.title')}
+        description={t('company.description')}
+      />
+      
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('company.title')}
+          {t('company.branding.title')}
         </h3>
         
         <div className="grid grid-cols-2 gap-6">
@@ -227,24 +228,7 @@ export default function SettingsCompany() {
             />
           </div>
 
-          {/* Workspace Timezone */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Workspace Timezone
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={formData.timezone}
-              onChange={(e) => setFormData({...formData, timezone: e.target.value})}
-            >
-              {tzdata.map((z) => (
-                <option key={z} value={z}>{z}</option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground mt-1">
-              Default per il team; usata quando un utente non ha una timezone personale.
-            </p>
-          </div>
+
         </div>
         
         <div className="flex justify-end mt-6">

@@ -10,6 +10,7 @@
     "fields": {
       "dual_time": "Display Doppio Orario",
       "email": "Indirizzo Email",
+      "email_help": "L'indirizzo email è gestito dall'amministratore o dal provider di identità",
       "language": "Lingua",
       "name": "Nome Completo",
       "timezone": "Fuso Orario"
@@ -234,7 +235,9 @@
   "company": {
     "access_denied": "Accesso Negato",
     "address": "Indirizzo",
-    "branding": "Branding",
+    "branding": {
+      "title": "Branding e Identità"
+    },
     "coming_soon": "Prossimamente",
     "company_info": "Informazioni Azienda",
     "compliance": "Compliance",

@@ -296,7 +296,9 @@
     "address": "Address",
     "contact": "Contact",
     "logo": "Company Logo",
-    "branding": "Branding",
+    "branding": {
+      "title": "Branding & Identity"
+    },
     "compliance": "Compliance",
     "access_denied": "Access Denied",
     "messages": {
@@ -312,6 +314,7 @@
     "fields": {
       "name": "Full Name",
       "email": "Email Address",
+      "email_help": "Email address is managed by your administrator or identity provider",
       "language": "Language",
       "timezone": "Timezone",
       "dual_time": "Dual Time Display"

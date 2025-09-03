@@ -109,19 +109,22 @@ def update_company(payload: CompanyUpdate, request: Request, db: Session = Depen
             logger.info(f"Updated workspace {workspace.id} fields: {updated_fields}")
             
             # Log audit events
-            from backend.audit import log_event
-            
-            # Log timezone change specifically
-            if payload.timezone and payload.timezone != old_timezone:
+            try:
+                from backend.audit import log_event
+                
+                # Log timezone change specifically
+                if payload.timezone and payload.timezone != old_timezone:
+                    log_event(db, workspace_id=str(workspace.id), user_id=str(user.id), 
+                             action="timezone.change", resource_type="workspace", 
+                             resource_id=str(workspace.id), request=request, 
+                             meta={"old": old_timezone, "new": payload.timezone})
+                
+                # Log general workspace update
                 log_event(db, workspace_id=str(workspace.id), user_id=str(user.id), 
-                         action="timezone.change", resource_type="workspace", 
-                         resource_id=str(workspace.id), request=request, 
-                         meta={"old": old_timezone, "new": payload.timezone})
-            
-            # Log general workspace update
-            log_event(db, workspace_id=str(workspace.id), user_id=str(user.id), 
-                     action="workspace.update", resource_type="workspace", 
-                     resource_id=str(workspace.id), request=request)
+                         action="workspace.update", resource_type="workspace", 
+                         resource_id=str(workspace.id), request=request)
+            except Exception:
+                pass  # Don't fail update if audit logging fails
 
         return {"ok": True, "updated_fields": updated_fields}
         
