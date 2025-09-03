@@ -10,6 +10,7 @@
     "fields": {
       "dual_time": "Visualización de la hora dual",
       "email": "Dirección de correo electrónico",
+      "email_help": "Email address is managed by your administrator or identity provider",
       "language": "Idioma",
       "name": "Nombre y apellidos",
       "timezone": "Zona horaria"
@@ -197,7 +198,94 @@
       "Pacific/Tarawa": "Tarawa (GILT)",
       "Pacific/Tongatapu": "Tongatapu (TOT)",
       "Pacific/Wake": "Estela (WAKT)",
-      "UTC": "UTC (Tiempo Universal Coordinado)"
+      "UTC": "UTC (Tiempo Universal Coordinado)",
+      "africa": {
+        "addis_ababa": "Addis Ababa (EAT)",
+        "algiers": "Algiers (CET)",
+        "cairo": "Cairo (EET/EEST)",
+        "casablanca": "Casablanca (WET/WEST)",
+        "johannesburg": "Johannesburg (SAST)",
+        "lagos": "Lagos (WAT)",
+        "nairobi": "Nairobi (EAT)",
+        "tunis": "Tunis (CET)"
+      },
+      "america": {
+        "anchorage": "Anchorage (AKST/AKDT)",
+        "bogota": "Bogotá (COT)",
+        "buenos_aires": "Buenos Aires (ART)",
+        "caracas": "Caracas (VET)",
+        "chicago": "Chicago (CST/CDT)",
+        "denver": "Denver (MST/MDT)",
+        "honolulu": "Honolulu (HST)",
+        "lima": "Lima (PET)",
+        "los_angeles": "Los Angeles (PST/PDT)",
+        "mexico_city": "Mexico City (CST/CDT)",
+        "new_york": "New York (EST/EDT)",
+        "santiago": "Santiago (CLT)",
+        "sao_paulo": "São Paulo (BRT)",
+        "toronto": "Toronto (EST/EDT)",
+        "vancouver": "Vancouver (PST/PDT)"
+      },
+      "asia": {
+        "bahrain": "Bahrain (AST)",
+        "bangkok": "Bangkok (ICT)",
+        "dubai": "Dubai (GST)",
+        "hong_kong": "Hong Kong (HKT)",
+        "jakarta": "Jakarta (WIB)",
+        "jerusalem": "Jerusalem (IST/IDT)",
+        "karachi": "Karachi (PKT)",
+        "kolkata": "Kolkata (IST)",
+        "kuwait": "Kuwait (AST)",
+        "manila": "Manila (PHT)",
+        "muscat": "Muscat (GST)",
+        "qatar": "Qatar (AST)",
+        "riyadh": "Riyadh (AST)",
+        "seoul": "Seoul (KST)",
+        "shanghai": "Shanghai (CST)",
+        "singapore": "Singapore (SGT)",
+        "tehran": "Tehran (IRST)",
+        "tokyo": "Tokyo (JST)"
+      },
+      "australia": {
+        "adelaide": "Adelaide (ACST/ACDT)",
+        "brisbane": "Brisbane (AEST)",
+        "darwin": "Darwin (ACST)",
+        "melbourne": "Melbourne (AEST/AEDT)",
+        "perth": "Perth (AWST)",
+        "sydney": "Sydney (AEST/AEDT)"
+      },
+      "europe": {
+        "amsterdam": "Amsterdam (CET/CEST)",
+        "athens": "Athens (EET/EEST)",
+        "berlin": "Berlin (CET/CEST)",
+        "brussels": "Brussels (CET/CEST)",
+        "budapest": "Budapest (CET/CEST)",
+        "copenhagen": "Copenhagen (CET/CEST)",
+        "dublin": "Dublin (GMT/IST)",
+        "helsinki": "Helsinki (EET/EEST)",
+        "istanbul": "Istanbul (TRT)",
+        "kiev": "Kiev (EET/EEST)",
+        "lisbon": "Lisbon (WET/WEST)",
+        "london": "London (GMT/BST)",
+        "madrid": "Madrid (CET/CEST)",
+        "moscow": "Moscow (MSK)",
+        "oslo": "Oslo (CET/CEST)",
+        "paris": "Paris (CET/CEST)",
+        "prague": "Prague (CET/CEST)",
+        "rome": "Rome (CET/CEST)",
+        "stockholm": "Stockholm (CET/CEST)",
+        "vienna": "Vienna (CET/CEST)",
+        "warsaw": "Warsaw (CET/CEST)",
+        "zurich": "Zurich (CET/CEST)"
+      },
+      "pacific": {
+        "auckland": "Auckland (NZST/NZDT)",
+        "fiji": "Fiji (FJT)",
+        "guam": "Guam (ChST)",
+        "honolulu": "Honolulu (HST)",
+        "samoa": "Samoa (SST)"
+      },
+      "utc": "UTC (Coordinated Universal Time)"
     },
     "title": "Configuración de la cuenta",
     "values": {
@@ -234,7 +322,9 @@
   "company": {
     "access_denied": "Acceso denegado",
     "address": "Dirección",
-    "branding": "Marca",
+    "branding": {
+      "title": "Branding & Identity"
+    },
     "coming_soon": "Próximamente",
     "company_info": "Información sobre la empresa",
     "compliance": "Compliance",

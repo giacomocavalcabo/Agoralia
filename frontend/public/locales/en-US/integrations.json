@@ -18,7 +18,9 @@
   "errors": {
     "load_failed": "Failed to load integrations",
     "connection_failed": "Failed to connect",
-    "disconnection_failed": "Failed to disconnect"
+    "disconnection_failed": "Failed to disconnect",
+    "auth_required": "Authentication Required",
+    "auth_required_desc": "Please log in to connect integrations"
   },
   "messages": {
     "connected": "Connected successfully",

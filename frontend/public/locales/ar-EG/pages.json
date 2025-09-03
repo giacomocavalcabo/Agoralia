@@ -699,7 +699,7 @@
     "subset": {
       "filters": "الفلاتر",
       "select_all": "اختر الكل",
-      "selected": "_PH_0___ _PH_0___ المحدد",
+      "selected": "_PH_0___ _PH_0___ المحدد {count}",
       "title": "حدد الصفوف المراد استيرادها"
     },
     "tabs": {
@@ -1019,7 +1019,7 @@
         "status": "الحالة"
       },
       "status_timeline": "الحالة والجدول الزمني",
-      "title": "الرصاص _PH_0___"
+      "title": "الرصاص _PH_0___ {name}"
     },
     "dialogs": {
       "assign": {

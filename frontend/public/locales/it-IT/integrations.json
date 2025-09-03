@@ -26,7 +26,9 @@
   "errors": {
     "connection_failed": "Impossibile connettersi",
     "disconnection_failed": "Impossibile disconnettersi",
-    "load_failed": "Impossibile caricare le integrazioni"
+    "load_failed": "Impossibile caricare le integrazioni",
+    "auth_required": "Autenticazione Richiesta",
+    "auth_required_desc": "Effettua l'accesso per connettere le integrazioni"
   },
   "hubspot": {
     "description": "Sincronizza contatti, aziende e deal con HubSpot CRM",
