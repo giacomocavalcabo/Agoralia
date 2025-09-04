@@ -49,6 +49,11 @@ const Integrations = () => {
       
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Reload integration status to show connected state
+      if (ready && authenticated) {
+        loadIntegrationStatus();
+      }
     }
     
     // Load integration status only when auth is ready and user is authenticated
@@ -73,6 +78,9 @@ const Integrations = () => {
       });
       
       console.log('[Integrations] Status loaded:', data);
+      
+      // Debug: log the raw response to understand the structure
+      console.log('[Integrations] Raw status response:', JSON.stringify(data, null, 2));
       setIntegrations(data || {
         hubspot: { connected: false, status: 'disconnected' },
         zoho: { connected: false, status: 'disconnected' },
