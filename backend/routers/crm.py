@@ -220,20 +220,44 @@ async def hubspot_callback(
     # Exchange code for tokens
     import httpx
     try:
+        # Debug: log what we're sending to HubSpot
+        logger.info(f"Exchanging code for tokens:")
+        logger.info(f"  client_id: {client_id[:10]}...")
+        logger.info(f"  redirect_uri: {redirect_uri}")
+        logger.info(f"  code: {code[:10]}...")
+        logger.info(f"  has_client_secret: {bool(client_secret)}")
+        
+        token_data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "client_id": client_id,
+            "client_secret": client_secret
+        }
+        
         async with httpx.AsyncClient() as client:
             token_response = await client.post(
                 "https://api.hubapi.com/oauth/v1/token",
-                data={
-                    "grant_type": "authorization_code",
-                    "code": code,
-                    "redirect_uri": redirect_uri,
-                    "client_id": client_id,
-                    "client_secret": client_secret
-                }
+                data=token_data
             )
-            token_response.raise_for_status()
+            
+            # Debug: log the response
+            logger.info(f"HubSpot response status: {token_response.status_code}")
+            logger.info(f"HubSpot response headers: {dict(token_response.headers)}")
+            
+            if token_response.status_code != 200:
+                response_text = token_response.text
+                logger.error(f"HubSpot error response: {response_text}")
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"HubSpot token exchange failed: {response_text}"
+                )
+            
             token_data = token_response.json()
+            logger.info(f"Token exchange successful: {list(token_data.keys())}")
+            
     except httpx.HTTPError as e:
+        logger.error(f"HTTP error during token exchange: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Failed to exchange code for tokens: {str(e)}")
     
     # Save tokens to database
