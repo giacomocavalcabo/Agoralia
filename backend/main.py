@@ -7991,12 +7991,9 @@ async def kb_upload_document(
     if file.size and file.size > 25 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large. Maximum size is 25MB")
     
-    # Validate MIME type
+    # Validate MIME type - CSV only
     allowed_mimes = {
-        'application/pdf': '.pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-        'text/plain': '.txt',
-        'text/markdown': '.md'
+        'text/csv': '.csv'
     }
     
     if file.content_type not in allowed_mimes:

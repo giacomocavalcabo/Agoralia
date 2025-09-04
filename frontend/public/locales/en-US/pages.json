@@ -409,6 +409,37 @@
       "done": "Import completed",
       "errors_csv": "Download errors CSV"
     },
+    "csv": {
+      "title": "Import CSV File",
+      "file_upload": "CSV File Upload",
+      "start_import": "Start Import"
+    },
+    "mapping": {
+      "fields": {
+        "phone": "Phone Number",
+        "phone_desc": "E.164 format (+39...)",
+        "name": "Full Name",
+        "name_desc": "Contact full name",
+        "email": "Email",
+        "email_desc": "Contact email",
+        "company": "Company",
+        "company_desc": "Company name",
+        "country": "Country",
+        "country_desc": "Country code (IT, US...)",
+        "notes": "Notes",
+        "notes_desc": "Additional notes",
+        "tags": "Tags",
+        "tags_desc": "Comma-separated tags",
+        "custom": "Custom Field",
+        "custom_desc": "Custom data"
+      },
+      "required_fields_error": "Please map all required fields (Phone Number and Full Name)"
+    },
+    "review": {
+      "apply_to_all": "Apply to All",
+      "check_phone": "Check Phone",
+      "check_email": "Check Email"
+    },
     "launch": {
       "success": "Import Job Launched!",
       "success_desc": "Your import job has been queued and will start processing shortly.",

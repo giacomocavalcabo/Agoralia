@@ -11,9 +11,7 @@ export const useImportStore = create(
       jobId: null,
       
       // Step 1: Upload & Detect
-      uploadMethod: 'csv', // csv, paste, sheet
       csvData: null,
-      pasteData: '',
       isProcessing: false,
       
       // Step 2: Field Mapping
@@ -45,11 +43,7 @@ export const useImportStore = create(
       
       setMappingData: (mapping) => set({ mappingData: mapping }),
       
-      setUploadMethod: (method) => set({ uploadMethod: method }),
-      
       setCsvData: (data) => set({ csvData: data }),
-      
-      setPasteData: (data) => set({ pasteData: data }),
       
       setIsProcessing: (processing) => set({ isProcessing: processing }),
       
@@ -119,7 +113,6 @@ export const useImportStore = create(
         mappingData: null,
         jobId: null,
         csvData: null,
-        pasteData: '',
         isProcessing: false,
         fieldMappings: {},
         prefixConfig: {

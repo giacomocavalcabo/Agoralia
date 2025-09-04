@@ -98,24 +98,46 @@ const Integrations = () => {
       console.log(`[Integrations] Connecting to ${provider}...`);
       setLoading(prev => ({ ...prev, [provider]: true }));
       
-      const response = await apiFetch(`/integrations/${provider}/connect`, {
-        method: 'POST',
-        body: {
-          redirect_uri: `${window.location.origin}/api/integrations/${provider}/callback`,
-          scopes: provider === 'hubspot' 
-            ? ['crm.objects.contacts.read', 'crm.objects.contacts.write', 'crm.objects.companies.read', 'crm.objects.companies.write']
-            : []
+      let response;
+      
+      if (provider === 'hubspot') {
+        // HubSpot usa OAuth2 - chiama l'endpoint specifico
+        response = await apiFetch(`/crm/hubspot/start`, {
+          method: 'GET'
+        });
+        
+        console.log(`[Integrations] ${provider} OAuth response:`, response);
+        
+        if (response.auth_url) {
+          // Redirect to OAuth provider
+          console.log(`[Integrations] Redirecting to ${provider} OAuth...`);
+          window.location.href = response.auth_url;
+        } else {
+          throw new Error('No auth URL received');
         }
-      });
-      
-      console.log(`[Integrations] ${provider} connect response:`, response);
-      
-      if (response.authorize_url) {
-        // Redirect to OAuth provider
-        console.log(`[Integrations] Redirecting to ${provider} OAuth...`);
-        window.location.href = response.authorize_url;
       } else {
-        throw new Error('No authorize URL received');
+        // Altri provider usano API key
+        response = await apiFetch(`/integrations/${provider}/connect`, {
+          method: 'POST',
+          body: {
+            method: 'api_key',
+            api_key: 'placeholder_key', // Questo dovrebbe essere inserito dall'utente
+            scopes: []
+          }
+        });
+        
+        console.log(`[Integrations] ${provider} connect response:`, response);
+        
+        if (response.status === 'connected') {
+          toast({
+            title: 'Connected',
+            description: `Successfully connected to ${provider}`,
+            variant: 'success'
+          });
+          await loadIntegrationStatus();
+        } else {
+          throw new Error('Connection failed');
+        }
       }
       
     } catch (error) {
@@ -127,10 +149,16 @@ const Integrations = () => {
           description: 'You do not have permission to connect integrations',
           variant: 'error'
         });
+      } else if (error.message?.includes('500')) {
+        toast({
+          title: 'Configuration Error',
+          description: 'HubSpot integration is not properly configured on the server',
+          variant: 'error'
+        });
       } else {
         toast({
           title: 'Connection Failed',
-          description: `Failed to start ${provider} connection`,
+          description: `Failed to start ${provider} connection: ${error.message}`,
           variant: 'error'
         });
       }

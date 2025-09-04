@@ -53,5 +53,9 @@
   "type": "Type",
   "unknown": "Unknown",
   "value": "Value",
-  "working": "Working"
+  "working": "Working",
+  "yes": "Yes",
+  "no": "No",
+  "reset": "Reset",
+  "importing": "Importing..."
 }

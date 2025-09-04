@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { useI18n } from '../lib/i18n.jsx'
 import { normalizePhoneNumber } from '../lib/phoneUtils.js'
 import { parseCsvAsync, validateCSVData, detectFieldTypes } from '../lib/csvUtils.js'
-import { CheckCircleIcon, DocumentArrowUpIcon, ClipboardDocumentIcon, TableCellsIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline'
 
 // Import new step components
 import SubsetStep from '../components/import/SubsetStep'
@@ -87,74 +87,11 @@ function UploadStep({ onDataDetected, onNext }) {
     }
   }, [onDataDetected])
 
-  const handlePasteProcess = async () => {
-    if (!pasteData.trim()) {
-      setError('Please paste some data')
-      return
-    }
-
-    setIsProcessing(true)
-    setError(null)
-
-    try {
-      const result = await parseCSV(pasteData)
-      
-      if (result.errors.length > 0) {
-        console.warn('CSV parsing warnings:', result.errors)
-      }
-
-      // Validate required fields
-      const validation = validateCSVData(result.data, ['phone', 'name'])
-      
-      if (!validation.isValid) {
-        setError(`Missing required fields: ${validation.missingFields.join(', ')}`)
-        return
-      }
-
-      // Detect field types
-      const fieldTypes = detectFieldTypes(result.data, result.meta.fields)
-
-      // Normalize phone numbers for preview
-      const normalizedData = result.data.slice(0, 100).map(row => {
-        if (row.phone) {
-          const normalized = normalizePhoneNumber(row.phone, 'IT')
-          return {
-            ...row,
-            phone_normalized: normalized.e164,
-            phone_isValid: normalized.isValid,
-            phone_country: normalized.country
-          }
-        }
-        return row
-      })
-
-      const processedData = {
-        ...result,
-        data: normalizedData,
-        meta: {
-          ...result.meta,
-          fieldTypes,
-          validation,
-          source: 'paste'
-        }
-      }
-
-      onDataDetected(processedData)
-      
-    } catch (err) {
-      setError(err.message || 'Failed to process pasted data')
-      console.error('Paste processing error:', err)
-    } finally {
-      setIsProcessing(false)
-    }
-  }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'text/csv': ['.csv'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      'text/csv': ['.csv']
     },
     multiple: false
   })
@@ -167,114 +104,35 @@ function UploadStep({ onDataDetected, onNext }) {
           {t('import.upload.title') || 'Import Contacts'}
         </h2>
         <p className="text-gray-600">
-          {t('import.upload.subtitle') || 'Upload a CSV file or paste data to import contacts'}
+          {t('import.upload.subtitle') || 'Upload a CSV file to import contacts'}
         </p>
       </div>
 
-      {/* Method Selection Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {[
-              { id: 'csv', label: 'Upload CSV', icon: DocumentArrowUpIcon },
-              { id: 'paste', label: 'Paste Data', icon: ClipboardDocumentIcon },
-              { id: 'sheet', label: 'Google Sheet', icon: TableCellsIcon }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setUploadMethod(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  uploadMethod === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <tab.icon className="h-5 w-5 inline mr-2" />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {/* CSV Upload */}
-          {uploadMethod === 'csv' && (
-            <div className="space-y-4">
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
-                  isDragActive
-                    ? 'border-primary-400 bg-primary-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-lg font-medium text-gray-900 mb-2">
-                  {isDragActive
-                    ? t('import.upload.drop_here') || 'Drop the file here'
-                    : t('import.upload.drag_drop') || 'Drag & drop a CSV file here'}
-                </p>
-                <p className="text-gray-500">
-                  {t('import.upload.or_click') || 'or click to browse'}
-                </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  {t('import.upload.supported_formats') || 'Supports CSV, XLS, XLSX (max 50MB)'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Paste Data */}
-          {uploadMethod === 'paste' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('import.paste.label') || 'Paste CSV data'}
-                </label>
-                <textarea
-                  value={pasteData}
-                  onChange={(e) => setPasteData(e.target.value)}
-                  placeholder={t('import.paste.placeholder') || 'Paste your CSV data here (with headers)...'}
-                  rows={10}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-              <button
-                onClick={handlePasteProcess}
-                disabled={!pasteData.trim() || isProcessing}
-                className="w-full px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isProcessing ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    {t('import.paste.processing') || 'Processing...'}
-                  </div>
-                ) : (
-                  t('import.paste.process') || 'Process Data'
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* Google Sheet */}
-          {uploadMethod === 'sheet' && (
-            <div className="text-center py-12">
-              <TableCellsIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t('import.sheet.title') || 'Google Sheets Integration'}
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {t('import.sheet.subtitle') || 'Coming soon! You can export your Google Sheet as CSV and upload it here.'}
-              </p>
-              <button
-                onClick={() => setUploadMethod('csv')}
-                className="px-6 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                {t('import.sheet.upload_csv') || 'Upload CSV Instead'}
-              </button>
-            </div>
-          )}
+      {/* CSV Upload */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="space-y-4">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+              isDragActive
+                ? 'border-primary-400 bg-primary-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-lg font-medium text-gray-900 mb-2">
+              {isDragActive
+                ? t('import.upload.drop_here') || 'Drop the file here'
+                : t('import.upload.drag_drop') || 'Drag & drop a CSV file here'}
+            </p>
+            <p className="text-gray-500">
+              {t('import.upload.or_click') || 'or click to browse'}
+            </p>
+            <p className="text-sm text-gray-400 mt-2">
+              {t('import.upload.supported_formats') || 'Supports CSV files only (max 50MB)'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -418,14 +276,14 @@ function FieldMappingStep({ data, onNext, onBack }) {
   }, [data])
 
   const fieldTypes = [
-    { value: 'phone', label: 'Phone Number', required: true, description: 'E.164 format (+39...)' },
-    { value: 'name', label: 'Full Name', required: true, description: 'Contact full name' },
-    { value: 'email', label: 'Email', required: false, description: 'Contact email' },
-    { value: 'company', label: 'Company', required: false, description: 'Company name' },
-    { value: 'country', label: 'Country', required: false, description: 'Country code (IT, US...)' },
-    { value: 'notes', label: 'Notes', required: false, description: 'Additional notes' },
-    { value: 'tags', label: 'Tags', required: false, description: 'Comma-separated tags' },
-    { value: 'custom', label: 'Custom Field', required: false, description: 'Custom data' }
+    { value: 'phone', label: t('import.mapping.fields.phone') || 'Phone Number', required: true, description: t('import.mapping.fields.phone_desc') || 'E.164 format (+39...)' },
+    { value: 'name', label: t('import.mapping.fields.name') || 'Full Name', required: true, description: t('import.mapping.fields.name_desc') || 'Contact full name' },
+    { value: 'email', label: t('import.mapping.fields.email') || 'Email', required: false, description: t('import.mapping.fields.email_desc') || 'Contact email' },
+    { value: 'company', label: t('import.mapping.fields.company') || 'Company', required: false, description: t('import.mapping.fields.company_desc') || 'Company name' },
+    { value: 'country', label: t('import.mapping.fields.country') || 'Country', required: false, description: t('import.mapping.fields.country_desc') || 'Country code (IT, US...)' },
+    { value: 'notes', label: t('import.mapping.fields.notes') || 'Notes', required: false, description: t('import.mapping.fields.notes_desc') || 'Additional notes' },
+    { value: 'tags', label: t('import.mapping.fields.tags') || 'Tags', required: false, description: t('import.mapping.fields.tags_desc') || 'Comma-separated tags' },
+    { value: 'custom', label: t('import.mapping.fields.custom') || 'Custom Field', required: false, description: t('import.mapping.fields.custom_desc') || 'Custom data' }
   ]
 
   const handleFieldMappingChange = (csvField, appField) => {
@@ -443,7 +301,7 @@ function FieldMappingStep({ data, onNext, onBack }) {
     )
     
     if (!mappedRequired) {
-      alert('Please map all required fields (Phone Number and Full Name)')
+      alert(t('import.mapping.required_fields_error') || 'Please map all required fields (Phone Number and Full Name)')
       return
     }
     
@@ -800,15 +658,15 @@ function ReviewLaunchStep({ data, mappingData, onBack, onLaunch }) {
             <div className="space-y-1 text-sm text-gray-600">
               <div>Strategy: {mappingData?.prefixConfig?.strategy}</div>
               <div>Default Country: {mappingData?.prefixConfig?.defaultCountry}</div>
-              <div>Apply to All: {mappingData?.prefixConfig?.applyToAll ? 'Yes' : 'No'}</div>
+              <div>{t('import.review.apply_to_all') || 'Apply to All'}: {mappingData?.prefixConfig?.applyToAll ? (t('common.yes') || 'Yes') : (t('common.no') || 'No')}</div>
             </div>
           </div>
           
           <div>
             <h4 className="font-medium text-gray-900 mb-2">Deduplication:</h4>
             <div className="space-y-1 text-sm text-gray-600">
-              <div>Check Phone: {mappingData?.dedupeConfig?.onPhone ? 'Yes' : 'No'}</div>
-              <div>Check Email: {mappingData?.dedupeConfig?.onEmail ? 'Yes' : 'No'}</div>
+              <div>{t('import.review.check_phone') || 'Check Phone'}: {mappingData?.dedupeConfig?.onPhone ? (t('common.yes') || 'Yes') : (t('common.no') || 'No')}</div>
+              <div>{t('import.review.check_email') || 'Check Email'}: {mappingData?.dedupeConfig?.onEmail ? (t('common.yes') || 'Yes') : (t('common.no') || 'No')}</div>
               <div>Strategy: {mappingData?.dedupeConfig?.resolveStrategy}</div>
             </div>
           </div>
