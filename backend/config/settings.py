@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str = ".agoralia.app"
     SESSION_COOKIE_NAME: str = "ag_sess"
     SESSION_TTL_SECONDS: int = 60 * 60 * 24 * 30
+    
+    # OAuth state management
+    OAUTH_STATE_SECRET: str = os.getenv("OAUTH_STATE_SECRET", "oauth-state-secret-change-in-production")
 
     FRONTEND_BASE_URL: str = "https://app.agoralia.app"
     BACKEND_BASE_PATH: str = "/api"

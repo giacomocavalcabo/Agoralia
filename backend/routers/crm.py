@@ -127,7 +127,9 @@ async def hubspot_start(
         # Get HubSpot client ID from environment
         client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
         redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/oauth/callback")
-        raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write crm.objects.deals.read crm.objects.deals.write oauth")
+        # HubSpot scopes - must match exactly with app configuration
+        HUBSPOT_SCOPES = "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write oauth"
+        raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", HUBSPOT_SCOPES)
         
         # Normalize scopes - handle spaces, commas, newlines
         def normalize_scopes(raw: str) -> str:
