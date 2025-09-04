@@ -890,6 +890,123 @@ from backend.routers import audit
 api.include_router(audit.router, tags=["audit"])
 logger.info("Audit router included successfully")
 
+# ===================== Campaigns Endpoints =====================
+@api.post("/campaigns")
+async def create_campaign(payload: dict) -> dict:
+    # Include default scripts into campaign metadata (stub)
+    lang = payload.get("lang_default") or "en-US"
+    rules = {
+        "disclosure": "Buongiorno, sono un assistente virtuale di {Company}.",
+        "record_consent": "La chiamata può essere registrata. Desidera procedere?",
+        "fallback": "Posso inviarle le informazioni via email.",
+        "version": "it-2025-08-01",
+    }
+    retell_metadata = {"kb": {"rules": rules, "lang": lang}}
+    return {"id": "c_new", "retell_metadata": retell_metadata}
+
+
+@api.get("/campaigns")
+def list_campaigns(
+    request: Request,
+    workspace_id: Optional[str] = Query(None),
+    limit: int = Query(25, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    q: Optional[str] = None
+) -> dict:
+    wsid = workspace_id or get_workspace_id(request, fallback="ws_1")
+
+    # logica dati (riusa le tue repo/ORM) - per ora stub
+    # TODO: sostituire con repo_campaigns_list e repo_campaigns_count reali
+    demo_campaigns = [
+        {
+            "id": "c_demo_1",
+            "name": "Q4 Sales Campaign",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc)
+        },
+        {
+            "id": "c_demo_2", 
+            "name": "Product Launch IT",
+            "status": "paused",
+            "created_at": datetime.now(timezone.utc) - timedelta(days=7)
+        },
+        {
+            "id": "c_demo_3",
+            "name": "Customer Retention",
+            "status": "draft",
+            "created_at": datetime.now(timezone.utc) - timedelta(days=14)
+        }
+    ]
+    
+    # mappatura a schema (garantisci ISO date)
+    def to_campaign(r) -> dict:
+        return {
+            "id": str(r["id"]),
+            "name": r["name"],
+            "status": r.get("status", "draft"),
+            "created_at": (r["created_at"].isoformat() if hasattr(r["created_at"], "isoformat") else str(r["created_at"])),
+        }
+
+    items = [to_campaign(r) for r in demo_campaigns]
+    payload = adapt_list_response(items, len(items))
+    # Adatta a response_model (Pydantic) mantenendo retro-compat
+    return payload
+
+
+@api.get("/campaigns/{campaign_id}")
+def get_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "name": "Sample", "status": "active", "pacing_npm": 10, "budget_cap_cents": 15000, "window": {"quiet_hours": True}}
+
+
+@api.patch("/campaigns/{campaign_id}")
+async def update_campaign(campaign_id: str, payload: dict) -> dict:
+    # Validate status transitions
+    allowed_statuses = {"draft", "active", "paused", "completed"}
+    new_status = payload.get("status")
+    
+    if new_status and new_status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}. Allowed: {', '.join(allowed_statuses)}")
+    
+    # TODO: Replace with actual database update
+    # For now, return the updated campaign data
+    return {
+        "id": campaign_id,
+        "status": new_status or "draft",
+        "updated_at": datetime.now().isoformat(),
+        "updated": True
+    }
+
+
+@api.post("/campaigns/{campaign_id}/pause")
+async def pause_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "status": "paused"}
+
+
+@api.post("/campaigns/{campaign_id}/resume")
+async def resume_campaign(campaign_id: str) -> dict:
+    return {"id": campaign_id, "status": "active"}
+
+
+@api.get("/campaigns/{campaign_id}/kpi")
+def campaign_kpi(campaign_id: str) -> dict:
+    return {"leads": 0, "calls": 0, "qualified": 0, "success_pct": 0.0, "cost_per_min": 0, "p95": 0}
+
+
+@api.post("/campaigns/{campaign_id}/schedule")
+async def campaign_schedule(campaign_id: str, payload: dict) -> dict:
+    return {"scheduled": True}
+
+
+@api.get("/campaigns/{campaign_id}/events")
+def campaign_events(campaign_id: str, start: str | None = None, end: str | None = None) -> dict:
+    return {"events": []}
+
+
+@api.get("/campaigns/{campaign_id}/leads")
+def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
+    items = []
+    return {"total": len(items), "items": items}
+
 app.include_router(api)
 logger.info("API routers included successfully")
 
@@ -2679,116 +2796,6 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
 
 # ===================== Sprint 3 stubs =====================
 
-@api.post("/campaigns")
-async def create_campaign(payload: dict) -> dict:
-    # Include default scripts into campaign metadata (stub)
-    lang = payload.get("lang_default") or "en-US"
-    rules = {
-        "disclosure": "Buongiorno, sono un assistente virtuale di {Company}.",
-        "record_consent": "La chiamata può essere registrata. Desidera procedere?",
-        "fallback": "Posso inviarle le informazioni via email.",
-        "version": "it-2025-08-01",
-    }
-    retell_metadata = {"kb": {"rules": rules, "lang": lang}}
-    return {"id": "c_new", "retell_metadata": retell_metadata}
-
-
-@api.get("/campaigns")
-def list_campaigns(
-    request: Request,
-    workspace_id: Optional[str] = Query(None),
-    limit: int = Query(25, ge=1, le=500),
-    offset: int = Query(0, ge=0),
-    q: Optional[str] = None
-) -> dict:
-    wsid = workspace_id or get_workspace_id(request, fallback="ws_1")
-
-    # logica dati (riusa le tue repo/ORM) - per ora stub
-    # TODO: sostituire con repo_campaigns_list e repo_campaigns_count reali
-    demo_campaigns = [
-        {
-            "id": "c_demo_1",
-            "name": "Q4 Sales Campaign",
-            "status": "active",
-            "created_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": "c_demo_2", 
-            "name": "Product Launch IT",
-            "status": "paused",
-            "created_at": datetime.now(timezone.utc) - timedelta(days=7)
-        },
-        {
-            "id": "c_demo_3",
-            "name": "Customer Retention",
-            "status": "draft",
-            "created_at": datetime.now(timezone.utc) - timedelta(days=14)
-        }
-    ]
-    
-    # mappatura a schema (garantisci ISO date)
-    def to_campaign(r) -> dict:
-        return {
-            "id": str(r["id"]),
-            "name": r["name"],
-            "status": r.get("status", "draft"),
-            "created_at": (r["created_at"].isoformat() if hasattr(r["created_at"], "isoformat") else str(r["created_at"])),
-        }
-
-    items = [to_campaign(r) for r in demo_campaigns]
-    payload = adapt_list_response(items, len(items))
-    # Adatta a response_model (Pydantic) mantenendo retro-compat
-    return payload
-
-
-@api.get("/campaigns/{campaign_id}")
-def get_campaign(campaign_id: str) -> dict:
-    return {"id": campaign_id, "name": "Sample", "status": "active", "pacing_npm": 10, "budget_cap_cents": 15000, "window": {"quiet_hours": True}}
-
-
-@api.patch("/campaigns/{campaign_id}")
-async def update_campaign(campaign_id: str, payload: dict) -> dict:
-    # Validate status transitions
-    allowed_statuses = {"draft", "active", "paused", "completed"}
-    new_status = payload.get("status")
-    
-    if new_status and new_status not in allowed_statuses:
-        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}. Allowed: {', '.join(allowed_statuses)}")
-    
-    # TODO: Replace with actual database update
-    # For now, return the updated campaign data
-    return {
-        "id": campaign_id,
-        "status": new_status or "draft",
-        "updated_at": datetime.now().isoformat(),
-        "updated": True
-    }
-
-
-@api.post("/campaigns/{campaign_id}/pause")
-async def pause_campaign(campaign_id: str) -> dict:
-    return {"id": campaign_id, "status": "paused"}
-
-
-@api.post("/campaigns/{campaign_id}/resume")
-async def resume_campaign(campaign_id: str) -> dict:
-    return {"id": campaign_id, "status": "active"}
-
-
-@api.get("/campaigns/{campaign_id}/kpi")
-def campaign_kpi(campaign_id: str) -> dict:
-    return {"leads": 0, "calls": 0, "qualified": 0, "success_pct": 0.0, "cost_per_min": 0, "p95": 0}
-
-
-@api.post("/campaigns/{campaign_id}/schedule")
-async def campaign_schedule(campaign_id: str, payload: dict) -> dict:
-    return {"scheduled": True}
-
-
-@api.get("/campaigns/{campaign_id}/events")
-def campaign_events(campaign_id: str, start: str | None = None, end: str | None = None) -> dict:
-    return {"events": []}
-
 
 @app.post("/calendar/events")
 async def create_calendar_event(payload: dict) -> dict:
@@ -3417,10 +3424,6 @@ def worker_call_finish() -> dict:
     return _CONCURRENCY
 
 
-@api.get("/campaigns/{campaign_id}/leads")
-def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
-    items = []
-    return {"total": len(items), "items": items}
 
 @app.post("/templates")
 async def create_template(
