@@ -1,7 +1,7 @@
 :root {
 	/* Brand Colors */
-	--brand-600: #0FA958;
-	--brand-700: #0D8A4A;  /* Brand-600 più scuro per hover */
+	--brand-600: #2563EB;
+	--brand-700: #1D4ED8;  /* hover */
 	
 	/* Neutral Colors */
 	--ink-900: #1A1A1A;

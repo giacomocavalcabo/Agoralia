@@ -978,11 +978,11 @@
   },
   "leads": {
     "actions": {
-      "add": "Aggiungi piombo",
-      "delete": "Cancellare il comando",
-      "edit": "Modifica del leader",
-      "import": "Importazione di lead",
-      "view": "Visualizza il piombo"
+      "add": "Aggiungi lead",
+      "delete": "Elimina lead",
+      "edit": "Modifica lead",
+      "import": "Importa lead",
+      "view": "Visualizza lead"
     },
     "columns": {
       "actions": "Azioni",
@@ -994,7 +994,7 @@
       "owner": "Proprietario",
       "phone": "Telefono",
       "score": "Punteggio",
-      "stage": "Palcoscenico",
+      "stage": "Fase",
       "status": "Stato",
       "updated": "Aggiornato"
     },
@@ -1059,14 +1059,14 @@
       "class": "Classe",
       "country": "Paese",
       "empty": "Nessun filtro applicato",
-      "load_segment": "Segmento di carico",
+      "load_segment": "Carica segmento",
       "multiselect_hint": "Selezionare più valori",
       "save_segment": "Salva segmento",
-      "select_field": "Seleziona il campo",
-      "stage": "Palcoscenico",
+      "select_field": "Seleziona campo",
+      "stage": "Fase",
       "status": "Stato",
       "updated": "Filtro aggiornato",
-      "value_placeholder": "Inserire il valore"
+      "value_placeholder": "Inserisci valore"
     },
     "import": {
       "coming_soon": "Prossimamente",
@@ -1109,7 +1109,7 @@
         "updated": "Aggiornato"
       }
     },
-    "title": "Conducenti",
+    "title": "Lead",
     "toasts": {
       "added": "Piombo aggiunto"
     },
@@ -1120,7 +1120,7 @@
         "export": "Esportazione"
       },
       "search_aria": "Ricerca di contatti",
-      "search_placeholder": "La ricerca porta.."
+      "search_placeholder": "Cerca lead…"
     }
   },
   "nav": {
