@@ -129,7 +129,7 @@ async def hubspot_start(
         # Get HubSpot client ID from environment
         client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
         redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/oauth/callback")
-        raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write oauth")
+        raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write crm.objects.deals.read crm.objects.deals.write oauth")
         
         # Normalize scopes - handle spaces, commas, newlines
         def normalize_scopes(raw: str) -> str:
@@ -205,6 +205,10 @@ async def hubspot_callback(
     oauth_info = extract_oauth_info(state)
     if not oauth_info:
         logger.error(f"Invalid or expired OAuth state: {state[:20]}...")
+        logger.error(f"State validation failed - possible causes:")
+        logger.error(f"  1. JWT secret mismatch between start and callback")
+        logger.error(f"  2. State token expired (10 minutes)")
+        logger.error(f"  3. Invalid JWT format")
         return RedirectResponse(
             url=f"https://app.agoralia.app/settings/integrations?hubspot=expired",
             status_code=303
@@ -255,6 +259,11 @@ async def hubspot_callback(
             if token_response.status_code != 200:
                 response_text = token_response.text
                 logger.error(f"HubSpot error response: {response_text}")
+                logger.error(f"Token exchange failed - possible causes:")
+                logger.error(f"  1. Authorization code expired or already used")
+                logger.error(f"  2. Client ID/Secret mismatch")
+                logger.error(f"  3. Redirect URI mismatch")
+                logger.error(f"  4. Scopes not authorized in HubSpot app")
                 
                 # Handle specific HubSpot errors
                 if "BAD_AUTH_CODE" in response_text:
