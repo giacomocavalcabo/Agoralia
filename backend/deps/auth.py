@@ -11,7 +11,7 @@ from backend.db import get_db
 from backend.models import User, Workspace, WorkspaceMember, UserAuth
 
 
-def get_current_user(
+async def get_current_user(
     request: Request,
     db: Session = Depends(get_db)
 ) -> Optional[User]:
@@ -20,7 +20,7 @@ def get_current_user(
     """
     from backend.auth.session import get_session
     
-    session = get_session(request)
+    session = await get_session(request)
     if not session:
         return None
     
@@ -172,7 +172,7 @@ def auth_guard(
     return current_user
 
 
-def admin_guard(
+async def admin_guard(
     request: Request, 
     x_admin_email: Optional[str] = Header(default=None), 
     admin_email: Optional[str] = Query(default=None)
@@ -191,7 +191,7 @@ def admin_guard(
     if chosen:
         _require_admin(chosen)
         return
-    sess = get_session(request)
+    sess = await get_session(request)
     claims = (sess or {}).get("claims") if sess else None
     if not claims or not claims.get("is_admin_global"):
         raise HTTPException(status_code=403, detail="Admin required")
