@@ -53,6 +53,15 @@ export default function AppShell({ children }) {
   const menuRef = useRef(null)
   const isNavigatingRef = useRef(false)
   
+  // Handler per chiudere il menu quando si clicca fuori
+  const handleClickOutside = useCallback((event) => {
+    if (isNavigatingRef.current) return;              // ⛑️ evita setState in navigazione
+    const el = menuRef.current;
+    if (el && !el.contains(event.target)) {
+      setUserMenuOpen(false);
+    }
+  }, []);
+
   // Se parte una navigazione (OAuth/redirect), segnalo lo stato
   useEffect(() => {
     const onBeforeUnload = () => { isNavigatingRef.current = true; };
@@ -66,6 +75,15 @@ export default function AppShell({ children }) {
       window.location.href = '/login'
     }
   }, [isAuthenticated, isLoading])
+
+  // Attacca listener solo quando il menu è aperto
+  useEffect(() => {
+    if (!userMenuOpen) return;                        // attacca solo se serve
+    document.addEventListener("mousedown", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside, true);
+    };
+  }, [userMenuOpen, handleClickOutside]);
   
   // Show loading while checking authentication
   if (isLoading) {
@@ -83,24 +101,6 @@ export default function AppShell({ children }) {
   if (!isAuthenticated) {
     return null
   }
-  
-  // Handler per chiudere il menu quando si clicca fuori
-  const handleClickOutside = useCallback((event) => {
-    if (isNavigatingRef.current) return;              // ⛑️ evita setState in navigazione
-    const el = menuRef.current;
-    if (el && !el.contains(event.target)) {
-      setUserMenuOpen(false);
-    }
-  }, []);
-
-  // Attacca listener solo quando il menu è aperto
-  useEffect(() => {
-    if (!userMenuOpen) return;                        // attacca solo se serve
-    document.addEventListener("mousedown", handleClickOutside, true);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true);
-    };
-  }, [userMenuOpen, handleClickOutside]);
   
   return (
     <div className="min-h-screen bg-gray-50 flex">
