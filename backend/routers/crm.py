@@ -75,6 +75,32 @@ async def hubspot_test() -> dict:
         "has_scopes": bool(scopes)
     }
 
+@router.get("/hubspot/debug")
+async def hubspot_debug(db: Session = Depends(get_db)):
+    """Debug HubSpot connections in database"""
+    from backend.models import ProviderAccount
+    
+    accounts = db.query(ProviderAccount).filter(
+        ProviderAccount.provider == "hubspot",
+        ProviderAccount.category == "crm"
+    ).all()
+    
+    return {
+        "total_accounts": len(accounts),
+        "accounts": [
+            {
+                "id": acc.id,
+                "workspace_id": acc.workspace_id,
+                "status": acc.status,
+                "has_access_token": bool(acc.access_token_encrypted),
+                "has_refresh_token": bool(acc.refresh_token_encrypted),
+                "expires_at": acc.expires_at.isoformat() if acc.expires_at else None,
+                "created_at": acc.created_at.isoformat() if acc.created_at else None
+            }
+            for acc in accounts
+        ]
+    }
+
 @router.get("/hubspot/start")
 async def hubspot_start(
     request: Request,
