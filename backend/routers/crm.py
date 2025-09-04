@@ -78,27 +78,43 @@ async def hubspot_test() -> dict:
 @router.get("/hubspot/debug")
 async def hubspot_debug(db: Session = Depends(get_db)):
     """Debug HubSpot connections in database"""
-    from backend.models import ProviderAccount
-    
-    accounts = db.query(ProviderAccount).filter(
-        ProviderAccount.provider == "hubspot",
-        ProviderAccount.category == "crm"
-    ).all()
-    
+    try:
+        from backend.models import ProviderAccount
+        
+        accounts = db.query(ProviderAccount).filter(
+            ProviderAccount.provider == "hubspot",
+            ProviderAccount.category == "crm"
+        ).all()
+        
+        return {
+            "total_accounts": len(accounts),
+            "accounts": [
+                {
+                    "id": acc.id,
+                    "workspace_id": acc.workspace_id,
+                    "status": acc.status,
+                    "has_access_token": bool(acc.access_token_encrypted),
+                    "has_refresh_token": bool(acc.refresh_token_encrypted),
+                    "expires_at": acc.expires_at.isoformat() if acc.expires_at else None,
+                    "created_at": acc.created_at.isoformat() if acc.created_at else None
+                }
+                for acc in accounts
+            ]
+        }
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Debug error: {repr(e)}")
+        return {"error": str(e)}
+
+@router.get("/hubspot/session-test")
+async def hubspot_session_test(request: Request):
+    """Test session functionality"""
     return {
-        "total_accounts": len(accounts),
-        "accounts": [
-            {
-                "id": acc.id,
-                "workspace_id": acc.workspace_id,
-                "status": acc.status,
-                "has_access_token": bool(acc.access_token_encrypted),
-                "has_refresh_token": bool(acc.refresh_token_encrypted),
-                "expires_at": acc.expires_at.isoformat() if acc.expires_at else None,
-                "created_at": acc.created_at.isoformat() if acc.created_at else None
-            }
-            for acc in accounts
-        ]
+        "session_id": id(request.session),
+        "session_data": dict(request.session),
+        "has_hubspot_state": "hubspot_oauth_state" in request.session,
+        "has_hubspot_workspace": "hubspot_workspace_id" in request.session
     }
 
 @router.get("/hubspot/start")
