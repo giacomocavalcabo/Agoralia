@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/Badge';
 import { useToast } from './ToastProvider';
 import { useTranslation } from '../lib/i18n';
+import { apiFetch } from '../lib/api.js';
 
 const CRMPushButton = ({ callId, workspaceId, className = '' }) => {
   const { t } = useTranslation('pages');
@@ -53,19 +54,14 @@ const CRMPushButton = ({ callId, workspaceId, className = '' }) => {
     setLoading(true);
     
     try {
-      const response = await fetch(`/api/crm/calls/${callId}/push-to-crm?provider=${provider}&workspace_id=${workspaceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      const response = await apiFetch(`/crm/calls/${callId}/push-to-crm?provider=${provider}&workspace_id=${workspaceId}`, {
+        method: 'POST'
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        
+      if (response) {
         toast({
           title: 'Push to CRM Successful',
-          description: `Call outcome queued for push to ${result.provider}`,
+          description: `Call outcome queued for push to ${response.provider}`,
           type: 'success'
         });
         
@@ -77,8 +73,7 @@ const CRMPushButton = ({ callId, workspaceId, className = '' }) => {
         });
         
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to push to CRM');
+        throw new Error(response.detail || 'Failed to push to CRM');
       }
       
     } catch (error) {

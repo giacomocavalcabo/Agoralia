@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from './useAuth.jsx'
 import { useIsDemo } from './useDemoData.js'
+import { apiFetch } from './api.js'
 
 export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 	const [isConnected, setIsConnected] = useState(false)
@@ -41,8 +42,8 @@ export default function useLiveWS(url = '/ws', fallbackInterval = 15000) {
 		
 		try {
 			const [liveResponse, eventsResponse] = await Promise.all([
-				fetch('/api/calls/live', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] })),
-				fetch('/api/events/recent?limit=20', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ items: [] }))
+				apiFetch('/calls/live', { cache: 'no-store' }).catch(() => ({ items: [] })),
+				apiFetch('/events/recent?limit=20', { cache: 'no-store' }).catch(() => ({ items: [] }))
 			])
 			
 			setLiveCalls(liveResponse.items || [])

@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useIsDemo } from './useDemoData.js';
 import { createRealtimeClient } from './realtime.js';
 import { useAuth } from './useAuth.jsx';
+import { apiFetch } from './api.js';
 
 export function useLiveCalls() {
   const isDemo = useIsDemo();
@@ -68,17 +69,10 @@ export function useLiveCalls() {
     
     setStatus('connecting');
     
-    fetch('/api/calls/live', { 
+    apiFetch('/calls/live', { 
       signal: abort.signal,
-      cache: 'no-store',
-      headers: {
-        // Authorization header rimosso - ora usa session cookies
-      }
+      cache: 'no-store'
     })
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
       .then((data) => {
         const list = data?.items ?? [];
         setItems(list);

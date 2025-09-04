@@ -5,6 +5,8 @@
  * - Gestione errori robusta e reconnection con backoff
  */
 
+import { apiFetch } from './api.js';
+
 export function createRealtimeClient({ user, isDemo }) {
   const wsUrl = import.meta.env.VITE_WS_URL; // deve essere wss://...
   const canOpen = !!user?.id && !isDemo && !!wsUrl && wsUrl.startsWith('wss://');
@@ -34,16 +36,13 @@ export function createRealtimeClient({ user, isDemo }) {
       if (closed) return;
       
       try {
-        const response = await fetch('/api/events/recent?limit=20', { 
+        const data = await apiFetch('/events/recent?limit=20', { 
           cache: 'no-store',
           signal: AbortSignal.timeout(5000)
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.items?.length > 0) {
-            notify('events.recent', data.items);
-          }
+        if (data?.items?.length > 0) {
+          notify('events.recent', data.items);
         }
       } catch (error) {
         if (import.meta.env.DEV) {

@@ -195,27 +195,24 @@ export default function Calendar(){
                           if (dragStart && dragStart.getTime()!==slot.getTime()){
                             if (selected){
                               try{
-                                const resp = await fetch(`${API_BASE_URL}/api/schedule/${selected.id}`, {
+                                const resp = await apiFetch(`/schedule/${selected.id}`, {
                                   method:'PATCH',
-                                  headers:{ 'Content-Type':'application/json' },
-                                  body: JSON.stringify({ at: slot.toISOString() })
+                                  body: { at: slot.toISOString() }
                                 })
-                                if (resp.ok){ toast(t('calendar.toasts.created')); refetch() }
-                                else if (resp.status===409){
-                                  let detail
-                                  try { detail = await resp.json() } catch { detail = {} }
-                                  const code = String(detail?.code || 'quiet_hours').toLowerCase()
+                                if (resp && !resp.error) { 
+                                  toast(t('calendar.toasts.created')); 
+                                  refetch() 
+                                } else {
+                                  const code = String(resp?.code || 'quiet_hours').toLowerCase()
                                   if (code==='quiet_hours') {
-                                    toast(t('calendar.errors.quiet_hours', { iso: detail?.iso || '' }))
+                                    toast(t('calendar.errors.quiet_hours', { iso: resp?.iso || '' }))
                                   } else if (code==='budget') {
                                     toast(t('calendar.errors.budget'))
                                   } else if (code==='rpo') {
-                                    toast(t('calendar.errors.rpo', { iso: detail?.iso || '' }))
+                                    toast(t('calendar.errors.rpo', { iso: resp?.iso || '' }))
                                   } else {
                                     toast(`409: ${code}`)
                                   }
-                                } else {
-                                  const text = await resp.text(); toast(`API ${resp.status}: ${text}`)
                                 }
                               } catch(err){ toast(String(err?.message || err)) }
                             } else {

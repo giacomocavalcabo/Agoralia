@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js'
 import { useI18n } from '../lib/i18n.jsx'
+import { apiFetch } from '../lib/api.js'
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -56,14 +57,9 @@ export default function PaymentMethodForm({ onSuccess, onCancel }) {
 
     try {
       // Create SetupIntent on the backend
-      const response = await fetch('/api/billing/setup-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const { clientSecret } = await apiFetch('/billing/setup-intent', {
+        method: 'POST'
       })
-
-      const { clientSecret } = await response.json()
 
       // Confirm the SetupIntent
       const { error: confirmError, setupIntent } = await stripe.confirmCardSetup(

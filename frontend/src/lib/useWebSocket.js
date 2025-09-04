@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { apiFetch } from './api.js'
 
 // WebSocket URL configurabile con fallback
 const WS_URL = import.meta.env.VITE_WS_URL || '';
@@ -110,11 +111,8 @@ export function useFallbackPolling(enabled = false, interval = 5000) {
     const poll = async () => {
       try {
         // Fallback API call (es. per aggiornamenti dashboard)
-        const response = await fetch('/api/dashboard/updates')
-        if (response.ok) {
-          const updates = await response.json()
-          setData(updates)
-        }
+        const updates = await apiFetch('/dashboard/updates')
+        setData(updates)
       } catch (error) {
         console.warn('Fallback polling failed:', error)
       }

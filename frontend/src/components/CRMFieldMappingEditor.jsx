@@ -7,6 +7,7 @@ import { Badge } from './ui/Badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/Tabs';
 import { useToast } from './ToastProvider';
 import { useI18n } from '../lib/i18n.jsx';
+import { apiFetch } from '../lib/api.js';
 
 const CRMFieldMappingEditor = ({ 
   workspaceId, 
@@ -89,12 +90,9 @@ const CRMFieldMappingEditor = ({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/crm/mapping', {
+      const response = await apiFetch('/crm/mapping', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           workspace_id: workspaceId,
           provider: provider,
           object: activeTab,

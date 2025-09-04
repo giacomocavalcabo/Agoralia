@@ -5,6 +5,7 @@ import { Badge } from './ui/Badge';
 import { ProgressBar } from './ui/ProgressBar';
 import { useToast } from './ToastProvider';
 import { useI18n } from '../lib/i18n.jsx';
+import { apiFetch } from '../lib/api.js';
 
 const CRMSyncStatus = ({ workspaceId, provider }) => {
   const { t } = useI18n('pages');
@@ -36,11 +37,8 @@ const CRMSyncStatus = ({ workspaceId, provider }) => {
 
   const loadSyncStatus = async () => {
     try {
-      const response = await fetch(`/api/crm/sync/status?provider=${provider}&workspace_id=${workspaceId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSyncStatus(data);
-      }
+      const data = await apiFetch(`/crm/sync/status?provider=${provider}&workspace_id=${workspaceId}`);
+      setSyncStatus(data);
     } catch (error) {
       console.error('Failed to load sync status:', error);
     }
@@ -48,11 +46,8 @@ const CRMSyncStatus = ({ workspaceId, provider }) => {
 
   const loadSyncLogs = async () => {
     try {
-      const response = await fetch(`/api/crm/sync/logs?provider=${provider}&workspace_id=${workspaceId}&limit=50`);
-      if (response.ok) {
-        const data = await response.json();
-        setLogs(data.logs || []);
-      }
+      const data = await apiFetch(`/crm/sync/logs?provider=${provider}&workspace_id=${workspaceId}&limit=50`);
+      setLogs(data.logs || []);
     } catch (error) {
       console.error('Failed to load sync logs:', error);
     }
@@ -71,16 +66,12 @@ const CRMSyncStatus = ({ workspaceId, provider }) => {
         payload.objects = objects;
       }
       
-      const response = await fetch('/api/crm/sync/start', {
+      const result = await apiFetch('/crm/sync/start', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
+        body: payload
       });
 
-      if (response.ok) {
-        const result = await response.json();
+      if (result) {
         toast({
           title: 'Sync Started',
           description: `CRM sync job queued: ${result.job_id}`,

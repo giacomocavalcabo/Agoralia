@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useIsDemo } from './useDemoData.js';
 import { createRealtimeClient } from './realtime.js';
 import { useAuth } from './useAuth.jsx';
+import { apiFetch } from './api.js';
 
 export function useRecentEvents() {
   const isDemo = useIsDemo();
@@ -134,21 +135,13 @@ export function useRecentEvents() {
       if (stop) return;
       
       try {
-        const response = await fetch('/api/events/recent?limit=20', {
+        const data = await apiFetch('/events/recent?limit=20', {
           cache: 'no-store',
-          signal: AbortSignal.timeout(5000),
-          headers: {
-            // Authorization header rimosso - ora usa session cookies
-          }
+          signal: AbortSignal.timeout(5000)
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          setItems(data?.items ?? []);
-          setStatus('ok');
-        } else {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        setItems(data?.items ?? []);
+        setStatus('ok');
       } catch (error) {
         if (error.name !== 'AbortError') {
           setStatus('error');

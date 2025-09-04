@@ -1,3 +1,5 @@
+import { apiFetch } from './api.js';
+
 export async function fetchMetricsOverview({ days=30, campaignId, agentId, lang, country } = {}) {
   const params = new URLSearchParams();
   params.set("days", String(days));
@@ -6,10 +8,9 @@ export async function fetchMetricsOverview({ days=30, campaignId, agentId, lang,
   if (lang) params.set("lang", lang);
   if (country) params.set("country", country);
 
-  const res = await fetch(`/api/metrics/overview?${params.toString()}`);
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err?.detail?.message || `Metrics error ${res.status}`);
+  try {
+    return await apiFetch(`/metrics/overview?${params.toString()}`);
+  } catch (error) {
+    throw new Error(error?.message || 'Metrics error');
   }
-  return res.json();
 }
