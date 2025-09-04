@@ -98,14 +98,8 @@ async def hubspot_start(
         request.session["hubspot_oauth_state"] = state
         request.session["hubspot_workspace_id"] = workspace_id
         
-        # Build OAuth URL
-        params = {
-            "client_id": client_id,
-            "redirect_uri": redirect_uri,
-            "scope": scopes,
-            "state": state,
-        }
-        auth_url = f"https://app.hubspot.com/oauth/authorize?{urlencode(params)}"
+        # Build OAuth URL - HubSpot expects space-separated scopes without URL encoding
+        auth_url = f"https://app.hubspot.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope={scopes}&state={state}"
         
         return {
             "auth_url": auth_url,
