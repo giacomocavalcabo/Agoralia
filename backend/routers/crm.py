@@ -179,9 +179,16 @@ async def hubspot_callback(
 ) -> RedirectResponse:
     """Handle HubSpot OAuth callback"""
     
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"HubSpot callback received: code={code[:10]}..., state={state[:10]}...")
+    
     # Validate state parameter
     stored_state = request.session.get("hubspot_oauth_state")
+    logger.info(f"Stored state: {stored_state[:10] if stored_state else None}...")
+    
     if not stored_state or stored_state != state:
+        logger.error(f"State mismatch: stored={stored_state}, received={state}")
         raise HTTPException(status_code=400, detail="Invalid state parameter")
     
     workspace_id = request.session.get("hubspot_workspace_id", "ws_1")
@@ -189,7 +196,7 @@ async def hubspot_callback(
     # Get HubSpot credentials
     client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
     client_secret = os.getenv("CRM_HUBSPOT_CLIENT_SECRET")
-    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/oauth/callback")
     
     if not client_id or not client_secret:
         raise HTTPException(status_code=500, detail="HubSpot credentials not configured")
@@ -217,6 +224,8 @@ async def hubspot_callback(
     from backend.models import ProviderAccount
     from backend.utils.encryption import encrypt_str
     
+    logger.info(f"Saving tokens for workspace_id={workspace_id}")
+    
     # Check if account already exists
     account = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == workspace_id,
@@ -225,6 +234,7 @@ async def hubspot_callback(
     ).first()
     
     if not account:
+        logger.info("Creating new HubSpot account")
         account = ProviderAccount(
             workspace_id=workspace_id,
             provider="hubspot",
@@ -234,11 +244,15 @@ async def hubspot_callback(
             label="HubSpot"
         )
         db.add(account)
+    else:
+        logger.info(f"Updating existing HubSpot account: {account.id}")
     
     # Save encrypted tokens
     account.access_token_encrypted = encrypt_str(token_data["access_token"])
     if "refresh_token" in token_data:
         account.refresh_token_encrypted = encrypt_str(token_data["refresh_token"])
+    
+    logger.info("Tokens encrypted and saved")
     
     # Calculate expiration time
     expires_in = token_data.get("expires_in", 3600)
