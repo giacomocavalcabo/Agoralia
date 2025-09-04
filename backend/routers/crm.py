@@ -20,7 +20,8 @@ from backend.models import (
     Call, CallOutcome, CrmWebhookEvent
 )
 from backend.integrations import HubSpotClient, ZohoClient, OdooClient
-from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin, get_current_user
+from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin
+from backend.auth.session import get_current_user
 
 router = APIRouter(tags=["CRM"])
 
