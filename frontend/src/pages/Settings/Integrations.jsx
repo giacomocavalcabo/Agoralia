@@ -29,6 +29,22 @@ const Integrations = () => {
     
     console.log('[Integrations] Auth state:', { ready, authenticated, user: user?.email });
     
+    // Check for OAuth callback success
+    const urlParams = new URLSearchParams(window.location.search);
+    const hubspotConnected = urlParams.get('hubspot') === 'connected';
+    
+    if (hubspotConnected) {
+      console.log('[Integrations] HubSpot OAuth callback detected');
+      toast({
+        title: 'HubSpot Connected',
+        description: 'Successfully connected to HubSpot',
+        variant: 'success'
+      });
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // Load integration status only when auth is ready and user is authenticated
     if (ready && authenticated) {
       loadIntegrationStatus();
@@ -101,7 +117,7 @@ const Integrations = () => {
       let response;
       
       if (provider === 'hubspot') {
-        // HubSpot usa OAuth2 - chiama l'endpoint specifico
+        // HubSpot usa OAuth2 - chiama l'endpoint CRM
         response = await apiFetch(`/crm/hubspot/start`, {
           method: 'GET'
         });

@@ -143,6 +143,12 @@ export default function SettingsProfile() {
         }
       }
       
+      // Gestione errori di validazione
+      if (error?.errors && Array.isArray(error.errors)) {
+        const validationErrors = error.errors.map(e => e.message || e).join(', ')
+        errorMessage = validationErrors
+      }
+      
       toast({
         title: t('account.errors.save_failed'),
         description: errorMessage,

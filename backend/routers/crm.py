@@ -1,7 +1,8 @@
 """
 CRM Router - Consolidated routes for all CRM providers
 """
-from fastapi import APIRouter, Depends, Query, HTTPException, Request
+from fastapi import APIRouter, Depends, Query, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
@@ -18,7 +19,7 @@ from backend.models import (
     Call, CallOutcome, CrmWebhookEvent
 )
 from backend.integrations import HubSpotClient, ZohoClient, OdooClient
-from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin
+from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin, get_current_user
 
 router = APIRouter(prefix="/crm", tags=["CRM"])
 
@@ -58,23 +59,35 @@ async def get_crm_providers(workspace_id: str = Query(default="ws_1")) -> dict:
 # ===================== HubSpot Routes =====================
 
 @router.get("/hubspot/start")
-async def hubspot_start(workspace_id: str = Query(default="ws_1")) -> dict:
+async def hubspot_start(
+    request: Request,
+    workspace_id: str = Query(default="ws_1"),
+    user=Depends(get_current_user)
+) -> dict:
     """Start HubSpot OAuth flow"""
     
     # Get HubSpot client ID from environment
     client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
-    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://api.agoralia.app/crm/hubspot/callback")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+    scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write")
     
     if not client_id:
         raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
+    
+    # Generate CSRF state token
+    state = secrets.token_urlsafe(32)
+    
+    # Store state in session for validation
+    request.session["hubspot_oauth_state"] = state
+    request.session["hubspot_workspace_id"] = workspace_id
     
     # Build OAuth URL
     auth_url = (
         f"https://app.hubspot.com/oauth/authorize?"
         f"client_id={client_id}&"
         f"redirect_uri={redirect_uri}&"
-        f"scope=contacts%20deals%20companies&"
-        f"state={workspace_id}"
+        f"scope={scopes.replace(' ', '%20')}&"
+        f"state={state}"
     )
     
     return {
@@ -88,19 +101,92 @@ async def hubspot_start(workspace_id: str = Query(default="ws_1")) -> dict:
 async def hubspot_callback(
     code: str, 
     state: str, 
-    workspace_id: str = Query(default="ws_1"),
+    request: Request,
+    response: Response,
     db: Session = Depends(get_db)
-) -> dict:
+) -> RedirectResponse:
     """Handle HubSpot OAuth callback"""
-    # In production, exchange code for tokens
-    # For now, return mock success
     
-    return {
-        "message": "HubSpot connected successfully",
-        "portal_id": "12345",
-        "access_token": "mock_token",
-        "workspace_id": workspace_id
-    }
+    # Validate state parameter
+    stored_state = request.session.get("hubspot_oauth_state")
+    if not stored_state or stored_state != state:
+        raise HTTPException(status_code=400, detail="Invalid state parameter")
+    
+    workspace_id = request.session.get("hubspot_workspace_id", "ws_1")
+    
+    # Get HubSpot credentials
+    client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
+    client_secret = os.getenv("CRM_HUBSPOT_CLIENT_SECRET")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+    
+    if not client_id or not client_secret:
+        raise HTTPException(status_code=500, detail="HubSpot credentials not configured")
+    
+    # Exchange code for tokens
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://api.hubapi.com/oauth/v1/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": redirect_uri,
+                    "client_id": client_id,
+                    "client_secret": client_secret
+                }
+            )
+            token_response.raise_for_status()
+            token_data = token_response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=400, detail=f"Failed to exchange code for tokens: {str(e)}")
+    
+    # Save tokens to database
+    from backend.models import ProviderAccount
+    from backend.utils.encryption import encrypt_str
+    
+    # Check if account already exists
+    account = db.query(ProviderAccount).filter(
+        ProviderAccount.workspace_id == workspace_id,
+        ProviderAccount.provider == "hubspot",
+        ProviderAccount.category == "crm"
+    ).first()
+    
+    if not account:
+        account = ProviderAccount(
+            workspace_id=workspace_id,
+            provider="hubspot",
+            category="crm",
+            auth_type="oauth2",
+            status="connected",
+            label="HubSpot"
+        )
+        db.add(account)
+    
+    # Save encrypted tokens
+    account.access_token_encrypted = encrypt_str(token_data["access_token"])
+    if "refresh_token" in token_data:
+        account.refresh_token_encrypted = encrypt_str(token_data["refresh_token"])
+    
+    # Calculate expiration time
+    expires_in = token_data.get("expires_in", 3600)
+    account.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+    
+    # Save additional data
+    account.scopes = token_data.get("scope", "")
+    account.external_id = token_data.get("hub_id", "")
+    
+    db.commit()
+    
+    # Clear session state
+    request.session.pop("hubspot_oauth_state", None)
+    request.session.pop("hubspot_workspace_id", None)
+    
+    # Redirect back to frontend
+    return RedirectResponse(
+        url=f"https://app.agoralia.app/settings/integrations?hubspot=connected",
+        status_code=303
+    )
 
 
 @router.post("/hubspot/disconnect")
