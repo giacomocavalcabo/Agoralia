@@ -142,11 +142,13 @@ def auth_me(request: Request, db: Session = Depends(get_db)):
 
         # Get workspace info for timezone
         workspace_tz = "UTC"  # default
+        workspace_id = "ws_1"  # default fallback
         try:
             from backend.models import WorkspaceMember, Workspace
             # Find user's workspace
             workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user_id).first()
             if workspace_member:
+                workspace_id = workspace_member.workspace_id
                 workspace = db.get(Workspace, workspace_member.workspace_id)
                 if workspace:
                     workspace_tz = getattr(workspace, 'timezone', None) or "UTC"
@@ -166,6 +168,7 @@ def auth_me(request: Request, db: Session = Depends(get_db)):
                 "timezone": getattr(user, 'tz', None) or "UTC",
                 "email_verified": bool(getattr(user, 'email_verified_at', None)),
                 "is_demo_allowed": is_demo_allowed,
+                "workspace_id": workspace_id,
                 "workspace": {
                     "timezone": workspace_tz
                 }

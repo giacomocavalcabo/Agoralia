@@ -39,6 +39,15 @@ export async function apiFetch(path, options = {}) {
 		// Path relativo, aggiungi API_BASE_URL
 		fullPath = `${API_BASE_URL}${path}`;
 	}
+	
+	// Aggiungi workspace_id automaticamente se disponibile
+	const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+	const workspaceId = auth?.user?.workspace_id;
+	if (workspaceId && !fullPath.includes('workspace_id=')) {
+		const separator = fullPath.includes('?') ? '&' : '?';
+		fullPath = `${fullPath}${separator}workspace_id=${workspaceId}`;
+	}
+	
 	const url = normalizeUrl(fullPath);
 	assertApiPrefix(url);
 	const resp = await fetch(url, {
