@@ -35,6 +35,11 @@ from backend.models import (
 # 🔒 Assert di sicurezza per Base.metadata
 import sqlalchemy as sa
 assert isinstance(Base.metadata, sa.schema.MetaData), "Base.metadata corrotto (sovrascritto)"
+
+# 🔧 Force complete models initialization before importing routers
+import backend.models as _models  # noqa: F401
+
+# Import routers AFTER models are fully initialized
 from backend.routers import crm, auth, auth_microsoft, compliance, integrations, settings
 from backend.utils.rate_limiter import telephony_rate_limiter
 from fastapi import APIRouter, Request
