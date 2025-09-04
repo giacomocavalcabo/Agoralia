@@ -821,6 +821,9 @@ async def create_lead(lead_data: LeadCreate, request: Request) -> dict:
             db.refresh(lead)
             
             return lead.to_dict()
+    except HTTPException as e:
+        # Let explicit HTTP errors (e.g., duplicates) pass through unchanged
+        raise e
     except Exception as e:
         print(f"❌ [LEADS] Error creating lead: {e}")
         import traceback
