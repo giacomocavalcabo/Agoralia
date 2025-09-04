@@ -111,7 +111,7 @@ async def hubspot_start(
     try:
         # Get HubSpot client ID from environment
         client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
-        redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/oauth/callback")
+        redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/oauth/callback")
         raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write oauth")
         
         # Normalize scopes - handle spaces, commas, newlines
@@ -196,7 +196,7 @@ async def hubspot_callback(
     # Get HubSpot credentials
     client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
     client_secret = os.getenv("CRM_HUBSPOT_CLIENT_SECRET")
-    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/oauth/callback")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/oauth/callback")
     
     if not client_id or not client_secret:
         raise HTTPException(status_code=500, detail="HubSpot credentials not configured")
