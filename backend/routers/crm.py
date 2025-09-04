@@ -11,6 +11,7 @@ import json
 import os
 import hmac
 import hashlib
+from urllib.parse import urlencode
 
 from backend.db import get_db
 from backend.models import (
@@ -81,36 +82,42 @@ async def hubspot_start(
     user=Depends(get_current_user)
 ) -> dict:
     """Start HubSpot OAuth flow"""
-    
-    # Get HubSpot client ID from environment
-    client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
-    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
-    scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write")
-    
-    if not client_id:
-        raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
-    
-    # Generate CSRF state token
-    state = secrets.token_urlsafe(32)
-    
-    # Store state in session for validation
-    request.session["hubspot_oauth_state"] = state
-    request.session["hubspot_workspace_id"] = workspace_id
-    
-    # Build OAuth URL
-    auth_url = (
-        f"https://app.hubspot.com/oauth/authorize?"
-        f"client_id={client_id}&"
-        f"redirect_uri={redirect_uri}&"
-        f"scope={scopes.replace(' ', '%20')}&"
-        f"state={state}"
-    )
-    
-    return {
-        "auth_url": auth_url,
-        "workspace_id": workspace_id,
-        "provider": "hubspot"
-    }
+    try:
+        # Get HubSpot client ID from environment
+        client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
+        redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+        scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write")
+        
+        if not client_id:
+            raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
+        
+        # Generate CSRF state token
+        state = secrets.token_urlsafe(32)
+        
+        # Store state in session for validation
+        request.session["hubspot_oauth_state"] = state
+        request.session["hubspot_workspace_id"] = workspace_id
+        
+        # Build OAuth URL
+        params = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "scope": scopes,
+            "state": state,
+        }
+        auth_url = f"https://app.hubspot.com/oauth/authorize?{urlencode(params)}"
+        
+        return {
+            "auth_url": auth_url,
+            "workspace_id": workspace_id,
+            "provider": "hubspot"
+        }
+    except Exception as e:
+        # Log error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"hubspot_start error: {repr(e)}")
+        raise HTTPException(status_code=500, detail="HubSpot start failed")
 
 
 @router.get("/hubspot/callback")
