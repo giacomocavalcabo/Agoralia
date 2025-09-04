@@ -1212,7 +1212,7 @@ def _require_admin(email_header: str | None):
         raise HTTPException(status_code=403, detail="Admin required")
 
 
-@app.get("/admin/health")
+@api.get("/admin/health")
 def admin_health(x_admin_email: str | None = Header(default=None)) -> dict:
     _require_admin(x_admin_email)
     # Minimal stub; replace with real checks (DB, Redis, R2, Retell)
@@ -1266,7 +1266,7 @@ async def require_admin_or_session(request: Request, x_admin_email: str | None =
 
 
 # ===================== Admin read-only endpoints (MVP scaffolding) =====================
-@app.get("/admin/users")
+@api.get("/admin/users")
 def admin_users(
     request: Request,
     query: str | None = Query(default=None),
@@ -1291,7 +1291,7 @@ def admin_users(
     return {"items": items, "next_cursor": None}
 
 
-@app.get("/admin/users/{user_id}")
+@api.get("/admin/users/{user_id}")
 def admin_user_detail(user_id: str, request: Request, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     u = db.query(User).filter(User.id == user_id).first()
     if not u:
@@ -1299,7 +1299,7 @@ def admin_user_detail(user_id: str, request: Request, _guard: None = Depends(adm
     return {"id": u.id, "email": u.email, "name": u.name, "locale": u.locale, "tz": u.tz, "memberships": [], "usage_30d": {"minutes": 0, "calls": 0}, "last_login_at": (u.last_login_at.isoformat() if u.last_login_at else None), "status": "active"}
 
 
-@app.post("/admin/users/{user_id}/impersonate")
+@api.post("/admin/users/{user_id}/impersonate")
 async def admin_user_impersonate(user_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     token = f"imp_{user_id}_token"
     expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
@@ -1313,7 +1313,7 @@ async def admin_user_impersonate(user_id: str, request: Request, _guard: None = 
     return {"token": token, "expires_at": expires_at}
 
 
-@app.patch("/admin/users/{user_id}")
+@api.patch("/admin/users/{user_id}")
 async def admin_user_patch(user_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     # Accept simple fields: locale, tz, status
     locale = payload.get("locale")
@@ -1328,7 +1328,7 @@ async def admin_user_patch(user_id: str, request: Request, payload: dict, _guard
     return {"id": user_id, "updated": True, "locale": u.locale, "tz": u.tz, "status": status}
 
 
-@app.get("/admin/workspaces")
+@api.get("/admin/workspaces")
 def admin_workspaces(
     request: Request,
     query: str | None = Query(default=None),
@@ -1347,7 +1347,7 @@ def admin_workspaces(
     return {"items": items, "next_cursor": None}
 
 
-@app.get("/admin/workspaces/{ws_id}")
+@api.get("/admin/workspaces/{ws_id}")
 def admin_workspace_detail(ws_id: str, request: Request, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     w = db.query(Workspace).filter(Workspace.id == ws_id).first()
     if not w:
@@ -1355,12 +1355,12 @@ def admin_workspace_detail(ws_id: str, request: Request, _guard: None = Depends(
     return {"id": w.id, "name": w.name, "plan": w.plan, "members": _WORKSPACE_MEMBERS, "campaigns": [], "usage_30d": [], "credits_cents": 0, "suspended": False}
 
 
-@app.get("/admin/billing/overview")
+@api.get("/admin/billing/overview")
 def admin_billing_overview(request: Request, period: str | None = Query(default=None), _guard: None = Depends(admin_guard)) -> dict:
     return {"period": period or "2025-08", "mrr_cents": 0, "arr_cents": 0, "arpu_cents": 0, "churn_rate": 0.0}
 
 
-@app.get("/admin/usage/overview")
+@api.get("/admin/usage/overview")
 def admin_usage_overview(request: Request, period: str | None = Query(default=None), _guard: None = Depends(admin_guard)) -> dict:
     return {
         "period": period or "2025-08",
@@ -1370,7 +1370,7 @@ def admin_usage_overview(request: Request, period: str | None = Query(default=No
     }
 
 
-@app.get("/admin/calls/search")
+@api.get("/admin/calls/search")
 def admin_calls_search(
     request: Request,
     query: str | None = Query(default=None),
@@ -1394,7 +1394,7 @@ def admin_calls_search(
     return {"items": items, "next_cursor": None}
 
 
-@app.get("/admin/campaigns")
+@api.get("/admin/campaigns")
 def admin_campaigns(
     request: Request,
     query: str | None = Query(default=None),
@@ -1411,17 +1411,17 @@ def admin_campaigns(
     return {"items": [{"id": c.id, "name": c.name, "status": c.status, "pacing_npm": c.pacing_npm, "budget_cap_cents": c.budget_cap_cents} for c in rows]}
 
 
-@app.post("/admin/campaigns/{campaign_id}/pause")
+@api.post("/admin/campaigns/{campaign_id}/pause")
 async def admin_campaign_pause(campaign_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"id": campaign_id, "status": "paused"}
 
 
-@app.post("/admin/campaigns/{campaign_id}/resume")
+@api.post("/admin/campaigns/{campaign_id}/resume")
 async def admin_campaign_resume(campaign_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"id": campaign_id, "status": "running"}
 
 
-@app.get("/admin/search")
+@api.get("/admin/search")
 def admin_search(request: Request, q: str, _guard: None = Depends(admin_guard), db: Session = Depends(get_db)) -> dict:
     """Unified global search across users, workspaces, calls, and campaigns"""
     if not q or len(q.strip()) < 2:
@@ -1525,7 +1525,7 @@ def admin_search(request: Request, q: str, _guard: None = Depends(admin_guard), 
 
 
 # ===================== Admin: Calls & Campaigns =====================
-@app.get("/admin/calls/live")
+@api.get("/admin/calls/live")
 def admin_calls_live(
     request: Request,
     workspace_id: str | None = Query(default=None),
@@ -1536,7 +1536,7 @@ def admin_calls_live(
     return {"items": []}
 
 
-@app.get("/admin/calls/{call_id}")
+@api.get("/admin/calls/{call_id}")
 def admin_call_detail(call_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {
         "id": call_id,
@@ -1552,7 +1552,7 @@ def admin_call_detail(call_id: str, request: Request, _guard: None = Depends(adm
 
 
 # ===================== Admin: Compliance =====================
-@app.get("/admin/compliance/attestations")
+@api.get("/admin/compliance/attestations")      
 def admin_attestations(
     request: Request,
     workspace_id: str | None = Query(default=None),
@@ -1573,7 +1573,7 @@ def admin_attestations(
     return {"items": items}
 
 
-@app.post("/pdf/generate")
+@api.post("/pdf/generate")
 async def generate_pdf(payload: dict):
     """Generate PDF from HTML using Chromium headless"""
     try:
