@@ -319,6 +319,9 @@ logger.info("Backend configurato come API-only - frontend su Vercel (app.agorali
 
 logger.info("FastAPI app created successfully")
 
+# ===================== API Router Definition =====================
+api = APIRouter(prefix="/api")
+
 # ===================== Health check endpoint =====================
 @api.get("/_whoami", include_in_schema=False)
 def whoami():
@@ -642,7 +645,6 @@ logger.info("Importing routers...")
 
 # Tutte le rotte sotto /api (una sola versione, niente duplicati "nudi")
 logger.info("Including API routers...")
-api = APIRouter(prefix="/api")
 
 # ===================== Leads Endpoints =====================
 @api.get("/leads")
