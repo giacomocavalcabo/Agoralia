@@ -1230,7 +1230,7 @@ async def numbers_route(number_id: str, payload: dict, db: Session = Depends(get
     return {"ok": True}
 
 
-@app.patch("/workspaces/{ws_id}/default_from")
+@api.patch("/workspaces/{ws_id}/default_from")
 async def ws_set_default_from(ws_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
     w = db.query(Workspace).filter(Workspace.id == ws_id).first()
     if not w:
@@ -1269,7 +1269,7 @@ async def campaign_set_from(cid: str, payload: dict, db: Session = Depends(get_d
 
 
 # ===================== Outcomes Endpoints =====================
-@app.get("/calls/{call_id}/outcome")
+@api.get("/calls/{call_id}/outcome")
 def get_outcome(call_id: str, db: Session = Depends(get_db)) -> dict:
     o = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
     if not o:
@@ -1286,7 +1286,7 @@ def get_outcome(call_id: str, db: Session = Depends(get_db)) -> dict:
     }}
 
 
-@app.patch("/calls/{call_id}/outcome")
+@api.patch("/calls/{call_id}/outcome")
 async def patch_outcome(call_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
     o = db.query(CallOutcome).filter(CallOutcome.call_id == call_id).first()
     if not o:
@@ -1297,7 +1297,7 @@ async def patch_outcome(call_id: str, payload: dict, db: Session = Depends(get_d
     db.add(o); db.commit()
     return {"ok": True}
 
-@app.get("/dashboard/summary")
+@api.get("/dashboard/summary")
 def dashboard_summary() -> dict:
         return {
         "minutes_mtd": 0,
@@ -1309,13 +1309,13 @@ def dashboard_summary() -> dict:
         "errors_24h": 0,
     }
 
-@app.get("/calls/live")
+@api.get("/calls/live")
 def calls_live() -> dict:
         return {
         "items": []
     }
 
-@app.get("/events/recent")
+@api.get("/events/recent")
 def events_recent(limit: int = 20) -> dict:
         return {
         "items": []
@@ -2692,7 +2692,7 @@ async def classify_contacts_bulk(payload: dict) -> dict:
     }
 
 
-@app.post("/dnc/check")
+@api.post("/dnc/check")
 async def check_dnc(payload: dict) -> dict:
     """Check DNC status for a phone number"""
     try:
@@ -2721,7 +2721,7 @@ async def check_dnc(payload: dict) -> dict:
     }
 
 
-@app.get("/dnc/supported-countries")
+@api.get("/dnc/supported-countries")
 async def get_dnc_supported_countries() -> dict:
     """Get list of countries with DNC support"""
     try:
@@ -2732,7 +2732,7 @@ async def get_dnc_supported_countries() -> dict:
         return {"countries": []}
 
 
-@app.post("/schedule")
+@api.post("/schedule")
 async def schedule_call(payload: dict) -> dict:
     # Enrich with Retell metadata scripts (stub)
     e164 = payload.get("to") or payload.get("phone_e164") or "+390212345678"
@@ -2748,14 +2748,14 @@ async def schedule_call(payload: dict) -> dict:
     return {"scheduled": True, "payload": payload, "retell_metadata": retell_metadata}
 
 
-@app.post("/schedule/bulk")
+@api.post("/schedule/bulk")
 async def schedule_bulk(payload: dict) -> dict:
     # Attach one script example for the batch (stub)
     retell_metadata = {"kb": {"rules": {"disclosure": "Hello, virtual assistant.", "record_consent": "This call may be recorded.", "fallback": "We can email details.", "version": "en-2025-08-01"}}}
     return {"scheduled": len(payload.get("lead_ids", [])), "retell_metadata": retell_metadata}
 
 
-@app.get("/i18n/locales")
+@api.get("/i18n/locales")
 def get_locales() -> dict:
     return {
         "ui_supported": ["en-US", "it-IT", "fr-FR", "hi-IN", "ar-EG", "es-419", "pt-BR", "de-DE", "tr-TR", "id-ID", "vi-VN", "sw"],
