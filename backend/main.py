@@ -25,10 +25,6 @@ from backend.db import Base, engine, get_db
 from backend.logger import logger
 from backend.config import settings
 
-# TEMPORARY: Force SQLAlchemy metadata refresh
-from backend.db import engine
-engine.dispose()  # Force close all connections to refresh metadata
-
 # Import di tutti i modelli all'inizio per evitare conflitti SQLAlchemy
 from backend.models import (
     User, UserAuth, Workspace, WorkspaceMember, ProviderAccount, 

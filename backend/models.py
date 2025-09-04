@@ -46,27 +46,28 @@ class CrmWebhookStatus(enum.Enum):
 
 
 class ContactClass(enum.Enum):
-    B2B = "b2b"
-    B2C = "b2c"
-    UNKNOWN = "unknown"
+    B2B = "B2B"
+    B2C = "B2C"
+    UNKNOWN = "UNKNOWN"
 
 
 class RelationshipBasis(enum.Enum):
-    EXISTING = "existing"
-    NONE = "none"
-    UNKNOWN = "unknown"
+    EXISTING = "EXISTING"
+    NONE = "NONE"
+    UNKNOWN = "UNKNOWN"
 
 
 class NationalDnc(enum.Enum):
-    IN = "in"
-    NOT_IN = "not_in"
-    UNKNOWN = "unknown"
+    YES = "YES"
+    NO = "NO"
+    UNKNOWN = "UNKNOWN"
 
 
 class ComplianceCategory(enum.Enum):
-    ALLOWED = "allowed"
-    CONDITIONAL = "conditional"
-    BLOCKED = "blocked"
+    ALLOWED = "ALLOWED"
+    CONDITIONAL = "CONDITIONAL"
+    BLOCKED = "BLOCKED"
+    UNKNOWN = "UNKNOWN"
 
 
 class User(Base):
@@ -316,10 +317,20 @@ class ProviderAccount(Base):
     __tablename__ = "provider_accounts"
     id = Column(String, primary_key=True)
     workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
-    provider = Column(SAEnum(TelephonyProvider), nullable=False)
-    api_key_encrypted = Column(String, nullable=False)
+    provider = Column(String, nullable=False)  # Changed from SAEnum to String to support CRM providers
+    category = Column(String, nullable=False, default="telephony")  # telephony|crm
+    auth_type = Column(String, nullable=True)  # api_key|oauth2
+    status = Column(String, nullable=True, default="disconnected")  # connected|disconnected
     label = Column(String, nullable=True)
+    api_key_encrypted = Column(String, nullable=True)
+    access_token_encrypted = Column(String, nullable=True)
+    refresh_token_encrypted = Column(String, nullable=True)
+    scopes = Column(String, nullable=True)
+    external_id = Column(String, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    metadata_json = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class NumberOrder(Base):
     __tablename__ = "number_orders"
