@@ -2337,15 +2337,53 @@ def list_leads(
     # Real mode: return empty array (or actual DB query when implemented)
     items = []
     
-    # TODO: Replace with actual database query
-    # Apply filters
-    if compliance_category:
-        items = [item for item in items if item.get("compliance_category") == compliance_category]
+    # Real implementation: query database
+    workspace_id = get_workspace_id(request, required=True)
     
-    if country_iso:
-        items = [item for item in items if item.get("country_iso") == country_iso.upper()]
-    
-    return {"total": len(items), "items": items}
+    with next(get_db()) as db:
+        # Build query
+        db_query = db.query(Lead).filter(Lead.workspace_id == workspace_id)
+        
+        # Apply search filter
+        if query:
+            db_query = db_query.filter(
+                or_(
+                    Lead.name.ilike(f"%{query}%"),
+                    Lead.company.ilike(f"%{query}%"),
+                    Lead.email.ilike(f"%{query}%"),
+                    Lead.phone_e164.ilike(f"%{query}%")
+                )
+            )
+        
+        # Apply compliance category filter
+        if compliance_category:
+            db_query = db_query.filter(Lead.compliance_category == compliance_category)
+        
+        # Apply country filter
+        if country_iso:
+            db_query = db_query.filter(Lead.country_iso == country_iso.upper())
+        
+        # Apply sorting
+        if sort:
+            if sort == "name":
+                db_query = db_query.order_by(Lead.name)
+            elif sort == "created_at":
+                db_query = db_query.order_by(Lead.created_at)
+            elif sort == "updated_at":
+                db_query = db_query.order_by(Lead.updated_at)
+        else:
+            db_query = db_query.order_by(Lead.created_at.desc())
+        
+        # Get total count
+        total = db_query.count()
+        
+        # Apply pagination
+        items = db_query.offset(offset).limit(limit).all()
+        
+        # Convert to dict format
+        items = [item.to_dict() for item in items]
+        
+        return {"total": total, "items": items}
 
 
 @app.post("/leads")
