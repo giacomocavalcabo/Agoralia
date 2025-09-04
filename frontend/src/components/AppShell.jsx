@@ -47,25 +47,17 @@ export default function AppShell({ children }) {
   const { user, logout, isAuthenticated, isLoading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
   const isDemo = useIsDemo()
-  
-  // Set mounted flag
-  useEffect(() => {
-    setIsMounted(true)
-    return () => setIsMounted(false)
-  }, [])
   
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!isMounted) return
     if (!isLoading && !isAuthenticated) {
       window.location.href = '/login'
     }
-  }, [isAuthenticated, isLoading, isMounted])
+  }, [isAuthenticated, isLoading])
   
   // Show loading while checking authentication
-  if (isLoading || !isMounted) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -81,18 +73,20 @@ export default function AppShell({ children }) {
     return null
   }
   
-  // Close user menu when clicking outside - removed useEffect to prevent React error
-  // This will be handled by the button click handlers instead
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuOpen && !event.target.closest('.user-menu')) {
+        setUserMenuOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
   
   return (
-    <div 
-      className="min-h-screen bg-gray-50 flex"
-      onClick={(e) => {
-        if (userMenuOpen && !e.target.closest('.user-menu')) {
-          setUserMenuOpen(false)
-        }
-      }}
-    >
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <div 
         className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
