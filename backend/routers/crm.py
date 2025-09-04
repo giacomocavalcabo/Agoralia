@@ -86,7 +86,24 @@ async def hubspot_start(
         # Get HubSpot client ID from environment
         client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
         redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/oauth/callback")
-        scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write")
+        raw_scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write")
+        
+        # Normalize scopes - handle spaces, commas, newlines
+        def normalize_scopes(raw: str) -> str:
+            parts = []
+            for token in raw.replace(",", " ").replace("\n", " ").split():
+                t = token.strip().lower()
+                if t:
+                    parts.append(t)
+            # Remove duplicates preserving order
+            seen, out = set(), []
+            for s in parts:
+                if s not in seen:
+                    seen.add(s)
+                    out.append(s)
+            return " ".join(out)
+        
+        scopes = normalize_scopes(raw_scopes)
         
         if not client_id:
             raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
@@ -98,13 +115,25 @@ async def hubspot_start(
         request.session["hubspot_oauth_state"] = state
         request.session["hubspot_workspace_id"] = workspace_id
         
-        # Build OAuth URL - HubSpot expects space-separated scopes without URL encoding
-        auth_url = f"https://app.hubspot.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope={scopes}&state={state}"
+        # Build OAuth URL - Use proper URL encoding for HubSpot
+        params = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "scope": scopes,
+            "state": state,
+        }
+        auth_url = f"https://app.hubspot.com/oauth/authorize?{urlencode(params)}"
         
         return {
             "auth_url": auth_url,
             "workspace_id": workspace_id,
-            "provider": "hubspot"
+            "provider": "hubspot",
+            "debug": {
+                "scopes_raw": raw_scopes,
+                "scopes_normalized": scopes,
+                "redirect_uri": redirect_uri,
+                "client_id": client_id[:10] + "..." if client_id else None
+            }
         }
     except Exception as e:
         # Log error for debugging
