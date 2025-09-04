@@ -11,34 +11,6 @@ from backend.db import get_db
 from backend.models import User, Workspace, WorkspaceMember, UserAuth
 
 
-def get_tenant_id(
-    request: Request,
-    user = Depends(get_current_user),
-    workspace_id: str | None = Query(default=None, description="Workspace ID (optional if authenticated)"),
-    x_workspace_id: str | None = Header(default=None, alias="X-Workspace-Id")
-) -> str:
-    """
-    Get and validate tenant/workspace ID with fallback priority:
-    1) query ?workspace_id=...
-    2) header X-Workspace-Id
-    3) user.workspace_id (from auth_guard)
-    """
-    # 1) Query parameter (highest priority)
-    if workspace_id:
-        return workspace_id
-    
-    # 2) Header X-Workspace-Id
-    if x_workspace_id:
-        return x_workspace_id
-    
-    # 3) User's workspace_id (from authenticated user)
-    if user and hasattr(user, 'workspace_id') and user.workspace_id:
-        return user.workspace_id
-    
-    # 4) Last resort: explicit error
-    raise HTTPException(status_code=422, detail="workspace_id is required")
-
-
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db)
@@ -66,6 +38,34 @@ def get_current_user(
     db.commit()
     
     return user
+
+
+def get_tenant_id(
+    request: Request,
+    user = Depends(get_current_user),
+    workspace_id: str | None = Query(default=None, description="Workspace ID (optional if authenticated)"),
+    x_workspace_id: str | None = Header(default=None, alias="X-Workspace-Id")
+) -> str:
+    """
+    Get and validate tenant/workspace ID with fallback priority:
+    1) query ?workspace_id=...
+    2) header X-Workspace-Id
+    3) user.workspace_id (from auth_guard)
+    """
+    # 1) Query parameter (highest priority)
+    if workspace_id:
+        return workspace_id
+    
+    # 2) Header X-Workspace-Id
+    if x_workspace_id:
+        return x_workspace_id
+    
+    # 3) User's workspace_id (from authenticated user)
+    if user and hasattr(user, 'workspace_id') and user.workspace_id:
+        return user.workspace_id
+    
+    # 4) Last resort: explicit error
+    raise HTTPException(status_code=422, detail="workspace_id is required")
 
 
 def get_workspace_member(
