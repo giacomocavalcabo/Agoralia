@@ -1030,11 +1030,11 @@
         "title": "Assegnazione del leader"
       },
       "delete": {
-        "body": "È sicuro di voler cancellare questa pista?",
-        "cancel": "Annullamento",
-        "confirm": "Cancellare il comando",
-        "success": "Piombo cancellato con successo",
-        "title": "Cancellare il comando"
+        "body": "Sei sicuro di voler eliminare questo lead?",
+        "cancel": "Annulla",
+        "confirm": "Elimina lead",
+        "success": "Lead eliminato con successo",
+        "title": "Eliminare il lead"
       }
     },
     "errors": {
