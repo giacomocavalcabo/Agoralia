@@ -106,7 +106,9 @@ class AlertCheckResponse(BaseModel):
 # Helper functions for Delta
 import operator
 
-OPS = {"<": operator.lt, ">": operator.gt, "<=": operator.le, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
+def _get_ops():
+    """Get operator functions - not exposed in schemas"""
+    return {"<": operator.lt, ">": operator.gt, "<=": operator.le, ">=": operator.ge, "==": operator.eq, "!=": operator.ne}
 
 def _delta(a: Optional[float], b: Optional[float]) -> Optional[float]:
     if a is None or b is None:
@@ -114,7 +116,7 @@ def _delta(a: Optional[float], b: Optional[float]) -> Optional[float]:
     return round(a - b, 6)
 
 def _safe_op(op: str):
-    return OPS.get(op)
+    return _get_ops().get(op)
 
 async def _build_metrics_overview(
     days: int = 30,
