@@ -159,7 +159,14 @@ const Integrations = () => {
     } catch (error) {
       console.error(`[Integrations] Failed to connect to ${provider}:`, error);
       
-      if (error.message?.includes('403')) {
+      if (error.message?.includes('unauthenticated')) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to connect integrations',
+          variant: 'error'
+        });
+        // Redirect to login will be handled by apiFetch
+      } else if (error.message?.includes('403')) {
         toast({
           title: 'Access Denied',
           description: 'You do not have permission to connect integrations',
