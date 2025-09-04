@@ -252,7 +252,6 @@ app.add_middleware(
     same_site="none",
     https_only=True,
     max_age=60 * 60,  # 1 hour
-    domain=".agoralia.app",
 )
 
 # ===================== CORS Configuration =====================
