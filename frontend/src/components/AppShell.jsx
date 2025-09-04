@@ -44,10 +44,34 @@ const adminNavigation = [
 export default function AppShell({ children }) {
   const { t } = useTranslation('common')
   const location = useLocation()
-  const { user, logout } = useAuth()
+  const { user, logout, isAuthenticated, isLoading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const isDemo = useIsDemo()
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      window.location.href = '/login'
+    }
+  }, [isAuthenticated, isLoading])
+  
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
   
   // Close user menu when clicking outside
   useEffect(() => {
