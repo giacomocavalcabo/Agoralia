@@ -248,6 +248,15 @@ async def hubspot_callback(
             if token_response.status_code != 200:
                 response_text = token_response.text
                 logger.error(f"HubSpot error response: {response_text}")
+                
+                # Handle specific HubSpot errors
+                if "BAD_AUTH_CODE" in response_text:
+                    logger.error("Auth code expired or already used - user needs to retry")
+                    return RedirectResponse(
+                        url=f"https://app.agoralia.app/settings/integrations?hubspot=expired",
+                        status_code=303
+                    )
+                
                 raise HTTPException(
                     status_code=400, 
                     detail=f"HubSpot token exchange failed: {response_text}"
