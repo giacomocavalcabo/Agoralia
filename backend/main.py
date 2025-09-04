@@ -854,6 +854,37 @@ async def update_lead(lead_id: str, payload: dict) -> dict:
     return payload
 
 
+@api.get("/leads/{lead_id}")
+def get_lead(lead_id: str, request: Request) -> dict:
+    """Return a single lead by id (scoped to workspace)."""
+    workspace_id = get_workspace_id(request, required=True)
+    with next(get_db()) as db:
+        lead = (
+            db.query(Lead)
+            .filter(Lead.id == lead_id, Lead.workspace_id == workspace_id)
+            .first()
+        )
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        return lead.to_dict()
+
+
+@api.delete("/leads/{lead_id}")
+def delete_lead(lead_id: str, request: Request) -> dict:
+    """Delete a lead by id (scoped to workspace)."""
+    workspace_id = get_workspace_id(request, required=True)
+    with next(get_db()) as db:
+        lead = (
+            db.query(Lead)
+            .filter(Lead.id == lead_id, Lead.workspace_id == workspace_id)
+            .first()
+        )
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        db.delete(lead)
+        db.commit()
+        return {"ok": True}
+
 @api.post("/leads/bulk-update")
 async def bulk_update_leads(payload: dict) -> dict:
     """Bulk update leads with compliance classification"""
