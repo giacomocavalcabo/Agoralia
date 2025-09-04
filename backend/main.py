@@ -1009,6 +1009,497 @@ def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
     items = []
     return {"total": len(items), "items": items}
 
+# ===================== Sprint 4 stubs =====================
+
+@api.get("/analytics/overview")
+def legacy_analytics_overview():
+    # 410 GONE con hint chiaro per evitare doppi codici
+    raise HTTPException(
+        status_code=410,
+        detail={"code":"DEPRECATED","message":"Use /metrics/overview instead"}
+    )
+
+
+@api.get("/analytics/export.json")
+def legacy_analytics_export_json():
+    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
+
+
+@api.get("/analytics/export.csv")
+def legacy_analytics_export_csv():
+    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
+
+
+@api.get("/history")
+def history_list(
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    sort: str = Query("-created_at"),
+    q: str | None = Query(default=None),
+    campaign_id: str | None = Query(default=None),
+    next_step: str | None = Query(default=None),
+    score_min: int | None = Query(default=None),
+    score_max: int | None = Query(default=None),
+    country: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    agent_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+) -> dict:
+    """List call history with pagination, filtering and sorting"""
+    
+    # In DEMO_MODE, generate mock data
+    if DEMO_MODE:
+        # Generate deterministic mock data based on parameters
+        seed = hash(f"history:{page}:{page_size}:{sort}:{q}:{campaign_id}:{next_step}:{score_min}:{score_max}:{country}:{lang}:{agent_id}:{date_from}:{date_to}")
+        random.seed(seed)
+        
+        # Generate mock items
+        items = []
+        for i in range(page_size):
+            item_id = f"call_{random.randint(1000, 9999)}"
+            score = random.randint(0, 100)
+            next_step = random.choice(["callback", "email", "meeting", "qualified", "disqualified"])
+            outcome = "qualified" if next_step in ["callback", "email", "meeting"] else "reached"
+            sentiment = round(random.uniform(-1, 1), 2)
+            
+            items.append({
+                "id": item_id,
+                "campaign_name": f"Campaign {random.choice(['A', 'B', 'C'])}",
+                "outcome": outcome,
+                "score": score,
+                "next_step": next_step,
+                "sentiment": sentiment,
+                "created_at": (datetime.now() - timedelta(days=random.randint(0, 30))).isoformat(),
+                "duration_sec": random.randint(30, 600),
+                "cost_cents": random.randint(50, 5000)
+            })
+        
+        # Apply sorting
+        reverse = sort.startswith("-")
+        key = sort.lstrip("-")
+        items.sort(key=lambda x: x.get(key, "created_at"), reverse=reverse)
+        
+        # Simulate total count
+        total = random.randint(100, 1000)
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+    
+    # TODO: Implement real database query when not in DEMO_MODE
+    # This would use SQLAlchemy to query the calls table with proper filtering
+    # For now, return empty result
+    return {
+        "items": [],
+        "total": 0,
+        "page": page,
+        "page_size": page_size,
+    }
+
+
+@api.get("/history/{call_id}/brief")
+def history_brief(call_id: str) -> dict:
+    return {
+        "id": call_id,
+        "ts": "2025-08-17T09:22:00Z",
+        "header": {"phone": "+390212345678", "company": "Unknown Company", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified"},
+        "last_turns": [{"role": "agent", "text": "Hello"}, {"role": "user", "text": "Hi"}],
+        "summary": {"bullets": ["Qualified lead", "Requested callback next week"]},
+        "cost": {"total_eur": 0.42, "minutes": 3.5},
+    }
+
+
+@api.get("/history/export.csv")
+def history_export_csv(
+    locale: str | None = Query(default=None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    sort: str = Query("-created_at"),
+    q: str | None = Query(default=None),
+    campaign_id: str | None = Query(default=None),
+    next_step: str | None = Query(default=None),
+    score_min: int | None = Query(default=None),
+    score_max: int | None = Query(default=None),
+    country: str | None = Query(default=None),
+    lang: str | None = Query(default=None),
+    agent_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+) -> Response:
+    """Export call history as CSV with same filters as list endpoint"""
+    
+    # Get data using the same logic as list endpoint
+    data = history_list(
+        request=Request(scope={"type": "http", "method": "GET"}),
+        page=page,
+        page_size=page_size,
+        sort=sort,
+        q=q,
+        campaign_id=campaign_id,
+        next_step=next_step,
+        score_min=score_min,
+        score_max=score_max,
+        country=country,
+        lang=lang,
+        agent_id=agent_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    
+    # CSV headers based on locale
+    head_map = {
+        "en-US": ["id","campaign","outcome","score","next_step","sentiment","created_at","duration_sec","cost_cents"],
+        "it-IT": ["id","campagna","esito","punteggio","prossimo_passo","sentiment","creato","durata_sec","costo_centesimi"],
+        "fr-FR": ["id","campagne","résultat","score","prochaine_étape","sentiment","créé","durée_sec","coût_centimes"],
+        "hi-IN": ["id","अभियान","परिणाम","स्कोर","अगला_कदम","भावना","बनाया_गया","अवधि_सेक","लागत_सेंट"],
+        "ar-EG": ["id","حملة","نتيجة","نتيجة","الخطوة_التالي","مشاعر","تم_إنشاؤه","المدة_ث","التكلفة_سنت"],
+    }
+    headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
+    
+    # Generate CSV rows
+    csv_rows = []
+    for item in data.get("items", []):
+        row = [
+            item.get("id", ""),
+            item.get("campaign_name", ""),
+            item.get("outcome", ""),
+            str(item.get("score", "")),
+            item.get("next_step", ""),
+            str(item.get("sentiment", "")),
+            item.get("created_at", ""),
+            str(item.get("duration_sec", "")),
+            str(item.get("cost_cents", ""))
+        ]
+        csv_rows.append(",".join(row))
+    
+    csv_content = headers + "\n".join(csv_rows)
+    
+    return Response(
+        content=csv_content, 
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=history.csv"}
+    )
+
+# ===================== Workspaces endpoints =====================
+
+@api.get("/workspaces/current")
+def ws_current() -> dict:
+    return {"id": "ws_1", "name": "Demo", "members": len(_WORKSPACE_MEMBERS)}
+
+
+@api.get("/workspaces/members")
+def ws_members() -> dict:
+    return {"items": _WORKSPACE_MEMBERS}
+
+
+@api.get("/workspaces/invites")
+def ws_invites() -> dict:
+    """Get all pending invites for the current workspace"""
+    return {"items": _WORKSPACE_INVITES}
+
+
+@api.post("/workspaces/members/invite")
+@require_role("admin")
+async def ws_invite(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
+    invite = {"id": f"inv_{len(_WORKSPACE_INVITES)+1}", "email": payload.get("email"), "role": payload.get("role","viewer"), "token": "demo-token", "invited_at": "2025-08-18T10:00:00Z"}
+    _WORKSPACE_INVITES.append(invite)
+    
+    # Log audit event
+    from backend.audit import log_event
+    from backend.models import WorkspaceMember
+    from backend.sessions import read_session_cookie, get_user_id
+    
+    try:
+        session_id = read_session_cookie(request)
+        if session_id:
+            user_id = get_user_id(session_id)
+            if user_id:
+                workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user_id).first()
+                workspace_id = workspace_member.workspace_id if workspace_member else "unknown"
+                
+                log_event(db, workspace_id=workspace_id, user_id=user_id, 
+                         action="member.invite", resource_type="member", 
+                         resource_id=invite["id"], request=request,
+                         meta={"email": payload.get("email"), "role": payload.get("role","viewer")})
+    except Exception:
+        pass  # Don't fail the invite if audit logging fails
+    
+    return invite
+
+
+@api.get("/workspaces/activity")
+def ws_activity(limit: int = 100) -> dict:
+    return {"items": list(reversed(_ACTIVITY))[:limit]}
+
+
+@api.post("/workspaces/members/accept")
+async def ws_accept(payload: dict) -> dict:
+    token = payload.get("token")
+    inv = next((i for i in _WORKSPACE_INVITES if i.get("token") == token), None)
+    if not inv:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    new_member = {"user_id": f"u_{len(_WORKSPACE_MEMBERS)+1}", "email": inv["email"], "role": inv.get("role","viewer"), "invited_at": inv.get("invited_at"), "joined_at": "2025-08-18T12:00:00Z"}
+    _WORKSPACE_MEMBERS.append(new_member)
+    inv["accepted_at"] = "2025-08-18T12:00:00Z"
+    return {"joined": True, "member": new_member}
+
+
+@api.patch("/workspaces/members/{user_id}")
+@require_role("admin")
+async def ws_change_role(user_id: str, payload: dict, request: Request) -> dict:
+    role = payload.get("role")
+    found = next((m for m in _WORKSPACE_MEMBERS if m.get("user_id") == user_id), None)
+    if not found:
+        raise HTTPException(status_code=404, detail="Not found")
+    found["role"] = role
+    return {"updated": True}
+
+
+@api.delete("/workspaces/members/{user_id}")
+@require_role("admin")
+async def ws_remove(user_id: str, request: Request) -> dict:
+    idx = next((i for i,m in enumerate(_WORKSPACE_MEMBERS) if m.get("user_id") == user_id), -1)
+    if idx < 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    _WORKSPACE_MEMBERS.pop(idx)
+    return {"deleted": True}
+
+# ===================== CRM Integration endpoints =====================
+
+@api.get("/crm/hubspot/start")
+async def crm_hubspot_start() -> dict:
+    """Start HubSpot OAuth flow"""
+    # In production, redirect to HubSpot OAuth
+    # For now, return mock URL
+    return {
+        "auth_url": "https://app.hubspot.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=contacts deals"
+    }
+
+
+@api.get("/crm/hubspot/callback")
+async def crm_hubspot_callback(code: str, state: str) -> dict:
+    """Handle HubSpot OAuth callback"""
+    # In production, exchange code for tokens
+    # For now, return mock success
+    
+    return {
+        "message": "HubSpot connected successfully",
+        "portal_id": "12345",
+        "access_token": "mock_token"
+    }
+
+
+@api.get("/crm/mapping")
+async def get_crm_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get CRM field mapping for workspace"""
+    
+    # Default mapping
+    default_mapping = {
+        "contact": {
+            "firstname": "name",
+            "lastname": "surname",
+            "phone": "phone",
+            "email": "email",
+            "company": "company"
+        },
+        "company": {
+            "name": "company",
+            "phone": "phone",
+            "country": "country"
+        },
+        "deal": {
+            "dealname": "opportunity_name",
+            "amount": "budget",
+            "dealstage": "next_step"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "hubspot",
+        "mapping": default_mapping
+    }
+
+
+@api.post("/crm/mapping")
+async def update_crm_mapping(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Update CRM field mapping"""
+    
+    workspace_id = payload.get("workspace_id", "ws_1")
+    provider = payload.get("provider", "hubspot")
+    mapping = payload.get("mapping", {})
+    
+    # Save mapping
+    mapping_record = CrmFieldMapping(
+        id=f"mapping_{secrets.token_urlsafe(16)}",
+        workspace_id=workspace_id,
+        crm_provider=provider,
+        mapping_json=mapping
+    )
+    
+    db.add(mapping_record)
+    db.commit()
+    
+    return {
+        "id": mapping_record.id,
+        "message": "CRM mapping updated successfully"
+    }
+
+
+@api.post("/crm/zoho/connect")
+async def crm_zoho_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Connect Zoho CRM"""
+    workspace_id = payload.get("workspace_id", "ws_1")
+    
+    # In production, validate OAuth flow
+    # For now, return mock success
+    return {
+        "message": "Zoho CRM connected successfully",
+        "dc": "US",
+        "access_token": "mock_token"
+    }
+
+
+@api.post("/crm/zoho/disconnect")
+async def crm_zoho_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Disconnect Zoho CRM"""
+    # In production, revoke tokens
+    return {
+        "message": "Zoho CRM disconnected successfully"
+    }
+
+
+@api.post("/crm/zoho/sync")
+async def crm_zoho_sync(payload: dict) -> dict:
+    """Sync data to/from Zoho CRM"""
+    # In production, queue background job
+    return {
+        "message": "Zoho sync job queued",
+        "job_id": f"zoho_sync_{secrets.token_urlsafe(8)}"
+    }
+
+
+@api.get("/crm/zoho/mapping")
+async def get_zoho_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get Zoho field mapping"""
+    default_mapping = {
+        "contact": {
+            "firstname": "First_Name",
+            "lastname": "Last_Name",
+            "phone": "Phone",
+            "email": "Email",
+            "company": "Account_Name",
+            "country": "Mailing_Country"
+        },
+        "company": {
+            "name": "Account_Name",
+            "phone": "Phone",
+            "country": "Billing_Country",
+            "industry": "Industry"
+        },
+        "deal": {
+            "dealname": "Deal_Name",
+            "amount": "Amount",
+            "dealstage": "Stage",
+            "closedate": "Closing_Date"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "zoho",
+        "mapping": default_mapping
+    }
+
+
+@api.post("/crm/zoho/test")
+async def test_zoho_connection(payload: dict) -> dict:
+    """Test Zoho connection"""
+    # In production, validate credentials
+    return {
+        "status": "connected",
+        "dc": "US",
+        "org_name": "Demo Organization"
+    }
+
+
+@api.post("/crm/odoo/connect")
+async def crm_odoo_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Connect Odoo CRM"""
+    workspace_id = payload.get("workspace_id", "ws_1")
+    
+    # In production, validate connection
+    return {
+        "message": "Odoo CRM connected successfully",
+        "url": payload.get("url"),
+        "database": payload.get("database")
+    }
+
+
+@api.post("/crm/odoo/disconnect")
+async def crm_odoo_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Disconnect Odoo CRM"""
+    return {
+        "message": "Odoo CRM disconnected successfully"
+    }
+
+
+@api.post("/crm/odoo/sync")
+async def crm_odoo_sync(payload: dict) -> dict:
+    """Sync data to/from Odoo CRM"""
+    return {
+        "message": "Odoo sync job queued",
+        "job_id": f"odoo_sync_{secrets.token_urlsafe(8)}"
+    }
+
+
+@api.get("/crm/odoo/mapping")
+async def get_odoo_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
+    """Get Odoo field mapping"""
+    default_mapping = {
+        "contact": {
+            "firstname": "name (first part)",
+            "lastname": "name (last part)",
+            "phone": "phone",
+            "email": "email",
+            "company": "parent_id",
+            "country": "country_id"
+        },
+        "company": {
+            "name": "name",
+            "phone": "phone",
+            "country": "country_id",
+            "industry": "industry"
+        },
+        "deal": {
+            "dealname": "name",
+            "amount": "expected_revenue",
+            "dealstage": "stage_id",
+            "closedate": "date_deadline"
+        }
+    }
+    
+    return {
+        "workspace_id": workspace_id,
+        "provider": "odoo",
+        "mapping": default_mapping
+    }
+
+
+@api.post("/crm/odoo/test")
+async def test_odoo_connection(payload: dict) -> dict:
+    """Test Odoo connection"""
+    return {
+        "status": "connected",
+        "url": payload.get("url"),
+        "database": payload.get("database")
+    }
+
 app.include_router(api)
 logger.info("API routers included successfully")
 
@@ -2962,181 +3453,6 @@ async def update_schedule(schedule_id: str, payload: dict) -> dict:
         raise HTTPException(status_code=400, detail="Invalid payload")
 
 
-# ===================== Sprint 4 stubs =====================
-
-@app.get("/analytics/overview")
-def legacy_analytics_overview():
-    # 410 GONE con hint chiaro per evitare doppi codici
-    raise HTTPException(
-        status_code=410,
-        detail={"code":"DEPRECATED","message":"Use /metrics/overview instead"}
-    )
-
-
-@app.get("/analytics/export.json")
-def legacy_analytics_export_json():
-    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
-
-
-@app.get("/analytics/export.csv")
-def legacy_analytics_export_csv():
-    raise HTTPException(status_code=410, detail={"code":"DEPRECATED","message":"Use /metrics/*"})
-
-
-@app.get("/history")
-def history_list(
-    request: Request,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=200),
-    sort: str = Query("-created_at"),
-    q: str | None = Query(default=None),
-    campaign_id: str | None = Query(default=None),
-    next_step: str | None = Query(default=None),
-    score_min: int | None = Query(default=None),
-    score_max: int | None = Query(default=None),
-    country: str | None = Query(default=None),
-    lang: str | None = Query(default=None),
-    agent_id: str | None = Query(default=None),
-    date_from: str | None = Query(default=None),
-    date_to: str | None = Query(default=None),
-) -> dict:
-    """List call history with pagination, filtering and sorting"""
-    
-    # In DEMO_MODE, generate mock data
-    if DEMO_MODE:
-        # Generate deterministic mock data based on parameters
-        seed = hash(f"history:{page}:{page_size}:{sort}:{q}:{campaign_id}:{next_step}:{score_min}:{score_max}:{country}:{lang}:{agent_id}:{date_from}:{date_to}")
-        random.seed(seed)
-        
-        # Generate mock items
-        items = []
-        for i in range(page_size):
-            item_id = f"call_{random.randint(1000, 9999)}"
-            score = random.randint(0, 100)
-            next_step = random.choice(["callback", "email", "meeting", "qualified", "disqualified"])
-            outcome = "qualified" if next_step in ["callback", "email", "meeting"] else "reached"
-            sentiment = round(random.uniform(-1, 1), 2)
-            
-            items.append({
-                "id": item_id,
-                "campaign_name": f"Campaign {random.choice(['A', 'B', 'C'])}",
-                "outcome": outcome,
-                "score": score,
-                "next_step": next_step,
-                "sentiment": sentiment,
-                "created_at": (datetime.now() - timedelta(days=random.randint(0, 30))).isoformat(),
-                "duration_sec": random.randint(30, 600),
-                "cost_cents": random.randint(50, 5000)
-            })
-        
-        # Apply sorting
-        reverse = sort.startswith("-")
-        key = sort.lstrip("-")
-        items.sort(key=lambda x: x.get(key, "created_at"), reverse=reverse)
-        
-        # Simulate total count
-        total = random.randint(100, 1000)
-        
-        return {
-            "items": items,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-        }
-    
-    # TODO: Implement real database query when not in DEMO_MODE
-    # This would use SQLAlchemy to query the calls table with proper filtering
-    # For now, return empty result
-    return {
-        "items": [],
-        "total": 0,
-        "page": page,
-        "page_size": page_size,
-    }
-
-
-@app.get("/history/{call_id}/brief")
-def history_brief(call_id: str) -> dict:
-    return {
-        "id": call_id,
-        "ts": "2025-08-17T09:22:00Z",
-        "header": {"phone": "+390212345678", "company": "Unknown Company", "lang": "it-IT", "agent": "it-outbound-a", "outcome": "qualified"},
-        "last_turns": [{"role": "agent", "text": "Hello"}, {"role": "user", "text": "Hi"}],
-        "summary": {"bullets": ["Qualified lead", "Requested callback next week"]},
-        "cost": {"total_eur": 0.42, "minutes": 3.5},
-    }
-
-
-@app.get("/history/export.csv")
-def history_export_csv(
-    locale: str | None = Query(default=None),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=200),
-    sort: str = Query("-created_at"),
-    q: str | None = Query(default=None),
-    campaign_id: str | None = Query(default=None),
-    next_step: str | None = Query(default=None),
-    score_min: int | None = Query(default=None),
-    score_max: int | None = Query(default=None),
-    country: str | None = Query(default=None),
-    lang: str | None = Query(default=None),
-    agent_id: str | None = Query(default=None),
-    date_from: str | None = Query(default=None),
-    date_to: str | None = Query(default=None),
-) -> Response:
-    """Export call history as CSV with same filters as list endpoint"""
-    
-    # Get data using the same logic as list endpoint
-    data = history_list(
-        request=Request(scope={"type": "http", "method": "GET"}),
-        page=page,
-        page_size=page_size,
-        sort=sort,
-        q=q,
-        campaign_id=campaign_id,
-        next_step=next_step,
-        score_min=score_min,
-        score_max=score_max,
-        country=country,
-        lang=lang,
-        agent_id=agent_id,
-        date_from=date_from,
-        date_to=date_to,
-    )
-    
-    # CSV headers based on locale
-    head_map = {
-        "en-US": ["id","campaign","outcome","score","next_step","sentiment","created_at","duration_sec","cost_cents"],
-        "it-IT": ["id","campagna","esito","punteggio","prossimo_passo","sentiment","creato","durata_sec","costo_centesimi"],
-        "fr-FR": ["id","campagne","résultat","score","prochaine_étape","sentiment","créé","durée_sec","coût_centimes"],
-        "hi-IN": ["id","अभियान","परिणाम","स्कोर","अगला_कदम","भावना","बनाया_गया","अवधि_सेक","लागत_सेंट"],
-        "ar-EG": ["id","حملة","نتيجة","نتيجة","الخطوة_التالي","مشاعر","تم_إنشاؤه","المدة_ث","التكلفة_سنت"],
-    }
-    headers = ",".join(head_map.get(locale or "en-US", head_map["en-US"])) + "\n"
-    
-    # Generate CSV rows
-    csv_rows = []
-    for item in data.get("items", []):
-        row = [
-            item.get("id", ""),
-            item.get("campaign_name", ""),
-            item.get("outcome", ""),
-            str(item.get("score", "")),
-            item.get("next_step", ""),
-            str(item.get("sentiment", "")),
-            item.get("created_at", ""),
-            str(item.get("duration_sec", "")),
-            str(item.get("cost_cents", ""))
-        ]
-        csv_rows.append(",".join(row))
-    
-    csv_content = headers + "\n".join(csv_rows)
-    
-    return Response(
-        content=csv_content, 
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=history.csv"}
-    )
 
 
 # ===================== Compliance & Call Settings =====================
@@ -3327,87 +3643,6 @@ def metrics_concurrency() -> dict:
     return _CONCURRENCY
 
 
-@app.get("/workspaces/current")
-def ws_current() -> dict:
-    return {"id": "ws_1", "name": "Demo", "members": len(_WORKSPACE_MEMBERS)}
-
-
-@app.get("/workspaces/members")
-def ws_members() -> dict:
-    return {"items": _WORKSPACE_MEMBERS}
-
-
-@app.get("/workspaces/invites")
-def ws_invites() -> dict:
-    """Get all pending invites for the current workspace"""
-    return {"items": _WORKSPACE_INVITES}
-
-
-@app.post("/workspaces/members/invite")
-@require_role("admin")
-async def ws_invite(payload: dict, request: Request, db: Session = Depends(get_db)) -> dict:
-    invite = {"id": f"inv_{len(_WORKSPACE_INVITES)+1}", "email": payload.get("email"), "role": payload.get("role","viewer"), "token": "demo-token", "invited_at": "2025-08-18T10:00:00Z"}
-    _WORKSPACE_INVITES.append(invite)
-    
-    # Log audit event
-    from backend.audit import log_event
-    from backend.models import WorkspaceMember
-    from backend.sessions import read_session_cookie, get_user_id
-    
-    try:
-        session_id = read_session_cookie(request)
-        if session_id:
-            user_id = get_user_id(session_id)
-            if user_id:
-                workspace_member = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == user_id).first()
-                workspace_id = workspace_member.workspace_id if workspace_member else "unknown"
-                
-                log_event(db, workspace_id=workspace_id, user_id=user_id, 
-                         action="member.invite", resource_type="member", 
-                         resource_id=invite["id"], request=request,
-                         meta={"email": payload.get("email"), "role": payload.get("role","viewer")})
-    except Exception:
-        pass  # Don't fail the invite if audit logging fails
-    
-    return invite
-
-
-@app.get("/workspaces/activity")
-def ws_activity(limit: int = 100) -> dict:
-    return {"items": list(reversed(_ACTIVITY))[:limit]}
-
-
-@app.post("/workspaces/members/accept")
-async def ws_accept(payload: dict) -> dict:
-    token = payload.get("token")
-    inv = next((i for i in _WORKSPACE_INVITES if i.get("token") == token), None)
-    if not inv:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    new_member = {"user_id": f"u_{len(_WORKSPACE_MEMBERS)+1}", "email": inv["email"], "role": inv.get("role","viewer"), "invited_at": inv.get("invited_at"), "joined_at": "2025-08-18T12:00:00Z"}
-    _WORKSPACE_MEMBERS.append(new_member)
-    inv["accepted_at"] = "2025-08-18T12:00:00Z"
-    return {"joined": True, "member": new_member}
-
-
-@app.patch("/workspaces/members/{user_id}")
-@require_role("admin")
-async def ws_change_role(user_id: str, payload: dict, request: Request) -> dict:
-    role = payload.get("role")
-    found = next((m for m in _WORKSPACE_MEMBERS if m.get("user_id") == user_id), None)
-    if not found:
-        raise HTTPException(status_code=404, detail="Not found")
-    found["role"] = role
-    return {"updated": True}
-
-
-@app.delete("/workspaces/members/{user_id}")
-@require_role("admin")
-async def ws_remove(user_id: str, request: Request) -> dict:
-    idx = next((i for i,m in enumerate(_WORKSPACE_MEMBERS) if m.get("user_id") == user_id), -1)
-    if idx < 0:
-        raise HTTPException(status_code=404, detail="Not found")
-    _WORKSPACE_MEMBERS.pop(idx)
-    return {"deleted": True}
 
 
 @app.post("/worker/call/start")
@@ -4591,238 +4826,6 @@ async def export_calls_csv(
     }
 
 
-# ===================== Sprint 6: CRM HubSpot Integration =====================
-
-@app.get("/crm/hubspot/start")
-async def crm_hubspot_start() -> dict:
-    """Start HubSpot OAuth flow"""
-    # In production, redirect to HubSpot OAuth
-    # For now, return mock URL
-    return {
-        "auth_url": "https://app.hubspot.com/oauth/authorize?client_id=mock&redirect_uri=mock&scope=contacts deals"
-    }
-
-
-@app.get("/crm/hubspot/callback")
-async def crm_hubspot_callback(code: str, state: str) -> dict:
-    """Handle HubSpot OAuth callback"""
-    # In production, exchange code for tokens
-    # For now, return mock success
-    
-    return {
-        "message": "HubSpot connected successfully",
-        "portal_id": "12345",
-        "access_token": "mock_token"
-    }
-
-
-@app.get("/crm/mapping")
-async def get_crm_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
-    """Get CRM field mapping for workspace"""
-    
-    # Default mapping
-    default_mapping = {
-        "contact": {
-            "firstname": "name",
-            "lastname": "surname",
-            "phone": "phone",
-            "email": "email",
-            "company": "company"
-        },
-        "company": {
-            "name": "company",
-            "phone": "phone",
-            "country": "country"
-        },
-        "deal": {
-            "dealname": "opportunity_name",
-            "amount": "budget",
-            "dealstage": "next_step"
-        }
-    }
-    
-    return {
-        "workspace_id": workspace_id,
-        "provider": "hubspot",
-        "mapping": default_mapping
-    }
-
-
-@app.post("/crm/mapping")
-async def update_crm_mapping(payload: dict, db: Session = Depends(get_db)) -> dict:
-    """Update CRM field mapping"""
-    
-    workspace_id = payload.get("workspace_id", "ws_1")
-    provider = payload.get("provider", "hubspot")
-    mapping = payload.get("mapping", {})
-    
-    # Save mapping
-    mapping_record = CrmFieldMapping(
-        id=f"mapping_{secrets.token_urlsafe(16)}",
-        workspace_id=workspace_id,
-        crm_provider=provider,
-        mapping_json=mapping
-    )
-    
-    db.add(mapping_record)
-    db.commit()
-    
-    return {
-        "id": mapping_record.id,
-        "message": "CRM mapping updated successfully"
-    }
-
-
-# ===================== Sprint 9: CRM Integrations (Zoho & Odoo) =====================
-
-@app.post("/crm/zoho/connect")
-async def crm_zoho_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
-    """Connect Zoho CRM"""
-    workspace_id = payload.get("workspace_id", "ws_1")
-    
-    # In production, validate OAuth flow
-    # For now, return mock success
-    return {
-        "message": "Zoho CRM connected successfully",
-        "dc": "US",
-        "access_token": "mock_token"
-    }
-
-
-@app.post("/crm/zoho/disconnect")
-async def crm_zoho_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
-    """Disconnect Zoho CRM"""
-    # In production, revoke tokens
-    return {
-        "message": "Zoho CRM disconnected successfully"
-    }
-
-
-@app.post("/crm/zoho/sync")
-async def crm_zoho_sync(payload: dict) -> dict:
-    """Sync data to/from Zoho CRM"""
-    # In production, queue background job
-    return {
-        "message": "Zoho sync job queued",
-        "job_id": f"zoho_sync_{secrets.token_urlsafe(8)}"
-    }
-
-
-@app.get("/crm/zoho/mapping")
-async def get_zoho_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
-    """Get Zoho field mapping"""
-    default_mapping = {
-        "contact": {
-            "firstname": "First_Name",
-            "lastname": "Last_Name",
-            "phone": "Phone",
-            "email": "Email",
-            "company": "Account_Name",
-            "country": "Mailing_Country"
-        },
-        "company": {
-            "name": "Account_Name",
-            "phone": "Phone",
-            "country": "Billing_Country",
-            "industry": "Industry"
-        },
-        "deal": {
-            "dealname": "Deal_Name",
-            "amount": "Amount",
-            "dealstage": "Stage",
-            "closedate": "Closing_Date"
-        }
-    }
-    
-    return {
-        "workspace_id": workspace_id,
-        "provider": "zoho",
-        "mapping": default_mapping
-    }
-
-
-@app.post("/crm/zoho/test")
-async def test_zoho_connection(payload: dict) -> dict:
-    """Test Zoho connection"""
-    # In production, validate credentials
-    return {
-        "status": "connected",
-        "dc": "US",
-        "org_name": "Demo Organization"
-    }
-
-
-@app.post("/crm/odoo/connect")
-async def crm_odoo_connect(payload: dict, db: Session = Depends(get_db)) -> dict:
-    """Connect Odoo CRM"""
-    workspace_id = payload.get("workspace_id", "ws_1")
-    
-    # In production, validate connection
-    return {
-        "message": "Odoo CRM connected successfully",
-        "url": payload.get("url"),
-        "database": payload.get("database")
-    }
-
-
-@app.post("/crm/odoo/disconnect")
-async def crm_odoo_disconnect(workspace_id: str = Query(default="ws_1")) -> dict:
-    """Disconnect Odoo CRM"""
-    return {
-        "message": "Odoo CRM disconnected successfully"
-    }
-
-
-@app.post("/crm/odoo/sync")
-async def crm_odoo_sync(payload: dict) -> dict:
-    """Sync data to/from Odoo CRM"""
-    return {
-        "message": "Odoo sync job queued",
-        "job_id": f"odoo_sync_{secrets.token_urlsafe(8)}"
-    }
-
-
-@app.get("/crm/odoo/mapping")
-async def get_odoo_mapping(workspace_id: str = Query(default="ws_1")) -> dict:
-    """Get Odoo field mapping"""
-    default_mapping = {
-        "contact": {
-            "firstname": "name (first part)",
-            "lastname": "name (last part)",
-            "phone": "phone",
-            "email": "email",
-            "company": "parent_id",
-            "country": "country_id"
-        },
-        "company": {
-            "name": "name",
-            "phone": "phone",
-            "country": "country_id",
-            "industry": "industry"
-        },
-        "deal": {
-            "dealname": "name",
-            "amount": "expected_revenue",
-            "dealstage": "stage_id",
-            "closedate": "date_deadline"
-        }
-    }
-    
-    return {
-        "workspace_id": workspace_id,
-        "provider": "odoo",
-        "mapping": default_mapping
-    }
-
-
-@app.post("/crm/odoo/test")
-async def test_odoo_connection(payload: dict) -> dict:
-    """Test Odoo connection"""
-    return {
-        "status": "connected",
-        "url": payload.get("url"),
-        "database": payload.get("database")
-    }
 
 
 # ===================== Health Check =====================
