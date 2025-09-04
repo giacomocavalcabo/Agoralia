@@ -766,7 +766,9 @@ def list_leads(
 async def create_lead(lead_data: LeadCreate, request: Request) -> dict:
     """Create a new lead"""
     try:
+        print(f"🔍 [LEADS] Starting lead creation with data: {lead_data.dict()}")
         workspace_id = get_workspace_id(request, required=True)
+        print(f"🔍 [LEADS] Workspace ID: {workspace_id}")
         
         with next(get_db()) as db:
             # Check for duplicate phone number in workspace
@@ -820,6 +822,9 @@ async def create_lead(lead_data: LeadCreate, request: Request) -> dict:
             
             return lead.to_dict()
     except Exception as e:
+        print(f"❌ [LEADS] Error creating lead: {e}")
+        import traceback
+        print(f"❌ [LEADS] Traceback: {traceback.format_exc()}")
         logger.error(f"Error creating lead: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
