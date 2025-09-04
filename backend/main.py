@@ -44,7 +44,8 @@ from backend.schemas import (
     LoginRequest, RegisterRequest, KnowledgeBaseCreate, KnowledgeBaseUpdate, ImportSourceRequest,
     KbAssignmentCreate, MergeDecisions, PromptBricksRequest, KbSectionCreate,
     KbSectionUpdate, KbFieldCreate, KbFieldUpdate, ImportMappingRequest,
-    ImportReviewRequest, KbUsageTrackRequest, KbCrawlStart, KbCrawlStartResponse, KbCrawlStatus
+    ImportReviewRequest, KbUsageTrackRequest, KbCrawlStart, KbCrawlStartResponse, KbCrawlStatus,
+    LeadCreate
 )
 from backend.schemas_billing import BudgetSettings, BudgetState, BudgetUpdateRequest
 from backend.services.billing_service import (
@@ -755,20 +756,16 @@ def list_leads(
 
 
 @api.post("/leads")
-async def create_lead(payload: dict, request: Request) -> dict:
+async def create_lead(lead_data: LeadCreate, request: Request) -> dict:
     """Create a new lead"""
     try:
         workspace_id = get_workspace_id(request, required=True)
         
         with next(get_db()) as db:
-            # Validate required fields
-            if not payload.get("phone_e164"):
-                raise HTTPException(status_code=400, detail="Phone number is required")
-            
             # Check for duplicate phone number in workspace
             existing_lead = db.query(Lead).filter(
                 Lead.workspace_id == workspace_id,
-                Lead.phone_e164 == payload["phone_e164"]
+                Lead.phone_e164 == lead_data.phone_e164
             ).first()
             
             if existing_lead:
@@ -777,31 +774,31 @@ async def create_lead(payload: dict, request: Request) -> dict:
             # Create lead
             lead = Lead(
                 workspace_id=workspace_id,
-                name=payload.get("name"),
-                company=payload.get("company"),
-                email=payload.get("email"),
-                phone_e164=payload["phone_e164"],
-                country_iso=payload.get("country_iso"),
-                lang=payload.get("lang"),
-                role=payload.get("role"),
-                contact_class=payload.get("contact_class"),
-                relationship_basis=payload.get("relationship_basis"),
-                opt_in=payload.get("opt_in"),
-                national_dnc=payload.get("national_dnc"),
-                notes=payload.get("notes")
+                name=lead_data.name,
+                company=lead_data.company,
+                email=lead_data.email,
+                phone_e164=lead_data.phone_e164,
+                country_iso=lead_data.country_iso,
+                lang=lead_data.lang,
+                role=lead_data.role,
+                contact_class=lead_data.contact_class,
+                relationship_basis=lead_data.relationship_basis,
+                opt_in=lead_data.opt_in,
+                national_dnc=lead_data.national_dnc,
+                notes=lead_data.notes
             )
             
             # Apply compliance classification if compliance engine is available
-            if compliance_engine and payload.get("country_iso"):
+            if compliance_engine and lead_data.country_iso:
                 try:
                     contact_data = {
-                        "contact_class": payload.get("contact_class", "unknown"),
-                        "relationship_basis": payload.get("relationship_basis", "unknown"),
-                        "opt_in": payload.get("opt_in"),
-                        "national_dnc": payload.get("national_dnc", "unknown")
+                        "contact_class": lead_data.contact_class,
+                        "relationship_basis": lead_data.relationship_basis,
+                        "opt_in": lead_data.opt_in,
+                        "national_dnc": lead_data.national_dnc
                     }
                     
-                    category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+                    category, reasons = compliance_engine.classify_contact(contact_data, lead_data.country_iso)
                     lead.compliance_category = category
                     lead.compliance_reasons = reasons
                 except Exception as e:

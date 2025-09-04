@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator, AnyHttpUrl
+from pydantic import BaseModel, Field, validator, AnyHttpUrl, field_validator
 from typing import Optional, List, Dict, Any, Union, Literal
 from datetime import datetime
 from enum import Enum
@@ -652,3 +652,29 @@ class KbCrawlStatus(BaseModel):
     last_error: Optional[str] = Field(None, description="Last error message")
     started_at: Optional[datetime] = Field(None, description="Job start time")
     updated_at: Optional[datetime] = Field(None, description="Last update time")
+
+
+# ===================== Lead Schemas =====================
+
+class LeadCreate(BaseModel):
+    """Schema for creating leads with automatic enum normalization"""
+    name: Optional[str] = Field(None, description="Lead name")
+    company: Optional[str] = Field(None, description="Company name")
+    email: Optional[str] = Field(None, description="Email address")
+    phone_e164: str = Field(..., description="Phone number in E164 format")
+    country_iso: Optional[str] = Field(None, description="Country ISO code")
+    lang: Optional[str] = Field(None, description="Language code")
+    role: Optional[str] = Field(None, description="Lead role")
+    contact_class: Optional[str] = Field("unknown", description="Contact class")
+    relationship_basis: Optional[str] = Field("unknown", description="Relationship basis")
+    opt_in: Optional[bool] = Field(False, description="Opt-in status")
+    national_dnc: Optional[str] = Field("unknown", description="National DNC status")
+    notes: Optional[str] = Field(None, description="Additional notes")
+
+    @field_validator("contact_class", "relationship_basis", "national_dnc", mode="before")
+    @classmethod
+    def _normalize_enum_values(cls, v):
+        """Normalize enum values to lowercase"""
+        if isinstance(v, str):
+            return v.lower()
+        return v
