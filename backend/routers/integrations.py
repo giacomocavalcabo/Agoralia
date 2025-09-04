@@ -10,6 +10,7 @@ from typing import Optional, List, Dict, Any
 from backend.db import get_db
 from backend.models import ProviderAccount
 from backend.auth.session import get_current_user
+from backend.deps.auth import get_tenant_id
 from backend.config.settings import settings
 from backend.services.kms import encrypt_str, decrypt_str, encrypt_json, decrypt_json
 from datetime import datetime
@@ -72,10 +73,10 @@ def get_adapter_or_404(provider: str) -> CRMAdapter:
 # ---- Endpoints
 
 @router.get("/status")
-def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
+def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_user), workspace_id: str = Depends(get_tenant_id)):
     """Get status of all integrations - accessible to all authenticated users"""
     try:
-        ws_id = user.workspace_id
+        ws_id = workspace_id
         
         # Query existing integrations with safe error handling
         q = (
@@ -130,13 +131,14 @@ def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_
 def integrations_connect(provider: str, payload: ConnectPayload,
                          request: Request,
                          db: Session = Depends(get_db),
-                         user=Depends(get_current_user)):
+                         user=Depends(get_current_user),
+                         workspace_id: str = Depends(get_tenant_id)):
     # Check demo mode but provide better error message
     if getattr(settings, "DEMO_MODE", False):
         raise HTTPException(status_code=403, detail="Integration connections are disabled in demo mode")
 
     adapter = get_adapter_or_404(provider)
-    ws_id = user.workspace_id
+    ws_id = workspace_id
 
     # Idempotency semplice
     idem = request.headers.get("Idempotency-Key")
@@ -183,11 +185,12 @@ def integrations_connect(provider: str, payload: ConnectPayload,
 def integrations_disconnect(provider: str,
                             body: DisconnectPayload,
                             db: Session = Depends(get_db),
-                            user=Depends(get_current_user)):
+                            user=Depends(get_current_user),
+                            workspace_id: str = Depends(get_tenant_id)):
     # Check demo mode but provide better error message
     if getattr(settings, "DEMO_MODE", False):
         raise HTTPException(status_code=403, detail="Integration disconnections are disabled in demo mode")
-    ws_id = user.workspace_id
+    ws_id = workspace_id
     q = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
         ProviderAccount.provider == provider,
@@ -208,9 +211,10 @@ def integrations_disconnect(provider: str,
 @router.post("/{provider}/test")
 def integrations_test(provider: str,
                       db: Session = Depends(get_db),
-                      user=Depends(get_current_user)):
+                      user=Depends(get_current_user),
+                      workspace_id: str = Depends(get_tenant_id)):
     try:
-        ws_id = user.workspace_id
+        ws_id = workspace_id
         acc = db.query(ProviderAccount).filter(
             ProviderAccount.workspace_id == ws_id,
             ProviderAccount.provider == provider,
@@ -232,8 +236,9 @@ def integrations_test(provider: str,
 @router.get("/mapping")
 def get_mapping(provider: str,
                 db: Session = Depends(get_db),
-                user=Depends(get_current_user)):
-    ws_id = user.workspace_id
+                user=Depends(get_current_user),
+                workspace_id: str = Depends(get_tenant_id)):
+    ws_id = workspace_id
     acc = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
         ProviderAccount.provider == provider,
@@ -249,8 +254,9 @@ def get_mapping(provider: str,
 @router.post("/mapping")
 def set_mapping(payload: MappingPayload,
                 db: Session = Depends(get_db),
-                user=Depends(get_current_user)):
-    ws_id = user.workspace_id
+                user=Depends(get_current_user),
+                workspace_id: str = Depends(get_tenant_id)):
+    ws_id = workspace_id
     acc = db.query(ProviderAccount).filter(
         ProviderAccount.workspace_id == ws_id,
         ProviderAccount.provider == payload.provider,

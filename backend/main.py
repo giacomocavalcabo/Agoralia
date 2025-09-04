@@ -631,6 +631,213 @@ logger.info("Importing routers...")
 logger.info("Including API routers...")
 api = APIRouter(prefix="/api")
 
+# ===================== Leads Endpoints =====================
+@api.get("/leads")
+def list_leads(
+    request: Request,
+    query: str | None = Query(default=None),
+    limit: int = Query(default=25),
+    offset: int = Query(default=0),
+    sort: str | None = Query(default=None),
+    compliance_category: str | None = Query(default=None),
+    country_iso: str | None = Query(default=None),
+) -> dict:
+    # Check if demo mode is enabled
+    is_demo = DEMO_MODE or request.headers.get("X-Demo") == "1"
+    
+    if is_demo:
+        # Demo mode: return stub data
+        items = [
+            {
+                "id": "l_101",
+                "name": "Mario Rossi",
+                "company": "Rossi Srl",
+                "phone_e164": "+390212345678",
+                "country_iso": "IT",
+                "lang": "it-IT",
+                "role": "supplier",
+                "contact_class": "b2b",
+                "relationship_basis": "existing",
+                "opt_in": None,
+                "national_dnc": "unknown",
+                "compliance_category": "allowed",
+                "compliance_reasons": ["B2B con relazione esistente"],
+                "created_at": "2025-08-17T09:12:00Z"
+            },
+            {
+                "id": "l_102",
+                "name": "Claire Dubois",
+                "company": "Dubois SA",
+                "phone_e164": "+33123456789",
+                "lang": "fr-FR",
+                "role": "supplied",
+                "contact_class": "b2c",
+                "relationship_basis": "none",
+                "opt_in": False,
+                "national_dnc": "unknown",
+                "compliance_category": "blocked",
+                "compliance_reasons": ["B2C richiede opt-in ma stato sconosciuto"],
+                "created_at": "2025-08-16T15:02:00Z"
+            }
+        ]
+        
+        # Apply filters to demo data
+        if compliance_category:
+            items = [item for item in items if item.get("compliance_category") == compliance_category]
+        
+        if country_iso:
+            items = [item for item in items if item.get("country_iso") == country_iso.upper()]
+        
+        return {"total": len(items), "items": items}
+    
+    # Real implementation: query database
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Build query
+        db_query = db.query(Lead).filter(Lead.workspace_id == workspace_id)
+        
+        # Apply search filter
+        if query:
+            db_query = db_query.filter(
+                or_(
+                    Lead.name.ilike(f"%{query}%"),
+                    Lead.company.ilike(f"%{query}%"),
+                    Lead.email.ilike(f"%{query}%"),
+                    Lead.phone_e164.ilike(f"%{query}%")
+                )
+            )
+        
+        # Apply compliance category filter
+        if compliance_category:
+            db_query = db_query.filter(Lead.compliance_category == compliance_category)
+        
+        # Apply country filter
+        if country_iso:
+            db_query = db_query.filter(Lead.country_iso == country_iso.upper())
+        
+        # Apply sorting
+        if sort:
+            if sort == "name":
+                db_query = db_query.order_by(Lead.name)
+            elif sort == "created_at":
+                db_query = db_query.order_by(Lead.created_at)
+            elif sort == "updated_at":
+                db_query = db_query.order_by(Lead.updated_at)
+        else:
+            db_query = db_query.order_by(Lead.created_at.desc())
+        
+        # Get total count
+        total = db_query.count()
+        
+        # Apply pagination
+        items = db_query.offset(offset).limit(limit).all()
+        
+        # Convert to dict format
+        items = [item.to_dict() for item in items]
+        
+        return {"total": total, "items": items}
+
+
+@api.post("/leads")
+async def create_lead(payload: dict, request: Request) -> dict:
+    """Create a new lead"""
+    workspace_id = get_workspace_id(request, required=True)
+    
+    with next(get_db()) as db:
+        # Validate required fields
+        if not payload.get("phone_e164"):
+            raise HTTPException(status_code=400, detail="Phone number is required")
+        
+        # Check for duplicate phone number in workspace
+        existing_lead = db.query(Lead).filter(
+            Lead.workspace_id == workspace_id,
+            Lead.phone_e164 == payload["phone_e164"]
+        ).first()
+        
+        if existing_lead:
+            raise HTTPException(status_code=400, detail="Lead with this phone number already exists")
+        
+        # Create lead
+        lead = Lead(
+            workspace_id=workspace_id,
+            name=payload.get("name"),
+            company=payload.get("company"),
+            email=payload.get("email"),
+            phone_e164=payload["phone_e164"],
+            country_iso=payload.get("country_iso"),
+            lang=payload.get("lang"),
+            role=payload.get("role"),
+            contact_class=payload.get("contact_class"),
+            relationship_basis=payload.get("relationship_basis"),
+            opt_in=payload.get("opt_in"),
+            national_dnc=payload.get("national_dnc"),
+            notes=payload.get("notes")
+        )
+        
+        # Apply compliance classification if compliance engine is available
+        if compliance_engine and payload.get("country_iso"):
+            contact_data = {
+                "contact_class": payload.get("contact_class", "unknown"),
+                "relationship_basis": payload.get("relationship_basis", "unknown"),
+                "opt_in": payload.get("opt_in"),
+                "national_dnc": payload.get("national_dnc", "unknown")
+            }
+            
+            category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+            lead.compliance_category = category
+            lead.compliance_reasons = reasons
+        
+        db.add(lead)
+        db.commit()
+        db.refresh(lead)
+        
+        return lead.to_dict()
+
+
+@api.put("/leads/{lead_id}")
+async def update_lead(lead_id: str, payload: dict) -> dict:
+    # TODO: Replace with actual database update
+    payload["id"] = lead_id
+    payload["updated_at"] = datetime.now().isoformat()
+    
+    # Apply compliance classification if compliance engine is available
+    if compliance_engine and payload.get("country_iso"):
+        contact_data = {
+            "contact_class": payload.get("contact_class", "unknown"),
+            "relationship_basis": payload.get("relationship_basis", "unknown"),
+            "opt_in": payload.get("opt_in"),
+            "national_dnc": payload.get("national_dnc", "unknown")
+        }
+        
+        category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+        payload["compliance_category"] = category
+        payload["compliance_reasons"] = reasons
+    
+    return payload
+
+
+@api.post("/leads/bulk-update")
+async def bulk_update_leads(payload: dict) -> dict:
+    """Bulk update leads with compliance classification"""
+    lead_ids = payload.get("lead_ids", [])
+    updates = payload.get("updates", {})
+    
+    # Apply compliance classification if compliance engine is available
+    if compliance_engine and updates.get("country_iso"):
+        contact_data = {
+            "contact_class": updates.get("contact_class", "unknown"),
+            "relationship_basis": updates.get("relationship_basis", "unknown"),
+            "opt_in": updates.get("opt_in"),
+            "national_dnc": updates.get("national_dnc", "unknown")
+        }
+        
+        category, reasons = compliance_engine.classify_contact(contact_data, updates["country_iso"])
+        updates["compliance_category"] = category
+        updates["compliance_reasons"] = reasons
+    
+    return {"updated": len(lead_ids), "updates": updates}
+
 logger.info("Including Auth router...")
 api.include_router(auth.router, tags=["auth"])
 logger.info("Auth router included successfully")
