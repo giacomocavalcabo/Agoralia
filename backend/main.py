@@ -332,7 +332,7 @@ def whoami():
         "routes": sorted(set(r.path for r in app.routes)),
     }
 
-@api.get("/health")
+@app.get("/health")
 def health():
     """
     Health check endpoint per Railway - risponde IMMEDIATAMENTE
@@ -1067,7 +1067,7 @@ async def _alias_ms_callback(request: Request):
 async def _alias_ms_start():
     return RedirectResponse(url="/api/auth/oauth/microsoft/start", status_code=307)
 
-@api.get("/health")
+@app.get("/health")
 def healthcheck() -> dict:
     return {
         "ok": True,
@@ -4827,7 +4827,7 @@ async def test_odoo_connection(payload: dict) -> dict:
 
 # ===================== Health Check =====================
 
-@api.get("/health")
+@app.get("/health")
 async def health_check():
     """Health check endpoint for Railway"""
     return {
