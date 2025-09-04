@@ -244,7 +244,7 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Shutdown hook failed.")
 
-app = FastAPI(title="Agoralia API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Agoralia API", version="0.1.0", lifespan=lifespan, openapi_url=None)
 app.state.oauth_state = {}  # per validare 'state' su OAuth callback (temp store)
 
 # ===================== Session Middleware (for OAuth state, etc.) =====================
