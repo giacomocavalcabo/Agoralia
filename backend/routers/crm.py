@@ -17,7 +17,7 @@ from backend.db import get_db
 from backend.models import (
     CrmConnection, CrmFieldMapping, CrmSyncCursor, CrmSyncLog,
     CrmProvider, CrmConnectionStatus, CrmObjectType, CrmSyncDirection, CrmLogLevel, CrmWebhookStatus,
-    Call, CallOutcome, CrmWebhookEvent
+    Call, CallOutcome, CrmWebhookEvent, ProviderAccount
 )
 from backend.integrations import HubSpotClient, ZohoClient, OdooClient
 from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin, get_current_user
@@ -80,8 +80,6 @@ async def hubspot_test() -> dict:
 async def hubspot_debug(db: Session = Depends(get_db)):
     """Debug HubSpot connections in database"""
     try:
-        from backend.models import ProviderAccount
-        
         accounts = db.query(ProviderAccount).filter(
             ProviderAccount.provider == "hubspot",
             ProviderAccount.category == "crm"
@@ -286,7 +284,6 @@ async def hubspot_callback(
         raise HTTPException(status_code=400, detail=f"Failed to exchange code for tokens: {str(e)}")
     
     # Save tokens to database
-    from backend.models import ProviderAccount
     from backend.utils.encryption import encrypt_str
     
     logger.info(f"Saving tokens for workspace_id={workspace_id}")
