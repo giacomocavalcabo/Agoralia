@@ -241,6 +241,20 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Agoralia API", version="0.1.0", lifespan=lifespan)
 app.state.oauth_state = {}  # per validare 'state' su OAuth callback (temp store)
 
+# ===================== Session Middleware (for OAuth state, etc.) =====================
+from starlette.middleware.sessions import SessionMiddleware
+
+SESSION_SECRET = os.getenv("APP_SESSION_SECRET", "CHANGE_ME_AND_KEEP_STABLE")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET,
+    session_cookie="hs_sess",
+    same_site="none",
+    https_only=True,
+    max_age=60 * 60,  # 1 hour
+    domain=".agoralia.app",
+)
+
 # ===================== CORS Configuration =====================
 # Firma di runtime per identificare quale app sta girando
 GIT_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA") or os.getenv("GIT_SHA") or "unknown"
@@ -869,6 +883,20 @@ logger.info("Audit router included successfully")
 
 app.include_router(api)
 logger.info("API routers included successfully")
+
+# ===================== Debug: Session counter =====================
+@app.get("/api/_debug/session", include_in_schema=False)
+async def _debug_session(request: Request):
+    try:
+        current = request.session.get("n", 0)
+        try:
+            current = int(current)
+        except Exception:
+            current = 0
+        request.session["n"] = current + 1
+        return {"n": current + 1}
+    except Exception:
+        return {"error": "session_unavailable"}
 
 # Session management moved to backend/sessions.py to avoid circular imports
 
