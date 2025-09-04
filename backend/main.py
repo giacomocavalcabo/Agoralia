@@ -320,7 +320,7 @@ logger.info("Backend configurato come API-only - frontend su Vercel (app.agorali
 logger.info("FastAPI app created successfully")
 
 # ===================== Health check endpoint =====================
-@app.get("/_whoami", include_in_schema=False)
+@api.get("/_whoami", include_in_schema=False)
 def whoami():
     return {
         "git_sha": GIT_SHA,
@@ -329,7 +329,7 @@ def whoami():
         "routes": sorted(set(r.path for r in app.routes)),
     }
 
-@app.get("/health")
+@api.get("/health")
 def health():
     """
     Health check endpoint per Railway - risponde IMMEDIATAMENTE
@@ -344,7 +344,7 @@ def health():
     }
 
 # Endpoint di debug visibile nei log dello screenshot (prima era 404)
-@app.get("/debug/cors", include_in_schema=False)
+@api.get("/debug/cors", include_in_schema=False)
 def debug_cors(request: Request):
     return {
         "allow_origins": settings.cors_allow_origins,
@@ -354,7 +354,7 @@ def debug_cors(request: Request):
         "x_forwarded_proto": request.headers.get("x-forwarded-proto"),
     }
 
-@app.get("/db/health")
+@api.get("/db/health")
 def db_health(db: Session = Depends(get_db)):
     """
     Health check specifico per il database - testa la connessione
@@ -367,7 +367,7 @@ def db_health(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database not reachable: {str(e)}")
 
-@app.get("/auth/test")
+@api.get("/auth/test")
 def auth_test():
     """
     Health check endpoint for authentication system
@@ -393,7 +393,7 @@ def auth_test():
 
 # /auth/me endpoint moved to backend/routers/auth.py
 
-@app.post("/setup/admin")
+@api.post("/setup/admin")
 def setup_admin():
     """
     Endpoint temporaneo per creare l'admin user
@@ -456,7 +456,7 @@ def setup_admin():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating admin: {str(e)}")
 
-@app.post("/setup/user")
+@api.post("/setup/user")
 def setup_user(payload: RegisterRequest):
     """
     Endpoint per creare utenti normali (non admin)
@@ -1011,7 +1011,7 @@ app.include_router(api)
 logger.info("API routers included successfully")
 
 # ===================== Debug: Session counter =====================
-@app.get("/api/_debug/session", include_in_schema=False)
+@api.get("/api/_debug/session", include_in_schema=False)
 async def _debug_session(request: Request):
     try:
         current = request.session.get("n", 0)
@@ -1036,7 +1036,7 @@ async def _debug_session(request: Request):
 # --- Google OAuth aliases (retrocompatibilità) ---
 # Google Console ha il redirect URI senza /api, ma le route reali sono sotto /api
 
-@app.get("/auth/oauth/google/callback")
+@api.get("/auth/oauth/google/callback")
 async def _alias_google_callback(request: Request):
     # preserve querystring (state, code, ecc.)
     qs = request.url.query
@@ -1046,14 +1046,14 @@ async def _alias_google_callback(request: Request):
     # 307 = keep method
     return RedirectResponse(url=target, status_code=307)
 
-@app.post("/auth/oauth/google/start")
+@api.post("/auth/oauth/google/start")
 async def _alias_google_start():
     # il frontend/estensioni potrebbero ancora chiamare questo path
     return RedirectResponse(url="/api/auth/oauth/google/start", status_code=307)
 
 # --- Microsoft OAuth aliases (retrocompatibilità) ---
 
-@app.get("/auth/oauth/microsoft/callback")
+@api.get("/auth/oauth/microsoft/callback")
 async def _alias_ms_callback(request: Request):
     qs = request.url.query
     target = "/api/auth/oauth/microsoft/callback"
@@ -1061,11 +1061,11 @@ async def _alias_ms_callback(request: Request):
         target = f"{target}?{qs}"
     return RedirectResponse(url=target, status_code=307)
 
-@app.post("/auth/oauth/microsoft/start")
+@api.post("/auth/oauth/microsoft/start")
 async def _alias_ms_start():
     return RedirectResponse(url="/api/auth/oauth/microsoft/start", status_code=307)
 
-@app.get("/health")
+@api.get("/health")
 def healthcheck() -> dict:
     return {
         "ok": True,
@@ -1075,7 +1075,7 @@ def healthcheck() -> dict:
         "entrypoint": ENTRYPOINT
     }
 
-@app.get("/test")
+@api.get("/test")
 def test_endpoint() -> dict:
     """Endpoint di test senza autenticazione per verificare il proxy Vercel"""
     return {
@@ -1085,7 +1085,7 @@ def test_endpoint() -> dict:
         "deployment": "Railway"
     }
 
-@app.get("/__routes")
+@api.get("/__routes")
 def __routes():
     """Debug endpoint per vedere tutte le rotte esposte"""
     routes = []
@@ -1099,7 +1099,7 @@ def __routes():
     return {"routes": routes, "total": len(routes)}
 
 
-@app.get("/me/usage")
+@api.get("/me/usage")
 def get_me_usage() -> dict:
     # Minimal stub for staging; replace with real billing aggregation
     return {
@@ -1107,7 +1107,7 @@ def get_me_usage() -> dict:
         "minutes_cap": 1000,
     }
 
-@app.get("/me/inbox")
+@api.get("/me/inbox")   
 def me_inbox(limit: int = 20) -> dict:
     # Minimal in-app inbox backed by Notification + NotificationTarget; return latest notifications regardless of user for demo
     try:
@@ -1125,28 +1125,28 @@ def me_inbox(limit: int = 20) -> dict:
         return {"items": []}
 
 # --- NUOVO: alias per /api/metrics/* e /api/dashboard/* (redirect 307)
-@app.get("/api/metrics/{rest:path}")
+@api.get("/api/metrics/{rest:path}")
 def _alias_metrics(rest: str, request: Request):
     """Alias per /api/metrics/* → redirect a /metrics/*"""
     return RedirectResponse(url=f"/metrics/{rest}", status_code=307)
 
-@app.get("/api/dashboard/{rest:path}")
+@api.get("/api/dashboard/{rest:path}")
 def _alias_dashboard(rest: str, request: Request):
     """Alias per /api/dashboard/* → redirect a /dashboard/*"""
     return RedirectResponse(url=f"/dashboard/{rest}", status_code=307)
 
 # --- NUOVO: alias per /api/integrations/* (redirect 307)
-@app.get("/api/integrations/{rest:path}")
+@api.get("/api/integrations/{rest:path}")
 def _alias_integrations(rest: str, request: Request):
     """Alias per /api/integrations/* → redirect a /api/settings/integrations/*"""
     return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
 
-@app.post("/api/integrations/{rest:path}")
+@api.post("/api/integrations/{rest:path}")
 def _alias_integrations_post(rest: str, request: Request):
     """Alias POST per /api/integrations/* → redirect a /api/settings/integrations/*"""
     return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
 
-@app.delete("/api/integrations/{rest:path}")
+@api.delete("/api/integrations/{rest:path}")
 def _alias_integrations_delete(rest: str, request: Request):
     """Alias DELETE per /api/integrations/* → redirect a /api/settings/integrations/*"""
     return RedirectResponse(url=f"/api/settings/integrations/{rest}", status_code=307)
@@ -4825,7 +4825,7 @@ async def test_odoo_connection(payload: dict) -> dict:
 
 # ===================== Health Check =====================
 
-@app.get("/health")
+@api.get("/health")
 async def health_check():
     """Health check endpoint for Railway"""
     return {
