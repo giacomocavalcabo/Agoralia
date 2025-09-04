@@ -665,16 +665,10 @@ class LeadCreate(BaseModel):
     country_iso: Optional[str] = Field(None, description="Country ISO code")
     lang: Optional[str] = Field(None, description="Language code")
     role: Optional[str] = Field(None, description="Lead role")
-    contact_class: Optional[str] = Field("unknown", description="Contact class")
-    relationship_basis: Optional[str] = Field("unknown", description="Relationship basis")
+    contact_class: Optional[str] = Field("UNKNOWN", description="Contact class")
+    relationship_basis: Optional[str] = Field("UNKNOWN", description="Relationship basis")
     opt_in: Optional[bool] = Field(False, description="Opt-in status")
-    national_dnc: Optional[str] = Field("unknown", description="National DNC status")
+    national_dnc: Optional[str] = Field("UNKNOWN", description="National DNC status")
     notes: Optional[str] = Field(None, description="Additional notes")
 
-    @field_validator("contact_class", "relationship_basis", "national_dnc", mode="before")
-    @classmethod
-    def _normalize_enum_values(cls, v):
-        """Normalize enum values to lowercase"""
-        if isinstance(v, str):
-            return v.lower()
-        return v
+    # Note: Enum values are now uppercase in database, no normalization needed
