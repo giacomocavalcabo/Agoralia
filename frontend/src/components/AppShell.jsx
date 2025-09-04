@@ -81,18 +81,23 @@ export default function AppShell({ children }) {
     return null
   }
   
-  // Close user menu when clicking outside
+  // Close user menu when clicking outside - simplified approach
+  const handleDocumentClick = (event) => {
+    if (userMenuOpen && !event.target.closest('.user-menu')) {
+      setUserMenuOpen(false)
+    }
+  }
+  
   useEffect(() => {
     if (!isMounted || !isAuthenticated) return
     
-    const handleClickOutside = (event) => {
-      if (userMenuOpen && !event.target.closest('.user-menu')) {
-        setUserMenuOpen(false)
-      }
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleDocumentClick)
     }
     
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick)
+    }
   }, [userMenuOpen, isAuthenticated, isMounted])
   
   return (
