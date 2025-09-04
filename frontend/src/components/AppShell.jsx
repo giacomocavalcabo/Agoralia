@@ -47,7 +47,8 @@ export default function AppShell({ children }) {
   const { user, logout, isAuthenticated, isLoading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const isDemo = useIsDemo()
+  // const isDemo = useIsDemo() // Temporaneamente commentato per debug
+  const isDemo = false
   
   // Refs per gestire la navigazione e prevenire setState durante redirect
   const menuRef = useRef(null)
