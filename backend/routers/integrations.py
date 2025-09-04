@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 from backend.db import get_db
 from backend.models import ProviderAccount
-from backend.auth.session import get_current_user
+from backend.deps.auth import get_current_user
 from backend.deps.auth import get_tenant_id
 from backend.config.settings import settings
 from backend.services.kms import encrypt_str, decrypt_str, encrypt_json, decrypt_json
