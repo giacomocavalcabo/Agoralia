@@ -999,7 +999,7 @@ def _alias_integrations_delete(rest: str, request: Request):
 
 
 # ===================== Numbers Endpoints =====================
-@app.get("/numbers")
+@api.get("/numbers")
 def numbers_list(
     request: Request,
     workspace_id: Optional[str] = Query(None),
@@ -1022,7 +1022,7 @@ def numbers_list(
     return adapt_list_response(items, len(items))
 
 
-@app.post("/numbers/byo")
+@api.post("/numbers/byo")
 async def numbers_byo(payload: dict, db: Session = Depends(get_db)) -> dict:
     e164 = str(payload.get("e164") or "").strip()
     method = (payload.get("method") or "voice").lower()
@@ -1037,7 +1037,7 @@ async def numbers_byo(payload: dict, db: Session = Depends(get_db)) -> dict:
     return {"verification_id": v_id}
 
 
-@app.post("/numbers/byo/confirm")
+@api.post("/numbers/byo/confirm")
 async def numbers_byo_confirm(payload: dict, db: Session = Depends(get_db)) -> dict:
     vid = payload.get("verification_id")
     code = str(payload.get("code") or "")
@@ -1058,7 +1058,7 @@ async def numbers_byo_confirm(payload: dict, db: Session = Depends(get_db)) -> d
     return {"ok": True}
 
 
-@app.post("/numbers/buy")
+@api.post("/numbers/buy")
 async def numbers_buy(payload: dict, db: Session = Depends(get_db)) -> dict:
     # Stub purchase
     iso = (payload.get("country_iso") or "US").upper()
@@ -1069,7 +1069,7 @@ async def numbers_buy(payload: dict, db: Session = Depends(get_db)) -> dict:
     return {"id": num_id, "e164": e164}
 
 
-@app.post("/numbers/{number_id}/route")
+@api.post("/numbers/{number_id}/route")
 async def numbers_route(number_id: str, payload: dict, db: Session = Depends(get_db)) -> dict:
     r = InboundRoute(id=f"rt_{number_id}", number_id=number_id, agent_id=payload.get("agent_id"), hours_json=payload.get("hours_json"), voicemail=bool(payload.get("voicemail")), transcript=bool(payload.get("transcript")))
     db.add(r); db.commit()
@@ -1086,7 +1086,7 @@ async def ws_set_default_from(ws_id: str, payload: dict, db: Session = Depends(g
     return {"ok": True}
 
 
-@app.patch("/campaigns/{cid}/from_number")
+@api.patch("/campaigns/{cid}/from_number")
 async def campaign_set_from(cid: str, payload: dict, db: Session = Depends(get_db), user=Depends(auth_guard)) -> dict:
     c = db.query(Campaign).filter(Campaign.id == cid, Campaign.workspace_id == user.workspace_id).first()
     if not c:
@@ -2481,232 +2481,8 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
     # Function body removed - moved to backend/routers/auth.py
     pass
 
-# ===================== Sprint 2 stubs =====================
 
-@api.get("/leads")
-def list_leads(
-    request: Request,
-    query: str | None = Query(default=None),
-    limit: int = Query(default=25),
-    offset: int = Query(default=0),
-    sort: str | None = Query(default=None),
-    compliance_category: str | None = Query(default=None),
-    country_iso: str | None = Query(default=None),
-) -> dict:
-    # Check if demo mode is enabled
-    is_demo = DEMO_MODE or request.headers.get("X-Demo") == "1"
-    
-    if is_demo:
-        # Demo mode: return stub data
-        items = [
-            {
-                "id": "l_101",
-                "name": "Mario Rossi",
-                "company": "Rossi Srl",
-                "phone_e164": "+390212345678",
-                "country_iso": "IT",
-                "lang": "it-IT",
-                "role": "supplier",
-                "contact_class": "b2b",
-                "relationship_basis": "existing",
-                "opt_in": None,
-                "national_dnc": "unknown",
-                "compliance_category": "allowed",
-                "compliance_reasons": ["B2B con relazione esistente"],
-                "created_at": "2025-08-17T09:12:00Z"
-            },
-            {
-                "id": "l_102",
-                "name": "Claire Dubois",
-                "company": "Dubois SA",
-                "phone_e164": "+33123456789",
-                "lang": "fr-FR",
-                "role": "supplied",
-                "contact_class": "b2c",
-                "relationship_basis": "none",
-                "opt_in": False,
-                "national_dnc": "unknown",
-                "compliance_category": "blocked",
-                "compliance_reasons": ["B2C richiede opt-in ma stato sconosciuto"],
-                "created_at": "2025-08-16T15:02:00Z"
-            }
-        ]
-        
-        # Apply filters to demo data
-        if compliance_category:
-            items = [item for item in items if item.get("compliance_category") == compliance_category]
-        
-        if country_iso:
-            items = [item for item in items if item.get("country_iso") == country_iso.upper()]
-        
-        return {"total": len(items), "items": items}
-    
-    # Real mode: return empty array (or actual DB query when implemented)
-    items = []
-    
-    # Real implementation: query database
-    workspace_id = get_workspace_id(request, required=True)
-    
-    with next(get_db()) as db:
-        # Build query
-        db_query = db.query(Lead).filter(Lead.workspace_id == workspace_id)
-        
-        # Apply search filter
-        if query:
-            db_query = db_query.filter(
-                or_(
-                    Lead.name.ilike(f"%{query}%"),
-                    Lead.company.ilike(f"%{query}%"),
-                    Lead.email.ilike(f"%{query}%"),
-                    Lead.phone_e164.ilike(f"%{query}%")
-                )
-            )
-        
-        # Apply compliance category filter
-        if compliance_category:
-            db_query = db_query.filter(Lead.compliance_category == compliance_category)
-        
-        # Apply country filter
-        if country_iso:
-            db_query = db_query.filter(Lead.country_iso == country_iso.upper())
-        
-        # Apply sorting
-        if sort:
-            if sort == "name":
-                db_query = db_query.order_by(Lead.name)
-            elif sort == "created_at":
-                db_query = db_query.order_by(Lead.created_at)
-            elif sort == "updated_at":
-                db_query = db_query.order_by(Lead.updated_at)
-        else:
-            db_query = db_query.order_by(Lead.created_at.desc())
-        
-        # Get total count
-        total = db_query.count()
-        
-        # Apply pagination
-        items = db_query.offset(offset).limit(limit).all()
-        
-        # Convert to dict format
-        items = [item.to_dict() for item in items]
-        
-        return {"total": total, "items": items}
-
-
-@api.post("/leads")
-async def create_lead(payload: dict, request: Request) -> dict:
-    """Create a new lead"""
-    workspace_id = get_workspace_id(request, required=True)
-    
-    with next(get_db()) as db:
-        # Validate required fields
-        if not payload.get("phone_e164"):
-            raise HTTPException(status_code=400, detail="Phone number is required")
-        
-        # Check for duplicate phone number in workspace
-        existing_lead = db.query(Lead).filter(
-            Lead.workspace_id == workspace_id,
-            Lead.phone_e164 == payload["phone_e164"]
-        ).first()
-        
-        if existing_lead:
-            raise HTTPException(status_code=400, detail="Lead with this phone number already exists")
-        
-        # Create lead
-        lead = Lead(
-            workspace_id=workspace_id,
-            name=payload.get("name"),
-            company=payload.get("company"),
-            email=payload.get("email"),
-            phone_e164=payload["phone_e164"],
-            country_iso=payload.get("country_iso"),
-            lang=payload.get("lang"),
-            role=payload.get("role"),
-            contact_class=payload.get("contact_class"),
-            relationship_basis=payload.get("relationship_basis"),
-            opt_in=payload.get("opt_in"),
-            national_dnc=payload.get("national_dnc"),
-            notes=payload.get("notes")
-        )
-        
-        # Apply compliance classification if compliance engine is available
-        if compliance_engine and payload.get("country_iso"):
-            contact_data = {
-                "contact_class": payload.get("contact_class", "unknown"),
-                "relationship_basis": payload.get("relationship_basis", "unknown"),
-                "opt_in": payload.get("opt_in"),
-                "national_dnc": payload.get("national_dnc", "unknown")
-            }
-            
-            category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
-            lead.compliance_category = category
-            lead.compliance_reasons = reasons
-        
-        db.add(lead)
-        db.commit()
-        db.refresh(lead)
-        
-        return lead.to_dict()
-
-
-@api.put("/leads/{lead_id}")
-async def update_lead(lead_id: str, payload: dict) -> dict:
-    # TODO: Replace with actual database update
-    payload["id"] = lead_id
-    payload["updated_at"] = datetime.now().isoformat()
-    
-    # Reclassify if compliance fields changed
-    if compliance_engine and payload.get("country_iso"):
-        contact_data = {
-            "contact_class": payload.get("contact_class", "unknown"),
-            "relationship_basis": payload.get("relationship_basis", "unknown"),
-            "opt_in": payload.get("opt_in"),
-            "national_dnc": payload.get("national_dnc", "unknown")
-        }
-        
-        category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
-        payload["compliance_category"] = category
-        payload["compliance_reasons"] = reasons
-    
-    return payload
-
-
-@api.post("/leads/bulk-update")
-async def bulk_update_leads(payload: dict) -> dict:
-    """Bulk update leads with compliance classification"""
-    lead_ids = payload.get("lead_ids", [])
-    updates = payload.get("updates", {})
-    
-    # TODO: Replace with actual database bulk update
-    results = []
-    
-    for lead_id in lead_ids:
-        result = {
-            "id": lead_id,
-            "status": "updated",
-            "compliance_category": "unknown",
-            "compliance_reasons": []
-        }
-        
-        # Apply updates
-        if compliance_engine and updates.get("country_iso"):
-            contact_data = {
-                "contact_class": updates.get("contact_class", "unknown"),
-                "relationship_basis": updates.get("relationship_basis", "unknown"),
-                "opt_in": updates.get("opt_in"),
-                "national_dnc": updates.get("national_dnc", "unknown")
-            }
-            
-            category, reasons = compliance_engine.classify_contact(contact_data, updates["country_iso"])
-            result["compliance_category"] = category
-            result["compliance_reasons"] = reasons
-        
-        results.append(result)
-    
-    return {"updated": len(results), "results": results}
-
-
-@app.post("/compliance/classify")
+@api.post("/compliance/classify")
 async def classify_contact(payload: dict) -> dict:
     """Classify a single contact for compliance"""
     if not compliance_engine:
@@ -2728,7 +2504,7 @@ async def classify_contact(payload: dict) -> dict:
     }
 
 
-@app.post("/compliance/classify-bulk")
+@api.post("/compliance/classify-bulk")
 async def classify_contacts_bulk(payload: dict) -> dict:
     """Classify multiple contacts for compliance"""
     if not compliance_engine:
@@ -2866,7 +2642,7 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
 
 # ===================== Sprint 3 stubs =====================
 
-@app.post("/campaigns")
+@api.post("/campaigns")
 async def create_campaign(payload: dict) -> dict:
     # Include default scripts into campaign metadata (stub)
     lang = payload.get("lang_default") or "en-US"
@@ -2880,7 +2656,7 @@ async def create_campaign(payload: dict) -> dict:
     return {"id": "c_new", "retell_metadata": retell_metadata}
 
 
-@app.get("/campaigns")
+@api.get("/campaigns")
 def list_campaigns(
     request: Request,
     workspace_id: Optional[str] = Query(None),
@@ -2928,12 +2704,12 @@ def list_campaigns(
     return payload
 
 
-@app.get("/campaigns/{campaign_id}")
+@api.get("/campaigns/{campaign_id}")
 def get_campaign(campaign_id: str) -> dict:
     return {"id": campaign_id, "name": "Sample", "status": "active", "pacing_npm": 10, "budget_cap_cents": 15000, "window": {"quiet_hours": True}}
 
 
-@app.patch("/campaigns/{campaign_id}")
+@api.patch("/campaigns/{campaign_id}")
 async def update_campaign(campaign_id: str, payload: dict) -> dict:
     # Validate status transitions
     allowed_statuses = {"draft", "active", "paused", "completed"}
@@ -2952,27 +2728,27 @@ async def update_campaign(campaign_id: str, payload: dict) -> dict:
     }
 
 
-@app.post("/campaigns/{campaign_id}/pause")
+@api.post("/campaigns/{campaign_id}/pause")
 async def pause_campaign(campaign_id: str) -> dict:
     return {"id": campaign_id, "status": "paused"}
 
 
-@app.post("/campaigns/{campaign_id}/resume")
+@api.post("/campaigns/{campaign_id}/resume")
 async def resume_campaign(campaign_id: str) -> dict:
     return {"id": campaign_id, "status": "active"}
 
 
-@app.get("/campaigns/{campaign_id}/kpi")
+@api.get("/campaigns/{campaign_id}/kpi")
 def campaign_kpi(campaign_id: str) -> dict:
     return {"leads": 0, "calls": 0, "qualified": 0, "success_pct": 0.0, "cost_per_min": 0, "p95": 0}
 
 
-@app.post("/campaigns/{campaign_id}/schedule")
+@api.post("/campaigns/{campaign_id}/schedule")
 async def campaign_schedule(campaign_id: str, payload: dict) -> dict:
     return {"scheduled": True}
 
 
-@app.get("/campaigns/{campaign_id}/events")
+@api.get("/campaigns/{campaign_id}/events")
 def campaign_events(campaign_id: str, start: str | None = None, end: str | None = None) -> dict:
     return {"events": []}
 
@@ -3008,7 +2784,7 @@ async def create_calendar_event(payload: dict) -> dict:
         raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
 
 
-@app.get("/numbers")
+@api.get("/numbers")
 def list_numbers(
     request: Request,
     query: str | None = Query(default=None),
@@ -3330,7 +3106,7 @@ except Exception as e:
     logger.error(f"Error loading compliance engine: {e}")
     compliance_engine = None
 
-@app.post("/compliance/preflight")
+@api.post("/compliance/preflight")
 async def compliance_preflight(payload: dict) -> dict:
     items = payload.get("items", [])
     out: list[dict] = []
@@ -3446,7 +3222,7 @@ async def compliance_preflight(payload: dict) -> dict:
     return {"items": out, "summary": {"allow": allow, "delay": delay, "block": block}}
 
 
-@app.get("/compliance/scripts")
+@api.get("/compliance/scripts")
 def compliance_scripts(iso: str, lang: str, direction: str, contact_class: str) -> dict:
     return {
         "iso": iso,
@@ -3460,7 +3236,7 @@ def compliance_scripts(iso: str, lang: str, direction: str, contact_class: str) 
     }
 
 
-@app.get("/compliance/countries")
+@api.get("/compliance/countries")
 def compliance_countries() -> dict:
     # Returns list of countries with iso, confidence, last_verified
     try:
@@ -3474,7 +3250,7 @@ def compliance_countries() -> dict:
         return {"items": []}
 
 
-@app.get("/compliance/country/{iso}")
+@api.get("/compliance/country/{iso}")
 def compliance_country(iso: str) -> dict:
     iso_up = (iso or "").upper()
     fused = _COMPLIANCE.get("fused_by_iso", {}).get(iso_up)
@@ -3604,7 +3380,7 @@ def worker_call_finish() -> dict:
     return _CONCURRENCY
 
 
-@app.get("/campaigns/{campaign_id}/leads")
+@api.get("/campaigns/{campaign_id}/leads")
 def campaign_leads(campaign_id: str, limit: int = 25, offset: int = 0) -> dict:
     items = []
     return {"total": len(items), "items": items}
@@ -3704,7 +3480,7 @@ async def list_templates(request: Request):
 
 # ===================== Sprint 6: Numbers Provisioning (Retell) =====================
 
-@app.post("/numbers/retell/provision")
+@api.post("/numbers/retell/provision")
 async def numbers_retell_provision(payload: dict, db: Session = Depends(get_db)) -> dict:
     """Provision phone number from Retell"""
     iso = (payload.get("country_iso") or "US").upper()
@@ -3754,7 +3530,7 @@ async def numbers_retell_provision(payload: dict, db: Session = Depends(get_db))
     }
 
 
-@app.post("/numbers/verify-caller-id")
+@api.post("/numbers/verify-caller-id")
 async def numbers_verify_caller_id(payload: dict, db: Session = Depends(get_db)) -> dict:
     """Start caller ID verification process"""
     number_id = payload.get("number_id")
@@ -3799,7 +3575,7 @@ async def numbers_verify_caller_id(payload: dict, db: Session = Depends(get_db))
 # ===================== Settings Telephony Proxies =====================
 # These endpoints provide a clean /settings/telephony/* interface that maps to existing /numbers/* endpoints
 
-@app.get("/settings/telephony/numbers")
+@api.get("/settings/telephony/numbers")
 async def settings_list_numbers(
     request: Request,
     db: Session = Depends(get_db)
@@ -3818,7 +3594,7 @@ async def settings_list_numbers(
     return {"items": items}
 
 
-@app.post("/settings/telephony/retell/purchase")
+@api.post("/settings/telephony/retell/purchase")
 async def settings_purchase_retell(
     payload: dict, 
     db: Session = Depends(get_db)
@@ -3835,7 +3611,7 @@ async def settings_purchase_retell(
     return await numbers_retell_provision(transformed_payload, db)
 
 
-@app.post("/settings/telephony/import")
+@api.post("/settings/telephony/import")
 async def settings_import_number(
     payload: dict, 
     db: Session = Depends(get_db)
@@ -3866,7 +3642,7 @@ class BindPayload(BaseModel):
     inbound_agent_id: str | None = None
     outbound_agent_id: str | None = None
 
-@app.post("/settings/telephony/bind")
+@api.post("/settings/telephony/bind")
 async def settings_bind_number(
     payload: BindPayload, 
     request: Request,
@@ -3899,7 +3675,7 @@ async def settings_bind_number(
 class VerifyCliPayload(BaseModel):
     number_id: str
 
-@app.post("/settings/telephony/numbers/verify-cli")
+@api.post("/settings/telephony/numbers/verify-cli")
 def telephony_verify_cli(payload: VerifyCliPayload, db: Session = Depends(get_db), user=Depends(auth_guard)):
     # Rate limiting: max 5 requests per minute per user
     from backend.utils.rate_limiter import rate_limit
@@ -3937,7 +3713,7 @@ def telephony_verify_cli(payload: VerifyCliPayload, db: Session = Depends(get_db
     raise HTTPException(status_code=400, detail="Provider does not support CLI verification")
 
 
-@app.get("/settings/telephony/agents")
+@api.get("/settings/telephony/agents")
 async def settings_list_agents(
     request: Request,
     db: Session = Depends(get_db)
@@ -3955,7 +3731,7 @@ async def settings_list_agents(
 
 # ===================== Coverage & Requirements =====================
 
-@app.get("/settings/telephony/countries")
+@api.get("/settings/telephony/countries")
 async def countries(
     provider: str,
     request: Request,
@@ -3973,7 +3749,7 @@ async def countries(
         "countries": [country.dict() for country in countries_data]
     }
 
-@app.get("/settings/telephony/capabilities")
+@api.get("/settings/telephony/capabilities")
 async def capabilities(
     provider: str,
     country: str,
@@ -3993,7 +3769,7 @@ async def capabilities(
         "capabilities": capabilities_data.dict()
     }
 
-@app.get("/settings/telephony/pricing/twilio")
+@api.get("/settings/telephony/pricing/twilio")
 async def pricing(
     origin: str,
     destination: str,
@@ -4012,7 +3788,7 @@ async def pricing(
 
 # ===================== Telephony Provider Management =====================
 
-@app.get("/settings/telephony/providers")
+@api.get("/settings/telephony/providers")
 async def list_providers(
     request: Request,
     db: Session = Depends(get_db)
@@ -4022,7 +3798,7 @@ async def list_providers(
     rows = db.query(ProviderAccount).filter(ProviderAccount.workspace_id == wsid).all()
     return [{"id": r.id, "provider": r.provider.value, "label": r.label} for r in rows]
 
-@app.post("/settings/telephony/providers")
+@api.post("/settings/telephony/providers")
 async def upsert_provider(
     body: dict, 
     request: Request,
@@ -4044,7 +3820,7 @@ async def upsert_provider(
     db.commit()
     return {"ok": True}
 
-@app.post("/settings/telephony/numbers/purchase")
+@api.post("/settings/telephony/numbers/purchase")
 async def purchase_number(
     body: dict, 
     request: Request,
@@ -4166,7 +3942,7 @@ async def purchase_number(
         "threshold_hit": budget_check["threshold_hit"]
     }
 
-@app.post("/settings/telephony/numbers/import")
+@api.post("/settings/telephony/numbers/import")
 async def import_number(
     body: dict, 
     request: Request,
@@ -4287,7 +4063,7 @@ async def import_number(
         "threshold_hit": budget_check["threshold_hit"]
     }
 
-@app.get("/settings/telephony/orders")
+@api.get("/settings/telephony/orders")
 async def list_orders(
     request: Request,
     db: Session = Depends(get_db)
@@ -4309,7 +4085,7 @@ from backend.services.coverage_cache import get as get_coverage_cache, set_mem a
 from backend.services.twilio_coverage import build_twilio_snapshot
 from backend.config.settings import settings
 
-@app.get("/settings/telephony/coverage")
+@api.get("/settings/telephony/coverage")
 async def get_coverage(provider: str = Query(..., pattern="^(twilio|telnyx)$")):
     """Get coverage information for a specific provider with caching and age control"""
     # Prova cache prima
@@ -4390,7 +4166,7 @@ from backend.services.compliance_service import get_requirements, ensure_complia
 from fastapi import UploadFile, File, Form
 import os
 
-@app.get("/settings/telephony/compliance/requirements", response_model=ComplianceRequirements)
+@api.get("/settings/telephony/compliance/requirements", response_model=ComplianceRequirements)
 def compliance_requirements(provider: str, country: str, number_type: str, entity_type: str):
     """Get compliance requirements for a specific provider/country/number_type/entity_type"""
     req = get_requirements(provider, country, number_type, entity_type) or {}
@@ -4402,7 +4178,7 @@ def compliance_requirements(provider: str, country: str, number_type: str, entit
         "notes": req.get("notes")
     }
 
-@app.post("/settings/telephony/compliance/submissions", response_model=ComplianceSubmission)
+@api.post("/settings/telephony/compliance/submissions", response_model=ComplianceSubmission)
 def compliance_create(payload: ComplianceCreate, db: Session = Depends(get_db), user=Depends(auth_guard)):
     """Create a new compliance submission"""
     sub = RegulatorySubmission(
@@ -4433,7 +4209,7 @@ def compliance_create(payload: ComplianceCreate, db: Session = Depends(get_db), 
         "updated_at": sub.updated_at.isoformat()
     }
 
-@app.post("/settings/telephony/compliance/submissions/{sub_id}/files", response_model=ComplianceUploadAck)
+@api.post("/settings/telephony/compliance/submissions/{sub_id}/files", response_model=ComplianceUploadAck)
 def compliance_upload(
     sub_id: str, 
     kind: str = Form(...), 
@@ -4477,7 +4253,7 @@ def compliance_upload(
 
 # ===================== Telephony Portability =====================
 
-@app.get("/settings/telephony/portability")
+@api.get("/settings/telephony/portability")
 def portability(provider: str, country: str, number_type: str):
     """Check portability for a specific provider/country/number_type combination"""
     if provider.lower() == "telnyx":
@@ -4546,7 +4322,7 @@ async def telnyx_voice_webhook(payload: dict, request: Request, db: Session = De
     
     return {"status": "received", "routing": route_result}
 
-@app.post("/settings/telephony/coverage/rebuild")
+@api.post("/settings/telephony/coverage/rebuild")
 async def rebuild_coverage(
     provider: str = Query(..., pattern="^twilio$"),
     x_cron_secret: str = Header(default="")
@@ -4570,7 +4346,7 @@ async def rebuild_coverage(
         logging.error(f"Failed to rebuild coverage: {e}")
         raise HTTPException(status_code=500, detail="rebuild_failed")
 
-@app.get("/settings/telephony/inventory/search")
+@api.get("/settings/telephony/inventory/search")
 async def twilio_inventory_search(
     provider: str = Query(..., pattern="^twilio$"),
     country: str = Query(..., min_length=2, max_length=2),
