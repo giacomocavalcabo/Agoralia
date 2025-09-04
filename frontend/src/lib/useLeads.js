@@ -79,9 +79,10 @@ export function useLeads(initial = {}) {
         }
 
         const qs = new URLSearchParams();
-        qs.set('page', String(page));
-        qs.set('per_page', String(pageSize));
-        if (search) qs.set('q', search);
+        const offset = Math.max(0, (page - 1) * pageSize);
+        qs.set('limit', String(pageSize));
+        qs.set('offset', String(offset));
+        if (search) qs.set('query', search);
         if (sort) {
           qs.set('sort', sort);
           qs.set('dir', dir);
@@ -99,9 +100,15 @@ export function useLeads(initial = {}) {
           if (k !== 'segment' && v != null && v !== '') qs.set(k, String(v));
         });
 
+        const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+        const workspaceId = auth?.user?.workspace_id;
         const res = await fetch(`${API_BASE}/leads?${qs.toString()}`, {
           credentials: 'include',
           signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(workspaceId ? { 'X-Workspace-Id': workspaceId } : {}),
+          },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
