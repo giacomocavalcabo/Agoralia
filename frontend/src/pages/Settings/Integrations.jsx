@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/button';
@@ -12,9 +13,12 @@ const Integrations = () => {
   const { t } = useTranslation('integrations');
   const { toast } = useToast();
   const { user, isLoading, isAuthenticated } = useAuth();
+  const { search } = useLocation();
+  const navigate = useNavigate();
   
   // Ref per gestire la navigazione e prevenire setState durante redirect
   const isNavigatingRef = useRef(false);
+  const didConsumeHubspotFlag = useRef(false); // evita doppie esecuzioni
   
   const [integrations, setIntegrations] = useState({
     hubspot: { connected: false, status: 'disconnected' },
@@ -24,8 +28,72 @@ const Integrations = () => {
   const [loading, setLoading] = useState({});
   const [statusLoading, setStatusLoading] = useState(true);
 
+  // Callback per refetch status - sempre con workspace_id
+  const refetchStatus = useCallback(async () => {
+    try {
+      console.log('[Integrations] Refetching integration status...');
+      setStatusLoading(true);
+      
+      const wsId = user?.workspace_id || 'ws_1';
+      const data = await apiFetch(`/integrations/status?workspace_id=${encodeURIComponent(wsId)}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      console.log('[Integrations] Status refetched:', data);
+      setIntegrations(data || {
+        hubspot: { connected: false, status: 'disconnected' },
+        zoho: { connected: false, status: 'disconnected' },
+        odoo: { connected: false, status: 'disconnected' }
+      });
+      
+    } catch (error) {
+      console.error('[Integrations] Failed to refetch integration status:', error);
+    } finally {
+      setStatusLoading(false);
+    }
+  }, [user?.workspace_id]);
+
   // Marcati come "in navigazione" all'unmount del componente
   useEffect(() => () => { isNavigatingRef.current = true; }, []);
+
+  // Gestione URL parameters per OAuth callbacks
+  useEffect(() => {
+    if (didConsumeHubspotFlag.current) return;
+
+    const q = new URLSearchParams(search);
+    const flag = q.get('hubspot'); // 'connected' | 'expired' | null
+
+    if (!flag) return;
+
+    didConsumeHubspotFlag.current = true;
+    console.log('[Integrations] Processing HubSpot OAuth flag:', flag);
+
+    if (flag === 'connected') {
+      console.log('[Integrations] HubSpot OAuth callback detected - connected');
+      toast({
+        title: 'HubSpot Connected',
+        description: 'Successfully connected to HubSpot',
+        variant: 'success'
+      });
+      
+      // 1) forza refetch immediato, così la UI si aggiorna
+      refetchStatus().finally(() => {
+        // 2) ripulisci l'URL (rimuovi ?hubspot=connected) per evitare ritrigger
+        navigate('/settings/integrations', { replace: true });
+      });
+    } else if (flag === 'expired') {
+      console.log('[Integrations] HubSpot OAuth code expired');
+      toast({
+        title: 'Authorization Expired',
+        description: 'Please try connecting to HubSpot again',
+        variant: 'error'
+      });
+      
+      // mostra un toast/snackbar e pulisci URL
+      navigate('/settings/integrations', { replace: true });
+    }
+  }, [search, refetchStatus, navigate, toast]);
 
   useEffect(() => {
     console.log('[Integrations] Component mounted');
@@ -34,33 +102,6 @@ const Integrations = () => {
     const authenticated = isAuthenticated;
     
     console.log('[Integrations] Auth state:', { ready, authenticated, user: user?.email });
-    
-    // Check for OAuth callback success
-    const urlParams = new URLSearchParams(window.location.search);
-    const hubspotConnected = urlParams.get('hubspot') === 'connected';
-    const hubspotExpired = urlParams.get('hubspot') === 'expired';
-    
-    if (hubspotConnected) {
-      console.log('[Integrations] HubSpot OAuth callback detected');
-      toast({
-        title: 'HubSpot Connected',
-        description: 'Successfully connected to HubSpot',
-        variant: 'success'
-      });
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (hubspotExpired) {
-      console.log('[Integrations] HubSpot OAuth code expired');
-      toast({
-        title: 'Authorization Expired',
-        description: 'Please try connecting to HubSpot again',
-        variant: 'error'
-      });
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
     
     // Load integration status only when auth is ready and user is authenticated
     if (ready && authenticated) {
@@ -78,6 +119,8 @@ const Integrations = () => {
       setStatusLoading(true);
       
       const wsId = user?.workspace_id || 'ws_1';
+      console.log('[Integrations] Using workspace_id:', wsId);
+      
       const data = await apiFetch(`/integrations/status?workspace_id=${encodeURIComponent(wsId)}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }

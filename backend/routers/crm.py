@@ -21,6 +21,7 @@ from backend.models import (
 )
 from backend.integrations import HubSpotClient, ZohoClient, OdooClient
 from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin, get_current_user
+from backend.utils.oauth_state import create_oauth_state, extract_oauth_info
 
 router = APIRouter(tags=["CRM"])
 
@@ -150,12 +151,12 @@ async def hubspot_start(
         if not client_id:
             raise HTTPException(status_code=500, detail="HubSpot client ID not configured")
         
-        # Generate CSRF state token
-        state = secrets.token_urlsafe(32)
-        
-        # Store state in session for validation
-        request.session["hubspot_oauth_state"] = state
-        request.session["hubspot_workspace_id"] = workspace_id
+        # Generate JWT-based state token (replaces session-based state)
+        state = create_oauth_state(
+            user_id=user.id,
+            workspace_id=workspace_id,
+            provider="hubspot"
+        )
         
         # Build OAuth URL - Use proper URL encoding for HubSpot
         params = {
@@ -174,7 +175,8 @@ async def hubspot_start(
                 "scopes_raw": raw_scopes,
                 "scopes_normalized": scopes,
                 "redirect_uri": redirect_uri,
-                "client_id": client_id[:10] + "..." if client_id else None
+                "client_id": client_id[:10] + "..." if client_id else None,
+                "state_length": len(state)
             }
         }
     except Exception as e:
@@ -199,15 +201,20 @@ async def hubspot_callback(
     logger = logging.getLogger(__name__)
     logger.info(f"HubSpot callback received: code={code[:10]}..., state={state[:10]}...")
     
-    # Validate state parameter
-    stored_state = request.session.get("hubspot_oauth_state")
-    logger.info(f"Stored state: {stored_state[:10] if stored_state else None}...")
+    # Validate JWT state parameter
+    oauth_info = extract_oauth_info(state)
+    if not oauth_info:
+        logger.error(f"Invalid or expired OAuth state: {state[:20]}...")
+        return RedirectResponse(
+            url=f"https://app.agoralia.app/settings/integrations?hubspot=expired",
+            status_code=303
+        )
     
-    if not stored_state or stored_state != state:
-        logger.error(f"State mismatch: stored={stored_state}, received={state}")
-        raise HTTPException(status_code=400, detail="Invalid state parameter")
+    workspace_id = oauth_info["workspace_id"]
+    user_id = oauth_info["user_id"]
+    provider = oauth_info["provider"]
     
-    workspace_id = request.session.get("hubspot_workspace_id", "ws_1")
+    logger.info(f"OAuth state validated: user_id={user_id}, workspace_id={workspace_id}, provider={provider}")
     
     # Get HubSpot credentials
     client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
@@ -310,14 +317,20 @@ async def hubspot_callback(
     # Save additional data
     account.scopes = token_data.get("scope", "")
     account.external_id = token_data.get("hub_id", "")
+    account.updated_at = datetime.utcnow()
+    
+    # Add portal info if available
+    if "hub_id" in token_data:
+        account.metadata_json = {
+            "portal_id": token_data["hub_id"],
+            "connected_at": datetime.utcnow().isoformat(),
+            "oauth_flow": "jwt_state"
+        }
     
     db.commit()
+    logger.info(f"HubSpot account saved/updated: {account.id}")
     
-    # Clear session state
-    request.session.pop("hubspot_oauth_state", None)
-    request.session.pop("hubspot_workspace_id", None)
-    
-    # Redirect back to frontend
+    # Redirect back to frontend (no session cleanup needed with JWT state)
     return RedirectResponse(
         url=f"https://app.agoralia.app/settings/integrations?hubspot=connected",
         status_code=303

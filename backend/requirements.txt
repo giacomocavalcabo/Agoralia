@@ -42,3 +42,6 @@ redis[hiredis]==5.0.1
 
 # Session middleware dependency
 itsdangerous==2.1.2
+
+# JWT for OAuth state management
+PyJWT==2.8.0
