@@ -16,7 +16,6 @@ export default function LeadsNew() {
     company: '',
     email: '',
     phone: '',
-    country_iso: 'IT',
     lang: 'it-IT',
     role: '',
     contact_class: 'unknown',
@@ -31,8 +30,8 @@ export default function LeadsNew() {
   
   const createLead = useMutation({
     mutationFn: async (leadData) => {
-      // Normalize phone number
-      const normalized = normalizePhoneNumber(leadData.phone, leadData.country_iso)
+      // Normalize phone number (try to detect country from phone number)
+      const normalized = normalizePhoneNumber(leadData.phone)
       if (!normalized.isValid) {
         throw new Error(t('leads.new.errors.invalid_phone') || 'Invalid phone number')
       }
@@ -40,7 +39,7 @@ export default function LeadsNew() {
       const payload = {
         ...leadData,
         phone_e164: normalized.e164,
-        country_iso: normalized.country || leadData.country_iso
+        country_iso: normalized.country || 'IT' // Default to Italy if country cannot be detected
       }
       
       const { data } = await api.post('/leads', payload)
@@ -143,24 +142,6 @@ export default function LeadsNew() {
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
             </div>
             
-            {/* Country */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('leads.fields.country') || 'Country'}
-              </label>
-              <select
-                value={formData.country_iso}
-                onChange={(e) => handleChange('country_iso', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="IT">Italy</option>
-                <option value="US">United States</option>
-                <option value="GB">United Kingdom</option>
-                <option value="FR">France</option>
-                <option value="DE">Germany</option>
-                <option value="ES">Spain</option>
-              </select>
-            </div>
             
             {/* Language */}
             <div>
@@ -172,11 +153,42 @@ export default function LeadsNew() {
                 onChange={(e) => handleChange('lang', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="it-IT">Italian</option>
-                <option value="en-US">English</option>
-                <option value="es-ES">Spanish</option>
-                <option value="fr-FR">French</option>
-                <option value="de-DE">German</option>
+                <option value="multilingual">🌍 Multilingue (Inglese, spagnolo, francese, tedesco, indiano, russo, portoghese, italiano, olandese)</option>
+                <option value="en-US">🇺🇸 Inglese US</option>
+                <option value="en-GB">🇬🇧 Inglese UK</option>
+                <option value="en-AU">🇦🇺 Inglese AU</option>
+                <option value="en-NZ">🇳🇿 Inglese NZ</option>
+                <option value="en-IN">🇮🇳 Inglese IN</option>
+                <option value="es-ES">🇪🇸 Spagnolo</option>
+                <option value="es-419">🌎 Spagnolo Latin America</option>
+                <option value="fr-FR">🇫🇷 Francese</option>
+                <option value="zh-CN">🇨🇳 Cinese</option>
+                <option value="de-DE">🇩🇪 Tedesco</option>
+                <option value="hi-IN">🇮🇳 Indiano</option>
+                <option value="ja-JP">🇯🇵 Giapponese</option>
+                <option value="pt-PT">🇵🇹 Portoghese PT</option>
+                <option value="pt-BR">🇧🇷 Portoghese BR</option>
+                <option value="ru-RU">🇷🇺 Russo</option>
+                <option value="it-IT">🇮🇹 Italiano</option>
+                <option value="ko-KR">🇰🇷 Coreano</option>
+                <option value="nl-NL">🇳🇱 Olandese</option>
+                <option value="nl-BE">🇧🇪 Olandese Belgio</option>
+                <option value="pl-PL">🇵🇱 Polacco</option>
+                <option value="tr-TR">🇹🇷 Turco</option>
+                <option value="vi-VN">🇻🇳 Vietnamita</option>
+                <option value="ro-RO">🇷🇴 Rumeno</option>
+                <option value="da-DK">🇩🇰 Danese</option>
+                <option value="fi-FI">🇫🇮 Finlandese</option>
+                <option value="el-GR">🇬🇷 Greco</option>
+                <option value="id-ID">🇮🇩 Indonesiano</option>
+                <option value="no-NO">🇳🇴 Norvegese</option>
+                <option value="sk-SK">🇸🇰 Slovacco</option>
+                <option value="sv-SE">🇸🇪 Svedese</option>
+                <option value="bg-BG">🇧🇬 Bulgaro</option>
+                <option value="hu-HU">🇭🇺 Ungherese</option>
+                <option value="ms-MY">🇲🇾 Malesiano</option>
+                <option value="ca-ES">🇪🇸 Catalano</option>
+                <option value="th-TH">🇹🇭 Tailandese</option>
               </select>
             </div>
             
@@ -248,7 +260,7 @@ export default function LeadsNew() {
             >
               {isSubmitting ? (t('common.creating') || 'Creating...') : (t('common.create') || 'Create Lead')}
             </button>
-          </div>
+        </div>
         </form>
       </div>
     </div>

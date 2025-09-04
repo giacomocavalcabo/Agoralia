@@ -747,6 +747,29 @@
       "view": "View Lead",
       "import": "Import Leads"
     },
+    "new": {
+      "title": "New Lead",
+      "description": "Create a new lead manually",
+      "errors": {
+        "invalid_phone": "Invalid phone number format"
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "company": "Company",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "language": "Language",
+      "role": "Role",
+      "role_placeholder": "e.g. CEO, Manager, Director",
+      "contact_class": "Contact Type",
+      "contact_class_unknown": "Unknown",
+      "contact_class_b2b": "B2B",
+      "contact_class_b2c": "B2C",
+      "notes": "Notes",
+      "notes_placeholder": "Additional notes about this lead..."
+    },
     "dialogs": {
       "assign": {
         "agent": "Assign Agent",
@@ -779,34 +802,6 @@
       "updated": "Filter updated",
       "value_placeholder": "Enter value"
     },
-    "import": {
-      "coming_soon": "Coming Soon",
-      "description": "Import leads from external sources",
-      "title": "Import Leads"
-    },
-    "new": {
-      "title": "New Lead",
-      "description": "Create a new lead manually",
-      "errors": {
-        "invalid_phone": "Invalid phone number format"
-      }
-    },
-    "fields": {
-      "name": "Name",
-      "company": "Company",
-      "email": "Email",
-      "phone": "Phone",
-      "country": "Country",
-      "language": "Language",
-      "role": "Role",
-      "role_placeholder": "e.g. CEO, Manager, Director",
-      "contact_class": "Contact Type",
-      "contact_class_unknown": "Unknown",
-      "contact_class_b2b": "B2B",
-      "contact_class_b2c": "B2C",
-      "notes": "Notes",
-      "notes_placeholder": "Additional notes about this lead..."
-    },
     "table": {
       "columns": {
         "actions": "Actions",
@@ -836,98 +831,8 @@
     "export": {
       "starting": "Starting export..."
     },
-    "new": {
-      "coming_soon": "Coming Soon",
-      "description": "Create new leads manually",
-      "title": "New Lead"
-    },
-    "details": {
-      "basic_info": "Basic Information",
-      "description": "Lead Details",
-      "error": {
-        "description": "Failed to load lead details",
-        "title": "Error"
-      },
-      "fields": {
-        "company": "Company",
-        "created_at": "Created At",
-        "email": "Email",
-        "last_contact": "Last Contact",
-        "phone": "Phone",
-        "status": "Status"
-      },
-      "status_timeline": "Status Timeline",
-      "title": "Lead Details"
-    },
-    "columns": {
-      "name": "Name",
-      "phone": "Phone",
-      "country": "Country",
-      "compliance": "Compliance",
-      "status": "Status",
-      "stage": "Stage",
-      "category": "Category",
-      "updated": "Updated",
-      "owner": "Owner",
-      "last_contact": "Last contact",
-      "score": "Score",
-      "actions": "Actions"
-    },
-    "toolbar": {
-      "search_placeholder": "Search leads…",
-      "search_aria": "Search leads",
-      "bulk": {
-        "assign": "Assign",
-        "delete": "Delete",
-        "export": "Export"
-      }
-    },
-
     "status": { "new": "New", "contacted": "Contacted", "qualified": "Qualified", "lost": "Lost" },
     "stage": { "cold": "Cold", "warm": "Warm", "hot": "Hot" },
-
-    "details": { 
-      "title": "Lead {{name}}",
-      "description": "Basic information and timeline",
-      "error": { "title": "Lead not available", "description": "This lead could not be loaded." },
-      "basic_info": "Basic Information",
-      "status_timeline": "Status & Timeline",
-      "fields": { 
-        "email": "Email", 
-        "phone": "Phone",
-        "status": "Status", 
-        "created_at": "Created", 
-        "last_contact": "Last contact", 
-        "company": "Company" 
-      }
-    },
-    "delete": { "title": "Delete lead?", "message": "This action cannot be undone." },
-
-
-
-    "export": {
-      "starting": "Export starting..."
-    },
-    "new": {
-      "title": "New Lead",
-      "description": "Create a new lead manually",
-      "coming_soon": "Coming soon"
-    },
-    "errors": {
-      "e164": "E164 format required"
-    },
-    "fields": {
-      "company": "Company",
-      "consent": "Consent",
-      "country": "Country",
-      "lang": "Language",
-      "name": "Name",
-      "phone": "Phone",
-      "role": "Role"
-    },
-    "placeholders": {
-      "e164": "+1..."
-    },
     "toasts": {
       "added": "Lead added"
     }

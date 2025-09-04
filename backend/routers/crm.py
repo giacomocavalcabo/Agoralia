@@ -21,7 +21,7 @@ from backend.models import (
 from backend.integrations import HubSpotClient, ZohoClient, OdooClient
 from backend.deps.auth import get_tenant_id, require_workspace_access, require_admin, get_current_user
 
-router = APIRouter(prefix="/crm", tags=["CRM"])
+router = APIRouter(tags=["CRM"])
 
 
 # ===================== Provider Management =====================
