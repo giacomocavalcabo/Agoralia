@@ -100,9 +100,12 @@ const Integrations = () => {
       
       const response = await apiFetch(`/integrations/${provider}/connect`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: {
+          redirect_uri: `${window.location.origin}/api/integrations/${provider}/callback`,
+          scopes: provider === 'hubspot' 
+            ? ['crm.objects.contacts.read', 'crm.objects.contacts.write', 'crm.objects.companies.read', 'crm.objects.companies.write']
+            : []
+        }
       });
       
       console.log(`[Integrations] ${provider} connect response:`, response);

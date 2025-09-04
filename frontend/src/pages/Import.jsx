@@ -13,11 +13,9 @@ import LegalReviewStep from '../components/import/LegalReviewStep'
 // Step components
 function UploadStep({ onDataDetected, onNext }) {
   const { t } = useI18n('pages')
-  const [uploadMethod, setUploadMethod] = useState('csv')
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
   const [csvData, setCsvData] = useState(null)
-  const [pasteData, setPasteData] = useState('')
 
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length === 0) return

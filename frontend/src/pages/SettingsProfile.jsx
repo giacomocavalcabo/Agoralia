@@ -89,9 +89,17 @@ export default function SettingsProfile() {
       return true
     } catch (error) {
       const newErrors = {}
-      error.errors.forEach((err) => {
-        newErrors[err.path[0]] = err.message
-      })
+      // Guard: verifica che error.errors esista e sia un array
+      if (error?.errors && Array.isArray(error.errors)) {
+        error.errors.forEach((err) => {
+          if (err?.path && err?.message) {
+            newErrors[err.path[0]] = err.message
+          }
+        })
+      } else {
+        // Fallback: errore generico se la struttura non è quella attesa
+        newErrors.general = error?.message || 'Validation error'
+      }
       setErrors(newErrors)
       return false
     }
@@ -121,9 +129,23 @@ export default function SettingsProfile() {
         type: 'success'
       })
     } catch (error) {
+      console.error('Profile save error:', error)
+      
+      // Gestione robusta degli errori
+      let errorMessage = error?.message || 'Unknown error'
+      
+      // Se l'errore ha una struttura specifica, estrai il messaggio
+      if (error?.detail) {
+        if (Array.isArray(error.detail)) {
+          errorMessage = error.detail.map(e => e.msg || e).join(', ')
+        } else if (typeof error.detail === 'string') {
+          errorMessage = error.detail
+        }
+      }
+      
       toast({
         title: t('account.errors.save_failed'),
-        description: error.message,
+        description: errorMessage,
         type: 'error'
       })
     } finally {
