@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth.jsx'
@@ -49,6 +49,17 @@ export default function AppShell({ children }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const isDemo = useIsDemo()
   
+  // Refs per gestire la navigazione e prevenire setState durante redirect
+  const menuRef = useRef(null)
+  const isNavigatingRef = useRef(false)
+  
+  // Se parte una navigazione (OAuth/redirect), segnalo lo stato
+  useEffect(() => {
+    const onBeforeUnload = () => { isNavigatingRef.current = true; };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -73,17 +84,23 @@ export default function AppShell({ children }) {
     return null
   }
   
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuOpen && !event.target.closest('.user-menu')) {
-        setUserMenuOpen(false)
-      }
+  // Handler per chiudere il menu quando si clicca fuori
+  const handleClickOutside = useCallback((event) => {
+    if (isNavigatingRef.current) return;              // ⛑️ evita setState in navigazione
+    const el = menuRef.current;
+    if (el && !el.contains(event.target)) {
+      setUserMenuOpen(false);
     }
-    
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userMenuOpen])
+  }, []);
+
+  // Attacca listener solo quando il menu è aperto
+  useEffect(() => {
+    if (!userMenuOpen) return;                        // attacca solo se serve
+    document.addEventListener("mousedown", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside, true);
+    };
+  }, [userMenuOpen, handleClickOutside]);
   
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -212,7 +229,7 @@ export default function AppShell({ children }) {
               </button>
               
               {/* User Menu */}
-              <div className="relative user-menu">
+              <div className="relative user-menu" ref={menuRef}>
                 <button 
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100"

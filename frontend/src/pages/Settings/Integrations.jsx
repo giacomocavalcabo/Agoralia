@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/button';
@@ -13,6 +13,9 @@ const Integrations = () => {
   const { toast } = useToast();
   const { user, isLoading, isAuthenticated } = useAuth();
   
+  // Ref per gestire la navigazione e prevenire setState durante redirect
+  const isNavigatingRef = useRef(false);
+  
   const [integrations, setIntegrations] = useState({
     hubspot: { connected: false, status: 'disconnected' },
     zoho: { connected: false, status: 'disconnected' },
@@ -20,6 +23,9 @@ const Integrations = () => {
   });
   const [loading, setLoading] = useState({});
   const [statusLoading, setStatusLoading] = useState(true);
+
+  // Marcati come "in navigazione" all'unmount del componente
+  useEffect(() => () => { isNavigatingRef.current = true; }, []);
 
   useEffect(() => {
     console.log('[Integrations] Component mounted');
@@ -60,7 +66,8 @@ const Integrations = () => {
       console.log('[Integrations] Loading integration status...');
       setStatusLoading(true);
       
-      const data = await apiFetch('/integrations/status', {
+      const wsId = user?.workspace_id || 'ws_1';
+      const data = await apiFetch(`/integrations/status?workspace_id=${encodeURIComponent(wsId)}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -121,7 +128,8 @@ const Integrations = () => {
       if (provider === 'hubspot') {
         // HubSpot usa OAuth2 - chiama l'endpoint CRM
         console.log(`[Integrations] Calling /crm/hubspot/start...`);
-        response = await apiFetch(`/crm/hubspot/start`, {
+        const wsId = user?.workspace_id || 'ws_1';
+        response = await apiFetch(`/crm/hubspot/start?workspace_id=${encodeURIComponent(wsId)}`, {
           method: 'GET'
         });
         
@@ -130,7 +138,9 @@ const Integrations = () => {
         if (response.auth_url) {
           // Redirect to OAuth provider
           console.log(`[Integrations] Redirecting to ${provider} OAuth:`, response.auth_url);
-          window.location.href = response.auth_url;
+          isNavigatingRef.current = true;           // ⛑️ da qui in poi niente setState
+          window.location.assign(response.auth_url);
+          return;                                   // interrompi la funzione
         } else {
           console.error(`[Integrations] No auth_url in response:`, response);
           throw new Error('No auth URL received');
@@ -163,34 +173,36 @@ const Integrations = () => {
     } catch (error) {
       console.error(`[Integrations] Failed to connect to ${provider}:`, error);
       
-      if (error.message?.includes('unauthenticated')) {
-        toast({
-          title: 'Authentication Required',
-          description: 'Please log in to connect integrations',
-          variant: 'error'
-        });
-        // Redirect to login will be handled by apiFetch
-      } else if (error.message?.includes('403')) {
-        toast({
-          title: 'Access Denied',
-          description: 'You do not have permission to connect integrations',
-          variant: 'error'
-        });
-      } else if (error.message?.includes('500')) {
-        toast({
-          title: 'Configuration Error',
-          description: 'HubSpot integration is not properly configured on the server',
-          variant: 'error'
-        });
-      } else {
-        toast({
-          title: 'Connection Failed',
-          description: `Failed to start ${provider} connection: ${error.message}`,
-          variant: 'error'
-        });
+      // Evita setState se stiamo navigando
+      if (!isNavigatingRef.current) {
+        if (error.message?.includes('unauthenticated')) {
+          toast({
+            title: 'Authentication Required',
+            description: 'Please log in to connect integrations',
+            variant: 'error'
+          });
+          // Redirect to login will be handled by apiFetch
+        } else if (error.message?.includes('403')) {
+          toast({
+            title: 'Access Denied',
+            description: 'You do not have permission to connect integrations',
+            variant: 'error'
+          });
+        } else if (error.message?.includes('500')) {
+          toast({
+            title: 'Configuration Error',
+            description: 'HubSpot integration is not properly configured on the server',
+            variant: 'error'
+          });
+        } else {
+          toast({
+            title: 'Connection Failed',
+            description: `Failed to start ${provider} connection: ${error.message}`,
+            variant: 'error'
+          });
+        }
+        setLoading(prev => ({ ...prev, [provider]: false }));
       }
-    } finally {
-      setLoading(prev => ({ ...prev, [provider]: false }));
     }
   };
 
