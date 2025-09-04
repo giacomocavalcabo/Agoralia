@@ -1238,7 +1238,7 @@ def require_global_admin(x_admin_email: str | None = Header(default=None), admin
     raise HTTPException(status_code=403, detail="Admin required")
 
 
-def require_admin_or_session(request: Request, x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
+async def require_admin_or_session(request: Request, x_admin_email: str | None = Header(default=None), admin_email: str | None = Query(default=None)) -> None:
     chosen = x_admin_email or admin_email
     wildcard = (os.getenv("ADMIN_EMAILS") or "").strip()
     if wildcard == "*":
@@ -1247,7 +1247,7 @@ def require_admin_or_session(request: Request, x_admin_email: str | None = Heade
         _require_admin(chosen)
         return
     from backend.auth.session import get_session
-    sess = get_session(request)
+    sess = await get_session(request)
     claims = (sess or {}).get("claims") if sess else None
     if not claims or not claims.get("is_admin_global"):
         raise HTTPException(status_code=403, detail="Admin required")
