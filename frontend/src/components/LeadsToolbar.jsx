@@ -53,7 +53,7 @@ export default function LeadsToolbar({
       <input
         data-testid="leads-search"
         type="search"
-        className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         placeholder={t('leads.toolbar.search_placeholder')}
         value={local}
         onChange={(e) => setLocal(e.target.value)}
@@ -103,7 +103,7 @@ export default function LeadsToolbar({
         <button
           data-testid="add-lead"
           onClick={() => navigate('/leads/new')}
-          className="rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100"
+          className="px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
         >
           {t('leads.actions.add')}
         </button>
@@ -111,7 +111,7 @@ export default function LeadsToolbar({
           data-testid="bulk-assign"
           disabled={!selectionCount}
           onClick={() => setOpenAssign(true)}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
+          className="px-4 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
         >
           {t('leads.toolbar.bulk.assign')}
         </button>
@@ -119,13 +119,13 @@ export default function LeadsToolbar({
           data-testid="bulk-delete"
           disabled={!selectionCount}
           onClick={() => setOpenBulkDel(true)}
-          className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100 disabled:opacity-50"
+          className="px-4 py-2 bg-red-50 text-red-700 font-medium rounded-lg border border-red-300 hover:bg-red-100 disabled:opacity-50 transition-colors"
         >
           {t('leads.toolbar.bulk.delete')}
         </button>
         <button
           onClick={onExport}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+          className="px-4 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
         >
           {t('leads.toolbar.bulk.export')}
         </button>

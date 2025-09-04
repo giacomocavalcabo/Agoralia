@@ -11,8 +11,8 @@ export default function ConfirmDialog({ open, title, body, confirmLabel, cancelL
         {body && <p className="mt-2 text-sm text-gray-600">{body}</p>}
         {children}
         <div className="mt-4 flex justify-end gap-2">
-          <button className="btn btn-secondary" onClick={onClose}>{cancelLabel}</button>
-          <button className="btn btn-primary" onClick={onConfirm}>{confirmLabel}</button>
+          <button className="px-4 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50" onClick={onClose}>{cancelLabel}</button>
+          <button className="px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700" onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
     </div>
