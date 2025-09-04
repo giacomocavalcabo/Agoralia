@@ -47,17 +47,25 @@ export default function AppShell({ children }) {
   const { user, logout, isAuthenticated, isLoading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const isDemo = useIsDemo()
+  
+  // Set mounted flag
+  useEffect(() => {
+    setIsMounted(true)
+    return () => setIsMounted(false)
+  }, [])
   
   // Redirect to login if not authenticated
   useEffect(() => {
+    if (!isMounted) return
     if (!isLoading && !isAuthenticated) {
       window.location.href = '/login'
     }
-  }, [isAuthenticated, isLoading])
+  }, [isAuthenticated, isLoading, isMounted])
   
   // Show loading while checking authentication
-  if (isLoading) {
+  if (isLoading || !isMounted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -75,7 +83,7 @@ export default function AppShell({ children }) {
   
   // Close user menu when clicking outside
   useEffect(() => {
-    if (!isAuthenticated) return // Don't add listeners if not authenticated
+    if (!isMounted || !isAuthenticated) return
     
     const handleClickOutside = (event) => {
       if (userMenuOpen && !event.target.closest('.user-menu')) {
@@ -85,7 +93,7 @@ export default function AppShell({ children }) {
     
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userMenuOpen, isAuthenticated])
+  }, [userMenuOpen, isAuthenticated, isMounted])
   
   return (
     <div className="min-h-screen bg-gray-50 flex">
