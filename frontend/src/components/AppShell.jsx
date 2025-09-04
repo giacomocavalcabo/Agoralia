@@ -81,27 +81,18 @@ export default function AppShell({ children }) {
     return null
   }
   
-  // Close user menu when clicking outside - simplified approach
-  const handleDocumentClick = (event) => {
-    if (userMenuOpen && !event.target.closest('.user-menu')) {
-      setUserMenuOpen(false)
-    }
-  }
-  
-  useEffect(() => {
-    if (!isMounted || !isAuthenticated) return
-    
-    if (userMenuOpen) {
-      document.addEventListener('mousedown', handleDocumentClick)
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleDocumentClick)
-    }
-  }, [userMenuOpen, isAuthenticated, isMounted])
+  // Close user menu when clicking outside - removed useEffect to prevent React error
+  // This will be handled by the button click handlers instead
   
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div 
+      className="min-h-screen bg-gray-50 flex"
+      onClick={(e) => {
+        if (userMenuOpen && !e.target.closest('.user-menu')) {
+          setUserMenuOpen(false)
+        }
+      }}
+    >
       {/* Sidebar */}
       <div 
         className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
