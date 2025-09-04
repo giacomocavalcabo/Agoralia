@@ -22,9 +22,12 @@ export function AuthProvider({ children }) {
       if (u && u.id && u.email) {
         setUser(u);
         setIsAuthenticated(true);
+        // Salva l'utente in localStorage per apiFetch
+        localStorage.setItem('auth', JSON.stringify({ user: u }));
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        localStorage.removeItem('auth');
       }
     } catch (error) {
       setUser(null);
@@ -75,6 +78,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      localStorage.removeItem('auth');
       // Redirect to login page using React Router
       window.location.href = '/login';
     }
