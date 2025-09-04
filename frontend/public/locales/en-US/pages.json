@@ -784,6 +784,29 @@
       "description": "Import leads from external sources",
       "title": "Import Leads"
     },
+    "new": {
+      "title": "New Lead",
+      "description": "Create a new lead manually",
+      "errors": {
+        "invalid_phone": "Invalid phone number format"
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "company": "Company",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "language": "Language",
+      "role": "Role",
+      "role_placeholder": "e.g. CEO, Manager, Director",
+      "contact_class": "Contact Type",
+      "contact_class_unknown": "Unknown",
+      "contact_class_b2b": "B2B",
+      "contact_class_b2c": "B2C",
+      "notes": "Notes",
+      "notes_placeholder": "Additional notes about this lead..."
+    },
     "table": {
       "columns": {
         "actions": "Actions",

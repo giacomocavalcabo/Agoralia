@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import ConfirmDialog from './ConfirmDialog';
 import FilterBuilder from './filters/FilterBuilder';
@@ -16,6 +17,7 @@ export default function LeadsToolbar({
   onExport,
 }) {
   const { t } = useTranslation('pages');
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [local, setLocal] = useState(value);
   const [openAssign, setOpenAssign] = useState(false);
@@ -98,6 +100,13 @@ export default function LeadsToolbar({
       </div>
 
       <div className="ms-auto flex items-center gap-2">
+        <button
+          data-testid="add-lead"
+          onClick={() => navigate('/leads/new')}
+          className="rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100"
+        >
+          {t('leads.actions.add')}
+        </button>
         <button
           data-testid="bulk-assign"
           disabled={!selectionCount}

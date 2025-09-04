@@ -29,7 +29,7 @@ from backend.config import settings
 from backend.models import (
     User, UserAuth, Workspace, WorkspaceMember, ProviderAccount, 
     TelephonyProvider, NumberOrder, Number, MagicLink, 
-    RegulatorySubmission, KnowledgeBase, KbUsage
+    RegulatorySubmission, KnowledgeBase, KbUsage, Lead
 )
 
 # 🔒 Assert di sicurezza per Base.metadata
@@ -2349,25 +2349,59 @@ def list_leads(
 
 
 @app.post("/leads")
-async def create_lead(payload: dict) -> dict:
-    # TODO: Replace with actual database insert
-    payload = dict(payload)
-    payload["id"] = f"l_{int(datetime.now().timestamp())}"
+async def create_lead(payload: dict, request: Request) -> dict:
+    """Create a new lead"""
+    workspace_id = get_workspace_id(request, required=True)
     
-    # Apply compliance classification if compliance engine is available
-    if compliance_engine and payload.get("country_iso"):
-        contact_data = {
-            "contact_class": payload.get("contact_class", "unknown"),
-            "relationship_basis": payload.get("relationship_basis", "unknown"),
-            "opt_in": payload.get("opt_in"),
-            "national_dnc": payload.get("national_dnc", "unknown")
-        }
+    with next(get_db()) as db:
+        # Validate required fields
+        if not payload.get("phone_e164"):
+            raise HTTPException(status_code=400, detail="Phone number is required")
         
-        category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
-        payload["compliance_category"] = category
-        payload["compliance_reasons"] = reasons
-    
-    return payload
+        # Check for duplicate phone number in workspace
+        existing_lead = db.query(Lead).filter(
+            Lead.workspace_id == workspace_id,
+            Lead.phone_e164 == payload["phone_e164"]
+        ).first()
+        
+        if existing_lead:
+            raise HTTPException(status_code=400, detail="Lead with this phone number already exists")
+        
+        # Create lead
+        lead = Lead(
+            workspace_id=workspace_id,
+            name=payload.get("name"),
+            company=payload.get("company"),
+            email=payload.get("email"),
+            phone_e164=payload["phone_e164"],
+            country_iso=payload.get("country_iso"),
+            lang=payload.get("lang"),
+            role=payload.get("role"),
+            contact_class=payload.get("contact_class"),
+            relationship_basis=payload.get("relationship_basis"),
+            opt_in=payload.get("opt_in"),
+            national_dnc=payload.get("national_dnc"),
+            notes=payload.get("notes")
+        )
+        
+        # Apply compliance classification if compliance engine is available
+        if compliance_engine and payload.get("country_iso"):
+            contact_data = {
+                "contact_class": payload.get("contact_class", "unknown"),
+                "relationship_basis": payload.get("relationship_basis", "unknown"),
+                "opt_in": payload.get("opt_in"),
+                "national_dnc": payload.get("national_dnc", "unknown")
+            }
+            
+            category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+            lead.compliance_category = category
+            lead.compliance_reasons = reasons
+        
+        db.add(lead)
+        db.commit()
+        db.refresh(lead)
+        
+        return lead.to_dict()
 
 
 @app.put("/leads/{lead_id}")

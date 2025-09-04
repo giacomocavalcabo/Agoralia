@@ -45,6 +45,30 @@ class CrmWebhookStatus(enum.Enum):
     ERROR = "error"
 
 
+class ContactClass(enum.Enum):
+    B2B = "b2b"
+    B2C = "b2c"
+    UNKNOWN = "unknown"
+
+
+class RelationshipBasis(enum.Enum):
+    EXISTING = "existing"
+    NONE = "none"
+    UNKNOWN = "unknown"
+
+
+class NationalDnc(enum.Enum):
+    IN = "in"
+    NOT_IN = "not_in"
+    UNKNOWN = "unknown"
+
+
+class ComplianceCategory(enum.Enum):
+    ALLOWED = "allowed"
+    CONDITIONAL = "conditional"
+    BLOCKED = "blocked"
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(String, primary_key=True, default=lambda: f"u_{int(datetime.utcnow().timestamp())}")
@@ -69,6 +93,9 @@ class Workspace(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     # Numbers: default caller ID for outbound
     default_from_number_e164 = Column(String)
+    
+    # Relationships
+    leads = relationship("Lead", back_populates="workspace")
 
 
 class WorkspaceMember(Base):
@@ -755,6 +782,54 @@ class BillingLedger(Base):
     # 🔒 Bridge sicuro per Pydantic/FastAPI (from_orm)
     # NOTA: NON definire property 'metadata' - confligge con SQLAlchemy Base.metadata
     # Pydantic userà metadata_json direttamente con orm_mode = True
+
+
+class Lead(Base):
+    __tablename__ = "leads"
+    
+    id = Column(String, primary_key=True, default=lambda: f"l_{int(datetime.utcnow().timestamp())}")
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=False)
+    name = Column(String, nullable=True)
+    company = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    phone_e164 = Column(String, nullable=False)
+    country_iso = Column(String(2), nullable=True)
+    lang = Column(String, nullable=True)
+    role = Column(String, nullable=True)
+    contact_class = Column(SAEnum(ContactClass), nullable=True)
+    relationship_basis = Column(SAEnum(RelationshipBasis), nullable=True)
+    opt_in = Column(Boolean, nullable=True)
+    national_dnc = Column(SAEnum(NationalDnc), nullable=True)
+    compliance_category = Column(SAEnum(ComplianceCategory), nullable=True)
+    compliance_reasons = Column(JSON, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    workspace = relationship("Workspace", back_populates="leads")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "workspace_id": self.workspace_id,
+            "name": self.name,
+            "company": self.company,
+            "email": self.email,
+            "phone_e164": self.phone_e164,
+            "country_iso": self.country_iso,
+            "lang": self.lang,
+            "role": self.role,
+            "contact_class": self.contact_class.value if self.contact_class else None,
+            "relationship_basis": self.relationship_basis.value if self.relationship_basis else None,
+            "opt_in": self.opt_in,
+            "national_dnc": self.national_dnc.value if self.national_dnc else None,
+            "compliance_category": self.compliance_category.value if self.compliance_category else None,
+            "compliance_reasons": self.compliance_reasons,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
 
 
 # ===================== Compliance & KYC Models =====================

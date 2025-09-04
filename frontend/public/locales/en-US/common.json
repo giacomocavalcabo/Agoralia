@@ -57,5 +57,6 @@
   "yes": "Yes",
   "no": "No",
   "reset": "Reset",
-  "importing": "Importing..."
+  "importing": "Importing...",
+  "creating": "Creating..."
 }
