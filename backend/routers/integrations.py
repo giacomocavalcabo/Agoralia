@@ -76,6 +76,11 @@ def get_adapter_or_404(provider: str) -> CRMAdapter:
 def integrations_status(db: Session = Depends(get_db), user=Depends(get_current_user), workspace_id: str = Depends(get_tenant_id)):
     """Get status of all integrations - accessible to all authenticated users"""
     try:
+        # Log di diagnostica per capire da dove arriva workspace_id
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("integrations.status workspace_id=%s", workspace_id)
+        
         ws_id = workspace_id
         
         # Query existing integrations with safe error handling
