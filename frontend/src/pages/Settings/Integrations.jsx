@@ -112,12 +112,15 @@ const Integrations = () => {
   const handleConnect = async (provider) => {
     try {
       console.log(`[Integrations] Connecting to ${provider}...`);
+      console.log(`[Integrations] User authenticated:`, isAuthenticated);
+      console.log(`[Integrations] User object:`, user);
       setLoading(prev => ({ ...prev, [provider]: true }));
       
       let response;
       
       if (provider === 'hubspot') {
         // HubSpot usa OAuth2 - chiama l'endpoint CRM
+        console.log(`[Integrations] Calling /crm/hubspot/start...`);
         response = await apiFetch(`/crm/hubspot/start`, {
           method: 'GET'
         });
@@ -126,9 +129,10 @@ const Integrations = () => {
         
         if (response.auth_url) {
           // Redirect to OAuth provider
-          console.log(`[Integrations] Redirecting to ${provider} OAuth...`);
+          console.log(`[Integrations] Redirecting to ${provider} OAuth:`, response.auth_url);
           window.location.href = response.auth_url;
         } else {
+          console.error(`[Integrations] No auth_url in response:`, response);
           throw new Error('No auth URL received');
         }
       } else {
