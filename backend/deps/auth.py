@@ -16,21 +16,24 @@ async def get_current_user(
     db: Session = Depends(get_db)
 ) -> Optional[User]:
     """
-    Get current authenticated user from session cookie
+    Get current authenticated user from session cookie - same system as /auth/me
     """
-    from backend.auth.session import get_session
+    from backend.sessions import read_session_cookie, get_user_id
     
-    session = await get_session(request)
-    if not session:
-        return None
+    # 1) Leggi session cookie
+    session_id = read_session_cookie(request)
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Missing session")
     
-    user_id = session.get("claims", {}).get("user_id")
+    # 2) Risolvi user_id dalla sessione
+    user_id = get_user_id(session_id)
     if not user_id:
-        return None
+        raise HTTPException(status_code=401, detail="Session expired")
     
+    # 3) Carica utente
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        return None
+        raise HTTPException(status_code=401, detail="User not found")
     
     # Update last seen
     user.last_login_at = datetime.now(timezone.utc)
