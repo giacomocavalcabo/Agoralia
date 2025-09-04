@@ -75,6 +75,8 @@ export default function AppShell({ children }) {
   
   // Close user menu when clicking outside
   useEffect(() => {
+    if (!isAuthenticated) return // Don't add listeners if not authenticated
+    
     const handleClickOutside = (event) => {
       if (userMenuOpen && !event.target.closest('.user-menu')) {
         setUserMenuOpen(false)
@@ -83,7 +85,7 @@ export default function AppShell({ children }) {
     
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userMenuOpen])
+  }, [userMenuOpen, isAuthenticated])
   
   return (
     <div className="min-h-screen bg-gray-50 flex">
