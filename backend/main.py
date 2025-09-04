@@ -1713,7 +1713,7 @@ async def generate_pdf(payload: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF generation error: {str(e)}")
 
-@app.post("/admin/compliance/attestations/generate")
+@api.post("/admin/compliance/attestations/generate")
 async def admin_attestations_generate(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     """Generate compliance attestation PDF"""
     try:
@@ -1825,7 +1825,7 @@ async def admin_attestations_generate(request: Request, payload: dict, _guard: N
         raise HTTPException(status_code=500, detail=f"Failed to generate attestation: {str(e)}")
 
 
-@app.get("/admin/compliance/preflight/logs")
+@api.get("/admin/compliance/preflight/logs")
 def admin_preflight_logs(
     request: Request,
     workspace_id: str | None = Query(default=None),
@@ -1846,19 +1846,19 @@ def admin_preflight_logs(
 
 
 # ===================== Admin: Billing =====================
-@app.get("/admin/workspaces/{ws_id}/billing")
+@api.get("/admin/workspaces/{ws_id}/billing")
 def admin_ws_billing(ws_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     return {"workspace_id": ws_id, "plan": "core", "subscription_status": "active", "current_period_end": "2025-09-01", "credits_cents": 0}
 
 
-@app.post("/admin/workspaces/{ws_id}/credits")
+@api.post("/admin/workspaces/{ws_id}/credits")
 async def admin_ws_add_credit(ws_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     cents = int(payload.get("cents") or 0)
     return {"workspace_id": ws_id, "added_cents": cents, "created_at": datetime.now(timezone.utc).isoformat()}
 
 
 # ===================== Admin: Compliance templates (read-only) =====================
-@app.get("/admin/compliance/templates")
+@api.get("/admin/compliance/templates")
 def admin_compliance_templates(request: Request, _guard: None = Depends(admin_guard)) -> dict:
     templates = [
         {"iso": "IT", "lang": "it-IT", "disclosure": "Buongiorno...", "recording": "La chiamata può essere registrata...", "version": "it-2025-08-01"},
@@ -1867,7 +1867,7 @@ def admin_compliance_templates(request: Request, _guard: None = Depends(admin_gu
     return {"items": templates}
 
 
-@app.patch("/admin/workspaces/{ws_id}")
+@api.patch("/admin/workspaces/{ws_id}")
 async def admin_ws_patch(ws_id: str, request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     # Accept: plan_id, concurrency_limit, suspend
     plan_id = payload.get("plan_id")
@@ -1880,7 +1880,7 @@ async def admin_ws_patch(ws_id: str, request: Request, payload: dict, _guard: No
 
 
 # ===================== Admin: Notifications =====================
-@app.post("/admin/notifications/preview")
+@api.post("/admin/notifications/preview")
 async def admin_notifications_preview(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     subject = payload.get("subject") or ""
     body_md = payload.get("body_md") or ""
@@ -1888,7 +1888,7 @@ async def admin_notifications_preview(request: Request, payload: dict, _guard: N
     return {"html": html}
 
 
-@app.post("/admin/notifications/send")
+@api.post("/admin/notifications/send")
 async def admin_notifications_send(request: Request, payload: dict, _guard: None = Depends(admin_guard)) -> dict:
     kind = (payload.get("kind") or "email").lower()
     locale = payload.get("locale") or "en-US"
@@ -1914,7 +1914,7 @@ async def admin_notifications_send(request: Request, payload: dict, _guard: None
     return {"id": notif_id, "scheduled_at": payload.get("schedule_at"), "kind": kind, "stats": {"queued": len(user_ids)}}
 
 
-@app.get("/admin/notifications/{notif_id}")
+@api.get("/admin/notifications/{notif_id}")
 def admin_notifications_get(notif_id: str, request: Request, _guard: None = Depends(admin_guard)) -> dict:
     with next(get_db()) as db:
         n = db.query(Notification).filter(Notification.id == notif_id).first()
@@ -1924,7 +1924,7 @@ def admin_notifications_get(notif_id: str, request: Request, _guard: None = Depe
 
 
 # ===================== Admin: Activity =====================
-@app.get("/admin/activity")
+@api.get("/admin/activity")
 def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(admin_guard)) -> dict:
     try:
         return {"items": list(reversed(_ACTIVITY))[: limit if isinstance(limit, int) else 100]}
@@ -4855,7 +4855,7 @@ if __name__ == "__main__":
 
 # ===================== Sprint 6: Admin Dashboard KPI =====================
 
-@app.get("/admin/kpi")
+@api.get("/admin/kpi")
 async def admin_kpi(request: Request, _guard: None = Depends(admin_guard)) -> dict:
     """Get admin dashboard KPI data"""
     
@@ -4891,7 +4891,7 @@ async def admin_kpi(request: Request, _guard: None = Depends(admin_guard)) -> di
     return kpi_data
 
 
-@app.get("/admin/usage")
+@api.get("/admin/usage")
 async def admin_usage(
     period: str = Query(default="2025-01"),
     request: Request = None,
@@ -4933,7 +4933,7 @@ async def admin_usage(
     return usage_data
 
 
-@app.get("/admin/calls/live")
+@api.get("/admin/calls/live")
 async def admin_calls_live_stream(request: Request, _guard: None = Depends(admin_guard)):
     """Stream live calls for admin dashboard (SSE)"""
     
