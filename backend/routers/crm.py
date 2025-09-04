@@ -85,7 +85,7 @@ async def hubspot_start(
     try:
         # Get HubSpot client ID from environment
         client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
-        redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+        redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/oauth/callback")
         scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write")
         
         if not client_id:
@@ -120,7 +120,7 @@ async def hubspot_start(
         raise HTTPException(status_code=500, detail="HubSpot start failed")
 
 
-@router.get("/hubspot/callback")
+@router.get("/oauth/callback")
 async def hubspot_callback(
     code: str, 
     state: str, 
