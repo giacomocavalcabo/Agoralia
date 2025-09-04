@@ -790,16 +790,22 @@ async def create_lead(payload: dict, request: Request) -> dict:
         
         # Apply compliance classification if compliance engine is available
         if compliance_engine and payload.get("country_iso"):
-            contact_data = {
-                "contact_class": payload.get("contact_class", "unknown"),
-                "relationship_basis": payload.get("relationship_basis", "unknown"),
-                "opt_in": payload.get("opt_in"),
-                "national_dnc": payload.get("national_dnc", "unknown")
-            }
-            
-            category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
-            lead.compliance_category = category
-            lead.compliance_reasons = reasons
+            try:
+                contact_data = {
+                    "contact_class": payload.get("contact_class", "unknown"),
+                    "relationship_basis": payload.get("relationship_basis", "unknown"),
+                    "opt_in": payload.get("opt_in"),
+                    "national_dnc": payload.get("national_dnc", "unknown")
+                }
+                
+                category, reasons = compliance_engine.classify_contact(contact_data, payload["country_iso"])
+                lead.compliance_category = category
+                lead.compliance_reasons = reasons
+            except Exception as e:
+                logger.warning(f"Compliance classification failed: {e}")
+                # Set default values if compliance fails
+                lead.compliance_category = "unknown"
+                lead.compliance_reasons = {"error": str(e)}
         
         db.add(lead)
         db.commit()
