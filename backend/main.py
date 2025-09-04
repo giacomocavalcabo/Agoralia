@@ -2276,7 +2276,7 @@ def admin_activity(request: Request, limit: int = 100, _guard: None = Depends(ad
 
 # ===================== Sprint 2 stubs =====================
 
-@app.get("/leads")
+@api.get("/leads")
 def list_leads(
     request: Request,
     query: str | None = Query(default=None),
@@ -2386,7 +2386,7 @@ def list_leads(
         return {"total": total, "items": items}
 
 
-@app.post("/leads")
+@api.post("/leads")
 async def create_lead(payload: dict, request: Request) -> dict:
     """Create a new lead"""
     workspace_id = get_workspace_id(request, required=True)
@@ -2442,7 +2442,7 @@ async def create_lead(payload: dict, request: Request) -> dict:
         return lead.to_dict()
 
 
-@app.put("/leads/{lead_id}")
+@api.put("/leads/{lead_id}")
 async def update_lead(lead_id: str, payload: dict) -> dict:
     # TODO: Replace with actual database update
     payload["id"] = lead_id
@@ -2464,7 +2464,7 @@ async def update_lead(lead_id: str, payload: dict) -> dict:
     return payload
 
 
-@app.post("/leads/bulk-update")
+@api.post("/leads/bulk-update")
 async def bulk_update_leads(payload: dict) -> dict:
     """Bulk update leads with compliance classification"""
     lead_ids = payload.get("lead_ids", [])

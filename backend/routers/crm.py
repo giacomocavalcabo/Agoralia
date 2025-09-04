@@ -58,6 +58,22 @@ async def get_crm_providers(workspace_id: str = Query(default="ws_1")) -> dict:
 
 # ===================== HubSpot Routes =====================
 
+@router.get("/hubspot/test")
+async def hubspot_test() -> dict:
+    """Test HubSpot configuration without auth"""
+    client_id = os.getenv("CRM_HUBSPOT_CLIENT_ID")
+    redirect_uri = os.getenv("CRM_HUBSPOT_REDIRECT_URI", "https://app.agoralia.app/api/crm/hubspot/callback")
+    scopes = os.getenv("CRM_HUBSPOT_SCOPES", "crm.objects.contacts.read crm.objects.companies.read")
+    
+    return {
+        "client_id": client_id[:10] + "..." if client_id else None,
+        "redirect_uri": redirect_uri,
+        "scopes": scopes,
+        "has_client_id": bool(client_id),
+        "has_redirect_uri": bool(redirect_uri),
+        "has_scopes": bool(scopes)
+    }
+
 @router.get("/hubspot/start")
 async def hubspot_start(
     request: Request,
