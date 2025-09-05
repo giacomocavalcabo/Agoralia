@@ -129,6 +129,11 @@ def get_db() -> Session:
 app = FastAPI(title="ColdAI Backend", version="0.0.1")
 
 
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
 @app.on_event("startup")
 def _on_startup() -> None:
     if engine:
