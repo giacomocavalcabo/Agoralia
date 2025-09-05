@@ -298,3 +298,11 @@ curl -sS -X PATCH "$BASE/api/workspace/update" \
  -d '{"name":"My Company"}'
 ```
 
+---
+
+## 11) Backend mode start command
+Ensure Service 1 Start Command is set to:
+```
+python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+
