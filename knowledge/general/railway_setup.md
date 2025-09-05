@@ -103,3 +103,112 @@ Notes
 - Keep environment variables in Railway; do not hard-code hosts in code.
 - Frontend should proxy API calls via /api and use environment configuration.
 
+---
+
+## 6) Variables snapshot (masked) and how to re-fetch
+
+Service 1 (application) — current variables (masked values)
+- ADMIN_EMAILS: giacomo.cavalcabo14@gmail.com
+- ADMIN_EMAIL_ALLOWLIST: giacomo.cavalcabo14@gmail.com
+- AGORALIA_WEBHOOK_SECRET: ********
+- APP_BASE_URL: https://api.agoralia.app
+- APP_KMS_KEY: ********
+- APP_SESSION_SECRET: ********
+- AUTO_LOGIN_AFTER_REGISTER: true
+- AUTO_MIGRATE: 1
+- COOKIE_DOMAIN: .agoralia.app
+- CORS_ALLOWED_ORIGINS: https://app.agoralia.com,https://agoralia.com,https://agoralia.vercel.app
+- CRM_HUBSPOT_CLIENT_ID: ********
+- CRM_HUBSPOT_CLIENT_SECRET: ********
+- CRM_HUBSPOT_REDIRECT_URI: https://app.agoralia.app/api/crm/oauth/callback
+- CRM_HUBSPOT_SCOPES: oauth crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write
+- CRM_HUBSPOT_WEBHOOK_SECRET: ********
+- CRM_ZOHO_CLIENT_ID: ********
+- CRM_ZOHO_CLIENT_SECRET: ********
+- CRM_ZOHO_DC: eu
+- CRM_ZOHO_REDIRECT_URI: https://api.agoralia.app/crm/zoho/callback
+- DATABASE_URL: postgresql://postgres:********@postgres.railway.internal:5432/railway
+- DEFAULT_FROM_NUMBER: +12025551234
+- DEMO_ADMIN_EMAILS: giacomo.cavalcabo14@gmail.com
+- EMAIL_PROVIDER: mailersend
+- ENABLE_CRM_SYNC: true
+- ENABLE_METRICS: true
+- ENABLE_POLLING: true
+- ENABLE_WEBHOOKS: true
+- ENCRYPTION_KEY: ********
+- ENV: production
+- FRONTEND_ALLOWED_ORIGINS: https://app.agoralia.app,https://www.agoralia.app
+- FRONTEND_ALLOWED_ORIGIN_REGEX: ^https://agoralia-git-[a-z0-9\-]+-streetfire99s-projects\.vercel\.app$
+- FRONTEND_BASE_URL: https://app.agoralia.app
+- FRONTEND_ORIGIN: https://agoralia.vercel.app
+- GOOGLE_REDIRECT_URI: https://api.agoralia.app/auth/oauth/google/callback
+- JWT_SECRET: ********
+- MAILERSEND_API_KEY: ********
+- MS_REDIRECT_URI: https://api.agoralia.app/auth/oauth/microsoft/callback
+- OAUTH_GOOGLE_CLIENT_ID: ********
+- OAUTH_GOOGLE_CLIENT_SECRET: ********
+- OAUTH_MS_CLIENT_ID: ********
+- OAUTH_MS_CLIENT_SECRET: ********
+- OAUTH_MS_TENANT: common
+- OAUTH_STATE_SECRET: ********
+- OPENAI_API_KEY: ********
+- PROMETHEUS_MULTIPROC_DIR: /tmp
+- PYTHONPATH: /app/backend
+- RAILWAY_ENVIRONMENT: production
+- RAILWAY_ENVIRONMENT_ID: b7d30f04-3af9-43e5-a313-cbec25c1337c
+- RAILWAY_ENVIRONMENT_NAME: production
+- RAILWAY_PRIVATE_DOMAIN: agoralia.railway.internal
+- RAILWAY_PROJECT_ID: 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
+- RAILWAY_PROJECT_NAME: Progetto 1 - API (FastAPI)
+- RAILWAY_PUBLIC_DOMAIN: api.agoralia.app
+- RAILWAY_SERVICE_ID: 28b34b42-8286-4e34-be2f-2ffea8ab7bd3
+- RAILWAY_SERVICE_NAME: Service 1
+- RAILWAY_SERVICE_SERVICE_1_URL: api.agoralia.app
+- RAILWAY_STATIC_URL: api.agoralia.app
+- REDIS_URL: redis://default:@maglev.proxy.rlwy.net:45825
+- RETELL_API_KEY: ********
+- RETELL_WEBHOOK_SECRET: https://service-1-production.up.railway.app/webhooks/retell
+- SECRET_KEY: ********
+- SEND_EMAILS: false
+- SESSION_COOKIE_NAME: ag_sess
+- SESSION_SECRET: ********
+- SESSION_TTL_DAYS: 14
+- SESSION_TTL_SECONDS: 2592000
+- STRIPE_SECRET_KEY: ********
+- STRIPE_WEBHOOK_SECRET: ********
+- VITE_STRIPE_PUBLISHABLE_KEY: ********
+- VITE_WS_URL: (empty)
+
+Postgres service — current variables (masked values)
+- DATABASE_URL: postgresql://postgres:********@postgres.railway.internal:5432/railway
+- DATABASE_PUBLIC_URL: postgresql://postgres:********@shinkansen.proxy.rlwy.net:27637/railway
+- PGHOST: postgres.railway.internal
+- PGPORT: 5432
+- PGUSER: postgres
+- PGPASSWORD: ********
+- PGDATABASE: railway
+- POSTGRES_USER: postgres
+- POSTGRES_PASSWORD: ********
+- POSTGRES_DB: railway
+- RAILWAY_PRIVATE_DOMAIN: postgres.railway.internal
+- RAILWAY_TCP_PROXY_DOMAIN: shinkansen.proxy.rlwy.net
+- RAILWAY_TCP_PROXY_PORT: 27637
+
+How to re-fetch variables at any time
+```bash
+# Service 1
+railway link -p 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
+railway service        # select "Service 1"
+railway variables      # pretty table
+railway variables --kv # KEY=VALUE (avoid committing secrets)
+
+# Postgres service
+railway service        # select "Postgres"
+railway variables
+railway run -- printenv DATABASE_URL
+railway run -- printenv DATABASE_PUBLIC_URL
+```
+
+Security note
+- Do NOT commit plaintext secrets. This snapshot is masked; always use the CLI to view real values when needed.
+
