@@ -4,14 +4,14 @@
 
 1. Use translation keys (never hardcode UI strings)
 2. Keys must be flat, dotted, and clustered by feature
-3. Externalize all copy to JSON files under public/locales
+3. Externalize all copy to JSON files under src/locales
 4. Keep English (en-US) as the source of truth
 5. Keep naming consistent and human-readable
 
-## File Structure
+## File Structure (UPDATED)
 ```
 frontend/
-  public/
+  src/
     locales/
       en-US/
         common.json
@@ -21,54 +21,40 @@ frontend/
 
 ## Key Format (MANDATORY)
 - Flat, dotted keys grouped by cluster
-- Lowercase with dashes or underscores in value text, not in keys
 - Example:
 ```
 {
-  "nav.to_login": "Go to Login",
-  "nav.to_app": "Go to App",
-
   "login.title": "Sign in",
-  "login.email_label": "Email",
-  "login.password_label": "Password",
-  "login.submit": "Sign in",
-
-  "app.title": "Your Profile",
-  "app.name_label": "Full name",
-  "app.phone_label": "Phone number",
-  "app.submit": "Save"
+  "login.email_label": "Email"
 }
 ```
 
 ## Clustering Rules
-- Top-level cluster indicates page/feature: nav, login, app, toast, settings, leads, etc.
+- Top-level cluster indicates page/feature: nav, login, app, toast, etc.
 - Keep related keys adjacent and alphabetically ordered within cluster
-- Do not nest objects in JSON (only flat keys)
 
 ## Adding New Keys
-- Add to en-US/common.json first
-- Mirror keys in it-IT/common.json with translated values
-- Avoid duplicate or overlapping clusters
+- Add to `frontend/src/locales/en-US/common.json` first
+- Mirror keys in `frontend/src/locales/it-IT/common.json`
 
 ## Using in Code (React + i18next)
 ```jsx
-import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from '../locales/en-US/common.json';
+import it from '../locales/it-IT/common.json';
 
-export function Login() {
-  const { t } = useTranslation('common');
-  return (
-    <>
-      <h1>{t('login.title')}</h1>
-      <label>{t('login.email_label')}</label>
-    </>
-  );
-}
+i18n.use(initReactI18next).init({
+  resources: { 'en-US': { common: en }, 'it-IT': { common: it } },
+  lng: 'en-US',
+  fallbackLng: 'en-US',
+});
 ```
 
 ## Quality Checks
 - No missing translations across supported languages
 - No hardcoded UI strings in JSX/TS/JS
-- Run spot checks in both en-US and it-IT
+- Spot checks in en-US and it-IT
 
 ## Supported Languages
 - en-US (source)
@@ -76,4 +62,4 @@ export function Login() {
 
 ## Notes
 - Frontend must proxy API via /api; never hardcode backend hostnames
-- Keep translation files small and tidy; prefer creating new clusters over growing large ones
+- Keep translation files tidy; prefer creating new clusters over growing large ones
