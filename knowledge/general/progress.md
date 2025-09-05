@@ -18,3 +18,5 @@
 - Updated Railway Start Command on Service 1 to: `npx --yes serve -s frontend/dist -l $PORT`
 - Implemented minimal FastAPI backend (users, workspaces, memberships) with JWT auth
 - Switched Nixpacks to Python backend start (`uvicorn backend.main:app`)
+- Fix: Nixpacks uses `python -m pip install -r backend/requirements.txt` (pip binary not found in image)
+- Docs: Added backend Start Command note in railway_setup.md and kept docs in sync
