@@ -1,5 +1,0 @@
-{
-  "notices": {
-    "call_lang_not_supported": "Le langage d'appel {form.lang_default} n'est pas pris en charge par {lang}"
-  }
-}
