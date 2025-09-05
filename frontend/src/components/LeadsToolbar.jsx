@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import ConfirmDialog from './ConfirmDialog';
 import FilterBuilder from './filters/FilterBuilder';
+import { Eye, Pencil, Trash2, Download, UserPlus } from 'lucide-react';
 
 export default function LeadsToolbar({
   value = '',
@@ -103,9 +104,9 @@ export default function LeadsToolbar({
         <button
           data-testid="add-lead"
           onClick={() => navigate('/leads/new')}
-          className="px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
         >
-          {t('leads.actions.add')}
+          <UserPlus size={16} /> {t('leads.actions.add')}
         </button>
         <button
           data-testid="bulk-assign"
@@ -113,8 +114,7 @@ export default function LeadsToolbar({
           onClick={() => setOpenAssign(true)}
           className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
         >
-          <span className="material-icons text-base">person_add</span>
-          {t('leads.toolbar.bulk.assign')}
+          <UserPlus size={16} /> {t('leads.toolbar.bulk.assign')}
         </button>
         <button
           data-testid="bulk-delete"
@@ -122,15 +122,13 @@ export default function LeadsToolbar({
           onClick={() => setOpenBulkDel(true)}
           className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-700 font-medium rounded-lg border border-red-300 hover:bg-red-100 disabled:opacity-50 transition-colors"
         >
-          <span className="material-icons text-base">delete</span>
-          {t('leads.toolbar.bulk.delete')}
+          <Trash2 size={16} /> {t('leads.toolbar.bulk.delete')}
         </button>
         <button
           onClick={onExport}
           className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
         >
-          <span className="material-icons text-base">download</span>
-          {t('leads.toolbar.bulk.export')}
+          <Download size={16} /> {t('leads.toolbar.bulk.export')}
         </button>
       </div>
       
