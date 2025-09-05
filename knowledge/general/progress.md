@@ -12,3 +12,4 @@
 - Added minimal React JSX app with routing and i18n bootstrap (Login/AppInfo)
 - Added Nixpacks config to build frontend and serve dist on $PORT
 - Fix: Nixpacks install step uses `npm install` (not `npm ci`); ensured `serve` present as devDependency
+- Added placeholder Worker service in Service 1 project; documented how to disable (replicas 0 or no-op start)

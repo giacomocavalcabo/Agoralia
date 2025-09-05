@@ -212,3 +212,19 @@ railway run -- printenv DATABASE_PUBLIC_URL
 Security note
 - Do NOT commit plaintext secrets. This snapshot is masked; always use the CLI to view real values when needed.
 
+---
+
+## 7) Worker service (optional)
+We added a placeholder service "Worker" inside the same project (Service 1) to keep topology unified.
+
+Disable the worker (recommended for now)
+- Via UI: set Replicas = 0 for the Worker service OR set Start Command to a no-op like:
+  - tail -f /dev/null
+  - bash -c "sleep infinity"
+
+CLI caveat
+- railway scale flags may error depending on region flag parsing; prefer UI for scaling to 0.
+
+Later, when a real Python worker is needed
+- Recreate a backend worker with proper start command (e.g., dramatiq …) and required env (e.g., REDIS_URL).
+
