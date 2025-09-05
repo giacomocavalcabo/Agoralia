@@ -15,3 +15,4 @@
 - Added placeholder Worker service in Service 1 project; documented how to disable (replicas 0 or no-op start)
 - Added Redis service and set REDIS_URL on Service 1
 - Verification: DB empty, Redis configured, Worker disabled
+- Updated Railway Start Command on Service 1 to: `npx --yes serve -s frontend/dist -l $PORT`

@@ -240,3 +240,14 @@ Later, when a real Python worker is needed
 - Worker: disabled
   - No active deployments for Worker service (keep replicas 0 or no-op start)
 
+---
+
+## 9) Start Command for static frontend (Service 1)
+If your app is a static frontend (no Python backend), set the Start Command in Service 1 to:
+
+```
+npx --yes serve -s frontend/dist -l $PORT
+```
+
+Then redeploy the service.
+
