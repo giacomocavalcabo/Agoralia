@@ -1,8 +1,7 @@
-# Railway setup and database reset
+# Railway setup (Unified: Service 1 + Postgres) and database reset
 
 ## Prerequisites
 - Install Railway CLI
-
 ```bash
 curl -fsSL https://railway.com/install.sh | sh
 railway --version
@@ -10,70 +9,97 @@ railway --version
 
 ---
 
-## Service 1 (application backend/frontend)
-
-1) Link the project
+## 1) Link Service 1 project (application)
 ```bash
-railway login  # opens browser if not already logged in
+railway login
 railway link -p 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
-```
-
-2) Deploy when ready
-```bash
-railway up
+railway status
+# Expect:
+# Project: Progetto 1 - API (FastAPI)
+# Environment: production
 ```
 
 ---
 
-## Database (separate Railway project)
-
-1) Link the database project
+## 2) Add Postgres as a service in the same project
 ```bash
-railway login  # only if needed
-railway link -p 26648dd3-59c5-4bfe-8800-d25f113fda52
+railway add --database postgres --service Postgres
+railway service        # select "Postgres"
+railway variables      # shows DATABASE_URL and DATABASE_PUBLIC_URL for Postgres
 ```
+Notes
+- DATABASE_URL uses private networking host: postgres.railway.internal:5432 (for use inside Railway).
+- DATABASE_PUBLIC_URL uses the public TCP proxy (for local tools like psql).
 
-2) Show environment variables (look for DATABASE_URL)
+---
+
+## 3) Reset database schema (drop all tables)
+Create or reuse the SQL reset script:
 ```bash
-railway variables
-```
-
-3) Reset database schema (DROP all tables)
-- Save the following as scripts/db_reset.sql:
-```sql
+# scripts/db_reset.sql
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
 ```
 
-- Execute the reset using psql (requires psql installed locally):
+Run reset using the public proxy URL (works locally):
 ```bash
-# export DATABASE_URL first if not already present
-export DATABASE_URL="<paste from railway variables>"
-psql "$DATABASE_URL" -f scripts/db_reset.sql
-```
+# Read DATABASE_PUBLIC_URL from Postgres service
+railway run -- printenv DATABASE_PUBLIC_URL
+export DATABASE_PUBLIC_URL="postgresql://...@shinkansen.proxy.rlwy.net:PORT/railway"
 
-4) Verify schema is empty (no user tables)
-```bash
-psql "$DATABASE_URL" -c "\\dt"
-```
+# Execute reset
+psql "$DATABASE_PUBLIC_URL" -f scripts/db_reset.sql
 
-You should see: "Did not find any relations".
+# Verify empty schema
+psql "$DATABASE_PUBLIC_URL" -c "\\dt"
+# Expect: Did not find any relations.
+```
+Tip
+- Private DNS (postgres.railway.internal) is not resolvable locally, so use DATABASE_PUBLIC_URL with psql. Inside Railway services, use DATABASE_URL.
 
 ---
 
-## Connect backend to database
-- Ensure the backend uses the DATABASE_URL env var
-- On Railway Service 1, set the environment variable and redeploy
-
+## 4) Set DATABASE_URL on Service 1 (to use private networking)
 ```bash
-railway link -p 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
-railway variables set DATABASE_URL="<postgres url from DB project>"
+# Select Service 1
+railway service   # choose "Service 1"
+
+# Set the env var using the internal Postgres URL
+railway variables --set "DATABASE_URL=postgresql://postgres:***@postgres.railway.internal:5432/railway"
+
+# Confirm it is set
+railway variables | sed -n 's/^\s*DATABASE_URL\s*:\s*//p'
+```
+
+---
+
+## 5) Deploy Service 1
+```bash
 railway up
 ```
 
+---
+
+## Quick commands reference
+```bash
+# Show current context
+railway status
+
+# Switch to Postgres service
+railway service
+
+# Print Postgres URLs
+railway run -- printenv DATABASE_URL
+railway run -- printenv DATABASE_PUBLIC_URL
+
+# Reset DB again if needed
+psql "$DATABASE_PUBLIC_URL" -f scripts/db_reset.sql
+psql "$DATABASE_PUBLIC_URL" -c "\\dt"
+```
+
 Notes
-- Never hard-code hosts; use environment variables and /api proxying on the frontend.
-- Keep translations externalized; no hard-coded UI strings.
+- Keep environment variables in Railway; do not hard-code hosts in code.
+- Frontend should proxy API calls via /api and use environment configuration.
 
