@@ -251,3 +251,50 @@ npx --yes serve -s frontend/dist -l $PORT
 
 Then redeploy the service.
 
+---
+
+## 10) Backend API (minimal starter)
+Env required on Service 1
+- DATABASE_URL (Postgres inside same project)
+- JWT_SECRET (any strong random string)
+
+Endpoints
+- POST /api/auth/register
+  - body: { email, name, password }
+  - returns: { user_id, workspace_id, token }
+  - on conflict: 409 email_taken
+- PATCH /api/user/update
+  - headers: Authorization: Bearer <token>
+  - body: { name?, current_password?, new_password? }
+  - rules: if user has password and new_password provided, current_password must match
+- PATCH /api/workspace/update
+  - headers: Authorization: Bearer <token>
+  - body: { name }
+  - requires: caller must be admin in the workspace
+
+Examples
+```bash
+# Register
+curl -sS -X POST "$BASE/api/auth/register" \
+ -H 'Content-Type: application/json' \
+ -d '{"email":"test@example.com","name":"Test User","password":"secret123"}'
+
+# Update user name
+curl -sS -X PATCH "$BASE/api/user/update" \
+ -H "Authorization: Bearer $TOKEN" \
+ -H 'Content-Type: application/json' \
+ -d '{"name":"New Name"}'
+
+# Change password
+curl -sS -X PATCH "$BASE/api/user/update" \
+ -H "Authorization: Bearer $TOKEN" \
+ -H 'Content-Type: application/json' \
+ -d '{"current_password":"secret123","new_password":"secret456"}'
+
+# Rename workspace (admin only)
+curl -sS -X PATCH "$BASE/api/workspace/update" \
+ -H "Authorization: Bearer $TOKEN" \
+ -H 'Content-Type: application/json' \
+ -d '{"name":"My Company"}'
+```
+

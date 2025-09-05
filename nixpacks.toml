@@ -1,20 +1,15 @@
-# Nixpacks config: build frontend and serve static dist on $PORT
+# Nixpacks config: run FastAPI backend
 
 [plan]
-providers = ["node"]
+providers = ["python"]
 
 [phases.setup]
-nixPkgs = [ "nodejs_18" ]
+nixPkgs = [ "python311" ]
 
 [phases.install]
 cmds = [
-  "cd frontend && npm install"
-]
-
-[phases.build]
-cmds = [
-  "cd frontend && npm run build"
+  "pip install -r backend/requirements.txt"
 ]
 
 [start]
-cmd = "npx --yes serve -s frontend/dist -l $PORT"
+cmd = "python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT"

@@ -16,4 +16,5 @@
 - Added Redis service and set REDIS_URL on Service 1
 - Verification: DB empty, Redis configured, Worker disabled
 - Updated Railway Start Command on Service 1 to: `npx --yes serve -s frontend/dist -l $PORT`
-- Removed legacy `frontend/public/locales`; translations now in `frontend/src/locales` and imported in code
+- Implemented minimal FastAPI backend (users, workspaces, memberships) with JWT auth
+- Switched Nixpacks to Python backend start (`uvicorn backend.main:app`)
