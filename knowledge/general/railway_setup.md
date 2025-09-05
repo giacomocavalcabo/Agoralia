@@ -228,3 +228,15 @@ CLI caveat
 Later, when a real Python worker is needed
 - Recreate a backend worker with proper start command (e.g., dramatiq …) and required env (e.g., REDIS_URL).
 
+---
+
+## 8) Verification checklist (current state)
+- Database (Postgres): schema empty
+  - Command: `psql "$DATABASE_PUBLIC_URL" -c "\\dt"`
+  - Result: `Did not find any relations.`
+- Redis: configured
+  - `REDIS_PUBLIC_URL` present on Redis service
+  - `REDIS_URL` set on Service 1 (private networking preferred)
+- Worker: disabled
+  - No active deployments for Worker service (keep replicas 0 or no-op start)
+

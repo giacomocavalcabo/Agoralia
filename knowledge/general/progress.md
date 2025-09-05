@@ -13,3 +13,5 @@
 - Added Nixpacks config to build frontend and serve dist on $PORT
 - Fix: Nixpacks install step uses `npm install` (not `npm ci`); ensured `serve` present as devDependency
 - Added placeholder Worker service in Service 1 project; documented how to disable (replicas 0 or no-op start)
+- Added Redis service and set REDIS_URL on Service 1
+- Verification: DB empty, Redis configured, Worker disabled
