@@ -4,12 +4,10 @@
 providers = ["python"]
 
 [phases.setup]
-nixPkgs = [ "python311" ]
+nixPkgs = [ "python311Full" ]
 
 [phases.install]
 cmds = [
-  "python -m ensurepip --upgrade || true",
-  "python -m pip install --upgrade pip",
   "python -m pip install -r backend/requirements.txt"
 ]
 
