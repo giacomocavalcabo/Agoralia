@@ -2,10 +2,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import i18n, { i18nReady } from './i18n';
+import './i18n';
 
 function Nav() {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   return (
     <nav style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
       <Link to="/login">{t('nav.to_login')}</Link>
@@ -56,4 +56,4 @@ function App() {
 }
 
 const root = createRoot(document.getElementById('root'));
-i18nReady.then(() => root.render(<App />));
+root.render(<App />);
