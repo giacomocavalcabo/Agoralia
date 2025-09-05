@@ -54,3 +54,8 @@ psql "$DATABASE_PUBLIC_URL" -c "\\dt"
 
 Examples in previous section.
 
+
+Note on PORT
+- Dockerfile CMD uses shell expansion: `${PORT:-8080}`. Railway sets PORT; locally defaults to 8080.
+- Keep Railway Custom Start Command empty to use Dockerfile CMD.
+

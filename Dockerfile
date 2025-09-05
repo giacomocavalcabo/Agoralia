@@ -15,4 +15,5 @@ COPY . .
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use shell form to allow env expansion of $PORT with default
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
