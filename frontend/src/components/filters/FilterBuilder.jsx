@@ -139,7 +139,7 @@ export default function FilterBuilder({ schema, value, onChange, i18n }) {
           />
         )}
 
-        <button className="col-span-1 px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+        <button className="col-auto whitespace-nowrap px-4 py-2 text-sm bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
                 onClick={addFilter}>{i18n.add}</button>
       </div>
       
