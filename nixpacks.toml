@@ -1,12 +1,14 @@
 # Nixpacks config: build frontend and serve static dist on $PORT
 
+[plan]
+providers = ["node"]
+
 [phases.setup]
-# Ensure Node is available
 nixPkgs = [ "nodejs_18" ]
 
 [phases.install]
 cmds = [
-  "cd frontend && npm ci"
+  "cd frontend && npm install"
 ]
 
 [phases.build]
