@@ -174,10 +174,11 @@ def check_compliance(
             checks["dnc_registry"] = {"passed": None, "message": "Public DNC check not yet implemented"}
             warnings.append(f"DNC registry check required for {country_iso} but API not implemented")
     
-    # 2. Quiet Hours Check - Priority: Campaign > Country > Default Settings
+    # 2. Quiet Hours Check - Priority: Campaign > Default Settings > Country
     quiet_hours_rule: Dict[str, Any] = {}
+    settings = get_settings()  # Load settings once for priority check
     
-    # Check campaign quiet hours first
+    # Check campaign quiet hours first (highest priority)
     if campaign and campaign.quiet_hours_enabled is not None:
         if campaign.quiet_hours_enabled == 1:
             quiet_hours_rule = {
@@ -190,7 +191,16 @@ def check_compliance(
         else:
             # Campaign explicitly disabled quiet hours
             quiet_hours_rule = {"quiet_hours_enabled": False}
-    # Check country rule
+    # Check default settings (second priority)
+    elif settings and settings.quiet_hours_enabled:
+        quiet_hours_rule = {
+            "quiet_hours_enabled": True,
+            "quiet_hours_weekdays": settings.quiet_hours_weekdays,
+            "quiet_hours_saturday": settings.quiet_hours_saturday,
+            "quiet_hours_sunday": settings.quiet_hours_sunday,
+            "timezone": settings.quiet_hours_timezone or "UTC",
+        }
+    # Check country rule (lowest priority)
     elif rule.get("quiet_hours_enabled"):
         quiet_hours_rule = {
             "quiet_hours_enabled": True,
@@ -199,29 +209,28 @@ def check_compliance(
             "quiet_hours_sunday": rule.get("quiet_hours_sunday"),
             "timezone": rule.get("timezone", "UTC"),
         }
-    # Check default settings
     else:
-        settings = get_settings()
-        if settings and settings.quiet_hours_enabled:
-            quiet_hours_rule = {
-                "quiet_hours_enabled": True,
-                "quiet_hours_weekdays": settings.quiet_hours_weekdays,
-                "quiet_hours_saturday": settings.quiet_hours_saturday,
-                "quiet_hours_sunday": settings.quiet_hours_sunday,
-                "timezone": settings.quiet_hours_timezone or "UTC",
-            }
-        else:
-            quiet_hours_rule = {"quiet_hours_enabled": False}
+        quiet_hours_rule = {"quiet_hours_enabled": False}
+    
+    # Determine source for quiet hours (for reporting)
+    if campaign and campaign.quiet_hours_enabled == 1:
+        quiet_hours_source = "campaign"
+    elif settings and settings.quiet_hours_enabled:
+        quiet_hours_source = "default"
+    elif rule.get("quiet_hours_enabled"):
+        quiet_hours_source = "country"
+    else:
+        quiet_hours_source = "none"
     
     # Apply quiet hours check
     if quiet_hours_rule.get("quiet_hours_enabled"):
         in_quiet, reason = _is_quiet_hours(quiet_hours_rule, scheduled_time)
         if in_quiet:
-            checks["quiet_hours"] = {"passed": False, "message": reason or "In quiet hours", "source": "campaign" if campaign and campaign.quiet_hours_enabled == 1 else ("country" if rule.get("quiet_hours_enabled") else "default")}
+            checks["quiet_hours"] = {"passed": False, "message": reason or "In quiet hours", "source": quiet_hours_source}
             blocked = True
             block_reason = block_reason or "Quiet hours"
         else:
-            checks["quiet_hours"] = {"passed": True, "message": "Within allowed hours", "source": "campaign" if campaign and campaign.quiet_hours_enabled == 1 else ("country" if rule.get("quiet_hours_enabled") else "default")}
+            checks["quiet_hours"] = {"passed": True, "message": "Within allowed hours", "source": quiet_hours_source}
     else:
         checks["quiet_hours"] = {"passed": True, "message": "Quiet hours not configured"}
     
