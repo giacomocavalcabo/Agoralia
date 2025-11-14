@@ -103,8 +103,9 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     # Check if phone_number is provided
     if body.phone_number:
         retell_body["phone_number"] = body.phone_number
-        # Don't send country_code when phone_number is provided - Retell only supports US/CA
+        # Don't include country_code when phone_number is provided - Retell only supports US/CA for country_code
         # The country is inferred from the phone_number E.164 format
+        # Note: If Retell doesn't support IT via phone_number directly, you may need to purchase via Telnyx API directly
     elif body.area_code is not None:
         retell_body["area_code"] = body.area_code
         # For area_code, country_code is required and must be US or CA
