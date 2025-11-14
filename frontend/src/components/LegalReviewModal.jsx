@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
+import { apiFetch } from '../lib/api.js'
 
 export default function LegalReviewModal({ numbers = [], onCancel, onConfirm }) {
   const { t } = useI18n()
@@ -20,11 +21,11 @@ export default function LegalReviewModal({ numbers = [], onCancel, onConfirm }) 
     async function load() {
       // load defaults from backend to preselect choices
       try {
-        const s = await fetch('http://127.0.0.1:8000/settings').then((r) => r.json())
+        const s = await apiFetch('/settings').then((r) => r.json())
         if (s.legal_defaults) setLegalDefaults(s.legal_defaults)
       } catch {}
       const results = await Promise.all(
-        prefixes.map((p) => fetch(`http://127.0.0.1:8000/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => r.json()))
+        prefixes.map((p) => apiFetch(`/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => r.json()))
       )
       // Deduplicate by country ISO so multiple prefixes mapping to the same
       // country (e.g., +390 and +391 -> IT) produce a single slide

@@ -40,7 +40,7 @@ export default function ImportPage() {
 
   useEffect(() => {
     // defaults
-    fetch('http://127.0.0.1:8000/settings').then((r) => r.json()).then((s) => {
+    apiFetch('/settings').then((r) => r.json()).then((s) => {
       if (s.default_from_number) setFromNum(s.default_from_number)
       if (s.default_spacing_ms != null) setSpacing(s.default_spacing_ms)
       if (typeof s.require_legal_review === 'boolean') setRequireLegal(s.require_legal_review)
@@ -58,7 +58,7 @@ export default function ImportPage() {
 
   async function loadNotices(prefixList) {
     const results = await Promise.all(
-      prefixList.map((p) => fetch(`http://127.0.0.1:8000/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => r.json()).catch(() => ({ country_iso: 'UNKNOWN', notice: '' })))
+      prefixList.map((p) => apiFetch(`/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => r.json()).catch(() => ({ country_iso: 'UNKNOWN', notice: '' })))
     )
     return results
   }

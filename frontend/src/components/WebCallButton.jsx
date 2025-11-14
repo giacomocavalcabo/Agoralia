@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useToast } from './ToastProvider.jsx'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../lib/api.js'
 
 export default function WebCallButton({ label = 'Start Web Call', className = 'btn primary' }) {
   const [loading, setLoading] = useState(false)
@@ -11,10 +12,9 @@ export default function WebCallButton({ label = 'Start Web Call', className = 'b
     if (loading) return
     setLoading(true)
     try {
-      const res = await fetch('http://127.0.0.1:8000/calls/retell/web', {
+      const res = await apiFetch('/calls/retell/web', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: {}
       })
       const data = await res.json().catch(() => ({}))
       if (res.ok) {

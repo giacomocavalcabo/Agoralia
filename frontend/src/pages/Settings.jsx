@@ -93,10 +93,9 @@ export default function Settings() {
 
   async function startWebCall() {
     if (!agentId) return alert('Imposta prima agent_id')
-    const res = await fetch('http://127.0.0.1:8000/calls/retell/web', {
+    const res = await apiFetch('/calls/retell/web', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agent_id: agentId })
+      body: { agent_id: agentId }
     })
     const data = await res.json()
     if (res.ok) toast.success(`Web call: ${JSON.stringify(data)}`)

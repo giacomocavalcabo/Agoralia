@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../lib/api.js'
 
 const DEFAULT_ACTIONS = [
   { id: 'import', label: 'Import CSV', run: (nav) => nav('/import') },
   { id: 'new_campaign', label: 'New Campaign', run: (nav) => nav('/campaigns') },
   { id: 'schedule', label: 'Schedule call', run: (nav) => nav('/leads') },
   { id: 'settings', label: 'Open Settings', run: (nav) => nav('/settings') },
-  { id: 'webcall', label: 'Start web call', run: async () => { try { await fetch('http://127.0.0.1:8000/calls/retell/web', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) }) } catch {} } },
+  { id: 'webcall', label: 'Start web call', run: async () => { try { await apiFetch('/calls/retell/web', { method: 'POST', body: {} }) } catch {} } },
 ]
 
 export default function CommandPalette({ open, onClose, actions = DEFAULT_ACTIONS }) {

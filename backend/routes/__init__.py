@@ -24,9 +24,18 @@ api_router.include_router(settings_router, prefix="/settings", tags=["settings"]
 api_router.include_router(agents_router, tags=["agents"])
 api_router.include_router(calls_router, prefix="/calls", tags=["calls"])
 
-# TODO: Add remaining routers as they are created
+# Import remaining routers
+from .campaigns import router as campaigns_router
+from .workflows import router as workflows_router
+from .webhooks import router as webhooks_router
+from .misc import router as misc_router
+
+# Include remaining routers
+api_router.include_router(campaigns_router, tags=["campaigns", "leads"])
+api_router.include_router(workflows_router, prefix="/workflows", tags=["workflows"])
+api_router.include_router(webhooks_router, prefix="/webhooks", tags=["webhooks"])
+api_router.include_router(misc_router, tags=["misc"])
+
+# TODO: Add CRM router when created
 # api_router.include_router(crm_router, prefix="/crm", tags=["crm"])
-# api_router.include_router(campaigns_router, tags=["campaigns"])
-# api_router.include_router(webhooks_router, tags=["webhooks"])
-# api_router.include_router(workflows_router, prefix="/workflows", tags=["workflows"])
 

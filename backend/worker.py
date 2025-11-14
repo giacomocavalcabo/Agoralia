@@ -19,17 +19,20 @@ def _missing_queue() -> bool:
 
 if not _missing_queue():
     # Configure Redis broker
-    _redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
-    try:
-        dramatiq.set_broker(RedisBroker(url=_redis_url))
-    except Exception:
-        pass
-
-    try:
-        import redis  # type: ignore
-        _redis = redis.Redis.from_url(_redis_url, decode_responses=True)
-    except Exception:
+    _redis_url = os.getenv("REDIS_URL")
+    if not _redis_url:
         _redis = None  # type: ignore
+    else:
+        try:
+            dramatiq.set_broker(RedisBroker(url=_redis_url))
+        except Exception:
+            pass
+
+        try:
+            import redis  # type: ignore
+            _redis = redis.Redis.from_url(_redis_url, decode_responses=True)
+        except Exception:
+            _redis = None  # type: ignore
 
     @dramatiq.actor(max_retries=8)  # exponential backoff handled by broker config
     def start_phone_call(

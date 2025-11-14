@@ -1,9 +1,10 @@
 import './App.css'
+import { apiFetch } from './lib/api.js'
 
 function App() {
   async function pingBackend() {
     try {
-      const res = await fetch('http://127.0.0.1:8000/health')
+      const res = await apiFetch('/health')
       const data = await res.json()
       alert(`Backend: ${data.status}`)
     } catch (e) {
@@ -29,10 +30,9 @@ function App() {
           const form = e.target
           const to = form.to.value
           const from = form.from.value
-          const res = await fetch('http://127.0.0.1:8000/calls/retell/outbound', {
+          const res = await apiFetch('/calls/retell/outbound', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to, from_number: from })
+            body: { to, from_number: from }
           })
           const data = await res.json()
           alert(res.ok ? `Call created: ${JSON.stringify(data)}` : `Error: ${data.detail || res.status}`)
