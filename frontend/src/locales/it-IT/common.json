@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "common": {
     "refresh": "Aggiorna",
     "created": "Creato",
@@ -51,19 +50,3 @@
     "accepted": "Accettati: {n}"
   }
 }
-
-=======
-  "nav.to_login": "Vai al Login",
-  "nav.to_app": "Vai all'App",
-  "login.title": "Accedi",
-  "login.email_label": "Email",
-  "login.password_label": "Password",
-  "login.submit": "Accedi",
-  "app.title": "Il tuo profilo",
-  "app.name_label": "Nome completo",
-  "app.phone_label": "Numero di telefono",
-  "app.submit": "Salva",
-  "toast.saved": "Salvato con successo",
-  "toast.signed_in": "Accesso effettuato"
-}
->>>>>>> dd0457be19b60efc1dc92dc8ea703216870914f9
