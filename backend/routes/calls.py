@@ -106,12 +106,9 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
     
     if agent_id:
         test_body["override_agent_id"] = agent_id
-    else:
-        # agent_id is optional - Retell will use the agent bound to from_number
-        missing_fields.append("override_agent_id (opzionale - se omesso, Retell usa l'agent associato al from_number)")
     
     # Note: Retell allows calls without override_agent_id if from_number has an agent bound
-    # So we'll try the call anyway and see what happens
+    # We'll try the call even without override_agent_id
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
