@@ -9,8 +9,11 @@ cmds = [
 ]
 
 [phases.build]
-cmds = ["echo 'Build complete'"]
+cmds = [
+  "chmod +x /app/start.sh",
+  "echo 'Build complete'"
+]
 
 [start]
-cmd = "/app/.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+cmd = "/app/start.sh"
 
