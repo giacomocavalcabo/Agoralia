@@ -108,20 +108,44 @@ def run_migrations():
                         else:
                             has_extended_campaigns = False
                         
-                        # Determine stamp revision
-                        if has_optimized_columns:
-                            stamp_rev = "0005_optimize_calls_schema"
-                        elif has_country_rules:
-                            stamp_rev = "0004_country_rules_lead_nature"
-                        elif has_extended_campaigns:
-                            stamp_rev = "0003_extend_campaigns"
-                        elif "subscriptions" in inspector.get_table_names():
-                            stamp_rev = "0002_billing_sched_kb"
-                        else:
-                            stamp_rev = "0001_init"
+                        # Determine stamp revision by finding the matching revision ID
+                        script = ScriptDirectory.from_config(alembic_cfg)
+                        stamp_rev = None
                         
-                        print(f"Stamping database with revision: {stamp_rev}", file=sys.stderr)
-                        command.stamp(alembic_cfg, stamp_rev)
+                        if has_optimized_columns:
+                            # Find revision 0005_optimize_calls_schema
+                            for rev in script.walk_revisions():
+                                if "0005_optimize_calls_schema" in rev.doc or "optimize_calls_schema" in rev.revision:
+                                    stamp_rev = rev.revision
+                                    break
+                        elif has_country_rules:
+                            # Find revision 0004_country_rules_lead_nature
+                            for rev in script.walk_revisions():
+                                if "0004_country_rules_lead_nature" in rev.doc or "country_rules_lead_nature" in rev.revision:
+                                    stamp_rev = rev.revision
+                                    break
+                        elif has_extended_campaigns:
+                            # Find revision 0003_extend_campaigns
+                            for rev in script.walk_revisions():
+                                if "0003_extend_campaigns" in rev.doc or "extend_campaigns" in rev.revision:
+                                    stamp_rev = rev.revision
+                                    break
+                        elif "subscriptions" in inspector.get_table_names():
+                            # Find revision 0002_billing_sched_kb
+                            for rev in script.walk_revisions():
+                                if "0002_billing_sched_kb" in rev.doc or "billing_sched_kb" in rev.revision:
+                                    stamp_rev = rev.revision
+                                    break
+                        else:
+                            # Find revision 0001_init
+                            for rev in script.walk_revisions():
+                                if "0001_init" in rev.doc or rev.down_revision is None:
+                                    stamp_rev = rev.revision
+                                    break
+                        
+                        if stamp_rev:
+                            print(f"Stamping database with revision: {stamp_rev}", file=sys.stderr)
+                            command.stamp(alembic_cfg, stamp_rev)
                         print("✓ Database stamped successfully", file=sys.stderr)
                     else:
                         print("⚠ No existing tables found, will create from scratch", file=sys.stderr)
