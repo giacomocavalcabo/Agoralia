@@ -105,6 +105,7 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             (payload.metadata or {}).get("lang") if payload.metadata else None
         )
         agent_id = payload.agent_id
+        is_multi = False
         if not agent_id:
             aid, is_multi = _resolve_agent(session, tenant_id, "voice", lang)
             if aid:
@@ -116,7 +117,7 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
         body["agent_id"] = agent_id
     body.setdefault("metadata", {})
     body["metadata"]["lang"] = lang
-    if agent_id and is_multi:
+    if is_multi:
         body["metadata"]["instruction"] = f"rispondi sempre in {lang}"
         # Attach kb version for traceability
         try:
