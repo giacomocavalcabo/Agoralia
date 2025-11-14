@@ -61,6 +61,68 @@ class DispositionUpdate(BaseModel):
 # Retell Integration Endpoints
 # ============================================================================
 
+@router.post("/retell/test")
+async def test_retell_api(request: Request):
+    """Test Retell API connection with minimal request"""
+    api_key = os.getenv("RETELL_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
+    
+    base_url = get_retell_base_url()
+    endpoint = f"{base_url}/v2/create-phone-call"
+    headers = get_retell_headers()
+    
+    # Minimal test request - just check if API responds
+    # Using test numbers from Retell documentation
+    test_body = {
+        "from_number": os.getenv("DEFAULT_FROM_NUMBER", "+12025551234"),  # Fallback test number
+        "to_number": "+12025551235",  # Test destination
+    }
+    
+    # If we have an agent_id in settings, use it
+    try:
+        from services.settings import get_settings
+        settings = get_settings()
+        if settings and settings.default_agent_id:
+            test_body["agent_id"] = settings.default_agent_id
+    except Exception:
+        pass
+    
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            resp = await client.post(endpoint, headers=headers, json=test_body)
+            response_text = resp.text
+            response_status = resp.status_code
+            
+            # Try to parse JSON
+            try:
+                response_json = resp.json()
+            except Exception:
+                response_json = {"raw_response": response_text}
+            
+            return {
+                "status_code": response_status,
+                "success": resp.status_code < 400,
+                "response": response_json,
+                "request_sent": {
+                    "endpoint": endpoint,
+                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                    "body": test_body,
+                }
+            }
+        except httpx.HTTPError as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "request_sent": {
+                    "endpoint": endpoint,
+                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                    "body": test_body,
+                }
+            }
+
+
 @router.post("/retell/outbound")
 async def create_outbound_call(request: Request, payload: OutboundCallRequest):
     """Create outbound phone call via Retell"""
@@ -114,10 +176,17 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             if aid:
                 agent_id = aid
     
-    # Build request body
-    body = {"from_number": from_num, "to_number": payload.to}
-    if agent_id:
-        body["agent_id"] = agent_id
+    # Build request body - Retell AI requires: from_number, to_number, agent_id
+    body = {
+        "from_number": from_num,
+        "to_number": payload.to,
+    }
+    if not agent_id:
+        raise HTTPException(
+            status_code=400,
+            detail="agent_id richiesto: imposta default_agent_id nelle settings o passa agent_id"
+        )
+    body["agent_id"] = agent_id
     body.setdefault("metadata", {})
     body["metadata"]["lang"] = lang
     if is_multi:
