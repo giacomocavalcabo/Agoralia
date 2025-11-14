@@ -74,19 +74,49 @@ async def test_retell_api(request: Request):
     
     # Minimal test request - just check if API responds
     # Using test numbers from Retell documentation
+    from_num = os.getenv("DEFAULT_FROM_NUMBER")
+    if not from_num:
+        return {
+            "success": False,
+            "error": "DEFAULT_FROM_NUMBER non configurato",
+            "required_fields": ["from_number", "to_number", "agent_id"],
+            "missing": ["from_number (DEFAULT_FROM_NUMBER env var)"]
+        }
+    
     test_body = {
-        "from_number": os.getenv("DEFAULT_FROM_NUMBER", "+12025551234"),  # Fallback test number
+        "from_number": from_num,
         "to_number": "+12025551235",  # Test destination
     }
     
-    # If we have an agent_id in settings, use it
+    missing_fields = []
+    
+    # Check for agent_id
+    agent_id = None
     try:
         from services.settings import get_settings
         settings = get_settings()
         if settings and settings.default_agent_id:
-            test_body["agent_id"] = settings.default_agent_id
-    except Exception:
-        pass
+            agent_id = settings.default_agent_id
+            test_body["agent_id"] = agent_id
+    except Exception as e:
+        missing_fields.append(f"agent_id (default_agent_id in settings - error: {str(e)})")
+    
+    if not agent_id:
+        missing_fields.append("agent_id (default_agent_id in settings)")
+    
+    # Warn if missing fields but still try
+    if missing_fields:
+        return {
+            "success": False,
+            "error": "Campi mancanti per chiamata Retell AI",
+            "missing_fields": missing_fields,
+            "request_would_be": {
+                "endpoint": endpoint,
+                "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                "body": test_body,
+            },
+            "note": "Configura i campi mancanti prima di procedere"
+        }
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
