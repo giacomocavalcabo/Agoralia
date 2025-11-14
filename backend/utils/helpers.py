@@ -6,7 +6,6 @@ from fastapi import Request
 
 from models.agents import TenantAgent, PhoneNumber
 from models.campaigns import Lead, Campaign
-from services.settings import get_settings
 
 
 def country_iso_from_e164(e164: Optional[str]) -> Optional[str]:
@@ -132,6 +131,7 @@ def _resolve_from_number(
     
     # 3. Settings.default_from_number
     try:
+        from services.settings import get_settings
         settings = get_settings()
         if settings and settings.default_from_number:
             return settings.default_from_number
