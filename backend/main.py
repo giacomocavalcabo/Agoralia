@@ -2169,6 +2169,34 @@ async def system_status() -> Dict[str, Any]:
     return status
 
 
+@app.get("/system/debug/env")
+async def debug_env() -> Dict[str, Any]:
+    """Debug endpoint to check available environment variables (non-sensitive)"""
+    all_env = dict(os.environ)
+    # Filter out sensitive variables, show only keys
+    sensitive_keys = ["PASSWORD", "SECRET", "KEY", "TOKEN", "API_KEY", "WEBHOOK_SECRET"]
+    filtered = {}
+    for key in sorted(all_env.keys()):
+        if any(sensitive in key.upper() for sensitive in sensitive_keys):
+            filtered[key] = "***hidden***"
+        else:
+            filtered[key] = all_env[key]
+    
+    return {
+        "total_vars": len(all_env),
+        "databases": {
+            "DATABASE_URL_set": bool(os.getenv("DATABASE_URL")),
+            "DATABASE_URL_type": "postgresql" if "postgres" in str(os.getenv("DATABASE_URL", "")).lower() else ("sqlite" if not os.getenv("DATABASE_URL") else "other"),
+            "DATABASE_URL_preview": str(os.getenv("DATABASE_URL", ""))[:50] + "..." if os.getenv("DATABASE_URL") and len(os.getenv("DATABASE_URL", "")) > 50 else os.getenv("DATABASE_URL", "not set"),
+        },
+        "redis": {
+            "REDIS_URL_set": bool(os.getenv("REDIS_URL")),
+            "REDIS_URL_preview": str(os.getenv("REDIS_URL", ""))[:50] + "..." if os.getenv("REDIS_URL") and len(os.getenv("REDIS_URL", "")) > 50 else os.getenv("REDIS_URL", "not set"),
+        },
+        "env_vars": filtered
+    }
+
+
 class WebhookTest(BaseModel):
     event_type: str = "call.transcript.append"
     call_id: Optional[str] = None
