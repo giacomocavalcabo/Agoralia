@@ -3,17 +3,13 @@ nixPkgs = ["python311"]
 
 [phases.install]
 cmds = [
-  "python -m venv /app/.venv",
-  "/app/.venv/bin/pip install --upgrade pip",
-  "/app/.venv/bin/pip install -r backend/requirements.txt"
+  "pip install --user --upgrade pip",
+  "pip install --user -r backend/requirements.txt"
 ]
 
 [phases.build]
-cmds = [
-  "chmod +x /app/start.sh",
-  "echo 'Build complete'"
-]
+cmds = ["echo 'Build complete'"]
 
 [start]
-cmd = "/app/start.sh"
+cmd = "PYTHONPATH=/app/backend python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"
 
