@@ -1,4 +1,4 @@
--- Minimal Postgres schema for ColdAI (multi-tenant ready)
+-- Minimal Postgres schema for Agoralia (multi-tenant ready)
 -- Run with: psql "$DATABASE_URL" -f backend/migrations/0001_init.sql
 
 create table if not exists calls (

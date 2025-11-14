@@ -1,4 +1,4 @@
-const BASE_URL = 'http://127.0.0.1:8000'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 export async function apiFetch(path, options = {}) {
   const url = path.startsWith('http') ? path : `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`
@@ -29,7 +29,10 @@ export async function apiFetch(path, options = {}) {
 export function wsUrl(path) {
   const tenantId = localStorage.getItem('tenant_id')
   const qp = tenantId ? (path.includes('?') ? `&tenant_id=${tenantId}` : `?tenant_id=${tenantId}`) : ''
-  return `ws://127.0.0.1:8000${path}${qp}`
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  // Convert HTTP/HTTPS to WS/WSS
+  const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
+  return `${wsBase}${path}${qp}`
 }
 
 

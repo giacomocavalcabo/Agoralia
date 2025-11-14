@@ -1,15 +1,25 @@
 Frontend → Vercel
 - Env: VITE_API_BASE_URL=https://<api>.railway.app
 - Build: npm ci && npm run build
-- Output: dist
+- Output: frontend/dist
+- Config: vercel.json
 
 Backend/Worker → Railway
-- API start: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
-- Worker start: dramatiq backend.worker
+- Project ID: 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
+- API start: uvicorn backend.main:app --host 0.0.0.0 --port $PORT (Procfile: web)
+- Worker start: dramatiq backend.worker (Procfile: worker)
+- Config: railway.json, nixpacks.toml, Procfile
+- Link: railway link -p 2ec0f5d8-2c7a-42a7-a78c-4168138e03e9
 
-Env (API)
-- DATABASE_URL=...
-- REDIS_URL=...
+Railway Services (2 services needed)
+- Service 1: api (web process)
+- Service 2: worker (worker process)
+- Add PostgreSQL database
+- Add Redis database
+
+Env (Railway - both services)
+- DATABASE_URL=${{Postgres.DATABASE_URL}}
+- REDIS_URL=${{Redis.REDIS_URL}}
 - RETELL_API_KEY=...
 - RETELL_WEBHOOK_SECRET=...
 - DEFAULT_FROM_NUMBER=+1202...
@@ -20,10 +30,15 @@ Env (API)
 - R2_ACCESS_KEY_ID=...
 - R2_SECRET_ACCESS_KEY=...
 - R2_BUCKET=...
-- R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
+
+Env (Vercel)
+- VITE_API_BASE_URL=https://<api>.railway.app
 
 Retell Webhook
 - https://<api>.railway.app/webhooks/retell
+
+Migration
+- railway run -s api alembic upgrade head
 
 Acceptance
 - /health 200

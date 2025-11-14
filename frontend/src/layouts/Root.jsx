@@ -26,7 +26,7 @@ export default function Root() {
     <div className="layout">
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <aside className="sidebar">
-        <div className="brand">ColdAI</div>
+        <div className="brand">Agoralia</div>
         <nav className="nav nav-top">
           <NavLink to="/" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>{t('Dashboard')}</NavLink>
           <NavLink to="/calls" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>{t('History')}</NavLink>

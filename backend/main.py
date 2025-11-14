@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconn
 from pydantic import BaseModel, Field
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import create_engine, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import create_engine, Integer, String, Text, DateTime, ForeignKey, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 import json
 import asyncio
@@ -98,6 +98,10 @@ import json as _json
 BACKEND_DIR = Path(__file__).resolve().parent
 load_dotenv(BACKEND_DIR / ".env")
 stripe.api_key = os.getenv("STRIPE_API_KEY", "")
+
+# Inizializza FastAPI app PRIMA di qualsiasi endpoint
+app = FastAPI(title="Agoralia Backend", version="0.1.0")
+
 # -----------------------------
 # Billing API (Stripe minimal)
 # -----------------------------
@@ -246,7 +250,7 @@ async def kb_publish(request: Request, body: KBPublishRequest, type: str = "outb
         session.commit()
     # TODO: integrate Retell Knowledge Base Sources API with RETELL_API_KEY when available
     return {"published": True, "payload": payload, "version": version, "published_at": published_at.isoformat(), "type": type}
-app = FastAPI(title="ColdAI Backend", version="0.1.0")
+
 # -----------------------------
 # Database (SQLite for local dev)
 # -----------------------------
@@ -2089,27 +2093,58 @@ async def crm_test_transform(request: Request, body: CRMTestTransform):
 
 @app.get("/system/status")
 async def system_status() -> Dict[str, Any]:
+    status = {
+        "db": False,
+        "redis": False,
+        "r2": False,
+        "retell": False,
+        "database_type": None,
+        "redis_connected": False,
+        "env_vars": {}
+    }
+    
     # DB check
-    db_ok = True
+    db_type = "sqlite" if not DATABASE_URL else ("postgresql" if "postgres" in DATABASE_URL.lower() else "unknown")
+    status["database_type"] = db_type
     try:
         with Session(engine) as session:
-            session.execute("SELECT 1")
-    except Exception:
-        db_ok = False
+            session.execute(text("SELECT 1"))
+            session.commit()
+            status["db"] = True
+    except Exception as e:
+        status["db_error"] = str(e)
+    
     # Redis check
-    redis_ok = False
+    redis_url = os.getenv("REDIS_URL")
+    status["env_vars"]["REDIS_URL"] = "set" if redis_url else "not set"
     try:
         r = get_redis()
         if r is not None:
             r.ping()
-            redis_ok = True
-    except Exception:
-        redis_ok = False
+            status["redis"] = True
+            status["redis_connected"] = True
+        else:
+            status["redis_error"] = "Redis module not available or connection failed"
+    except Exception as e:
+        status["redis_error"] = str(e)
+    
     # R2 check
-    r2_ok = bool(get_r2_client())
-    # Retell check (just key presence)
-    retell_ok = bool(os.getenv("RETELL_API_KEY"))
-    return {"db": db_ok, "redis": redis_ok, "r2": r2_ok, "retell": retell_ok}
+    status["env_vars"]["R2_ACCOUNT_ID"] = "set" if os.getenv("R2_ACCOUNT_ID") else "not set"
+    status["env_vars"]["R2_ACCESS_KEY_ID"] = "set" if os.getenv("R2_ACCESS_KEY_ID") else "not set"
+    status["env_vars"]["R2_SECRET_ACCESS_KEY"] = "set" if os.getenv("R2_SECRET_ACCESS_KEY") else "not set"
+    status["env_vars"]["R2_BUCKET"] = "set" if os.getenv("R2_BUCKET") else "not set"
+    status["r2"] = bool(get_r2_client())
+    
+    # Retell check
+    status["env_vars"]["RETELL_API_KEY"] = "set" if os.getenv("RETELL_API_KEY") else "not set"
+    status["env_vars"]["RETELL_WEBHOOK_SECRET"] = "set" if os.getenv("RETELL_WEBHOOK_SECRET") else "not set"
+    status["env_vars"]["DEFAULT_FROM_NUMBER"] = "set" if os.getenv("DEFAULT_FROM_NUMBER") else "not set"
+    status["env_vars"]["DATABASE_URL"] = "set" if DATABASE_URL else "not set"
+    status["env_vars"]["FRONTEND_ORIGIN"] = "set" if os.getenv("FRONTEND_ORIGIN") else "not set"
+    status["env_vars"]["JWT_SECRET"] = "set" if os.getenv("JWT_SECRET") else "not set"
+    status["retell"] = bool(os.getenv("RETELL_API_KEY"))
+    
+    return status
 
 
 class WebhookTest(BaseModel):

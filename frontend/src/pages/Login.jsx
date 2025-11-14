@@ -33,7 +33,7 @@ export default function Login() {
   return (
     <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
       <form onSubmit={submit} className="panel" style={{ padding: 24, width: 360, display: 'grid', gap: 12 }}>
-        <h1 style={{ margin: 0 }}>ColdAI</h1>
+        <h1 style={{ margin: 0 }}>Agoralia</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" className={`btn ${mode==='login'?'primary':''}`} onClick={() => setMode('login')}>Login</button>
           <button type="button" className={`btn ${mode==='register'?'primary':''}`} onClick={() => setMode('register')}>Register</button>

@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div>
-      <h1>ColdAI — Frontend</h1>
+      <h1>Agoralia — Frontend</h1>
       <nav style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
         <a href="/">Dashboard</a>
         <a href="/contatti">Contacts</a>
