@@ -177,6 +177,7 @@ def check_compliance(
     # 2. Quiet Hours Check - Priority: Campaign > Default Settings > Country
     quiet_hours_rule: Dict[str, Any] = {}
     settings = get_settings()  # Load settings once for priority check
+    settings_qh_enabled = bool(settings.quiet_hours_enabled or 0) if settings else False
     
     # Check campaign quiet hours first (highest priority)
     if campaign and campaign.quiet_hours_enabled is not None:
@@ -192,7 +193,7 @@ def check_compliance(
             # Campaign explicitly disabled quiet hours
             quiet_hours_rule = {"quiet_hours_enabled": False}
     # Check default settings (second priority)
-    elif settings and settings.quiet_hours_enabled:
+    elif settings_qh_enabled:
         quiet_hours_rule = {
             "quiet_hours_enabled": True,
             "quiet_hours_weekdays": settings.quiet_hours_weekdays,
@@ -215,7 +216,7 @@ def check_compliance(
     # Determine source for quiet hours (for reporting)
     if campaign and campaign.quiet_hours_enabled == 1:
         quiet_hours_source = "campaign"
-    elif settings and settings.quiet_hours_enabled:
+    elif settings_qh_enabled:
         quiet_hours_source = "default"
     elif rule.get("quiet_hours_enabled"):
         quiet_hours_source = "country"
