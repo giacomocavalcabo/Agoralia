@@ -106,35 +106,55 @@ def run_migrations():
                         # Check if subscriptions table exists (0002)
                         has_subscriptions = "subscriptions" in inspector.get_table_names()
                         
-                        # Determine stamp revision by finding the matching revision ID
-                        # Work backwards from newest to oldest
+                        # Determine which revision to stamp based on detected state
+                        # Check from newest to oldest
+                        target_revision_name = None
+                        if has_optimized_columns:
+                            target_revision_name = "0005_optimize_calls_schema"
+                        elif has_country_rules:
+                            target_revision_name = "0004_country_rules_lead_nature"
+                        elif has_extended_campaigns:
+                            target_revision_name = "0003_extend_campaigns"
+                        elif has_subscriptions:
+                            target_revision_name = "0002_billing_sched_kb"
+                        else:
+                            target_revision_name = "0001_init"
+                        
+                        # Find the revision ID matching the target name
                         stamp_rev = None
                         for rev in script.walk_revisions():
                             rev_id = rev.revision.lower()
                             rev_doc = (rev.doc or "").lower()
+                            target_lower = target_revision_name.lower()
                             
-                            # Check in order: 0005, 0004, 0003, 0002, 0001
-                            if has_optimized_columns and ("0005" in rev_id or "optimize_calls_schema" in rev_doc):
+                            # Match by revision ID or doc
+                            if target_lower in rev_id or target_lower.replace("_", "") in rev_id or target_lower.split("_")[0] in rev_id:
                                 stamp_rev = rev.revision
                                 break
-                            elif has_country_rules and ("0004" in rev_id or "country_rules" in rev_doc):
+                            if rev.doc and target_lower in rev_doc:
                                 stamp_rev = rev.revision
                                 break
-                            elif has_extended_campaigns and ("0003" in rev_id or "extend_campaigns" in rev_doc):
-                                stamp_rev = rev.revision
-                                break
-                            elif has_subscriptions and ("0002" in rev_id or "billing_sched_kb" in rev_doc):
-                                stamp_rev = rev.revision
-                                break
-                            elif "0001" in rev_id or rev.down_revision is None:
-                                # Default to 0001_init if nothing else matches
-                                if not stamp_rev:
-                                    stamp_rev = rev.revision
+                        
+                        # Fallback: if not found, use the revision ID directly (they match the names)
+                        if not stamp_rev:
+                            stamp_rev = target_revision_name
                         
                         if stamp_rev:
-                            print(f"Stamping database with revision: {stamp_rev}", file=sys.stderr)
-                            command.stamp(alembic_cfg, stamp_rev)
-                            print("✓ Database stamped successfully", file=sys.stderr)
+                            print(f"Stamping database with revision: {stamp_rev} (detected state: {target_revision_name})", file=sys.stderr)
+                            try:
+                                command.stamp(alembic_cfg, stamp_rev)
+                                print("✓ Database stamped successfully", file=sys.stderr)
+                            except Exception as stamp_err:
+                                print(f"⚠ Could not stamp with {stamp_rev}: {stamp_err}", file=sys.stderr)
+                                print("Attempting to find correct revision...", file=sys.stderr)
+                                # Try with head to mark all as applied
+                                try:
+                                    head_rev = script.get_current_head()
+                                    if head_rev:
+                                        command.stamp(alembic_cfg, head_rev)
+                                        print(f"✓ Stamped with head: {head_rev}", file=sys.stderr)
+                                except Exception:
+                                    pass
                         else:
                             print("⚠ Could not determine revision to stamp", file=sys.stderr)
                     else:
