@@ -524,6 +524,60 @@ async def retell_list_agents():
             raise e
 
 
+@router.patch("/retell/phone-numbers/{phone_number}")
+async def update_retell_phone_number(
+    phone_number: str,
+    inbound_agent_id: Optional[str] = None,
+    outbound_agent_id: Optional[str] = None,
+    nickname: Optional[str] = None,
+):
+    """Update phone number configuration in Retell AI (bind agents)
+    
+    Args:
+        phone_number: E.164 format number (e.g., +14158735112)
+        inbound_agent_id: Agent ID for inbound calls
+        outbound_agent_id: Agent ID for outbound calls
+        nickname: Optional nickname
+    """
+    api_key = os.getenv("RETELL_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
+    
+    base_url = get_retell_base_url()
+    endpoint = f"{base_url}/update-phone-number"
+    headers = get_retell_headers()
+    
+    body: Dict[str, Any] = {"phone_number": phone_number}
+    
+    if inbound_agent_id is not None:
+        body["inbound_agent_id"] = inbound_agent_id
+    if outbound_agent_id is not None:
+        body["outbound_agent_id"] = outbound_agent_id
+    if nickname is not None:
+        body["nickname"] = nickname
+    
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            resp = await client.patch(endpoint, headers=headers, json=body)
+            if resp.status_code >= 400:
+                try:
+                    error_json = resp.json()
+                except Exception:
+                    error_json = {"raw_response": resp.text}
+                raise HTTPException(status_code=resp.status_code, detail=str(error_json))
+            
+            return {
+                "success": True,
+                "response": resp.json(),
+                "request_sent": {
+                    "endpoint": endpoint,
+                    "body": body,
+                }
+            }
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/retell/backfill")
 async def retell_backfill(request: Request, limit: int = 100):
     """Backfill calls from Retell to local database"""
