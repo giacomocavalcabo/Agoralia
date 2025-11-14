@@ -90,12 +90,30 @@ def run_migrations():
                     # Check which migrations have been applied based on table existence
                     # If calls table exists, at least 0001_init was applied
                     if has_calls_table:
+                        table_names = inspector.get_table_names()
+                        
                         # Check if calls table has new optimized columns (0005)
                         calls_columns = [col['name'] for col in inspector.get_columns('calls')]
                         has_optimized_columns = 'disposition_outcome' in calls_columns or 'media_json' in calls_columns
                         
+                        # Check if old tables still exist (means 0005 NOT applied yet)
+                        has_old_dispositions = "dispositions" in table_names
+                        has_old_call_media = "call_media" in table_names
+                        has_old_structured = "call_structured" in table_names
+                        has_old_summaries = "summaries" in table_names
+                        has_old_tables = has_old_dispositions or has_old_call_media or has_old_structured or has_old_summaries
+                        
+                        # If optimized columns exist AND old tables are gone, 0005 was applied
+                        # If optimized columns don't exist OR old tables still exist, 0005 NOT applied
+                        if has_optimized_columns and not has_old_tables:
+                            # 0005 is applied
+                            pass  # has_optimized_columns already set
+                        else:
+                            # 0005 NOT applied - clear the flag
+                            has_optimized_columns = False
+                        
                         # Check if country_rules table exists (0004)
-                        has_country_rules = "country_rules" in inspector.get_table_names()
+                        has_country_rules = "country_rules" in table_names
                         
                         # Check if campaigns has extended fields (0003)
                         has_extended_campaigns = False
@@ -104,7 +122,7 @@ def run_migrations():
                             has_extended_campaigns = 'agent_id' in campaigns_columns or 'budget_cents' in campaigns_columns
                         
                         # Check if subscriptions table exists (0002)
-                        has_subscriptions = "subscriptions" in inspector.get_table_names()
+                        has_subscriptions = "subscriptions" in table_names
                         
                         # Determine which revision to stamp based on detected state
                         # Check from newest to oldest
