@@ -61,6 +61,138 @@ class DispositionUpdate(BaseModel):
 # Retell Integration Endpoints
 # ============================================================================
 
+@router.post("/retell/phone-numbers/create")
+async def create_phone_number(
+    request: Request,
+    phone_number: Optional[str] = None,
+    area_code: Optional[int] = None,
+    country_code: str = "IT",
+    number_provider: str = "telnyx",
+    inbound_agent_id: Optional[str] = None,
+    outbound_agent_id: Optional[str] = None,
+    nickname: Optional[str] = None,
+):
+    """Purchase a phone number via Retell AI
+    
+    Args:
+        phone_number: E.164 format number to purchase (e.g., +393491234567)
+        area_code: US area code (only for US numbers)
+        country_code: Country code (currently Retell supports US, CA, but we can try IT)
+        number_provider: Provider to use (twilio, telnyx)
+        inbound_agent_id: Agent ID to bind for inbound calls
+        outbound_agent_id: Agent ID to bind for outbound calls
+        nickname: Nickname for the number
+    """
+    api_key = os.getenv("RETELL_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
+    
+    base_url = get_retell_base_url()
+    endpoint = f"{base_url}/create-phone-number"
+    headers = get_retell_headers()
+    
+    # Build request body
+    body: Dict[str, Any] = {
+        "number_provider": number_provider,
+    }
+    
+    if phone_number:
+        body["phone_number"] = phone_number
+    elif area_code:
+        body["area_code"] = area_code
+        body["country_code"] = country_code
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Devi fornire phone_number (E.164) o area_code"
+        )
+    
+    if country_code:
+        body["country_code"] = country_code
+    
+    if inbound_agent_id:
+        body["inbound_agent_id"] = inbound_agent_id
+    
+    if outbound_agent_id:
+        body["outbound_agent_id"] = outbound_agent_id
+    
+    if nickname:
+        body["nickname"] = nickname
+    
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            resp = await client.post(endpoint, headers=headers, json=body)
+            response_text = resp.text
+            response_status = resp.status_code
+            
+            if resp.status_code >= 400:
+                try:
+                    error_json = resp.json()
+                except Exception:
+                    error_json = {"raw_response": response_text}
+                
+                return {
+                    "success": False,
+                    "status_code": response_status,
+                    "error": error_json,
+                    "request_sent": {
+                        "endpoint": endpoint,
+                        "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                        "body": body,
+                    }
+                }
+            
+            try:
+                response_json = resp.json()
+            except Exception:
+                response_json = {"raw_response": response_text}
+            
+            # Save phone number to our database
+            tenant_id = extract_tenant_id(request)
+            if response_json.get("phone_number"):
+                with Session(engine) as session:
+                    from models.agents import PhoneNumber
+                    from utils.helpers import country_iso_from_e164
+                    
+                    # Check if number already exists
+                    existing = session.query(PhoneNumber).filter(
+                        PhoneNumber.e164 == response_json["phone_number"]
+                    ).first()
+                    
+                    if not existing:
+                        new_number = PhoneNumber(
+                            e164=response_json["phone_number"],
+                            type="retell",
+                            verified=1,
+                            tenant_id=tenant_id,
+                            country=country_iso_from_e164(response_json["phone_number"]),
+                        )
+                        session.add(new_number)
+                        session.commit()
+            
+            return {
+                "success": True,
+                "status_code": response_status,
+                "response": response_json,
+                "request_sent": {
+                    "endpoint": endpoint,
+                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                    "body": body,
+                }
+            }
+        except httpx.HTTPError as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "request_sent": {
+                    "endpoint": endpoint,
+                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
+                    "body": body,
+                }
+            }
+
+
 @router.post("/retell/test")
 async def test_retell_api(request: Request, agent_id: Optional[str] = None):
     """Test Retell API connection with minimal request
