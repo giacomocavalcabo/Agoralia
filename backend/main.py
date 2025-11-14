@@ -890,7 +890,15 @@ if DATABASE_URL:
     engine = create_engine(DATABASE_URL, echo=False, future=True, pool_pre_ping=True)
 else:
     engine = create_engine(f"sqlite:///{DB_PATH}", echo=False, future=True)
-Base.metadata.create_all(engine)
+
+# Try to create tables, but don't fail startup if DB is not available yet
+# In production, use Alembic migrations: `alembic upgrade head`
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables at startup: {e}", file=sys.stderr)
+    print("Database will be initialized via Alembic migrations.", file=sys.stderr)
 
 # Allow local dev origins (Vite default: 5173)
 front_origin = os.getenv("FRONTEND_ORIGIN")
