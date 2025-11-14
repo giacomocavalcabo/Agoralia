@@ -74,20 +74,23 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
 
     # Resolve from_number with priority: explicit -> campaign -> settings -> env
     tenant_id = extract_tenant_id(request)
-    lead = None
+    lead_id = None
     campaign_id = None
     if payload.metadata:
         campaign_id = payload.metadata.get("campaign_id")
-        if payload.metadata.get("lead_id"):
-            with Session(engine) as session:
-                from models.campaigns import Lead
-                lead = session.get(Lead, payload.metadata.get("lead_id"))
-                if lead and tenant_id is not None and lead.tenant_id != tenant_id:
-                    lead = None
-                elif lead and lead.campaign_id:
-                    campaign_id = lead.campaign_id
+        lead_id = payload.metadata.get("lead_id")
     
     with Session(engine) as session:
+        # Load lead if needed
+        lead = None
+        if lead_id:
+            from models.campaigns import Lead
+            lead = session.get(Lead, lead_id)
+            if lead and tenant_id is not None and lead.tenant_id != tenant_id:
+                lead = None
+            elif lead and lead.campaign_id:
+                campaign_id = lead.campaign_id
+        
         from_num = _resolve_from_number(
             session,
             from_number=payload.from_number,
@@ -145,9 +148,16 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 }
 
     # Compliance + subscription + budget gating
+    # Reload lead in new session for compliance check
     with Session(engine) as session:
+        lead_for_compliance = None
+        if lead_id:
+            from models.campaigns import Lead
+            lead_for_compliance = session.get(Lead, lead_id)
+            if lead_for_compliance and tenant_id is not None and lead_for_compliance.tenant_id != tenant_id:
+                lead_for_compliance = None
         enforce_subscription_or_raise(session, request)
-        enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead)
+        enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead_for_compliance)
         enforce_budget_or_raise(session, request)
 
     async with httpx.AsyncClient(timeout=30) as client:
