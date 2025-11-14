@@ -269,8 +269,6 @@ async def list_addons(request: Request) -> List[Dict[str, Any]]:
 @router.post("/addons/inbound_slot")
 async def set_inbound_slots(request: Request, body: AddonUpdate) -> Dict[str, Any]:
     """Set inbound slots addon"""
-    from models.billing import Addon
-    
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         row = (

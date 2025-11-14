@@ -8,38 +8,15 @@ from sqlalchemy.orm import Session
 
 from config.database import engine
 from models.settings import AppSettings, AppMeta
+from services.settings import get_settings, get_meta
 
 router = APIRouter()
 
 
-def _get_settings() -> AppSettings:
-    """Get or create settings"""
-    with Session(engine) as session:
-        row = session.query(AppSettings).order_by(AppSettings.id.asc()).first()
-        if not row:
-            row = AppSettings()
-            session.add(row)
-            session.commit()
-            session.refresh(row)
-        return row
-
-
-def _get_meta() -> AppMeta:
-    """Get or create app metadata"""
-    with Session(engine) as session:
-        row = session.query(AppMeta).order_by(AppMeta.id.asc()).first()
-        if not row:
-            row = AppMeta()
-            session.add(row)
-            session.commit()
-            session.refresh(row)
-        return row
-
-
 @router.get("")
-async def get_settings() -> Dict[str, Any]:
+async def get_settings_endpoint() -> Dict[str, Any]:
     """Get all settings"""
-    row = _get_settings()
+    row = get_settings()
     try:
         legal_defaults = json.loads(row.legal_defaults_json or "{}")
     except Exception:
@@ -118,14 +95,14 @@ async def update_settings(body: SettingsUpdate) -> Dict[str, Any]:
         if body.prefer_detect_language is not None:
             row.prefer_detect_language = 1 if body.prefer_detect_language else 0
         session.commit()
-    return await get_settings()
+    return await get_settings_endpoint()
 
 
 @router.get("/general")
 async def get_settings_general() -> Dict[str, Any]:
     """Get general settings"""
-    meta = _get_meta()
-    s = _get_settings()
+    meta = get_meta()
+    s = get_settings()
     return {
         "workspace_name": meta.workspace_name or "",
         "timezone": meta.timezone or "",
@@ -165,7 +142,7 @@ async def put_settings_general(body: GeneralUpdate) -> Dict[str, Any]:
 @router.get("/languages")
 async def get_settings_languages() -> Dict[str, Any]:
     """Get language settings"""
-    s = _get_settings()
+    s = get_settings()
     try:
         supported = json.loads(s.supported_langs_json or "[]")
     except Exception:
@@ -213,7 +190,7 @@ async def put_settings_languages(body: LanguagesUpdate) -> Dict[str, Any]:
 @router.get("/telephony")
 async def get_settings_telephony() -> Dict[str, Any]:
     """Get telephony settings"""
-    s = _get_settings()
+    s = get_settings()
     return {
         "default_from_number": s.default_from_number or os.getenv("DEFAULT_FROM_NUMBER"),
         "spacing_ms": s.default_spacing_ms or 1000,
@@ -242,7 +219,7 @@ async def put_settings_telephony(body: TelephonyUpdate) -> Dict[str, Any]:
 @router.get("/compliance")
 async def get_settings_compliance() -> Dict[str, Any]:
     """Get compliance settings"""
-    s = _get_settings()
+    s = get_settings()
     try:
         rules = json.loads(s.legal_defaults_json or "{}")
     except Exception:
