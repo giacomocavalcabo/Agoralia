@@ -24,20 +24,39 @@ def upgrade() -> None:
     if 'users' not in inspector.get_table_names():
         return  # Table doesn't exist
     
-    # Check the current type of id column
-    id_column = None
-    for col in inspector.get_columns('users'):
-        if col['name'] == 'id':
-            id_column = col
-            break
+    # Check if there's a sequence for id
+    result = conn.execute(text("""
+        SELECT EXISTS (
+            SELECT 1 FROM pg_class 
+            WHERE relname = 'users_id_seq'
+        )
+    """))
+    seq_exists = result.scalar()
     
-    if not id_column:
-        return  # No id column found
+    if not seq_exists:
+        # Create sequence first
+        conn.execute(text("CREATE SEQUENCE users_id_seq OWNED BY users.id"))
+        
+        # Get current max id (if any users exist)
+        result = conn.execute(text("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) FROM users WHERE id ~ '^[0-9]+$'"))
+        max_id = result.scalar() or 0
+        
+        # Also check if there are any non-numeric ids
+        result = conn.execute(text("SELECT COUNT(*) FROM users WHERE id !~ '^[0-9]+$' OR id IS NULL"))
+        non_numeric_count = result.scalar() or 0
+        
+        # Set sequence to start from max_id + 1 (or 1 if no users or all non-numeric)
+        start_val = max(max_id, 0) + 1 if max_id > 0 or non_numeric_count == 0 else 1
+        conn.execute(text(f"SELECT setval('users_id_seq', {start_val}, false)"))
+    else:
+        # Sequence exists, check if it needs to be updated
+        result = conn.execute(text("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) FROM users WHERE id ~ '^[0-9]+$'"))
+        max_id = result.scalar() or 0
+        if max_id > 0:
+            # Update sequence to be at least max_id + 1
+            conn.execute(text(f"SELECT setval('users_id_seq', GREATEST({max_id + 1}, nextval('users_id_seq')::bigint), false)"))
     
-    id_type_str = str(id_column['type']).lower()
-    
-    # Ensure id column has auto-increment
-    # Check if there's a sequence for it
+    # Check current default
     result = conn.execute(text("""
         SELECT column_default 
         FROM information_schema.columns 
@@ -46,29 +65,18 @@ def upgrade() -> None:
     row = result.fetchone()
     default = row[0] if row else None
     
-    # If there's no auto-increment sequence, create one
+    # If there's no auto-increment default, set it
     if not default or 'nextval' not in str(default).lower():
-        # Check if sequence exists
+        # Ensure sequence exists (should already exist from above, but double-check)
         result = conn.execute(text("""
             SELECT EXISTS (
                 SELECT 1 FROM pg_class 
                 WHERE relname = 'users_id_seq'
             )
         """))
-        seq_exists = result.scalar()
-        
-        if not seq_exists:
-            # Create sequence
-            conn.execute(text("CREATE SEQUENCE IF NOT EXISTS users_id_seq OWNED BY users.id"))
-            # Set sequence to start from max(id) + 1 (or 1 if no users)
-            result = conn.execute(text("SELECT COALESCE(MAX(id)::bigint, 0) FROM users"))
-            max_id = result.scalar()
-            if max_id is None or max_id == 0:
-                # Start from 1
-                conn.execute(text("SELECT setval('users_id_seq', 1, false)"))
-            else:
-                # Start from max_id + 1
-                conn.execute(text(f"SELECT setval('users_id_seq', {max_id + 1}, false)"))
+        if not result.scalar():
+            conn.execute(text("CREATE SEQUENCE users_id_seq OWNED BY users.id"))
+            conn.execute(text("SELECT setval('users_id_seq', 1, false)"))
         
         # Set default to use sequence
         conn.execute(text("ALTER TABLE users ALTER COLUMN id SET DEFAULT nextval('users_id_seq')"))
