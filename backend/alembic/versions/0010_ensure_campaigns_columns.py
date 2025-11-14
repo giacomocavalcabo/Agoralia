@@ -88,11 +88,17 @@ def upgrade() -> None:
             'kb_id': 'kbs.id',
         }
         
-        # Add missing columns
-        with op.batch_alter_table('campaigns', schema=None) as batch_op:
-            for col_name, (col_type, default_val, nullable) in required_columns.items():
-                if col_name not in columns:
-                    kwargs = {'nullable': nullable}
+        # Collect columns to add
+        columns_to_add = []
+        for col_name, (col_type, default_val, nullable) in required_columns.items():
+            if col_name not in columns:
+                columns_to_add.append((col_name, col_type, default_val, nullable))
+        
+        # Add all missing columns first (in batch_alter_table)
+        if columns_to_add:
+            with op.batch_alter_table('campaigns', schema=None) as batch_op:
+                for col_name, col_type, default_val, nullable in columns_to_add:
+                    kwargs = {'nullable': True}  # Start as nullable, will change later
                     if default_val:
                         if default_val in ['0', '100', 'UTC']:
                             # Integer or string defaults
@@ -101,22 +107,27 @@ def upgrade() -> None:
                             kwargs['server_default'] = sa.text('now()')
                     
                     batch_op.add_column(sa.Column(col_name, col_type, **kwargs))
-                    
-                    # For NOT NULL columns with defaults, set defaults for existing rows
-                    if not nullable and default_val:
-                        if default_val in ['0', '100']:
-                            conn.execute(text(f"UPDATE campaigns SET {col_name} = {default_val} WHERE {col_name} IS NULL"))
-                        elif default_val == 'UTC' and col_name == 'timezone':
-                            conn.execute(text(f"UPDATE campaigns SET {col_name} = 'UTC' WHERE {col_name} IS NULL"))
-                        elif default_val == 'now()' and col_name == 'updated_at':
-                            conn.execute(text(f"UPDATE campaigns SET {col_name} = now() WHERE {col_name} IS NULL"))
-                    
-                    # Make NOT NULL if required
-                    if not nullable:
-                        try:
-                            conn.execute(text(f"ALTER TABLE campaigns ALTER COLUMN {col_name} SET NOT NULL"))
-                        except Exception:
-                            pass  # Already NOT NULL or has NULL values
+        
+        # Now update existing rows and set NOT NULL constraints (outside batch_alter_table)
+        for col_name, col_type, default_val, nullable in columns_to_add:
+            # For NOT NULL columns with defaults, set defaults for existing rows
+            if not nullable and default_val:
+                try:
+                    if default_val in ['0', '100']:
+                        conn.execute(text(f"UPDATE campaigns SET {col_name} = {default_val} WHERE {col_name} IS NULL"))
+                    elif default_val == 'UTC' and col_name == 'timezone':
+                        conn.execute(text(f"UPDATE campaigns SET {col_name} = 'UTC' WHERE {col_name} IS NULL"))
+                    elif default_val == 'now()' and col_name == 'updated_at':
+                        conn.execute(text(f"UPDATE campaigns SET {col_name} = now() WHERE {col_name} IS NULL"))
+                except Exception:
+                    pass  # Column might not exist yet (shouldn't happen, but safety)
+            
+            # Make NOT NULL if required
+            if not nullable:
+                try:
+                    conn.execute(text(f"ALTER TABLE campaigns ALTER COLUMN {col_name} SET NOT NULL"))
+                except Exception:
+                    pass  # Already NOT NULL or has NULL values
         
         # Add foreign key constraints if columns exist and constraints don't exist
         for col_name, fk_ref in fk_columns.items():
