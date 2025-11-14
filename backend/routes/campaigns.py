@@ -34,6 +34,12 @@ class CampaignCreate(BaseModel):
     budget_cents: Optional[int] = None
     cost_per_call_cents: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
+    # Quiet Hours (campaign override)
+    quiet_hours_enabled: Optional[bool] = None  # None = use country/default, False = disabled, True = enabled
+    quiet_hours_weekdays: Optional[str] = None  # "09:00-21:00"
+    quiet_hours_saturday: Optional[str] = None  # "09:00-21:00" | "forbidden"
+    quiet_hours_sunday: Optional[str] = None  # "forbidden" | "09:00-21:00"
+    quiet_hours_timezone: Optional[str] = None  # "Europe/Rome"
 
 
 class CampaignUpdate(BaseModel):
@@ -49,6 +55,12 @@ class CampaignUpdate(BaseModel):
     budget_cents: Optional[int] = None
     cost_per_call_cents: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
+    # Quiet Hours (campaign override)
+    quiet_hours_enabled: Optional[bool] = None
+    quiet_hours_weekdays: Optional[str] = None
+    quiet_hours_saturday: Optional[str] = None
+    quiet_hours_sunday: Optional[str] = None
+    quiet_hours_timezone: Optional[str] = None
 
 
 class LeadCreate(BaseModel):
@@ -139,6 +151,11 @@ async def create_campaign(request: Request, body: CampaignCreate) -> Dict[str, A
             budget_cents=body.budget_cents,
             cost_per_call_cents=body.cost_per_call_cents or 100,
             metadata_json=json.dumps(body.metadata) if body.metadata else None,
+            quiet_hours_enabled=1 if body.quiet_hours_enabled else (0 if body.quiet_hours_enabled is False else None),
+            quiet_hours_weekdays=body.quiet_hours_weekdays,
+            quiet_hours_saturday=body.quiet_hours_saturday,
+            quiet_hours_sunday=body.quiet_hours_sunday,
+            quiet_hours_timezone=body.quiet_hours_timezone,
         )
         session.add(c)
         session.commit()
@@ -185,6 +202,11 @@ async def get_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
             "total_cost_cents": c.total_cost_cents,
             "leads_count": leads_count,
             "metadata": json.loads(c.metadata_json) if c.metadata_json else None,
+            "quiet_hours_enabled": bool(c.quiet_hours_enabled) if c.quiet_hours_enabled is not None else None,
+            "quiet_hours_weekdays": c.quiet_hours_weekdays,
+            "quiet_hours_saturday": c.quiet_hours_saturday,
+            "quiet_hours_sunday": c.quiet_hours_sunday,
+            "quiet_hours_timezone": c.quiet_hours_timezone,
             "created_at": c.created_at.isoformat(),
             "updated_at": c.updated_at.isoformat(),
         }
@@ -234,6 +256,16 @@ async def update_campaign(request: Request, campaign_id: int, body: CampaignUpda
             c.cost_per_call_cents = body.cost_per_call_cents
         if body.metadata is not None:
             c.metadata_json = json.dumps(body.metadata)
+        if body.quiet_hours_enabled is not None:
+            c.quiet_hours_enabled = 1 if body.quiet_hours_enabled else 0
+        if body.quiet_hours_weekdays is not None:
+            c.quiet_hours_weekdays = body.quiet_hours_weekdays
+        if body.quiet_hours_saturday is not None:
+            c.quiet_hours_saturday = body.quiet_hours_saturday
+        if body.quiet_hours_sunday is not None:
+            c.quiet_hours_sunday = body.quiet_hours_sunday
+        if body.quiet_hours_timezone is not None:
+            c.quiet_hours_timezone = body.quiet_hours_timezone
         
         c.updated_at = datetime.now(timezone.utc)
         session.commit()

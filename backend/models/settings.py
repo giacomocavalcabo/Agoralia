@@ -24,6 +24,13 @@ class AppSettings(Base):
     prefer_detect_language: Mapped[Optional[int]] = mapped_column(Integer, default=0)
     kb_version_outbound: Mapped[Optional[int]] = mapped_column(Integer, default=0)
     kb_version_inbound: Mapped[Optional[int]] = mapped_column(Integer, default=0)
+    
+    # Default Quiet Hours
+    quiet_hours_enabled: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=0)  # 0=false, 1=true
+    quiet_hours_weekdays: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "09:00-21:00"
+    quiet_hours_saturday: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "09:00-21:00" | "forbidden"
+    quiet_hours_sunday: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "forbidden" | "09:00-21:00"
+    quiet_hours_timezone: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # "Europe/Rome"
 
 
 class AppMeta(Base):

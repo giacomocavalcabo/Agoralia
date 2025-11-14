@@ -23,6 +23,13 @@ class Campaign(Base):
     end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     timezone: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, default="UTC")
     
+    # Quiet Hours (campaign override)
+    quiet_hours_enabled: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # NULL = use country/default, 0 = disabled, 1 = enabled
+    quiet_hours_weekdays: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "09:00-21:00"
+    quiet_hours_saturday: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "09:00-21:00" | "forbidden"
+    quiet_hours_sunday: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # "forbidden" | "09:00-21:00"
+    quiet_hours_timezone: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # "Europe/Rome" (if NULL, uses campaign timezone)
+    
     # Limits & Budget
     max_calls_per_day: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     budget_cents: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

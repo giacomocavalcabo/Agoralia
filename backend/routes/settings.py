@@ -35,6 +35,11 @@ async def get_settings_endpoint() -> Dict[str, Any]:
         "prefer_detect_language": bool(row.prefer_detect_language or 0),
         "kb_version_outbound": int(row.kb_version_outbound or 0),
         "kb_version_inbound": int(row.kb_version_inbound or 0),
+        "quiet_hours_enabled": bool(row.quiet_hours_enabled or 0),
+        "quiet_hours_weekdays": row.quiet_hours_weekdays,
+        "quiet_hours_saturday": row.quiet_hours_saturday,
+        "quiet_hours_sunday": row.quiet_hours_sunday,
+        "quiet_hours_timezone": row.quiet_hours_timezone,
     }
 
 
@@ -50,6 +55,12 @@ class SettingsUpdate(BaseModel):
     default_lang: Optional[str] = None
     supported_langs: Optional[List[str]] = None
     prefer_detect_language: Optional[bool] = None
+    # Default Quiet Hours
+    quiet_hours_enabled: Optional[bool] = None
+    quiet_hours_weekdays: Optional[str] = None
+    quiet_hours_saturday: Optional[str] = None
+    quiet_hours_sunday: Optional[str] = None
+    quiet_hours_timezone: Optional[str] = None
 
 
 @router.put("")
@@ -94,6 +105,16 @@ async def update_settings(body: SettingsUpdate) -> Dict[str, Any]:
             pass
         if body.prefer_detect_language is not None:
             row.prefer_detect_language = 1 if body.prefer_detect_language else 0
+        if body.quiet_hours_enabled is not None:
+            row.quiet_hours_enabled = 1 if body.quiet_hours_enabled else 0
+        if body.quiet_hours_weekdays is not None:
+            row.quiet_hours_weekdays = body.quiet_hours_weekdays
+        if body.quiet_hours_saturday is not None:
+            row.quiet_hours_saturday = body.quiet_hours_saturday
+        if body.quiet_hours_sunday is not None:
+            row.quiet_hours_sunday = body.quiet_hours_sunday
+        if body.quiet_hours_timezone is not None:
+            row.quiet_hours_timezone = body.quiet_hours_timezone
         session.commit()
     return await get_settings_endpoint()
 
