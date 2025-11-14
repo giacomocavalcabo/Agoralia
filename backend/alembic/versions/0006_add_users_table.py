@@ -37,30 +37,51 @@ def upgrade() -> None:
             sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         )
     else:
-        # Table exists, check if tenant_id column exists
+        # Table exists, check what columns are missing
         columns = [col['name'] for col in inspector.get_columns('users')]
+        columns_info = {col['name']: col for col in inspector.get_columns('users')}
         
+        # Check and add missing columns
+        columns_to_add = []
         if 'tenant_id' not in columns:
-            # Add tenant_id column
-            # First add as nullable
+            columns_to_add.append(('tenant_id', sa.Integer()))
+        if 'password_salt' not in columns:
+            columns_to_add.append(('password_salt', sa.String(length=64)))
+        if 'is_admin' not in columns:
+            columns_to_add.append(('is_admin', sa.Integer(), {'server_default': sa.text('0')}))
+        
+        # Add missing columns
+        if columns_to_add:
             with op.batch_alter_table('users', schema=None) as batch_op:
-                batch_op.add_column(sa.Column('tenant_id', sa.Integer(), nullable=True))
-            
+                for col_info in columns_to_add:
+                    col_name = col_info[0]
+                    col_type = col_info[1]
+                    kwargs = col_info[2] if len(col_info) > 2 else {}
+                    if col_name == 'tenant_id':
+                        batch_op.add_column(sa.Column(col_name, col_type, nullable=True, **kwargs))
+                    else:
+                        # password_salt and is_admin need defaults or can be nullable initially
+                        if col_name == 'password_salt':
+                            # Can't be nullable in model, but we need to set defaults for existing rows
+                            batch_op.add_column(sa.Column(col_name, col_type, nullable=True))
+                        else:
+                            batch_op.add_column(sa.Column(col_name, col_type, nullable=False, **kwargs))
+        
+        # Get user count and id column type for handling existing rows
+        from sqlalchemy import text
+        result = conn.execute(text("SELECT COUNT(*) FROM users"))
+        user_count = result.scalar()
+        
+        # Check if id column is integer or varchar
+        id_column_type = None
+        for col in inspector.get_columns('users'):
+            if col['name'] == 'id':
+                id_column_type = str(col['type'])
+                break
+        
+        # Now handle tenant_id specifically
+        if 'tenant_id' not in columns:
             # Update existing rows: set tenant_id = id
-            # Check if id column is integer or varchar
-            id_column_type = None
-            for col in inspector.get_columns('users'):
-                if col['name'] == 'id':
-                    id_column_type = str(col['type'])
-                    break
-            
-            from sqlalchemy import text
-            
-            # If id is varchar/string, we need to handle it differently
-            # First, check if there are any existing users
-            result = conn.execute(text("SELECT COUNT(*) FROM users"))
-            user_count = result.scalar()
-            
             if user_count > 0:
                 # There are existing users, need to set tenant_id
                 # Check if id is integer or needs casting
@@ -100,6 +121,17 @@ def upgrade() -> None:
                     WHERE tenant_id IS NULL
                 """))
                 conn.execute(text("ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL"))
+        
+        # Handle password_salt for existing rows
+        if 'password_salt' not in columns and user_count > 0:
+            # Generate random salts for existing users
+            conn.execute(text("""
+                UPDATE users 
+                SET password_salt = substr(md5(random()::text || clock_timestamp()::text), 1, 64)
+                WHERE password_salt IS NULL
+            """))
+            # Now make it NOT NULL
+            conn.execute(text("ALTER TABLE users ALTER COLUMN password_salt SET NOT NULL"))
 
 
 def downgrade() -> None:
