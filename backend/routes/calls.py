@@ -75,14 +75,17 @@ class PhoneNumberPurchase(BaseModel):
 async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     """Purchase a phone number via Retell AI
     
-    Args:
-        phone_number: E.164 format number to purchase (e.g., +393491234567)
-        area_code: US area code (only for US numbers)
-        country_code: Country code (currently Retell supports US, CA, but we can try IT)
-        number_provider: Provider to use (twilio, telnyx)
-        inbound_agent_id: Agent ID to bind for inbound calls
-        outbound_agent_id: Agent ID to bind for outbound calls
-        nickname: Nickname for the number
+    Body parameters:
+    - phone_number: E.164 format (e.g., +393491234567) - When provided, country_code is ignored
+    - area_code: US/CA area code (only for US/CA numbers via area code search)
+    - country_code: Country code (US or CA only, required for area_code)
+    - number_provider: telnyx or twilio
+    - inbound_agent_id: Optional agent for inbound calls
+    - outbound_agent_id: Optional agent for outbound calls
+    - nickname: Optional nickname
+    
+    Note: Retell API supports country_code only for US/CA. For other countries,
+    use phone_number directly in E.164 format.
     """
     api_key = os.getenv("RETELL_API_KEY")
     if not api_key:
@@ -100,11 +103,16 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     # Check if phone_number is provided
     if body.phone_number:
         retell_body["phone_number"] = body.phone_number
-        # country_code is optional when phone_number is provided
-        if body.country_code:
-            retell_body["country_code"] = body.country_code
+        # Don't send country_code when phone_number is provided - Retell only supports US/CA
+        # The country is inferred from the phone_number E.164 format
     elif body.area_code is not None:
         retell_body["area_code"] = body.area_code
+        # For area_code, country_code is required and must be US or CA
+        if body.country_code not in ["US", "CA"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Per area_code, country_code deve essere US o CA (Retell supporta solo questi)"
+            )
         retell_body["country_code"] = body.country_code
     else:
         raise HTTPException(
