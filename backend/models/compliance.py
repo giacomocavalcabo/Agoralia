@@ -6,36 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from config.database import Base
 
 
-class Disposition(Base):
-    __tablename__ = "dispositions"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    call_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("calls.id"), nullable=True)
-    outcome: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-
-
-class CallMedia(Base):
-    __tablename__ = "call_media"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    call_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("calls.id"), nullable=True)
-    audio_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-
-
-class CallStructured(Base):
-    __tablename__ = "call_structured"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    call_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("calls.id"), nullable=True)
-    bant_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    trade_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+# Note: Disposition, CallMedia, CallStructured removed - now stored in CallRecord
+# Fields migrated to calls table:
+# - Disposition -> calls.disposition_outcome, calls.disposition_note, calls.disposition_updated_at
+# - CallMedia -> calls.media_json (JSON array)
+# - CallStructured -> calls.structured_json (JSON object)
 
 
 class CostEvent(Base):

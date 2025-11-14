@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from config.database import engine
 from models.campaigns import Campaign, Lead
 from models.calls import CallRecord
-from models.compliance import Disposition
+# Note: Disposition removed - now use CallRecord.disposition_outcome
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
 from utils.helpers import country_iso_from_e164
@@ -347,13 +347,7 @@ async def get_campaign_stats(request: Request, campaign_id: int) -> Dict[str, An
             calls_successful = sum(1 for cl in calls if cl.status == "ended" or cl.status == "completed")
             
             if calls:
-                call_ids = [cl.id for cl in calls]
-                qd = (
-                    session.query(Disposition)
-                    .filter(Disposition.call_id.in_(call_ids))
-                    .all()
-                )
-                qualified = sum(1 for d in qd if (d.outcome or "").lower() in qualified_set)
+                qualified = sum(1 for cl in calls if (cl.disposition_outcome or "").lower() in qualified_set)
         
         conversion_rate = (qualified / calls_count * 100.0) if calls_count else 0.0
         

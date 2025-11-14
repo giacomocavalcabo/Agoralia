@@ -28,13 +28,5 @@ class WorkflowEmailEvent(Base):
     billed: Mapped[int] = mapped_column(Integer, default=0)
 
 
-class EmailProviderSettings(Base):
-    __tablename__ = "email_provider_settings"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[int] = mapped_column(Integer)
-    provider: Mapped[str] = mapped_column(String(16), default="postmark")
-    api_key_enc: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    from_email: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
-    region: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+# Note: EmailProviderSettings removed - not used in routes
 

@@ -10,8 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from config.database import engine
-from models.calls import CallRecord, CallSegment, CallSummary
-from models.compliance import Disposition, CallMedia, CallStructured
+from models.calls import CallRecord, CallSegment
 from models.agents import KnowledgeSection
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
@@ -357,19 +356,19 @@ async def get_call(request: Request, call_id: int) -> Dict[str, Any]:
             raise HTTPException(status_code=404, detail="Call not found")
         if tenant_id is not None and r.tenant_id != tenant_id:
             raise HTTPException(status_code=404, detail="Call not found")
-        # Include latest disposition and media url if any
-        disp = (
-            session.query(Disposition)
-            .filter(Disposition.call_id == call_id)
-            .order_by(Disposition.updated_at.desc())
-            .first()
-        )
-        media = (
-            session.query(CallMedia)
-            .filter(CallMedia.call_id == call_id)
-            .order_by(CallMedia.created_at.desc())
-            .first()
-        )
+        
+        # Parse media_json if exists
+        media_urls = []
+        try:
+            if r.media_json:
+                media_data = json.loads(r.media_json)
+                media_urls = media_data.get("audio_urls", [])
+        except Exception:
+            pass
+        # Fallback to audio_url if no media_json
+        if not media_urls and r.audio_url:
+            media_urls = [r.audio_url]
+        
         return {
             "id": r.id,
             "created_at": r.created_at.isoformat(),
@@ -382,8 +381,10 @@ async def get_call(request: Request, call_id: int) -> Dict[str, Any]:
             "status": r.status,
             "raw_response": r.raw_response,
             "country_iso": country_iso_from_e164(r.to_number),
-            "disposition": (disp.outcome if disp else None),
-            "audio_url": (media.audio_url if media else None),
+            "disposition": r.disposition_outcome,
+            "disposition_note": r.disposition_note,
+            "audio_url": media_urls[0] if media_urls else None,
+            "audio_urls": media_urls,
         }
 
 
@@ -415,42 +416,35 @@ async def get_call_segments(call_id: int) -> List[Dict[str, Any]]:
 async def get_call_summary(call_id: int) -> Dict[str, Any]:
     """Get call summary and structured data"""
     with Session(engine) as session:
-        row = (
-            session.query(CallSummary)
-            .filter(CallSummary.call_id == call_id)
-            .order_by(CallSummary.id.desc())
-            .first()
-        )
-        if not row:
-            return {"summary": None}
+        r = session.get(CallRecord, call_id)
+        if not r:
+            raise HTTPException(status_code=404, detail="Call not found")
+        
+        # Parse summary_json
+        summary = None
         try:
-            payload = json.loads(row.bullets_json or "{}")
+            if r.summary_json:
+                summary_data = json.loads(r.summary_json)
+                summary = summary_data.get("bullets", {})
         except Exception:
-            payload = {"raw": row.bullets_json}
-        # Also fetch structured BANT/TRADE if available
-        structured = (
-            session.query(CallStructured)
-            .filter(CallStructured.call_id == call_id)
-            .order_by(CallStructured.id.desc())
-            .first()
-        )
+            summary = {"raw": r.summary_json} if r.summary_json else None
+        
+        # Parse structured_json (BANT/TRADE)
         bant = {}
         trade = {}
         try:
-            if structured and structured.bant_json:
-                bant = json.loads(structured.bant_json)
+            if r.structured_json:
+                structured_data = json.loads(r.structured_json)
+                bant = structured_data.get("bant", {})
+                trade = structured_data.get("trade", {})
         except Exception:
-            bant = {"raw": structured.bant_json} if structured else {}
-        try:
-            if structured and structured.trade_json:
-                trade = json.loads(structured.trade_json)
-        except Exception:
-            trade = {"raw": structured.trade_json} if structured else {}
+            pass
+        
         return {
-            "summary": payload,
+            "summary": summary,
             "bant": bant,
             "trade": trade,
-            "created_at": row.created_at.isoformat() if row.created_at else None,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
         }
 
 
@@ -502,8 +496,9 @@ async def update_disposition(call_id: int, body: DispositionUpdate) -> Dict[str,
         r = session.get(CallRecord, call_id)
         if not r:
             raise HTTPException(status_code=404, detail="Call not found")
-        disp = Disposition(call_id=call_id, outcome=body.outcome, note=body.note)
-        session.add(disp)
+        r.disposition_outcome = body.outcome
+        r.disposition_note = body.note
+        r.disposition_updated_at = datetime.now(timezone.utc)
         session.commit()
     return {"ok": True}
 
@@ -544,13 +539,7 @@ async def calls_by_phone(
         rows = q.order_by(CallRecord.created_at.desc()).limit(500).all()
         results: List[Dict[str, Any]] = []
         for r in rows:
-            latest_disp = (
-                session.query(Disposition)
-                .filter(Disposition.call_id == r.id)
-                .order_by(Disposition.updated_at.desc())
-                .first()
-            )
-            out = (latest_disp.outcome if latest_disp else None)
+            out = r.disposition_outcome
             if outcome and (out or "").lower() != outcome.lower():
                 continue
             results.append(

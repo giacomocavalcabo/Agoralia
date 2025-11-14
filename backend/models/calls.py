@@ -21,6 +21,20 @@ class CallRecord(Base):
     status: Mapped[str] = mapped_column(String(32), default="created")
     raw_response: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     audio_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    # Disposition fields (from dispositions table)
+    disposition_outcome: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    disposition_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    disposition_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    
+    # Media fields (from call_media table)
+    media_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON: {"audio_urls": [...]}
+    
+    # Structured fields (from call_structured table)
+    structured_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON: {"bant": {...}, "trade": {...}}
+    
+    # Summary fields (from summaries table)
+    summary_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON: {"bullets": [...]}
 
 
 class CallSegment(Base):
@@ -38,15 +52,8 @@ class CallSegment(Base):
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-class CallSummary(Base):
-    __tablename__ = "summaries"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    call_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("calls.id"), nullable=True)
-    provider_call_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
-    bullets_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+# Note: CallSummary removed - now stored in CallRecord.summary_json
+# Kept for backward compatibility during migration if needed
 
 
 class ScheduledCall(Base):

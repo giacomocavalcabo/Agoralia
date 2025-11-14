@@ -57,12 +57,5 @@ class Entitlement(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-class UserPlanOverride(Base):
-    __tablename__ = "user_plan_overrides"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[int] = mapped_column(Integer)
-    user_id: Mapped[int] = mapped_column(Integer)
-    key: Mapped[str] = mapped_column(String(64))
-    value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+# Note: UserPlanOverride removed - not used in routes
 

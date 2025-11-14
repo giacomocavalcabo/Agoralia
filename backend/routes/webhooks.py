@@ -12,8 +12,7 @@ from sqlalchemy.orm import Session
 
 from config.database import engine
 from models.webhooks import WebhookEvent, WebhookDLQ
-from models.calls import CallRecord, CallSegment, CallSummary
-from models.compliance import CallMedia, CallStructured, Disposition
+from models.calls import CallRecord, CallSegment
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
 from utils.redis_client import get_redis
@@ -147,19 +146,16 @@ async def webhooks_retell(request: Request, x_signature: Optional[str] = Header(
                     )
                     session.add(seg)
                 if event_type == "call.summary":
-                    summ = CallSummary(
-                        call_id=rec.id,
-                        provider_call_id=str(ref_id),
-                        bullets_json=json.dumps(data),
-                    )
-                    session.add(summ)
-                    # structured extraction if present
-                    structured = CallStructured(
-                        call_id=rec.id,
-                        bant_json=json.dumps(data.get("bant") or {}),
-                        trade_json=json.dumps(data.get("trade") or {}),
-                    )
-                    session.add(structured)
+                    # Store summary in CallRecord.summary_json
+                    summary_data = {"bullets": data}
+                    rec.summary_json = json.dumps(summary_data)
+                    # Store structured data if present
+                    if data.get("bant") or data.get("trade"):
+                        structured_data = {
+                            "bant": data.get("bant", {}),
+                            "trade": data.get("trade", {})
+                        }
+                        rec.structured_json = json.dumps(structured_data)
                 # media
                 if data.get("recording_url"):
                     # Optionally mirror to R2
@@ -173,18 +169,22 @@ async def webhooks_retell(request: Request, x_signature: Optional[str] = Header(
                     except Exception:
                         mirrored_url = None
                     final_url = mirrored_url or data.get("recording_url")
-                    media = CallMedia(call_id=rec.id, audio_url=final_url)
-                    session.add(media)
-                    # also cache on CallRecord for faster access
+                    # Store in audio_url (backward compat) and media_json
+                    rec.audio_url = final_url
+                    # Update media_json
                     try:
-                        rec.audio_url = final_url
+                        existing_media = json.loads(rec.media_json) if rec.media_json else {}
+                        audio_urls = existing_media.get("audio_urls", [])
+                        if final_url not in audio_urls:
+                            audio_urls.append(final_url)
+                        rec.media_json = json.dumps({"audio_urls": audio_urls})
                     except Exception:
-                        pass
+                        rec.media_json = json.dumps({"audio_urls": [final_url]})
                 # outcome -> disposition
                 if event_type == "call.finished":
                     outcome = (data.get("outcome") or data.get("disposition") or data.get("status") or "unknown")
-                    disp = Disposition(call_id=rec.id, outcome=outcome, note=None)
-                    session.add(disp)
+                    rec.disposition_outcome = outcome
+                    rec.disposition_updated_at = datetime.now(timezone.utc)
                 session.commit()
                 # Mark webhook processed
                 we = session.query(WebhookEvent).filter(WebhookEvent.event_id == event_id).one_or_none()
