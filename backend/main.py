@@ -322,6 +322,15 @@ class ScheduledCall(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+class BatchItem(BaseModel):
+    to: str
+    from_number: Optional[str] = None
+    delay_ms: int = 0
+    metadata: Optional[dict] = None
+    agent_id: Optional[str] = None
+    kb_id: Optional[int] = None
+
+
 @app.post("/schedule")
 async def schedule_call(request: Request, item: BatchItem) -> Dict[str, Any]:
     tenant_id = extract_tenant_id(request)
@@ -3275,15 +3284,6 @@ async def get_call_summary(call_id: int) -> Dict[str, Any]:
         except Exception:
             trade = {"raw": structured.trade_json}
         return {"summary": payload, "bant": bant, "trade": trade, "created_at": row.created_at.isoformat()}
-
-
-class BatchItem(BaseModel):
-    to: str
-    from_number: Optional[str] = None
-    delay_ms: int = 0
-    metadata: Optional[dict] = None
-    agent_id: Optional[str] = None
-    kb_id: Optional[int] = None
 
 
 @app.post("/batch")
