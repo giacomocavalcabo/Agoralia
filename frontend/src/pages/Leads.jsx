@@ -80,7 +80,7 @@ export default function Leads() {
     const path = `/leads${params.toString() ? `?${params.toString()}` : ''}`
     const res = await apiFetch(path)
     const data = await res.json()
-    setLeads(data.items || data)
+    setLeads(Array.isArray(data.items) ? data.items : (Array.isArray(data) ? data : []))
     setTotal(Number(data.total || 0))
     if (typeof data.limit === 'number') setLimit(data.limit)
     if (typeof data.offset === 'number') setOffset(data.offset)

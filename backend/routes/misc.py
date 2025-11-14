@@ -63,12 +63,16 @@ async def legal_notice(request: Request, e164: Optional[str] = None, iso: Option
     tenant_id = extract_tenant_id(request)
     
     if not country:
+        # Return empty/default structure, no hardcoded values
         return {
             "country_iso": None,
             "notice": {
-                "title": "Unknown",
-                "disclosure": "Check local rules.",
-                "dnc": "Check DNC rules."
+                "title": None,
+                "disclosure": None,
+                "dnc": None,
+                "quiet_hours": None,
+                "regime_b2b": None,
+                "regime_b2c": None,
             }
         }
     

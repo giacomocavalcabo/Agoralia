@@ -183,27 +183,40 @@ async def list_country_rules(
     request: Request,
     country_iso: Optional[str] = Query(None),
 ) -> Dict[str, Any]:
-    """List country rules (tenant overrides or defaults)"""
+    """List country rules (tenant overrides or defaults from JSON)"""
+    from services.compliance import _load_compliance_json
     tenant_id = extract_tenant_id(request)
+    
+    # Always return list from JSON, not just DB rules
+    json_data = _load_compliance_json()
+    items = []
+    
+    # Get DB rules for tenant overrides
     with tenant_session(request) as session:
+        db_rules = {}
         query = session.query(CountryRule)
         if tenant_id is not None:
-            # Show tenant-specific and global rules
             query = query.filter(
                 (CountryRule.tenant_id == tenant_id) | (CountryRule.tenant_id.is_(None))
             )
         if country_iso:
             query = query.filter(CountryRule.country_iso == country_iso.upper())
         
-        rules = query.all()
+        for r in query.all():
+            db_rules[r.country_iso] = r
         
-        items = []
-        for r in rules:
-            rule_data = get_country_rule(r.tenant_id, r.country_iso, session)
+        # Include all countries from JSON
+        for iso, json_rule in json_data.items():
+            if country_iso and iso.upper() != country_iso.upper():
+                continue
+            
+            # Check if tenant has override
+            rule_data = get_country_rule(tenant_id, iso, session)
+            
             items.append({
-                "id": r.id,
-                "tenant_id": r.tenant_id,
-                "country_iso": r.country_iso,
+                "id": None,  # JSON rules don't have DB ID
+                "tenant_id": None,  # JSON rules are global
+                "country_iso": iso,
                 "regime_b2b": rule_data.get("regime_b2b"),
                 "regime_b2c": rule_data.get("regime_b2c"),
                 "dnc_registry_enabled": rule_data.get("dnc_registry_enabled"),
@@ -212,6 +225,9 @@ async def list_country_rules(
                 "quiet_hours_weekdays": rule_data.get("quiet_hours_weekdays"),
                 "ai_disclosure_required": rule_data.get("ai_disclosure_required"),
             })
+        
+        # Sort by country_iso
+        items.sort(key=lambda x: x.get("country_iso", ""))
         
         return {"items": items}
 
