@@ -62,8 +62,12 @@ class DispositionUpdate(BaseModel):
 # ============================================================================
 
 @router.post("/retell/test")
-async def test_retell_api(request: Request):
-    """Test Retell API connection with minimal request"""
+async def test_retell_api(request: Request, agent_id: Optional[str] = None):
+    """Test Retell API connection with minimal request
+    
+    Args:
+        agent_id: Optional agent_id to use for test. If not provided, uses default_agent_id from settings.
+    """
     api_key = os.getenv("RETELL_API_KEY")
     if not api_key:
         raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
@@ -90,32 +94,38 @@ async def test_retell_api(request: Request):
     
     missing_fields = []
     
-    # Check for agent_id
-    agent_id = None
-    try:
-        from services.settings import get_settings
-        settings = get_settings()
-        if settings and settings.default_agent_id:
-            agent_id = settings.default_agent_id
-            test_body["agent_id"] = agent_id
-    except Exception as e:
-        missing_fields.append(f"agent_id (default_agent_id in settings - error: {str(e)})")
-    
+    # Check for agent_id - use query param if provided, otherwise try settings
     if not agent_id:
-        missing_fields.append("agent_id (default_agent_id in settings)")
+        try:
+            from services.settings import get_settings
+            settings = get_settings()
+            if settings and settings.default_agent_id:
+                agent_id = settings.default_agent_id
+        except Exception as e:
+            missing_fields.append(f"agent_id (default_agent_id in settings - error: {str(e)})")
     
-    # Warn if missing fields but still try
+    if agent_id:
+        test_body["agent_id"] = agent_id
+    else:
+        missing_fields.append("agent_id (passa come query param ?agent_id=xxx o configura default_agent_id in settings)")
+    
+    # Warn if missing fields - agent_id is required by Retell
     if missing_fields:
         return {
             "success": False,
             "error": "Campi mancanti per chiamata Retell AI",
             "missing_fields": missing_fields,
+            "required_by_retell": ["from_number", "to_number", "agent_id"],
+            "current_config": {
+                "DEFAULT_FROM_NUMBER": os.getenv("DEFAULT_FROM_NUMBER"),
+                "default_agent_id": agent_id,
+            },
             "request_would_be": {
                 "endpoint": endpoint,
                 "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
                 "body": test_body,
             },
-            "note": "Configura i campi mancanti prima di procedere"
+            "note": "Configura default_agent_id nelle settings prima di procedere. L'agent_id è obbligatorio per Retell AI."
         }
     
     async with httpx.AsyncClient(timeout=30) as client:
