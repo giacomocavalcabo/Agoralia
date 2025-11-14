@@ -84,69 +84,59 @@ def run_migrations():
                     print("⚠ Database tables exist but alembic_version is missing", file=sys.stderr)
                     print("Attempting to stamp database with current migration state...", file=sys.stderr)
                     
-                    # Get all migration revisions to find the highest one
+                    # Get all migration revisions
                     script = ScriptDirectory.from_config(alembic_cfg)
-                    revisions = [rev.revision for rev in script.walk_revisions()]
                     
                     # Check which migrations have been applied based on table existence
                     # If calls table exists, at least 0001_init was applied
                     if has_calls_table:
-                        # Check for newer migrations by looking at table columns/features
-                        # If calls has new columns (disposition_outcome, etc), stamp with 0005
-                        # Otherwise stamp with latest before 0005
-                        
-                        # Check if calls table has new optimized columns
+                        # Check if calls table has new optimized columns (0005)
                         calls_columns = [col['name'] for col in inspector.get_columns('calls')]
                         has_optimized_columns = 'disposition_outcome' in calls_columns or 'media_json' in calls_columns
                         
                         # Check if country_rules table exists (0004)
                         has_country_rules = "country_rules" in inspector.get_table_names()
+                        
                         # Check if campaigns has extended fields (0003)
+                        has_extended_campaigns = False
                         if has_campaigns_table:
                             campaigns_columns = [col['name'] for col in inspector.get_columns('campaigns')]
                             has_extended_campaigns = 'agent_id' in campaigns_columns or 'budget_cents' in campaigns_columns
-                        else:
-                            has_extended_campaigns = False
+                        
+                        # Check if subscriptions table exists (0002)
+                        has_subscriptions = "subscriptions" in inspector.get_table_names()
                         
                         # Determine stamp revision by finding the matching revision ID
-                        script = ScriptDirectory.from_config(alembic_cfg)
+                        # Work backwards from newest to oldest
                         stamp_rev = None
-                        
-                        if has_optimized_columns:
-                            # Find revision 0005_optimize_calls_schema
-                            for rev in script.walk_revisions():
-                                if "0005_optimize_calls_schema" in rev.doc or "optimize_calls_schema" in rev.revision:
+                        for rev in script.walk_revisions():
+                            rev_id = rev.revision.lower()
+                            rev_doc = (rev.doc or "").lower()
+                            
+                            # Check in order: 0005, 0004, 0003, 0002, 0001
+                            if has_optimized_columns and ("0005" in rev_id or "optimize_calls_schema" in rev_doc):
+                                stamp_rev = rev.revision
+                                break
+                            elif has_country_rules and ("0004" in rev_id or "country_rules" in rev_doc):
+                                stamp_rev = rev.revision
+                                break
+                            elif has_extended_campaigns and ("0003" in rev_id or "extend_campaigns" in rev_doc):
+                                stamp_rev = rev.revision
+                                break
+                            elif has_subscriptions and ("0002" in rev_id or "billing_sched_kb" in rev_doc):
+                                stamp_rev = rev.revision
+                                break
+                            elif "0001" in rev_id or rev.down_revision is None:
+                                # Default to 0001_init if nothing else matches
+                                if not stamp_rev:
                                     stamp_rev = rev.revision
-                                    break
-                        elif has_country_rules:
-                            # Find revision 0004_country_rules_lead_nature
-                            for rev in script.walk_revisions():
-                                if "0004_country_rules_lead_nature" in rev.doc or "country_rules_lead_nature" in rev.revision:
-                                    stamp_rev = rev.revision
-                                    break
-                        elif has_extended_campaigns:
-                            # Find revision 0003_extend_campaigns
-                            for rev in script.walk_revisions():
-                                if "0003_extend_campaigns" in rev.doc or "extend_campaigns" in rev.revision:
-                                    stamp_rev = rev.revision
-                                    break
-                        elif "subscriptions" in inspector.get_table_names():
-                            # Find revision 0002_billing_sched_kb
-                            for rev in script.walk_revisions():
-                                if "0002_billing_sched_kb" in rev.doc or "billing_sched_kb" in rev.revision:
-                                    stamp_rev = rev.revision
-                                    break
-                        else:
-                            # Find revision 0001_init
-                            for rev in script.walk_revisions():
-                                if "0001_init" in rev.doc or rev.down_revision is None:
-                                    stamp_rev = rev.revision
-                                    break
                         
                         if stamp_rev:
                             print(f"Stamping database with revision: {stamp_rev}", file=sys.stderr)
                             command.stamp(alembic_cfg, stamp_rev)
-                        print("✓ Database stamped successfully", file=sys.stderr)
+                            print("✓ Database stamped successfully", file=sys.stderr)
+                        else:
+                            print("⚠ Could not determine revision to stamp", file=sys.stderr)
                     else:
                         print("⚠ No existing tables found, will create from scratch", file=sys.stderr)
                         
