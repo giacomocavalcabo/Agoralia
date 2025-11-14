@@ -105,28 +105,13 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
             missing_fields.append(f"agent_id (default_agent_id in settings - error: {str(e)})")
     
     if agent_id:
-        test_body["agent_id"] = agent_id
+        test_body["override_agent_id"] = agent_id
     else:
-        missing_fields.append("agent_id (passa come query param ?agent_id=xxx o configura default_agent_id in settings)")
+        # agent_id is optional - Retell will use the agent bound to from_number
+        missing_fields.append("override_agent_id (opzionale - se omesso, Retell usa l'agent associato al from_number)")
     
-    # Warn if missing fields - agent_id is required by Retell
-    if missing_fields:
-        return {
-            "success": False,
-            "error": "Campi mancanti per chiamata Retell AI",
-            "missing_fields": missing_fields,
-            "required_by_retell": ["from_number", "to_number", "agent_id"],
-            "current_config": {
-                "DEFAULT_FROM_NUMBER": os.getenv("DEFAULT_FROM_NUMBER"),
-                "default_agent_id": agent_id,
-            },
-            "request_would_be": {
-                "endpoint": endpoint,
-                "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                "body": test_body,
-            },
-            "note": "Configura default_agent_id nelle settings prima di procedere. L'agent_id è obbligatorio per Retell AI."
-        }
+    # Note: Retell allows calls without override_agent_id if from_number has an agent bound
+    # So we'll try the call anyway and see what happens
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
@@ -216,17 +201,15 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             if aid:
                 agent_id = aid
     
-    # Build request body - Retell AI requires: from_number, to_number, agent_id
+    # Build request body - Retell AI requires: from_number, to_number
+    # agent_id is optional - if not provided, Retell uses the agent bound to from_number
     body = {
         "from_number": from_num,
         "to_number": payload.to,
     }
-    if not agent_id:
-        raise HTTPException(
-            status_code=400,
-            detail="agent_id richiesto: imposta default_agent_id nelle settings o passa agent_id"
-        )
-    body["agent_id"] = agent_id
+    # Use override_agent_id if we have an agent_id (Retell API parameter name)
+    if agent_id:
+        body["override_agent_id"] = agent_id
     body.setdefault("metadata", {})
     body["metadata"]["lang"] = lang
     if is_multi:
