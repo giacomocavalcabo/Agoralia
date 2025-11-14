@@ -51,6 +51,7 @@ class Lead(Base):
     country_iso: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     preferred_lang: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     role: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # supplier | supplied
+    nature: Mapped[Optional[str]] = mapped_column(String(8), nullable=True, default="unknown")  # "b2b" | "b2c" | "unknown"
     consent_basis: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     consent_status: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # granted | denied | unknown
     campaign_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("campaigns.id"), nullable=True)

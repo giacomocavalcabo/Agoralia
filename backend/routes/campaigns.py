@@ -57,6 +57,7 @@ class LeadCreate(BaseModel):
     company: Optional[str] = None
     preferred_lang: Optional[str] = None
     role: Optional[str] = None
+    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown"
     consent_basis: Optional[str] = None
     consent_status: Optional[str] = None
     campaign_id: Optional[int] = None
@@ -68,6 +69,7 @@ class LeadUpdate(BaseModel):
     company: Optional[str] = None
     preferred_lang: Optional[str] = None
     role: Optional[str] = None
+    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown"
     consent_basis: Optional[str] = None
     consent_status: Optional[str] = None
     campaign_id: Optional[int] = None
@@ -426,6 +428,7 @@ async def list_leads(
     country_iso: Optional[str] = None,
     preferred_lang: Optional[str] = None,
     role: Optional[str] = None,
+    nature: Optional[str] = None,  # "b2b" | "b2c" | "unknown"
     consent_status: Optional[str] = None,
     created_gte: Optional[str] = None,
     created_lte: Optional[str] = None,
@@ -446,6 +449,8 @@ async def list_leads(
             query = query.filter(Lead.preferred_lang == preferred_lang)
         if role:
             query = query.filter(Lead.role == role)
+        if nature:
+            query = query.filter(Lead.nature == nature)
         if consent_status:
             query = query.filter(Lead.consent_status == consent_status)
         if q is not None and q.strip():
@@ -487,6 +492,7 @@ async def list_leads(
                     "country_iso": l.country_iso,
                     "preferred_lang": l.preferred_lang,
                     "role": l.role,
+                    "nature": l.nature,
                     "consent_basis": l.consent_basis,
                     "consent_status": l.consent_status,
                     "campaign_id": l.campaign_id,
@@ -502,6 +508,11 @@ async def create_lead(request: Request, body: LeadCreate) -> Dict[str, Any]:
     """Create lead"""
     tenant_id = extract_tenant_id(request)
     with tenant_session(request) as session:
+        # Auto-detect nature from company if not provided
+        nature = body.nature or "unknown"
+        if nature == "unknown" and body.company:
+            nature = "b2b"
+        
         l = Lead(
             tenant_id=tenant_id,
             name=body.name,
@@ -509,6 +520,7 @@ async def create_lead(request: Request, body: LeadCreate) -> Dict[str, Any]:
             company=body.company,
             preferred_lang=body.preferred_lang,
             role=body.role,
+            nature=nature,
             consent_basis=body.consent_basis,
             consent_status=body.consent_status or "unknown",
             country_iso=country_iso_from_e164(body.phone),
@@ -527,12 +539,15 @@ async def update_lead(request: Request, lead_id: int, body: LeadUpdate) -> Dict[
         l = session.get(Lead, lead_id)
         if not l or (tenant_id is not None and l.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="Lead not found")
-        for field in ["name", "phone", "company", "preferred_lang", "role", "consent_basis", "consent_status", "campaign_id"]:
+        for field in ["name", "phone", "company", "preferred_lang", "role", "nature", "consent_basis", "consent_status", "campaign_id"]:
             val = getattr(body, field)
             if val is not None:
                 setattr(l, field, val)
         if body.phone is not None:
             l.country_iso = country_iso_from_e164(body.phone)
+        # Auto-detect nature from company if not provided but company is set
+        if (body.nature is None or l.nature == "unknown") and body.company is not None:
+            l.nature = "b2b"
         session.commit()
     return {"ok": True}
 

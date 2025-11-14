@@ -9,7 +9,7 @@ from .crm import CRMConnection, CRMMappings
 from .settings import AppSettings, AppMeta
 from .agents import Agent, KnowledgeBase, KnowledgeSection, PhoneNumber, TenantAgent
 from .campaigns import Campaign, Lead
-from .compliance import Disposition, CallMedia, CallStructured, CostEvent, DNCEntry, Consent
+from .compliance import Disposition, CallMedia, CallStructured, CostEvent, DNCEntry, Consent, CountryRule
 
 __all__ = [
     "Base",
@@ -46,5 +46,6 @@ __all__ = [
     "CostEvent",
     "DNCEntry",
     "Consent",
+    "CountryRule",
 ]
 

@@ -54,37 +54,70 @@ async def list_events() -> List[Dict[str, Any]]:
 # ============================================================================
 
 @router.get("/legal/notice")
-async def legal_notice(e164: Optional[str] = None, iso: Optional[str] = None) -> Dict[str, Any]:
-    """Get legal notice for country"""
-    country = iso or country_iso_from_e164(e164 or "")
-    notices = {
-        "IT": {
-            "title": "Italy",
-            "disclosure": "Announce virtual agent; request explicit consent for recording.",
-            "dnc": "Respect RPO (Registro Pubblico delle Opposizioni).",
-        },
-        "FR": {
-            "title": "France",
-            "disclosure": "Announce recording; comply with CNIL guidance.",
-            "dnc": "Apply Bloctel rules.",
-        },
-        "MA": {
-            "title": "Morocco",
-            "disclosure": "Announce identity and purpose; verify local consent rules.",
-            "dnc": "Observe local telecom marketing restrictions.",
-        },
-        "EG": {
-            "title": "Egypt",
-            "disclosure": "PDPL: ensure lawful basis; explicit consent for recording.",
-            "dnc": "Check local DNC policies.",
-        },
+async def legal_notice(request: Request, e164: Optional[str] = None, iso: Optional[str] = None) -> Dict[str, Any]:
+    """Get legal notice for country (now uses CountryRule from JSON)"""
+    from services.compliance import get_country_rule
+    import json
+    
+    country = (iso or country_iso_from_e164(e164 or "") or "").upper()
+    tenant_id = extract_tenant_id(request)
+    
+    if not country:
+        return {
+            "country_iso": None,
+            "notice": {
+                "title": "Unknown",
+                "disclosure": "Check local rules.",
+                "dnc": "Check DNC rules."
+            }
+        }
+    
+    with Session(engine) as session:
+        rule = get_country_rule(tenant_id, country, session)
+    
+    metadata = {}
+    if rule.get("metadata_json"):
+        try:
+            metadata = json.loads(rule["metadata_json"])
+        except Exception:
+            pass
+    
+    country_name = metadata.get("country", country)
+    
+    notice = {
+        "title": country_name or country,
+        "disclosure": None,
+        "dnc": None,
+        "quiet_hours": None,
+        "regime_b2b": rule.get("regime_b2b"),
+        "regime_b2c": rule.get("regime_b2c"),
     }
-    payload = notices.get(country or "", {
-        "title": country or "Unknown",
-        "disclosure": "Check local rules.",
-        "dnc": "Check DNC rules."
-    })
-    return {"country_iso": country, "notice": payload}
+    
+    # AI Disclosure
+    if rule.get("ai_disclosure_required"):
+        notice["disclosure"] = rule.get("ai_disclosure_note") or "AI disclosure required for this country"
+    
+    # DNC
+    if rule.get("dnc_registry_enabled"):
+        dnc_name = rule.get("dnc_registry_name") or "DNC registry"
+        notice["dnc"] = f"Respect {dnc_name}"
+    
+    # Quiet Hours
+    if rule.get("quiet_hours_enabled"):
+        weekdays = rule.get("quiet_hours_weekdays")
+        sat = rule.get("quiet_hours_saturday")
+        sun = rule.get("quiet_hours_sunday")
+        qh_parts = []
+        if weekdays:
+            qh_parts.append(f"Weekdays: {weekdays}")
+        if sat:
+            qh_parts.append(f"Saturday: {sat}")
+        if sun:
+            qh_parts.append(f"Sunday: {sun}")
+        if qh_parts:
+            notice["quiet_hours"] = "; ".join(qh_parts)
+    
+    return {"country_iso": country, "notice": notice}
 
 
 # ============================================================================
@@ -185,7 +218,14 @@ async def start_batch(request: Request, items: List[BatchItem]):
                     continue
                 # Compliance gating per item
                 try:
-                    enforce_compliance_or_raise(Session(engine), request, it.to, it.metadata)
+                    with Session(engine) as session:
+                        # Try to load lead from metadata
+                        lead = None
+                        if it.metadata and it.metadata.get("lead_id"):
+                            lead = session.get(Lead, it.metadata.get("lead_id"))
+                            if lead and tenant_id is not None and lead.tenant_id != tenant_id:
+                                lead = None
+                        enforce_compliance_or_raise(session, request, it.to, it.metadata, lead=lead)
                 except Exception:
                     continue
                 body = {"to_number": it.to, "from_number": effective_from}
@@ -270,6 +310,7 @@ async def import_batch_csv(
     col_company = idx(["company"])
     col_lang = idx(["lang", "language"])
     col_role = idx(["role"])
+    col_nature = idx(["nature", "contact_type", "type", "b2b_b2c"])
     col_consent = idx(["consent", "consent_status"])
     col_country = idx(["country", "country_iso"])
 
@@ -296,12 +337,24 @@ async def import_batch_csv(
                 md["company"] = company
             lang = _lower_or_none(get(col_lang))
             role = _lower_or_none(get(col_role))
+            nature = _lower_or_none(get(col_nature))
             consent = _lower_or_none(get(col_consent))
             country = _lower_or_none(get(col_country))
             if lang:
                 md["lang"] = lang
             if role:
                 md["role"] = role
+            if nature:
+                # Normalize nature values
+                nature_normalized = nature
+                if nature in ["b2b", "business", "b2b_business"]:
+                    nature_normalized = "b2b"
+                elif nature in ["b2c", "consumer", "b2c_consumer"]:
+                    nature_normalized = "b2c"
+                md["nature"] = nature_normalized
+            elif company:
+                # Auto-detect from company
+                md["nature"] = "b2b"
             if consent:
                 md["consent_status"] = consent
             if country:

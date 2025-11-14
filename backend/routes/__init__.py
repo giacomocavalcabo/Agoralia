@@ -36,6 +36,12 @@ api_router.include_router(workflows_router, prefix="/workflows", tags=["workflow
 api_router.include_router(webhooks_router, prefix="/webhooks", tags=["webhooks"])
 api_router.include_router(misc_router, tags=["misc"])
 
+# Import compliance router
+from .compliance import router as compliance_router
+
+# Include compliance router
+api_router.include_router(compliance_router, prefix="/compliance", tags=["compliance"])
+
 # TODO: Add CRM router when created
 # api_router.include_router(crm_router, prefix="/crm", tags=["crm"])
 

@@ -17,3 +17,4 @@ passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.6
 itsdangerous>=2.1.2
 PyJWT>=2.8.0
+pytz>=2024.1

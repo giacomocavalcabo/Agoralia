@@ -127,9 +127,18 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 }
 
     # Compliance + subscription + budget gating
+    tenant_id = extract_tenant_id(request)
+    lead = None
+    if payload.metadata and payload.metadata.get("lead_id"):
+        with Session(engine) as session:
+            from models.campaigns import Lead
+            lead = session.get(Lead, payload.metadata.get("lead_id"))
+            if lead and tenant_id is not None and lead.tenant_id != tenant_id:
+                lead = None
+    
     with Session(engine) as session:
         enforce_subscription_or_raise(session, request)
-        enforce_compliance_or_raise(session, request, payload.to, payload.metadata)
+        enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead)
         enforce_budget_or_raise(session, request)
 
     async with httpx.AsyncClient(timeout=30) as client:
