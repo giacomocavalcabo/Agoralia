@@ -10,12 +10,15 @@ BACKEND_DIR = Path(__file__).resolve().parent
 load_dotenv(BACKEND_DIR / ".env")
 
 # Import configuration
-from config import init_db, get_cors_origins
+from config import init_db, get_cors_origins, run_migrations
 
 # Import routes
 from routes import api_router
 
-# Initialize database (non-blocking)
+# Run database migrations (upgrade schema)
+run_migrations()
+
+# Initialize database (non-blocking, creates tables if missing)
 init_db()
 
 # Create FastAPI app

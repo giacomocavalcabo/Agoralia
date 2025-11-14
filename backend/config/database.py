@@ -31,3 +31,28 @@ def init_db():
         print(f"Warning: Could not create database tables at startup: {e}", file=sys.stderr)
         print("Database will be initialized via Alembic migrations.", file=sys.stderr)
 
+
+def run_migrations():
+    """Run Alembic migrations to upgrade database schema"""
+    import subprocess
+    import sys
+    
+    try:
+        # Run alembic upgrade head to apply all pending migrations
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            cwd=str(BACKEND_DIR),
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.returncode == 0:
+            print("✓ Database migrations applied successfully", file=sys.stderr)
+        else:
+            print(f"⚠ Migration warning: {result.stderr}", file=sys.stderr)
+    except FileNotFoundError:
+        # Alembic not available, skip migrations
+        print("⚠ Alembic not found, skipping migrations", file=sys.stderr)
+    except Exception as e:
+        print(f"⚠ Could not run migrations: {e}", file=sys.stderr)
+
