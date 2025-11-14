@@ -1,6 +1,7 @@
 """Campaign and Lead management endpoints"""
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
+import json
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -22,7 +23,32 @@ router = APIRouter()
 
 class CampaignCreate(BaseModel):
     name: str
+    status: Optional[str] = "draft"
+    agent_id: Optional[str] = None
+    from_number_id: Optional[int] = None
+    kb_id: Optional[int] = None
+    start_date: Optional[str] = None  # ISO 8601 datetime string
+    end_date: Optional[str] = None  # ISO 8601 datetime string
+    timezone: Optional[str] = "UTC"
+    max_calls_per_day: Optional[int] = None
+    budget_cents: Optional[int] = None
+    cost_per_call_cents: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class CampaignUpdate(BaseModel):
+    name: Optional[str] = None
     status: Optional[str] = None
+    agent_id: Optional[str] = None
+    from_number_id: Optional[int] = None
+    kb_id: Optional[int] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    timezone: Optional[str] = None
+    max_calls_per_day: Optional[int] = None
+    budget_cents: Optional[int] = None
+    cost_per_call_cents: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class LeadCreate(BaseModel):
@@ -60,7 +86,22 @@ async def list_campaigns(request: Request) -> List[Dict[str, Any]]:
         if tenant_id is not None:
             q = q.filter(Campaign.tenant_id == tenant_id)
         rows = q.order_by(Campaign.id.desc()).limit(200).all()
-        return [{"id": c.id, "name": c.name, "status": c.status} for c in rows]
+        return [
+            {
+                "id": c.id,
+                "name": c.name,
+                "status": c.status,
+                "agent_id": c.agent_id,
+                "from_number_id": c.from_number_id,
+                "calls_made": c.calls_made,
+                "calls_successful": c.calls_successful,
+                "total_cost_cents": c.total_cost_cents,
+                "start_date": c.start_date.isoformat() if c.start_date else None,
+                "end_date": c.end_date.isoformat() if c.end_date else None,
+                "created_at": c.created_at.isoformat(),
+            }
+            for c in rows
+        ]
 
 
 @router.post("/campaigns")
@@ -68,11 +109,263 @@ async def create_campaign(request: Request, body: CampaignCreate) -> Dict[str, A
     """Create campaign"""
     tenant_id = extract_tenant_id(request)
     with tenant_session(request) as session:
-        c = Campaign(name=body.name, status=body.status, tenant_id=tenant_id)
+        # Parse datetime strings
+        start_date = None
+        if body.start_date:
+            try:
+                start_date = datetime.fromisoformat(body.start_date.replace("Z", "+00:00"))
+            except Exception:
+                pass
+        end_date = None
+        if body.end_date:
+            try:
+                end_date = datetime.fromisoformat(body.end_date.replace("Z", "+00:00"))
+            except Exception:
+                pass
+        
+        c = Campaign(
+            name=body.name,
+            status=body.status or "draft",
+            tenant_id=tenant_id,
+            agent_id=body.agent_id,
+            from_number_id=body.from_number_id,
+            kb_id=body.kb_id,
+            start_date=start_date,
+            end_date=end_date,
+            timezone=body.timezone or "UTC",
+            max_calls_per_day=body.max_calls_per_day,
+            budget_cents=body.budget_cents,
+            cost_per_call_cents=body.cost_per_call_cents or 100,
+            metadata_json=json.dumps(body.metadata) if body.metadata else None,
+        )
         session.add(c)
         session.commit()
         session.refresh(c)
-        return {"ok": True, "id": c.id, "name": c.name, "status": c.status}
+        return {
+            "ok": True,
+            "id": c.id,
+            "name": c.name,
+            "status": c.status,
+            "agent_id": c.agent_id,
+            "from_number_id": c.from_number_id,
+            "created_at": c.created_at.isoformat(),
+        }
+
+
+@router.get("/campaigns/{campaign_id}")
+async def get_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Get campaign details"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Load leads count
+        leads_count = session.query(Lead).filter(Lead.campaign_id == campaign_id).count()
+        
+        return {
+            "id": c.id,
+            "name": c.name,
+            "status": c.status,
+            "agent_id": c.agent_id,
+            "from_number_id": c.from_number_id,
+            "kb_id": c.kb_id,
+            "start_date": c.start_date.isoformat() if c.start_date else None,
+            "end_date": c.end_date.isoformat() if c.end_date else None,
+            "timezone": c.timezone,
+            "max_calls_per_day": c.max_calls_per_day,
+            "budget_cents": c.budget_cents,
+            "cost_per_call_cents": c.cost_per_call_cents,
+            "calls_made": c.calls_made,
+            "calls_successful": c.calls_successful,
+            "calls_failed": c.calls_failed,
+            "total_cost_cents": c.total_cost_cents,
+            "leads_count": leads_count,
+            "metadata": json.loads(c.metadata_json) if c.metadata_json else None,
+            "created_at": c.created_at.isoformat(),
+            "updated_at": c.updated_at.isoformat(),
+        }
+
+
+@router.patch("/campaigns/{campaign_id}")
+async def update_campaign(request: Request, campaign_id: int, body: CampaignUpdate) -> Dict[str, Any]:
+    """Update campaign (only if status is draft or paused)"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Allow updates only if draft or paused
+        if c.status not in {"draft", "paused", None}:
+            raise HTTPException(status_code=400, detail="Cannot update campaign when status is not draft or paused")
+        
+        # Update fields
+        if body.name is not None:
+            c.name = body.name
+        if body.status is not None:
+            c.status = body.status
+        if body.agent_id is not None:
+            c.agent_id = body.agent_id
+        if body.from_number_id is not None:
+            c.from_number_id = body.from_number_id
+        if body.kb_id is not None:
+            c.kb_id = body.kb_id
+        if body.start_date is not None:
+            try:
+                c.start_date = datetime.fromisoformat(body.start_date.replace("Z", "+00:00"))
+            except Exception:
+                pass
+        if body.end_date is not None:
+            try:
+                c.end_date = datetime.fromisoformat(body.end_date.replace("Z", "+00:00"))
+            except Exception:
+                pass
+        if body.timezone is not None:
+            c.timezone = body.timezone
+        if body.max_calls_per_day is not None:
+            c.max_calls_per_day = body.max_calls_per_day
+        if body.budget_cents is not None:
+            c.budget_cents = body.budget_cents
+        if body.cost_per_call_cents is not None:
+            c.cost_per_call_cents = body.cost_per_call_cents
+        if body.metadata is not None:
+            c.metadata_json = json.dumps(body.metadata)
+        
+        c.updated_at = datetime.now(timezone.utc)
+        session.commit()
+        session.refresh(c)
+        return {"ok": True, "id": c.id, "status": c.status}
+
+
+@router.post("/campaigns/{campaign_id}/start")
+async def start_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Start campaign"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        if c.status not in {"draft", "paused"}:
+            raise HTTPException(status_code=400, detail="Campaign can only be started from draft or paused status")
+        
+        # Validate required fields
+        if not c.agent_id:
+            raise HTTPException(status_code=400, detail="Campaign must have agent_id to start")
+        
+        c.status = "scheduled" if c.start_date and c.start_date > datetime.now(timezone.utc) else "running"
+        c.updated_at = datetime.now(timezone.utc)
+        session.commit()
+        return {"ok": True, "status": c.status}
+
+
+@router.post("/campaigns/{campaign_id}/pause")
+async def pause_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Pause campaign"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        if c.status not in {"scheduled", "running"}:
+            raise HTTPException(status_code=400, detail="Campaign can only be paused when scheduled or running")
+        
+        c.status = "paused"
+        c.updated_at = datetime.now(timezone.utc)
+        session.commit()
+        return {"ok": True, "status": c.status}
+
+
+@router.post("/campaigns/{campaign_id}/resume")
+async def resume_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Resume paused campaign"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        if c.status != "paused":
+            raise HTTPException(status_code=400, detail="Campaign can only be resumed when paused")
+        
+        # Determine if scheduled or running based on start_date
+        if c.start_date and c.start_date > datetime.now(timezone.utc):
+            c.status = "scheduled"
+        else:
+            c.status = "running"
+        c.updated_at = datetime.now(timezone.utc)
+        session.commit()
+        return {"ok": True, "status": c.status}
+
+
+@router.post("/campaigns/{campaign_id}/stop")
+async def stop_campaign(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Stop campaign definitively"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        c.status = "cancelled"
+        c.updated_at = datetime.now(timezone.utc)
+        session.commit()
+        return {"ok": True, "status": c.status}
+
+
+@router.get("/campaigns/{campaign_id}/stats")
+async def get_campaign_stats(request: Request, campaign_id: int) -> Dict[str, Any]:
+    """Get detailed campaign statistics"""
+    tenant_id = extract_tenant_id(request)
+    qualified_set = {"qualified", "rfq", "quote_sent", "reorder"}
+    with tenant_session(request) as session:
+        c = session.get(Campaign, campaign_id)
+        if not c or (tenant_id is not None and c.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Leads for this campaign
+        leads = session.query(Lead).filter(Lead.campaign_id == campaign_id).all()
+        phones = [l.phone for l in leads if l.phone]
+        leads_count = len(leads)
+        
+        calls_count = 0
+        calls_successful = 0
+        qualified = 0
+        
+        if phones:
+            calls = (
+                session.query(CallRecord)
+                .filter(CallRecord.to_number.in_(phones))
+                .all()
+            )
+            calls_count = len(calls)
+            calls_successful = sum(1 for cl in calls if cl.status == "ended" or cl.status == "completed")
+            
+            if calls:
+                call_ids = [cl.id for cl in calls]
+                qd = (
+                    session.query(Disposition)
+                    .filter(Disposition.call_id.in_(call_ids))
+                    .all()
+                )
+                qualified = sum(1 for d in qd if (d.outcome or "").lower() in qualified_set)
+        
+        conversion_rate = (qualified / calls_count * 100.0) if calls_count else 0.0
+        
+        return {
+            "campaign_id": campaign_id,
+            "status": c.status,
+            "leads_count": leads_count,
+            "calls_made": calls_count,
+            "calls_successful": calls_successful,
+            "calls_failed": c.calls_failed,
+            "total_cost_cents": c.total_cost_cents,
+            "qualified_leads": qualified,
+            "conversion_rate": round(conversion_rate, 2),
+        }
 
 
 @router.get("/campaigns/kpi")
