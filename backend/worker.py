@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
 import httpx
+from config.database import engine
+from sqlalchemy.orm import Session
+from utils.helpers import _resolve_from_number
 
 try:
     import dramatiq  # type: ignore
@@ -50,9 +53,26 @@ if not _missing_queue():
         base_url = os.getenv("RETELL_BASE_URL", "https://api.retellai.com")
         endpoint = f"{base_url}/v2/create-phone-call"
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        effective_from = from_number or os.getenv("DEFAULT_FROM_NUMBER")
+        
+        # Resolve from_number with priority: explicit -> campaign -> settings -> env
+        campaign_id = None
+        lead_id = None
+        if metadata:
+            campaign_id = metadata.get("campaign_id")
+            lead_id = metadata.get("lead_id")
+        
+        with Session(engine) as session:
+            effective_from = _resolve_from_number(
+                session,
+                from_number=from_number,
+                campaign_id=campaign_id,
+                lead_id=lead_id,
+                tenant_id=tenant_id,
+            )
+        
         if not effective_from:
             return
+        
         body: Dict[str, Any] = {"to_number": to_number, "from_number": effective_from}
         if agent_id:
             body["agent_id"] = agent_id

@@ -160,7 +160,6 @@ async def start_batch(request: Request, items: List[BatchItem]):
     api_key = os.getenv("RETELL_API_KEY")
     if not api_key:
         raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
-    default_from = os.getenv("DEFAULT_FROM_NUMBER")
     tenant_id = extract_tenant_id(request)
 
     # Budget gating at batch start
@@ -201,8 +200,9 @@ async def start_batch(request: Request, items: List[BatchItem]):
                             "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
                             "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
                         }
+            # from_number will be resolved in worker with priority logic
             actor.send_with_options(
-                args=(it.to, tenant_id, (it.from_number or default_from), it.agent_id, it.metadata, it.delay_ms, kb_payload),
+                args=(it.to, tenant_id, it.from_number, it.agent_id, it.metadata, it.delay_ms, kb_payload),
                 delay=delay_ms,
             )
             accepted += 1
@@ -217,7 +217,18 @@ async def start_batch(request: Request, items: List[BatchItem]):
         async with httpx.AsyncClient(timeout=30) as client:
             for it in items:
                 await asyncio.sleep((it.delay_ms or 0) / 1000.0)
-                effective_from = it.from_number or default_from
+                # Resolve from_number with priority logic
+                campaign_id = (it.metadata or {}).get("campaign_id") if it.metadata else None
+                lead_id = (it.metadata or {}).get("lead_id") if it.metadata else None
+                with Session(engine) as session:
+                    from utils.helpers import _resolve_from_number
+                    effective_from = _resolve_from_number(
+                        session,
+                        from_number=it.from_number,
+                        campaign_id=campaign_id,
+                        lead_id=lead_id,
+                        tenant_id=tenant_id,
+                    )
                 if not effective_from:
                     continue
                 # Compliance gating per item

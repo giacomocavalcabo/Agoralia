@@ -14,7 +14,7 @@ from models.calls import CallRecord, CallSegment
 from models.agents import KnowledgeSection
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
-from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent
+from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent, _resolve_from_number
 from utils.retell import get_retell_headers, get_retell_base_url, retell_get_json
 from utils.websocket import manager as ws_manager
 from services.settings import get_settings
@@ -72,18 +72,34 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
     endpoint = f"{base_url}/v2/create-phone-call"
     headers = get_retell_headers()
 
-    # Ensure valid from_number
-    from_num = payload.from_number or os.getenv("DEFAULT_FROM_NUMBER")
-    if not from_num:
-        raise HTTPException(
-            status_code=400,
-            detail="from_number mancante: imposta DEFAULT_FROM_NUMBER o passa un Caller ID valido"
-        )
-
-    body = {"from_number": from_num, "to_number": payload.to}
-    # Resolve language and agent mapping
+    # Resolve from_number with priority: explicit -> campaign -> settings -> env
     tenant_id = extract_tenant_id(request)
+    lead = None
+    campaign_id = None
+    if payload.metadata:
+        campaign_id = payload.metadata.get("campaign_id")
+        if payload.metadata.get("lead_id"):
+            with Session(engine) as session:
+                from models.campaigns import Lead
+                lead = session.get(Lead, payload.metadata.get("lead_id"))
+                if lead and tenant_id is not None and lead.tenant_id != tenant_id:
+                    lead = None
+                elif lead and lead.campaign_id:
+                    campaign_id = lead.campaign_id
+    
     with Session(engine) as session:
+        from_num = _resolve_from_number(
+            session,
+            from_number=payload.from_number,
+            campaign_id=campaign_id,
+            lead_id=lead.id if lead else None,
+            tenant_id=tenant_id,
+        )
+        if not from_num:
+            raise HTTPException(
+                status_code=400,
+                detail="from_number mancante: imposta DEFAULT_FROM_NUMBER nelle settings/env o passa un Caller ID valido"
+            )
         lang = _resolve_lang(
             session, request, payload.to,
             (payload.metadata or {}).get("lang") if payload.metadata else None
@@ -93,13 +109,15 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             aid, is_multi = _resolve_agent(session, tenant_id, "voice", lang)
             if aid:
                 agent_id = aid
-                if is_multi:
-                    body.setdefault("metadata", {})
-                    body["metadata"]["instruction"] = f"rispondi sempre in {lang}"
-        if agent_id:
-            body["agent_id"] = agent_id
-        body.setdefault("metadata", {})
-        body["metadata"]["lang"] = lang
+    
+    # Build request body
+    body = {"from_number": from_num, "to_number": payload.to}
+    if agent_id:
+        body["agent_id"] = agent_id
+    body.setdefault("metadata", {})
+    body["metadata"]["lang"] = lang
+    if agent_id and is_multi:
+        body["metadata"]["instruction"] = f"rispondi sempre in {lang}"
         # Attach kb version for traceability
         try:
             s = get_settings()
@@ -126,15 +144,6 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 }
 
     # Compliance + subscription + budget gating
-    tenant_id = extract_tenant_id(request)
-    lead = None
-    if payload.metadata and payload.metadata.get("lead_id"):
-        with Session(engine) as session:
-            from models.campaigns import Lead
-            lead = session.get(Lead, payload.metadata.get("lead_id"))
-            if lead and tenant_id is not None and lead.tenant_id != tenant_id:
-                lead = None
-    
     with Session(engine) as session:
         enforce_subscription_or_raise(session, request)
         enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead)

@@ -1,10 +1,12 @@
 """Helper utility functions"""
+import os
 from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 from fastapi import Request
 
-from models.agents import TenantAgent
-from models.campaigns import Lead
+from models.agents import TenantAgent, PhoneNumber
+from models.campaigns import Lead, Campaign
+from services.settings import get_settings
 
 
 def country_iso_from_e164(e164: Optional[str]) -> Optional[str]:
@@ -79,4 +81,63 @@ def _resolve_agent(session: Session, tenant_id: Optional[int], kind: str, lang: 
     if multi:
         return multi.agent_id, True
     return None, False
+
+
+def _resolve_from_number(
+    session: Session,
+    from_number: Optional[str] = None,
+    campaign_id: Optional[int] = None,
+    lead_id: Optional[int] = None,
+    tenant_id: Optional[int] = None,
+) -> Optional[str]:
+    """Resolve from_number (caller ID) with priority:
+    1. Explicit from_number parameter
+    2. Campaign.from_number_id -> PhoneNumber.e164
+    3. Settings.default_from_number
+    4. DEFAULT_FROM_NUMBER env var
+    
+    Args:
+        session: SQLAlchemy session
+        from_number: Explicit from_number (highest priority)
+        campaign_id: Campaign ID to resolve from_number_id
+        lead_id: Lead ID to get campaign_id from Lead
+        tenant_id: Tenant ID for tenant isolation
+    
+    Returns:
+        E.164 phone number string or None
+    """
+    # 1. Explicit from_number (highest priority)
+    if from_number:
+        return from_number
+    
+    # 2. Resolve from campaign (via campaign_id or lead_id)
+    resolved_campaign_id = campaign_id
+    if not resolved_campaign_id and lead_id:
+        lead = session.get(Lead, lead_id)
+        if lead and lead.campaign_id:
+            resolved_campaign_id = lead.campaign_id
+    
+    if resolved_campaign_id:
+        campaign = session.get(Campaign, resolved_campaign_id)
+        if campaign:
+            # Check tenant isolation
+            if tenant_id is not None and campaign.tenant_id != tenant_id:
+                campaign = None
+            elif campaign.from_number_id:
+                phone = session.get(PhoneNumber, campaign.from_number_id)
+                if phone:
+                    # Check tenant isolation for phone number
+                    if tenant_id is None or phone.tenant_id == tenant_id or phone.tenant_id is None:
+                        return phone.e164
+    
+    # 3. Settings.default_from_number
+    try:
+        settings = get_settings()
+        if settings and settings.default_from_number:
+            return settings.default_from_number
+    except Exception:
+        pass
+    
+    # 4. Fallback to env var
+    return os.getenv("DEFAULT_FROM_NUMBER")
 
