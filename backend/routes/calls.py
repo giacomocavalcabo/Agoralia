@@ -61,17 +61,18 @@ class DispositionUpdate(BaseModel):
 # Retell Integration Endpoints
 # ============================================================================
 
+class PhoneNumberPurchase(BaseModel):
+    phone_number: Optional[str] = None
+    area_code: Optional[int] = None
+    country_code: str = "IT"
+    number_provider: str = "telnyx"
+    inbound_agent_id: Optional[str] = None
+    outbound_agent_id: Optional[str] = None
+    nickname: Optional[str] = None
+
+
 @router.post("/retell/phone-numbers/create")
-async def create_phone_number(
-    request: Request,
-    phone_number: Optional[str] = None,
-    area_code: Optional[int] = None,
-    country_code: str = "IT",
-    number_provider: str = "telnyx",
-    inbound_agent_id: Optional[str] = None,
-    outbound_agent_id: Optional[str] = None,
-    nickname: Optional[str] = None,
-):
+async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     """Purchase a phone number via Retell AI
     
     Args:
@@ -91,37 +92,37 @@ async def create_phone_number(
     endpoint = f"{base_url}/create-phone-number"
     headers = get_retell_headers()
     
-    # Build request body
-    body: Dict[str, Any] = {
-        "number_provider": number_provider,
+    # Build request body for Retell API
+    retell_body: Dict[str, Any] = {
+        "number_provider": body.number_provider,
     }
     
-    if phone_number:
-        body["phone_number"] = phone_number
-    elif area_code:
-        body["area_code"] = area_code
-        body["country_code"] = country_code
+    if body.phone_number:
+        retell_body["phone_number"] = body.phone_number
+    elif body.area_code:
+        retell_body["area_code"] = body.area_code
+        retell_body["country_code"] = body.country_code
     else:
         raise HTTPException(
             status_code=400,
             detail="Devi fornire phone_number (E.164) o area_code"
         )
     
-    if country_code:
-        body["country_code"] = country_code
+    if body.country_code:
+        retell_body["country_code"] = body.country_code
     
-    if inbound_agent_id:
-        body["inbound_agent_id"] = inbound_agent_id
+    if body.inbound_agent_id:
+        retell_body["inbound_agent_id"] = body.inbound_agent_id
     
-    if outbound_agent_id:
-        body["outbound_agent_id"] = outbound_agent_id
+    if body.outbound_agent_id:
+        retell_body["outbound_agent_id"] = body.outbound_agent_id
     
-    if nickname:
-        body["nickname"] = nickname
+    if body.nickname:
+        retell_body["nickname"] = body.nickname
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
-            resp = await client.post(endpoint, headers=headers, json=body)
+            resp = await client.post(endpoint, headers=headers, json=retell_body)
             response_text = resp.text
             response_status = resp.status_code
             
@@ -138,7 +139,7 @@ async def create_phone_number(
                     "request_sent": {
                         "endpoint": endpoint,
                         "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                        "body": body,
+                        "body": retell_body,
                     }
                 }
             
@@ -177,7 +178,7 @@ async def create_phone_number(
                 "request_sent": {
                     "endpoint": endpoint,
                     "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                    "body": body,
+                    "body": retell_body,
                 }
             }
         except httpx.HTTPError as e:
@@ -188,7 +189,7 @@ async def create_phone_number(
                 "request_sent": {
                     "endpoint": endpoint,
                     "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                    "body": body,
+                    "body": retell_body,
                 }
             }
 
