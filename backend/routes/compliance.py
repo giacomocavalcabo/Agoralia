@@ -243,3 +243,77 @@ async def get_country_rule_endpoint(
         rule = get_country_rule(tenant_id, country_iso.upper(), session)
         return rule or {"error": "Country rule not found"}
 
+
+# ============================================================================
+# DNC (Do Not Call) Management
+# ============================================================================
+
+class DNCAdd(BaseModel):
+    e164: str
+    source: Optional[str] = None
+
+
+@router.post("/dnc")
+async def add_dnc_entry(request: Request, body: DNCAdd) -> Dict[str, Any]:
+    """Add number to DNC list"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        # Check if already exists
+        existing = session.query(DNCEntry).filter(
+            DNCEntry.e164 == body.e164,
+            DNCEntry.tenant_id == tenant_id if tenant_id is not None else DNCEntry.tenant_id.is_(None)
+        ).first()
+        
+        if existing:
+            return {"ok": True, "message": "Number already in DNC list", "id": existing.id}
+        
+        entry = DNCEntry(
+            tenant_id=tenant_id,
+            e164=body.e164,
+            source=body.source or "manual"
+        )
+        session.add(entry)
+        session.commit()
+        session.refresh(entry)
+        return {"ok": True, "id": entry.id}
+
+
+@router.get("/dnc")
+async def list_dnc_entries(request: Request) -> Dict[str, Any]:
+    """List DNC entries for tenant"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        q = session.query(DNCEntry)
+        if tenant_id is not None:
+            q = q.filter(DNCEntry.tenant_id == tenant_id)
+        
+        entries = q.order_by(DNCEntry.created_at.desc()).limit(500).all()
+        return {
+            "items": [
+                {
+                    "id": e.id,
+                    "e164": e.e164,
+                    "source": e.source,
+                    "created_at": e.created_at.isoformat() if e.created_at else None,
+                }
+                for e in entries
+            ]
+        }
+
+
+@router.delete("/dnc/{entry_id}")
+async def delete_dnc_entry(request: Request, entry_id: int) -> Dict[str, Any]:
+    """Remove number from DNC list"""
+    tenant_id = extract_tenant_id(request)
+    with tenant_session(request) as session:
+        entry = session.get(DNCEntry, entry_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="DNC entry not found")
+        
+        if tenant_id is not None and entry.tenant_id != tenant_id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        session.delete(entry)
+        session.commit()
+        return {"ok": True}
+
