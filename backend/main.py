@@ -1127,7 +1127,12 @@ class CRMMappings(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-Base.metadata.create_all(engine)
+# Try to create tables, but don't fail startup if DB is not available yet
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 
 # -----------------------------
@@ -3570,7 +3575,11 @@ def _get_settings() -> AppSettings:
         return row
 
 # Ensure settings table exists (idempotent)
-Base.metadata.create_all(engine)
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 
 # New: General workspace metadata (separate table, created idempotently)
@@ -3594,7 +3603,12 @@ def _get_meta() -> AppMeta:
             session.refresh(row)
         return row
 
-Base.metadata.create_all(engine)
+# Try to create tables, but don't fail startup if DB is not available yet
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 @app.get("/settings")
 async def get_settings() -> Dict[str, Any]:
@@ -4021,7 +4035,12 @@ class PhoneNumber(Base):
     country: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
 
 
-Base.metadata.create_all(engine)
+# Try to create tables, but don't fail startup if DB is not available yet
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 
 class Campaign(Base):
@@ -4049,7 +4068,12 @@ class Lead(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-Base.metadata.create_all(engine)
+# Try to create tables, but don't fail startup if DB is not available yet
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 
 @app.get("/agents")
@@ -4259,7 +4283,12 @@ class Consent(Base):
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
-Base.metadata.create_all(engine)
+# Try to create tables, but don't fail startup if DB is not available yet
+try:
+    Base.metadata.create_all(engine)
+except Exception as e:
+    import sys
+    print(f"Warning: Could not create database tables: {e}", file=sys.stderr)
 
 
 def _is_dnc_number(session: Session, tenant_id: Optional[int], to_number: str) -> bool:
