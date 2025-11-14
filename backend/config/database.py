@@ -34,31 +34,31 @@ def init_db():
 
 def run_migrations():
     """Run Alembic migrations to upgrade database schema"""
-    import subprocess
     import sys
     
     try:
-        # Run alembic upgrade head to apply all pending migrations
-        # alembic.ini is in backend/, so we need to cd to backend/
-        result = subprocess.run(
-            ["python", "-m", "alembic", "upgrade", "head"],
-            cwd=str(BACKEND_DIR),
-            capture_output=True,
-            text=True,
-            check=False,
-            env={**os.environ, "PYTHONPATH": str(BACKEND_DIR)}
-        )
-        if result.returncode == 0:
-            print("✓ Database migrations applied successfully", file=sys.stderr)
-            if result.stdout:
-                print(result.stdout, file=sys.stderr)
-        else:
-            print(f"⚠ Migration warning: {result.stderr}", file=sys.stderr)
-            if result.stdout:
-                print(result.stdout, file=sys.stderr)
-    except FileNotFoundError:
-        # Alembic not available, skip migrations
+        # Import Alembic directly instead of using subprocess
+        from alembic.config import Config
+        from alembic import command
+        
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            print("⚠ DATABASE_URL not set, skipping migrations", file=sys.stderr)
+            return
+        
+        # Configure Alembic
+        alembic_cfg = Config(str(BACKEND_DIR / "alembic.ini"))
+        alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+        
+        # Run upgrade to head
+        print("Running database migrations...", file=sys.stderr)
+        command.upgrade(alembic_cfg, "head")
+        print("✓ Database migrations applied successfully", file=sys.stderr)
+    except ImportError:
+        # Alembic not installed, skip migrations
         print("⚠ Alembic not found, skipping migrations", file=sys.stderr)
     except Exception as e:
         print(f"⚠ Could not run migrations: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
 
