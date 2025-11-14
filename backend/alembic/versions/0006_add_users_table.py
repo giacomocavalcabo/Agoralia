@@ -47,8 +47,38 @@ def upgrade() -> None:
                 batch_op.add_column(sa.Column('tenant_id', sa.Integer(), nullable=True))
             
             # Update existing rows: set tenant_id = id
+            # Check if id column is integer or varchar
+            id_column_type = None
+            for col in inspector.get_columns('users'):
+                if col['name'] == 'id':
+                    id_column_type = str(col['type'])
+                    break
+            
             from sqlalchemy import text
-            conn.execute(text("UPDATE users SET tenant_id = id WHERE tenant_id IS NULL"))
+            
+            # If id is varchar/string, we need to handle it differently
+            # First, check if there are any existing users
+            result = conn.execute(text("SELECT COUNT(*) FROM users"))
+            user_count = result.scalar()
+            
+            if user_count > 0:
+                # There are existing users, need to set tenant_id
+                # Check if id is integer or needs casting
+                if 'varchar' in id_column_type.lower() or 'text' in id_column_type.lower() or 'char' in id_column_type.lower():
+                    # id is string, can't use it directly as tenant_id
+                    # Create a sequence or use row_number
+                    # For now, set tenant_id to a hash or sequential number
+                    conn.execute(text("""
+                        UPDATE users 
+                        SET tenant_id = COALESCE(
+                            CAST(SUBSTRING(id FROM '^([0-9]+)') AS INTEGER),
+                            row_number() OVER ()
+                        )
+                        WHERE tenant_id IS NULL
+                    """))
+                else:
+                    # id is integer, can use directly
+                    conn.execute(text("UPDATE users SET tenant_id = CAST(id AS INTEGER) WHERE tenant_id IS NULL"))
             
             # Now make it NOT NULL - PostgreSQL needs special handling
             # First check if there are any NULL values
@@ -60,8 +90,15 @@ def upgrade() -> None:
                 # For PostgreSQL, we need to use ALTER COLUMN ... SET NOT NULL
                 conn.execute(text("ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL"))
             else:
-                # Still some NULLs, set defaults for them
-                conn.execute(text("UPDATE users SET tenant_id = id WHERE tenant_id IS NULL"))
+                # Still some NULLs, set defaults for them (use row_number if needed)
+                conn.execute(text("""
+                    UPDATE users 
+                    SET tenant_id = COALESCE(
+                        CAST(SUBSTRING(id::text FROM '^([0-9]+)') AS INTEGER),
+                        row_number() OVER ()
+                    )
+                    WHERE tenant_id IS NULL
+                """))
                 conn.execute(text("ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL"))
 
 
