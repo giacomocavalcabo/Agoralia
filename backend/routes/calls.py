@@ -97,9 +97,13 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
         "number_provider": body.number_provider,
     }
     
+    # Check if phone_number is provided
     if body.phone_number:
         retell_body["phone_number"] = body.phone_number
-    elif body.area_code:
+        # country_code is optional when phone_number is provided
+        if body.country_code:
+            retell_body["country_code"] = body.country_code
+    elif body.area_code is not None:
         retell_body["area_code"] = body.area_code
         retell_body["country_code"] = body.country_code
     else:
@@ -107,9 +111,6 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
             status_code=400,
             detail="Devi fornire phone_number (E.164) o area_code"
         )
-    
-    if body.country_code:
-        retell_body["country_code"] = body.country_code
     
     if body.inbound_agent_id:
         retell_body["inbound_agent_id"] = body.inbound_agent_id
