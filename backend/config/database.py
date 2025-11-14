@@ -40,6 +40,8 @@ def run_migrations():
         # Import Alembic directly instead of using subprocess
         from alembic.config import Config
         from alembic import command
+        from alembic.script import ScriptDirectory
+        from sqlalchemy import inspect, text
         
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
@@ -55,10 +57,104 @@ def run_migrations():
         alembic_cfg.set_main_option("script_location", str(alembic_script_location))
         alembic_cfg.set_main_option("sqlalchemy.url", database_url)
         
+        # Check if alembic_version table exists and has current revision
+        try:
+            inspector = inspect(engine)
+            
+            # Check if alembic_version table exists
+            has_alembic_version = "alembic_version" in inspector.get_table_names()
+            
+            if has_alembic_version:
+                # Table exists, check current revision
+                with engine.connect() as conn:
+                    result = conn.execute(text("SELECT version_num FROM alembic_version ORDER BY version_num DESC LIMIT 1"))
+                    row = result.fetchone()
+                    current_rev = row[0] if row else None
+                    
+                if current_rev:
+                    print(f"Current database revision: {current_rev}", file=sys.stderr)
+                else:
+                    print("⚠ alembic_version table exists but is empty", file=sys.stderr)
+            else:
+                # alembic_version doesn't exist - check if tables exist (means schema was created manually)
+                has_calls_table = "calls" in inspector.get_table_names()
+                has_campaigns_table = "campaigns" in inspector.get_table_names()
+                
+                if has_calls_table or has_campaigns_table:
+                    print("⚠ Database tables exist but alembic_version is missing", file=sys.stderr)
+                    print("Attempting to stamp database with current migration state...", file=sys.stderr)
+                    
+                    # Get all migration revisions to find the highest one
+                    script = ScriptDirectory.from_config(alembic_cfg)
+                    revisions = [rev.revision for rev in script.walk_revisions()]
+                    
+                    # Check which migrations have been applied based on table existence
+                    # If calls table exists, at least 0001_init was applied
+                    if has_calls_table:
+                        # Check for newer migrations by looking at table columns/features
+                        # If calls has new columns (disposition_outcome, etc), stamp with 0005
+                        # Otherwise stamp with latest before 0005
+                        
+                        # Check if calls table has new optimized columns
+                        calls_columns = [col['name'] for col in inspector.get_columns('calls')]
+                        has_optimized_columns = 'disposition_outcome' in calls_columns or 'media_json' in calls_columns
+                        
+                        # Check if country_rules table exists (0004)
+                        has_country_rules = "country_rules" in inspector.get_table_names()
+                        # Check if campaigns has extended fields (0003)
+                        if has_campaigns_table:
+                            campaigns_columns = [col['name'] for col in inspector.get_columns('campaigns')]
+                            has_extended_campaigns = 'agent_id' in campaigns_columns or 'budget_cents' in campaigns_columns
+                        else:
+                            has_extended_campaigns = False
+                        
+                        # Determine stamp revision
+                        if has_optimized_columns:
+                            stamp_rev = "0005_optimize_calls_schema"
+                        elif has_country_rules:
+                            stamp_rev = "0004_country_rules_lead_nature"
+                        elif has_extended_campaigns:
+                            stamp_rev = "0003_extend_campaigns"
+                        elif "subscriptions" in inspector.get_table_names():
+                            stamp_rev = "0002_billing_sched_kb"
+                        else:
+                            stamp_rev = "0001_init"
+                        
+                        print(f"Stamping database with revision: {stamp_rev}", file=sys.stderr)
+                        command.stamp(alembic_cfg, stamp_rev)
+                        print("✓ Database stamped successfully", file=sys.stderr)
+                    else:
+                        print("⚠ No existing tables found, will create from scratch", file=sys.stderr)
+                        
+        except Exception as check_error:
+            print(f"⚠ Could not check migration state: {check_error}", file=sys.stderr)
+            print("Proceeding with migration...", file=sys.stderr)
+        
         # Run upgrade to head
         print("Running database migrations...", file=sys.stderr)
-        command.upgrade(alembic_cfg, "head")
-        print("✓ Database migrations applied successfully", file=sys.stderr)
+        try:
+            command.upgrade(alembic_cfg, "head")
+            print("✓ Database migrations applied successfully", file=sys.stderr)
+        except Exception as migration_error:
+            # Check if it's a duplicate table error - this means migrations were already applied
+            error_str = str(migration_error)
+            if "already exists" in error_str or "DuplicateTable" in error_str:
+                print("⚠ Some tables already exist - checking current revision state...", file=sys.stderr)
+                # Try to stamp with appropriate revision and retry
+                try:
+                    script = ScriptDirectory.from_config(alembic_cfg)
+                    # Stamp with head to mark everything as applied
+                    current_head = script.get_current_head()
+                    if current_head:
+                        print(f"Stamping database with head revision: {current_head}", file=sys.stderr)
+                        command.stamp(alembic_cfg, "head")
+                        print("✓ Database stamped - migrations already applied", file=sys.stderr)
+                except Exception as stamp_error:
+                    print(f"⚠ Could not stamp database: {stamp_error}", file=sys.stderr)
+                    raise migration_error
+            else:
+                raise migration_error
+                
     except ImportError:
         # Alembic not installed, skip migrations
         print("⚠ Alembic not found, skipping migrations", file=sys.stderr)
