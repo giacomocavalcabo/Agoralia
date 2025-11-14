@@ -42,16 +42,27 @@ def upgrade() -> None:
         
         if 'tenant_id' not in columns:
             # Add tenant_id column
-            # First, set default value for existing rows (use id as tenant_id)
+            # First add as nullable
             with op.batch_alter_table('users', schema=None) as batch_op:
                 batch_op.add_column(sa.Column('tenant_id', sa.Integer(), nullable=True))
             
             # Update existing rows: set tenant_id = id
-            conn.execute(sa.text("UPDATE users SET tenant_id = id WHERE tenant_id IS NULL"))
+            from sqlalchemy import text
+            conn.execute(text("UPDATE users SET tenant_id = id WHERE tenant_id IS NULL"))
             
-            # Now make it NOT NULL
-            with op.batch_alter_table('users', schema=None) as batch_op:
-                batch_op.alter_column('tenant_id', nullable=False)
+            # Now make it NOT NULL - PostgreSQL needs special handling
+            # First check if there are any NULL values
+            result = conn.execute(text("SELECT COUNT(*) FROM users WHERE tenant_id IS NULL"))
+            null_count = result.scalar()
+            
+            if null_count == 0:
+                # All rows have tenant_id, can make it NOT NULL
+                # For PostgreSQL, we need to use ALTER COLUMN ... SET NOT NULL
+                conn.execute(text("ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL"))
+            else:
+                # Still some NULLs, set defaults for them
+                conn.execute(text("UPDATE users SET tenant_id = id WHERE tenant_id IS NULL"))
+                conn.execute(text("ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL"))
 
 
 def downgrade() -> None:
