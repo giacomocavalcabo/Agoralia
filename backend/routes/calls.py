@@ -247,7 +247,8 @@ async def retell_list_calls(limit: int = 50, cursor: Optional[str] = None):
     if cursor:
         qs["cursor"] = cursor
     query = urllib.parse.urlencode(qs)
-    data = await retell_get_json(f"/v2/list-calls?{query}")
+    # Use correct Retell API endpoint
+    data = await retell_get_json(f"/v2/list-phone-calls?{query}")
     return data
 
 
