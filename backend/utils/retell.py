@@ -29,3 +29,16 @@ async def retell_get_json(path: str) -> Dict[str, Any]:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         return resp.json()
 
+
+async def retell_post_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    """Make a POST request to Retell API"""
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.post(
+            f"{get_retell_base_url()}{path}",
+            headers=get_retell_headers(),
+            json=body
+        )
+        if resp.status_code >= 400:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        return resp.json()
+

@@ -509,6 +509,21 @@ async def retell_list_calls(limit: int = 50, cursor: Optional[str] = None):
     return data
 
 
+@router.get("/retell/agents")
+async def retell_list_agents():
+    """List agents from Retell AI"""
+    try:
+        data = await retell_get_json("/list-retell-llm")
+        return data
+    except HTTPException as e:
+        # Try alternative endpoint
+        try:
+            data = await retell_get_json("/v2/list-retell-llm")
+            return data
+        except Exception:
+            raise e
+
+
 @router.post("/retell/backfill")
 async def retell_backfill(request: Request, limit: int = 100):
     """Backfill calls from Retell to local database"""
