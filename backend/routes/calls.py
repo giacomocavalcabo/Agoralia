@@ -92,8 +92,6 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
         "to_number": "+12025551235",  # Test destination
     }
     
-    missing_fields = []
-    
     # Check for agent_id - use query param if provided, otherwise try settings
     if not agent_id:
         try:
@@ -101,14 +99,13 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
             settings = get_settings()
             if settings and settings.default_agent_id:
                 agent_id = settings.default_agent_id
-        except Exception as e:
-            missing_fields.append(f"agent_id (default_agent_id in settings - error: {str(e)})")
+        except Exception:
+            pass
     
     if agent_id:
         test_body["override_agent_id"] = agent_id
-    
     # Note: Retell allows calls without override_agent_id if from_number has an agent bound
-    # We'll try the call even without override_agent_id
+    # We'll try the call even without override_agent_id - Retell will use the agent bound to from_number
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
