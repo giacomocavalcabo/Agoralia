@@ -15,10 +15,13 @@ async def health():
 @router.get("/system/status")
 async def system_status():
     """System status check - database, env vars, etc."""
+    from sqlalchemy import inspect
+    
     status = {
         "status": "ok",
         "database": "unknown",
-        "env_vars": {}
+        "env_vars": {},
+        "tables": {}
     }
     
     # Check database
@@ -27,6 +30,32 @@ async def system_status():
             result = conn.execute(text("SELECT 1"))
             result.fetchone()
             status["database"] = "connected"
+            
+            # Check users table structure
+            inspector = inspect(engine)
+            if "users" in inspector.get_table_names():
+                users_columns = [col['name'] for col in inspector.get_columns('users')]
+                status["tables"]["users"] = {
+                    "exists": True,
+                    "columns": users_columns,
+                    "has_tenant_id": "tenant_id" in users_columns
+                }
+            else:
+                status["tables"]["users"] = {
+                    "exists": False
+                }
+            
+            # Check alembic version
+            if "alembic_version" in inspector.get_table_names():
+                result = conn.execute(text("SELECT version_num FROM alembic_version ORDER BY version_num DESC LIMIT 1"))
+                row = result.fetchone()
+                if row:
+                    status["alembic_version"] = row[0]
+                else:
+                    status["alembic_version"] = "empty"
+            else:
+                status["alembic_version"] = "table_not_exists"
+                
     except Exception as e:
         status["database"] = f"error: {str(e)}"
         status["status"] = "degraded"
