@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "PYTHONPATH=/app/backend python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}",
+    "startCommand": "PYTHONPATH=/app/backend /app/.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
