@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "ColdAI",
+    "environment": "development",
+    "debug": true
+  },
+  "api": {
+    "base_url": "https://api.agoralia.app",
+    "version": "v1"
+  },
+  "database": {
+    "type": "postgresql",
+    "host": "localhost",
+    "port": 5432,
+    "name": "coldai"
+  }
+}

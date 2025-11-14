@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "common": {
     "refresh": "Refresh",
     "created": "Created",
@@ -51,3 +52,18 @@
   }
 }
 
+=======
+  "nav.to_login": "Go to Login",
+  "nav.to_app": "Go to App",
+  "login.title": "Sign in",
+  "login.email_label": "Email",
+  "login.password_label": "Password",
+  "login.submit": "Sign in",
+  "app.title": "Your Profile",
+  "app.name_label": "Full name",
+  "app.phone_label": "Phone number",
+  "app.submit": "Save",
+  "toast.saved": "Saved successfully",
+  "toast.signed_in": "Signed in"
+}
+>>>>>>> dd0457be19b60efc1dc92dc8ea703216870914f9
