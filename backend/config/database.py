@@ -39,17 +39,23 @@ def run_migrations():
     
     try:
         # Run alembic upgrade head to apply all pending migrations
+        # alembic.ini is in backend/, so we need to cd to backend/
         result = subprocess.run(
-            ["alembic", "upgrade", "head"],
+            ["python", "-m", "alembic", "upgrade", "head"],
             cwd=str(BACKEND_DIR),
             capture_output=True,
             text=True,
-            check=False
+            check=False,
+            env={**os.environ, "PYTHONPATH": str(BACKEND_DIR)}
         )
         if result.returncode == 0:
             print("✓ Database migrations applied successfully", file=sys.stderr)
+            if result.stdout:
+                print(result.stdout, file=sys.stderr)
         else:
             print(f"⚠ Migration warning: {result.stderr}", file=sys.stderr)
+            if result.stdout:
+                print(result.stdout, file=sys.stderr)
     except FileNotFoundError:
         # Alembic not available, skip migrations
         print("⚠ Alembic not found, skipping migrations", file=sys.stderr)
