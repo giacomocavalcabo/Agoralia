@@ -42,11 +42,10 @@ from .compliance import router as compliance_router
 # Include compliance router
 api_router.include_router(compliance_router, prefix="/compliance", tags=["compliance"])
 
-# Import migrations router (temporary)
-from .migrations import router as migrations_router
-
-# Include migrations router
-api_router.include_router(migrations_router, prefix="/migrations", tags=["migrations"])
+# Note: Migration endpoint removed - migrations now run automatically on startup
+# If needed temporarily, uncomment:
+# from .migrations import router as migrations_router
+# api_router.include_router(migrations_router, prefix="/migrations", tags=["migrations"])
 
 # TODO: Add CRM router when created
 # api_router.include_router(crm_router, prefix="/crm", tags=["crm"])
