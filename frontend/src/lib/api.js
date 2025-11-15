@@ -9,13 +9,13 @@ export async function apiFetch(path, options = {}) {
     // Normalizza il path: aggiungi / se manca
     const normalizedPath = path.startsWith('/') ? path : '/' + path
     
-    // Se BASE_URL è impostato (production), usa direttamente il backend
-    // Altrimenti usa /api come prefisso per il rewrite di Vercel
+    // Se BASE_URL è configurato, usalo direttamente (priorità a variabile d'ambiente)
+    // Altrimenti usa /api come prefisso per il rewrite di Vercel (fallback)
     if (BASE_URL && BASE_URL !== 'http://127.0.0.1:8000' && !BASE_URL.includes('localhost')) {
       // Production: usa BASE_URL direttamente (es. https://api.agoralia.app)
       url = `${BASE_URL}${normalizedPath}`
     } else {
-      // Development o Vercel: usa /api come prefisso per il rewrite
+      // Development o fallback: usa /api come prefisso per il rewrite di Vercel
       url = `/api${normalizedPath}`
     }
   }
