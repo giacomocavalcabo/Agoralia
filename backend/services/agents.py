@@ -128,6 +128,16 @@ async def create_retell_agent(
         logging.info(f"Retell Agent created: {agent_response}")
         print(f"[DEBUG] Retell Agent created: {agent_response}", flush=True)
         
+        # Verify we got agent_id
+        agent_id = agent_response.get("agent_id")
+        if not agent_id:
+            logging.error(f"No agent_id in response! Response: {agent_response}")
+            print(f"[DEBUG] ERROR: No agent_id in response! Response: {agent_response}", flush=True)
+            # Return response anyway, let caller handle it
+        else:
+            logging.info(f"Agent ID extracted: {agent_id}")
+            print(f"[DEBUG] Agent ID extracted: {agent_id}", flush=True)
+        
         # Return agent_id, not retell_llm_id
         # The agent_id is what we need to save for making calls
         return agent_response
