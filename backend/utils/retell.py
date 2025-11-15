@@ -179,14 +179,38 @@ async def retell_post_multipart(
         form_files.update(files)
     
     async with httpx.AsyncClient(timeout=60) as client:  # Longer timeout for file uploads
+        # Log what we're sending for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[retell_post_multipart] Sending to {path}, data: {form_data_dict}, files: {form_files}")
+        print(f"[DEBUG] [retell_post_multipart] Sending to {path}", flush=True)
+        print(f"[DEBUG] [retell_post_multipart] Data: {form_data_dict}", flush=True)
+        print(f"[DEBUG] [retell_post_multipart] Files: {form_files}", flush=True)
+        
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
             headers=headers,
             files=form_files if form_files else None,
             data=form_data_dict if form_data_dict else None
         )
+        
+        logger.info(f"[retell_post_multipart] Response status: {resp.status_code}, body: {resp.text[:500]}")
+        print(f"[DEBUG] [retell_post_multipart] Response status: {resp.status_code}", flush=True)
+        print(f"[DEBUG] [retell_post_multipart] Response body: {resp.text[:500]}", flush=True)
+        
         if resp.status_code >= 400:
-            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+            # Try to parse Retell error response
+            error_detail = resp.text
+            try:
+                error_json = resp.json()
+                if isinstance(error_json, dict):
+                    error_msg = error_json.get("message") or error_json.get("error") or error_json.get("detail") or resp.text
+                    error_detail = error_msg
+            except Exception:
+                pass
+            logger.error(f"[retell_post_multipart] Retell API error: {resp.status_code} - {error_detail}")
+            print(f"[DEBUG] [retell_post_multipart] Retell API error: {resp.status_code} - {error_detail}", flush=True)
+            raise HTTPException(status_code=resp.status_code, detail=error_detail)
         if resp.status_code == 204 or not resp.content:
             return {}
         try:
