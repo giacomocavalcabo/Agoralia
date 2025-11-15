@@ -112,9 +112,18 @@ async def create_retell_agent(
         },
         "agent_name": name,
         "voice_id": voice_id,
-        "voice_model": "eleven_turbo_v2",
         "language": language,
     }
+    
+    # Voice model: only set for English or multilingual voices
+    # eleven_turbo_v2 is not supported for all languages (e.g., it-IT)
+    # For non-English, omit voice_model to use default or use multilingual model
+    if language and language.startswith("en"):
+        agent_body["voice_model"] = "eleven_turbo_v2"
+    elif language == "multi":
+        # For multilingual, we might want a multilingual model
+        agent_body["voice_model"] = "eleven_multilingual_v2"
+    # For other languages (it-IT, etc.), don't set voice_model - use default
     
     if webhook_url:
         agent_body["webhook_url"] = webhook_url
