@@ -156,23 +156,21 @@ async def retell_post_multipart(
     form_data_dict: Dict[str, Any] = {}
     
     # Process data fields
+    # Retell API expects multipart/form-data with specific formats:
+    # - knowledge_base_texts: JSON string array of {text, title} objects
+    # - knowledge_base_urls: JSON string array of URLs OR multiple form fields
+    # - knowledge_base_name: string
+    # - enable_auto_refresh: boolean as string
     if data:
         for key, value in data.items():
-            # Handle JSON string fields (like knowledge_base_texts) - send as-is
+            # Handle JSON string fields (already serialized) - send as-is
             if isinstance(value, str) and (value.startswith("[") or value.startswith("{")):
-                # JSON string - send as regular form field (Retell expects JSON string for arrays of objects)
+                # JSON string - send as regular form field
                 form_data_dict[key] = value
             elif isinstance(value, list):
-                # For lists of strings (like knowledge_base_urls), httpx handles arrays correctly
-                # But Retell might expect JSON string - let's try both approaches
-                # First try: send as JSON string (safer for complex data)
-                if all(isinstance(item, str) for item in value):
-                    # List of strings - can send as array or JSON string
-                    # Try as JSON string first (more compatible)
-                    form_data_dict[key] = json.dumps(value)
-                else:
-                    # List of objects - must be JSON string
-                    form_data_dict[key] = json.dumps(value)
+                # For arrays, Retell might expect JSON string OR multiple fields
+                # Based on Retell docs, arrays should be JSON strings
+                form_data_dict[key] = json.dumps(value)
             else:
                 form_data_dict[key] = value
     
