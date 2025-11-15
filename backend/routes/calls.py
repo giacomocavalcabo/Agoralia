@@ -524,6 +524,26 @@ async def retell_list_agents():
             raise e
 
 
+@router.get("/retell/agents/{agent_id}")
+async def retell_get_agent(agent_id: str):
+    """Get agent details from Retell AI"""
+    try:
+        # Try v2 endpoint first
+        data = await retell_get_json(f"/v2/get-retell-llm?retell_llm_id={agent_id}")
+        return data
+    except HTTPException as e:
+        # Try alternative endpoints
+        try:
+            data = await retell_get_json(f"/get-retell-llm?retell_llm_id={agent_id}")
+            return data
+        except Exception:
+            try:
+                data = await retell_get_json(f"/retell-llm/{agent_id}")
+                return data
+            except Exception:
+                raise e
+
+
 @router.patch("/retell/phone-numbers/{phone_number}")
 async def update_retell_phone_number(
     phone_number: str,
