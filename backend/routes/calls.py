@@ -571,38 +571,66 @@ async def retell_list_calls(limit: int = 50, cursor: Optional[str] = None):
 
 
 @router.get("/retell/agents")
-async def retell_list_agents():
-    """List agents from Retell AI"""
+async def retell_list_agents(limit: Optional[int] = None, pagination_key: Optional[str] = None, pagination_key_version: Optional[int] = None):
+    """List agents from Retell AI
+    
+    Query params:
+    - limit: Limit on number of objects (1-1000, default 1000)
+    - pagination_key: Agent ID to continue from
+    - pagination_key_version: Version of agent at pagination_key
+    """
+    params: Dict[str, Any] = {}
+    if limit is not None:
+        params["limit"] = limit
+    if pagination_key is not None:
+        params["pagination_key"] = pagination_key
+    if pagination_key_version is not None:
+        params["pagination_key_version"] = pagination_key_version
+    
+    query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+    path = "/list-agents"
+    if query_string:
+        path += f"?{query_string}"
+    
     try:
-        data = await retell_get_json("/list-retell-llm")
+        data = await retell_get_json(path)
         return data
     except HTTPException as e:
         # Try alternative endpoint
         try:
-            data = await retell_get_json("/v2/list-retell-llm")
+            data = await retell_get_json(f"/v2{path}" if not path.startswith("/v2") else path)
             return data
         except Exception:
             raise e
 
 
 @router.get("/retell/agents/{agent_id}")
-async def retell_get_agent(agent_id: str):
-    """Get agent details from Retell AI"""
+async def retell_get_agent(agent_id: str, version: Optional[int] = None):
+    """Get agent details from Retell AI
+    
+    Path params:
+    - agent_id: Unique id of the agent to retrieve
+    
+    Query params:
+    - version: Optional version of the API to use (default latest)
+    """
+    path = f"/get-agent/{agent_id}"
+    if version is not None:
+        path += f"?version={version}"
+    
     try:
-        # Try v2 endpoint first
-        data = await retell_get_json(f"/v2/get-retell-llm?retell_llm_id={agent_id}")
+        data = await retell_get_json(path)
         return data
     except HTTPException as e:
-        # Try alternative endpoints
+        # Try v2 endpoint
         try:
-            data = await retell_get_json(f"/get-retell-llm?retell_llm_id={agent_id}")
+            v2_path = f"/v2/get-agent/{agent_id}"
+            if version is not None:
+                v2_path += f"?version={version}"
+            data = await retell_get_json(v2_path)
             return data
         except Exception:
-            try:
-                data = await retell_get_json(f"/retell-llm/{agent_id}")
-                return data
-            except Exception:
-                raise e
+            raise e
 
 
 @router.post("/retell/agents/test-create")

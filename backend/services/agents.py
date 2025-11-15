@@ -163,43 +163,54 @@ async def update_retell_agent(
     voice_id: Optional[str] = None,
     webhook_url: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Update a Retell LLM agent"""
+    """Update a Retell Agent
+    
+    According to Retell AI docs:
+    - PATCH /update-agent/{agent_id} updates an agent
+    """
     body: Dict[str, Any] = {}
     
-    if name or voice_id or language or webhook_url:
-        body["agent"] = {}
-        if name:
-            body["agent"]["agent_name"] = name
-        if voice_id:
-            body["agent"]["voice_id"] = voice_id
-        if language:
-            body["agent"]["language"] = language
-        if webhook_url is not None:
-            body["agent"]["webhook_url"] = webhook_url
+    # Build update body (direct fields, not nested in "agent")
+    if name is not None:
+        body["agent_name"] = name
+    if voice_id is not None:
+        body["voice_id"] = voice_id
+    if language is not None:
+        body["language"] = language
+    if webhook_url is not None:
+        body["webhook_url"] = webhook_url
     
-    # Retell API uses retell_llm_id as query param
+    if not body:
+        # Nothing to update
+        return {}
+    
+    # Retell API uses PATCH /update-agent/{agent_id}
     try:
-        # Try v2 endpoint
-        data = await retell_patch_json(f"/v2/update-retell-llm?retell_llm_id={retell_agent_id}", body)
+        # Try v2 endpoint first
+        data = await retell_patch_json(f"/v2/update-agent/{retell_agent_id}", body)
         return data
     except HTTPException as e:
         # Try alternative endpoint
         try:
-            data = await retell_patch_json(f"/update-retell-llm?retell_llm_id={retell_agent_id}", body)
+            data = await retell_patch_json(f"/update-agent/{retell_agent_id}", body)
             return data
         except Exception:
             raise e
 
 
 async def delete_retell_agent(retell_agent_id: str) -> None:
-    """Delete a Retell LLM agent"""
+    """Delete a Retell Agent
+    
+    According to Retell AI docs:
+    - DELETE /delete-agent/{agent_id} deletes an agent
+    """
     try:
-        # Try v2 endpoint
-        await retell_delete_json(f"/v2/delete-retell-llm?retell_llm_id={retell_agent_id}")
+        # Try v2 endpoint first
+        await retell_delete_json(f"/v2/delete-agent/{retell_agent_id}")
     except HTTPException as e:
         # Try alternative endpoint
         try:
-            await retell_delete_json(f"/delete-retell-llm?retell_llm_id={retell_agent_id}")
+            await retell_delete_json(f"/delete-agent/{retell_agent_id}")
         except Exception:
             raise e
 

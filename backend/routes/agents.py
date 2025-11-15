@@ -39,6 +39,23 @@ async def list_agents(request: Request) -> List[Dict[str, Any]]:
         ]
 
 
+@router.get("/agents/{agent_id}")
+async def get_agent(request: Request, agent_id: int) -> Dict[str, Any]:
+    """Get agent details"""
+    tenant_id = extract_tenant_id(request)
+    with Session(engine) as session:
+        a = session.get(Agent, agent_id)
+        if not a or (tenant_id is not None and a.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="Agent not found")
+        return {
+            "id": a.id,
+            "name": a.name,
+            "lang": a.lang,
+            "voice_id": a.voice_id,
+            "retell_agent_id": a.retell_agent_id,
+        }
+
+
 class AgentCreate(BaseModel):
     name: str
     lang: Optional[str] = None
