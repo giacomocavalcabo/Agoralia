@@ -20,6 +20,8 @@ from utils.retell import (
     get_retell_base_url,
     retell_get_json,
     retell_post_json,
+    retell_patch_json,
+    retell_delete_json,
 )
 from utils.websocket import manager as ws_manager
 from services.settings import get_settings
@@ -573,6 +575,68 @@ async def retell_list_calls(limit: int = 50, cursor: Optional[str] = None):
     # Use correct Retell API endpoint
     data = await retell_get_json(f"/v2/list-phone-calls?{query}")
     return data
+
+
+@router.patch("/retell/calls/{provider_call_id}")
+async def retell_update_call(provider_call_id: str, body: Dict[str, Any]):
+    """Update a call in Retell AI
+    
+    According to Retell AI docs:
+    - PATCH /v2/update-call?call_id={call_id} updates a call
+    - Body can contain metadata updates
+    """
+    # Retell API uses query parameter for call_id
+    path = f"/v2/update-call?call_id={urllib.parse.quote(provider_call_id)}"
+    
+    try:
+        data = await retell_patch_json(path, body)
+        return {
+            "success": True,
+            "response": data,
+        }
+    except HTTPException as e:
+        # Try non-v2 endpoint
+        try:
+            path = f"/update-call?call_id={urllib.parse.quote(provider_call_id)}"
+            data = await retell_patch_json(path, body)
+            return {
+                "success": True,
+                "response": data,
+            }
+        except Exception:
+            raise e
+
+
+@router.delete("/retell/calls/{provider_call_id}")
+async def retell_delete_call(provider_call_id: str):
+    """Delete a call from Retell AI
+    
+    According to Retell AI docs:
+    - DELETE /v2/delete-call?call_id={call_id} deletes a call record
+    - Note: This deletes the record, not the active call
+    """
+    # Retell API uses query parameter for call_id
+    path = f"/v2/delete-call?call_id={urllib.parse.quote(provider_call_id)}"
+    
+    try:
+        data = await retell_delete_json(path)
+        return {
+            "success": True,
+            "message": "Call deleted successfully",
+            "response": data,
+        }
+    except HTTPException as e:
+        # Try non-v2 endpoint
+        try:
+            path = f"/delete-call?call_id={urllib.parse.quote(provider_call_id)}"
+            data = await retell_delete_json(path)
+            return {
+                "success": True,
+                "message": "Call deleted successfully",
+                "response": data,
+            }
+        except Exception:
+            raise e
 
 
 @router.get("/retell/agents")
