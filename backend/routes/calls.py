@@ -939,58 +939,145 @@ async def retell_create_agent_test(request: Request):
         }
 
 
+@router.get("/retell/phone-numbers/{phone_number}")
+async def get_retell_phone_number(phone_number: str):
+    """Get phone number details from Retell AI
+    
+    According to Retell AI docs:
+    - GET /get-phone-number/{phone_number} retrieves phone number details
+    """
+    try:
+        # Use path parameter as per official docs
+        data = await retell_get_json(f"/get-phone-number/{urllib.parse.quote(phone_number)}")
+        return data
+    except HTTPException as e:
+        # Fallback to query param format if path param doesn't work
+        try:
+            data = await retell_get_json(f"/get-phone-number?phone_number={urllib.parse.quote(phone_number)}")
+            return data
+        except Exception:
+            raise e
+
+
+@router.get("/retell/phone-numbers")
+async def list_retell_phone_numbers():
+    """List all phone numbers from Retell AI
+    
+    According to Retell AI docs:
+    - GET /list-phone-numbers lists all phone numbers
+    """
+    try:
+        data = await retell_get_json("/list-phone-numbers")
+        return data
+    except HTTPException as e:
+        # Try v2 endpoint if available
+        try:
+            data = await retell_get_json("/v2/list-phone-numbers")
+            return data
+        except Exception:
+            raise e
+
+
 @router.patch("/retell/phone-numbers/{phone_number}")
 async def update_retell_phone_number(
     phone_number: str,
     inbound_agent_id: Optional[str] = None,
     outbound_agent_id: Optional[str] = None,
+    inbound_agent_version: Optional[int] = None,
+    outbound_agent_version: Optional[int] = None,
     nickname: Optional[str] = None,
+    inbound_webhook_url: Optional[str] = None,
 ):
     """Update phone number configuration in Retell AI (bind agents)
     
+    According to Retell AI docs:
+    - PATCH /update-phone-number/{phone_number} updates phone number
+    
     Args:
         phone_number: E.164 format number (e.g., +14158735112)
-        inbound_agent_id: Agent ID for inbound calls
-        outbound_agent_id: Agent ID for outbound calls
+        inbound_agent_id: Agent ID for inbound calls (null to disable inbound)
+        outbound_agent_id: Agent ID for outbound calls (null to disable outbound)
+        inbound_agent_version: Version of inbound agent
+        outbound_agent_version: Version of outbound agent
         nickname: Optional nickname
+        inbound_webhook_url: Optional webhook URL for inbound calls
     """
-    api_key = os.getenv("RETELL_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
-    
-    base_url = get_retell_base_url()
-    endpoint = f"{base_url}/update-phone-number"
-    headers = get_retell_headers()
-    
-    body: Dict[str, Any] = {"phone_number": phone_number}
-    
-    if inbound_agent_id is not None:
-        body["inbound_agent_id"] = inbound_agent_id
-    if outbound_agent_id is not None:
-        body["outbound_agent_id"] = outbound_agent_id
-    if nickname is not None:
-        body["nickname"] = nickname
-    
-    async with httpx.AsyncClient(timeout=30) as client:
+    try:
+        # Use path parameter as per official docs
+        body: Dict[str, Any] = {}
+        
+        if inbound_agent_id is not None:
+            body["inbound_agent_id"] = inbound_agent_id
+        if outbound_agent_id is not None:
+            body["outbound_agent_id"] = outbound_agent_id
+        if inbound_agent_version is not None:
+            body["inbound_agent_version"] = inbound_agent_version
+        if outbound_agent_version is not None:
+            body["outbound_agent_version"] = outbound_agent_version
+        if nickname is not None:
+            body["nickname"] = nickname
+        if inbound_webhook_url is not None:
+            body["inbound_webhook_url"] = inbound_webhook_url
+        
+        data = await retell_patch_json(f"/update-phone-number/{urllib.parse.quote(phone_number)}", body)
+        return {
+            "success": True,
+            "response": data,
+        }
+    except HTTPException as e:
+        # Fallback to query param format if path param doesn't work
         try:
-            resp = await client.patch(endpoint, headers=headers, json=body)
-            if resp.status_code >= 400:
-                try:
-                    error_json = resp.json()
-                except Exception:
-                    error_json = {"raw_response": resp.text}
-                raise HTTPException(status_code=resp.status_code, detail=str(error_json))
+            body = {"phone_number": phone_number}
+            if inbound_agent_id is not None:
+                body["inbound_agent_id"] = inbound_agent_id
+            if outbound_agent_id is not None:
+                body["outbound_agent_id"] = outbound_agent_id
+            if inbound_agent_version is not None:
+                body["inbound_agent_version"] = inbound_agent_version
+            if outbound_agent_version is not None:
+                body["outbound_agent_version"] = outbound_agent_version
+            if nickname is not None:
+                body["nickname"] = nickname
+            if inbound_webhook_url is not None:
+                body["inbound_webhook_url"] = inbound_webhook_url
             
+            data = await retell_patch_json("/update-phone-number", body)
             return {
                 "success": True,
-                "response": resp.json(),
-                "request_sent": {
-                    "endpoint": endpoint,
-                    "body": body,
-                }
+                "response": data,
             }
-        except httpx.HTTPError as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        except Exception:
+            raise e
+
+
+@router.delete("/retell/phone-numbers/{phone_number}")
+async def delete_retell_phone_number(phone_number: str):
+    """Delete a phone number from Retell AI
+    
+    According to Retell AI docs:
+    - DELETE /delete-phone-number/{phone_number} deletes a phone number
+    - Returns 204 No Content on success
+    """
+    try:
+        # Use path parameter as per official docs
+        data = await retell_delete_json(f"/delete-phone-number/{urllib.parse.quote(phone_number)}")
+        return {
+            "success": True,
+            "message": "Phone number deleted successfully",
+            "response": data,
+        }
+    except HTTPException as e:
+        # Fallback to query param format if path param doesn't work
+        try:
+            path = f"/delete-phone-number?phone_number={urllib.parse.quote(phone_number)}"
+            data = await retell_delete_json(path)
+            return {
+                "success": True,
+                "message": "Phone number deleted successfully",
+                "response": data,
+            }
+        except Exception:
+            raise e
 
 
 @router.post("/retell/backfill")
