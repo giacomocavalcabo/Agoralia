@@ -17,7 +17,19 @@ export default function Login() {
       const path = mode === 'login' ? '/auth/login' : '/auth/register'
       const body = mode === 'login' ? { email, password } : { email, password, name, admin_secret: adminSecret }
       const res = await apiFetch(path, { method: 'POST', body })
-      const data = await res.json()
+      
+      // Verifica content-type prima di parsare JSON
+      const contentType = res.headers.get('content-type') || ''
+      let data
+      if (contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        // Se non è JSON, probabilmente è HTML (404 o errore)
+        const text = await res.text()
+        console.error('Risposta non-JSON ricevuta:', text.substring(0, 100))
+        throw new Error(`Errore del server: ${res.status} ${res.statusText}. La risposta non è JSON.`)
+      }
+      
       if (!res.ok) throw new Error(data.detail || res.statusText)
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('tenant_id', String(data.tenant_id))
