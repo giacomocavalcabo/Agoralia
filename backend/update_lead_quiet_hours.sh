@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Script per aggiornare un lead per disabilitare le quiet hours
-# Usage: ./update_lead_quiet_hours.sh <phone_number> [base_url]
+# Usage: ./update_lead_quiet_hours.sh <phone_number> [base_url] [auth_token]
 
 PHONE="${1:-+393408994869}"
 BASE_URL="${2:-${AGORALIA_URL:-https://api.agoralia.app}}"
-AUTH_TOKEN="${AUTH_TOKEN:-test-token}"
+AUTH_TOKEN="${3:-${AUTH_TOKEN}}"
 
 echo "=== 🔧 AGGIORNA LEAD: Disabilita Quiet Hours ==="
 echo ""
@@ -13,9 +13,12 @@ echo "📞 Numero: $PHONE"
 echo "🌐 Base URL: $BASE_URL"
 echo ""
 
+# Normalize phone number for search (remove spaces and special chars)
+PHONE_NORMALIZED=$(echo "$PHONE" | tr -d ' ' | tr -d '-' | tr -d '(' | tr -d ')')
+
 # Step 1: Cerca il lead per numero
 echo "🔍 Step 1: Cerca lead per numero..."
-SEARCH_RESPONSE=$(curl -s -X GET "${BASE_URL}/campaigns/leads?q=${PHONE}" \
+SEARCH_RESPONSE=$(curl -s -X GET "${BASE_URL}/campaigns/leads?q=${PHONE_NORMALIZED}" \
   -H "Authorization: Bearer ${AUTH_TOKEN}")
 
 LEAD_ID=$(echo "$SEARCH_RESPONSE" | jq -r '.items[0].id // empty' 2>/dev/null || echo "")

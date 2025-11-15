@@ -38,7 +38,7 @@ echo ""
 
 TEST1_BODY=$(cat <<EOF
 {
-  "to": "+12025551235",
+  "to": "+393408994869",
   "agent_id": "agent_d96425328c574cd8ae683142fc",
   "agent_override": {
     "agent": {
@@ -92,7 +92,7 @@ echo ""
 
 TEST2_BODY=$(cat <<EOF
 {
-  "to": "+12025551235",
+  "to": "+393408994869",
   "agent_id": "agent_d96425328c574cd8ae683142fc",
   "retell_llm_dynamic_variables": {
     "customer_name": "Mario Rossi",
@@ -138,7 +138,7 @@ echo ""
 
 TEST3_BODY=$(cat <<EOF
 {
-  "to": "+12025551235",
+  "to": "+393408994869",
   "agent_id": "agent_d96425328c574cd8ae683142fc",
   "agent_override": {
     "retell_llm": {
