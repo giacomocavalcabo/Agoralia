@@ -312,6 +312,35 @@ async def delete_kb(request: Request, kb_id: int):
     return {"ok": True}
 
 
+@router.post("/kbs/{kb_id}/sections")
+async def add_kb_section(request: Request, kb_id: int, kind: str, content_text: str):
+    """Add a section to a knowledge base (for testing)
+    
+    Args:
+        kb_id: KB ID
+        kind: Section kind (knowledge | rules | style)
+        content_text: Section content
+    """
+    tenant_id = extract_tenant_id(request)
+    with Session(engine) as session:
+        kb = session.get(KnowledgeBase, kb_id)
+        if not kb or (tenant_id is not None and kb.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="KB not found")
+        
+        if kind not in ["knowledge", "rules", "style"]:
+            raise HTTPException(status_code=400, detail="kind must be: knowledge, rules, or style")
+        
+        sec = KnowledgeSection(
+            kb_id=kb_id,
+            tenant_id=kb.tenant_id,
+            kind=kind,
+            content_text=content_text
+        )
+        session.add(sec)
+        session.commit()
+        return {"ok": True, "section_id": sec.id}
+
+
 @router.post("/kbs/{kb_id}/sync")
 async def sync_kb(request: Request, kb_id: int, force: bool = False):
     """Synchronize Agoralia KB to Retell AI
