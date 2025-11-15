@@ -40,9 +40,14 @@ async def retell_post_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
         )
         if resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
-        if resp.status_code == 204:
+        # Handle empty responses (204 No Content or 200 with empty body)
+        if resp.status_code == 204 or not resp.content:
             return {}
-        return resp.json() if resp.content else {}
+        try:
+            return resp.json()
+        except Exception:
+            # If JSON parsing fails, return empty dict (for empty string responses)
+            return {}
 
 
 async def retell_patch_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
