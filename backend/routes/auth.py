@@ -85,9 +85,21 @@ async def auth_google_start(body: dict):
     """Start Google OAuth login"""
     import urllib.parse
     import os
+    # Debug: verifica tutte le variabili Google OAuth
     client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    
+    # Log per debug (rimuovere in produzione se non necessario)
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"GOOGLE_CLIENT_ID present: {bool(client_id)}")
+    logger.info(f"GOOGLE_CLIENT_SECRET present: {bool(client_secret)}")
+    
     if not client_id:
-        raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID missing")
+        # Verifica se esiste con nomi alternativi (per debug)
+        env_vars = {k: v[:10] + "..." if v and len(v) > 10 else v for k, v in os.environ.items() if "GOOGLE" in k.upper()}
+        logger.error(f"Google OAuth vars found: {list(env_vars.keys())}")
+        raise HTTPException(status_code=500, detail=f"GOOGLE_CLIENT_ID missing. Found env vars: {list(env_vars.keys())}")
     scopes = "openid email profile"
     params = {
         "client_id": client_id,
