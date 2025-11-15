@@ -69,13 +69,18 @@ class DispositionUpdate(BaseModel):
 # ============================================================================
 
 class PhoneNumberPurchase(BaseModel):
-    phone_number: Optional[str] = None
-    area_code: Optional[int] = None
-    country_code: str = "IT"
-    number_provider: str = "telnyx"
+    """Request body for purchasing a phone number"""
+    phone_number: Optional[str] = None  # E.164 format (e.g., +14157774444)
+    area_code: Optional[int] = None  # 3-digit US area code (e.g., 415)
+    country_code: Optional[str] = "US"  # US or CA only (default: US)
+    number_provider: str = "twilio"  # twilio or telnyx
     inbound_agent_id: Optional[str] = None
     outbound_agent_id: Optional[str] = None
+    inbound_agent_version: Optional[int] = None
+    outbound_agent_version: Optional[int] = None
     nickname: Optional[str] = None
+    inbound_webhook_url: Optional[str] = None
+    toll_free: Optional[bool] = False
 
 
 @router.post("/retell/phone-numbers/create")
@@ -116,26 +121,34 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     elif body.area_code is not None:
         retell_body["area_code"] = body.area_code
         # For area_code, country_code is required and must be US or CA
-        if body.country_code not in ["US", "CA"]:
+        country_code = body.country_code or "US"
+        if country_code not in ["US", "CA"]:
             raise HTTPException(
                 status_code=400,
                 detail="Per area_code, country_code deve essere US o CA (Retell supporta solo questi)"
             )
-        retell_body["country_code"] = body.country_code
+        retell_body["country_code"] = country_code
     else:
         raise HTTPException(
             status_code=400,
             detail="Devi fornire phone_number (E.164) o area_code"
         )
     
-    if body.inbound_agent_id:
+    # Optional fields
+    if body.inbound_agent_id is not None:
         retell_body["inbound_agent_id"] = body.inbound_agent_id
-    
-    if body.outbound_agent_id:
+    if body.outbound_agent_id is not None:
         retell_body["outbound_agent_id"] = body.outbound_agent_id
-    
+    if body.inbound_agent_version is not None:
+        retell_body["inbound_agent_version"] = body.inbound_agent_version
+    if body.outbound_agent_version is not None:
+        retell_body["outbound_agent_version"] = body.outbound_agent_version
     if body.nickname:
         retell_body["nickname"] = body.nickname
+    if body.inbound_webhook_url:
+        retell_body["inbound_webhook_url"] = body.inbound_webhook_url
+    if body.toll_free:
+        retell_body["toll_free"] = body.toll_free
     
     async with httpx.AsyncClient(timeout=30) as client:
         try:
