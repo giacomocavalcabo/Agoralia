@@ -1517,6 +1517,7 @@ async def retell_create_knowledge_base(
         logger = logging.getLogger(__name__)
         logger.error(f"[retell_create_kb] HTTPException: {e.status_code} - {e.detail}")
         print(f"[DEBUG] [retell_create_kb] HTTPException: {e.status_code} - {e.detail}", flush=True)
+        # Propagate the original error from Retell API
         raise e
     except Exception as e:
         import traceback
@@ -1527,7 +1528,15 @@ async def retell_create_knowledge_base(
         logger.error(f"[retell_create_kb] Exception: {error_msg}\n{error_traceback}")
         print(f"[DEBUG] [retell_create_kb] Exception: {error_msg}", flush=True)
         print(f"[DEBUG] Traceback:\n{error_traceback}", flush=True)
-        raise HTTPException(status_code=500, detail=f"Error creating knowledge base: {str(e)}")
+        # Return more detailed error for debugging
+        error_detail = f"Error creating knowledge base: {error_msg}"
+        try:
+            # Try to extract Retell error message if available
+            if "retell" in error_msg.lower() or "knowledge_base" in error_msg.lower():
+                error_detail = error_msg
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.get("/retell/knowledge-bases/{kb_id}")
