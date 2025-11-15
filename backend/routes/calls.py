@@ -641,25 +641,52 @@ async def retell_publish_agent(agent_id: str):
     - POST /publish-agent/{agent_id} publishes the agent
     - Response: 200 with "Agent successfully published"
     """
+    import logging
+    import traceback
+    logger = logging.getLogger(__name__)
+    
     try:
+        logger.info(f"[publish_agent] Attempting to publish agent: {agent_id}")
+        print(f"[DEBUG] [publish_agent] Attempting to publish agent: {agent_id}", flush=True)
+        
         # Publish agent
         data = await retell_post_json(f"/publish-agent/{agent_id}", {})
+        logger.info(f"[publish_agent] Successfully published agent: {agent_id}, response: {data}")
+        print(f"[DEBUG] [publish_agent] Successfully published agent: {agent_id}, response: {data}", flush=True)
+        
         return {
             "success": True,
             "message": "Agent successfully published",
             "response": data,
         }
     except HTTPException as e:
+        logger.error(f"[publish_agent] HTTPException publishing agent {agent_id}: {e.status_code} - {e.detail}")
+        print(f"[DEBUG] [publish_agent] HTTPException publishing agent {agent_id}: {e.status_code} - {e.detail}", flush=True)
+        
         # Try v2 endpoint
         try:
+            logger.info(f"[publish_agent] Trying v2 endpoint for agent: {agent_id}")
+            print(f"[DEBUG] [publish_agent] Trying v2 endpoint for agent: {agent_id}", flush=True)
+            
             data = await retell_post_json(f"/v2/publish-agent/{agent_id}", {})
+            logger.info(f"[publish_agent] Successfully published agent (v2): {agent_id}, response: {data}")
+            print(f"[DEBUG] [publish_agent] Successfully published agent (v2): {agent_id}, response: {data}", flush=True)
+            
             return {
                 "success": True,
                 "message": "Agent successfully published",
                 "response": data,
             }
-        except Exception:
+        except Exception as ex:
+            logger.error(f"[publish_agent] Exception in v2 fallback for agent {agent_id}: {ex}\n{traceback.format_exc()}")
+            print(f"[DEBUG] [publish_agent] Exception in v2 fallback for agent {agent_id}: {ex}", flush=True)
+            print(f"[DEBUG] Traceback:\n{traceback.format_exc()}", flush=True)
             raise e
+    except Exception as e:
+        logger.error(f"[publish_agent] Unexpected exception publishing agent {agent_id}: {e}\n{traceback.format_exc()}")
+        print(f"[DEBUG] [publish_agent] Unexpected exception publishing agent {agent_id}: {e}", flush=True)
+        print(f"[DEBUG] Traceback:\n{traceback.format_exc()}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error publishing agent: {str(e)}")
 
 
 @router.get("/retell/agents/{agent_id}/versions")
