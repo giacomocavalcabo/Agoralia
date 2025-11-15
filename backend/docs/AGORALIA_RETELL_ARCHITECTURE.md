@@ -206,32 +206,39 @@ body = {
 
 ## 🔍 Identificazione Tenant nei Webhook
 
-### Metodi Attuali
+### Regola Ufficiale di Risoluzione Tenant
 
-**1. Lookup da CallRecord (Primario)**
-```python
-# backend/routes/webhooks.py:127
-ref_id = payload.get("call_id")  # "call_xyz789"
-call_record = session.query(CallRecord).filter(
-    CallRecord.provider_call_id == ref_id
-).first()
-tenant_id = call_record.tenant_id if call_record else None
-```
+**Nei webhook, il tenant viene risolto in questo ordine formale:**
 
-**2. Metadata nella Chiamata (Fallback)**
-```python
-metadata = payload.get("metadata") or {}
-tenant_id = metadata.get("tenant_id")  # Se presente
-```
+1. **`CallRecord.provider_call_id` → `tenant_id`** (fonte di verità primaria)
+   - Se esiste un `CallRecord` con quel `provider_call_id`, usiamo il suo `tenant_id`
+   
+2. **Se non esiste `CallRecord`** (chiamata inbound o race condition outbound):
+   - **Inferenza** da `metadata` e/o `phone_number` (lookup nel database)
+   - **Creazione "lazy"** del `CallRecord` con il `tenant_id` inferito
+   
+3. **Da quel momento in poi**, tutti i webhook successivi useranno sempre e solo il lookup via `provider_call_id`
 
-**3. Lookup da PhoneNumber (Per chiamate inbound)**
+**⚠️ Invariante critica:** **Mai fidarsi di `tenant_id` esterno** (query param, metadata). Il `tenant_id` è sempre derivato dal database di Agoralia.
+
+### Dettagli Implementativi
+
+**Per chiamate inbound:**
+- Usiamo il **`to_number`** (numero Retell ricevente), **non** il `from_number` (caller)
+- Il `to_number` ci permette di risalire al `tenant_id` tramite lookup in `PhoneNumber`
+
 ```python
-from_number = payload.get("from_number")  # "+14157774444"
+# Per inbound, usiamo to_number (numero Retell ricevente)
+to_number = payload.get("to_number")  # "+14157774444" (numero Retell)
 phone_record = session.query(PhoneNumber).filter(
-    PhoneNumber.e164 == from_number
+    PhoneNumber.e164 == to_number
 ).first()
 tenant_id = phone_record.tenant_id if phone_record else None
 ```
+
+**Per chiamate outbound (se CallRecord non esiste ancora per race condition):**
+- Proviamo prima `from_number` (numero Retell che effettua la chiamata)
+- Poi fallback a `to_number` o `metadata.tenant_id` (solo come hint, verificato via DB)
 
 ## 🚨 Sfide e Problemi
 
@@ -318,23 +325,37 @@ query = session.query(Agent).filter(Agent.tenant_id == tenant_id)
 
 ## 🔧 Miglioramenti Proposti
 
-### 1. **Webhook URL con Tenant ID**
+### 1. **Webhook URL con phone_number (hint)**
 Impostare `inbound_webhook_url` su ogni numero Retell:
 ```
 https://api.agoralia.app/webhooks/retell?phone_number=+14157774444
 ```
 
+**⚠️ Importante:** Non passiamo mai `tenant_id` come query param. Usiamo solo il `phone_number` (o un token opaco `num_token`) come hint per facilitare il lookup, ma **risolviamo sempre il `tenant_id` dal database** (lookup in `PhoneNumber`). Questo elimina qualsiasi rischio di "tenant injection".
+
 Poi nel webhook handler:
 ```python
-phone_number = request.query_params.get("phone_number")
+phone_number = request.query_params.get("phone_number")  # Hint, non verità
 phone_record = session.query(PhoneNumber).filter(
     PhoneNumber.e164 == phone_number
 ).first()
-tenant_id = phone_record.tenant_id if phone_record else None
+tenant_id = phone_record.tenant_id if phone_record else None  # Source of truth: DB
 ```
 
-### 2. **Tabella di Mapping Centralizzata**
-Creare tabella `retell_resource_mapping`:
+### 2. **Tabella di Mapping Centralizzata (Opzionale/Futura)**
+La tabella `retell_resource_mapping` è **opzionale** e verrà introdotta solo se in futuro avremo risorse Retell non mappabili facilmente su tabelle esistenti (Agents, PhoneNumbers, CallRecords).
+
+**Per ora:** Non è necessaria perché:
+- `Agent.retell_agent_id` mappa direttamente agenti
+- `PhoneNumber.e164` mappa direttamente numeri
+- `CallRecord.provider_call_id` mappa direttamente chiamate
+
+**Use case futuri possibili:**
+- Risorse Retell custom che non hanno tabella dedicata
+- Audit centralizzato di tutte le relazioni Retell ↔ Agoralia
+- Sincronizzazione batch di risorse Retell
+
+Se dovesse servire in futuro:
 ```sql
 CREATE TABLE retell_resource_mapping (
   id SERIAL PRIMARY KEY,
@@ -342,7 +363,8 @@ CREATE TABLE retell_resource_mapping (
   resource_type VARCHAR(32),  -- 'agent', 'phone_number', 'call'
   retell_id VARCHAR(128),      -- ID in Retell AI
   agoralia_id INT,             -- ID in Agoralia (opzionale)
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(resource_type, retell_id)
 );
 ```
 
@@ -353,9 +375,15 @@ Job periodico per sincronizzare risorse Retell → Agoralia:
 - Creare mapping mancanti
 
 ### 4. **Webhook Signature Verification**
-Implementare verifica firma webhook Retell:
+Implementare verifica firma webhook Retell.
+
+**Oggi:** Usiamo un unico `RETELL_WEBHOOK_SECRET` (single account Retell).
+
+**In futuro:** Con BYO Retell account per tenant, potremo avere un secret per ogni account Retell associato a un tenant (campo `tenants.retell_webhook_secret`).
+
 ```python
-secret = os.getenv("RETELL_WEBHOOK_SECRET")
+# Supporto per-tenant secret (BYO) o fallback a global
+secret = get_tenant_webhook_secret(tenant_id) or os.getenv("RETELL_WEBHOOK_SECRET")
 signature = request.headers.get("X-Signature")
 # Verifica HMAC signature
 ```
@@ -365,14 +393,14 @@ signature = request.headers.get("X-Signature")
 **✅ Cosa Funziona:**
 - Mapping risorse Retell ↔ Agoralia tramite ID salvati nel database
 - Isolamento multi-tenant tramite `tenant_id` in tutte le tabelle
-- Webhook lookup tramite `provider_call_id` per identificare tenant
-- Metadata nelle chiamate per tracciare tenant_id
+- **✅ Regola formale di risoluzione tenant** nei webhook (CallRecord → inferenza → lazy create)
 - **✅ Unique indices** su `provider_call_id`, `retell_agent_id`, `e164` per garantire one-to-one mapping
 - **✅ Lazy CallRecord creation** nei webhook per gestire inbound/race conditions
 - **✅ Idempotency tracking** (`last_event_type`, `last_event_at`) per evitare doppi effetti
 - **✅ Billing fields** (`duration_seconds`, `call_cost_cents`) su CallRecord
 - **✅ BYO Retell account support** (campo `retell_api_key` su tenants, nullable)
-- **✅ Webhook signature verification** con supporto per-tenant secrets
+- **✅ Webhook signature verification** (oggi un solo secret globale, futuro: per-tenant per BYO)
+- **✅ Webhook URL con query params** (`phone_number` come hint, mai `tenant_id` come verità)
 
 **✅ Miglioramenti Implementati:**
 - **Indici e vincoli univoci** su tutti i mapping (garantisce one-to-one Retell ↔ Agoralia)
