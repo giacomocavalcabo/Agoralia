@@ -58,9 +58,10 @@ class Lead(Base):
     country_iso: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     preferred_lang: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     role: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # supplier | supplied
-    nature: Mapped[Optional[str]] = mapped_column(String(8), nullable=True, default="unknown")  # "b2b" | "b2c" | "unknown"
+    nature: Mapped[Optional[str]] = mapped_column(String(8), nullable=True, default="unknown")  # "b2b" | "b2c" | "unknown" | "personal"
     consent_basis: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     consent_status: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # granted | denied | unknown
     campaign_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("campaigns.id"), nullable=True)
+    quiet_hours_disabled: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=0)  # 0 = use default, 1 = disable quiet hours for this lead
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

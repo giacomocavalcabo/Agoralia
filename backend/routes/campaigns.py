@@ -69,10 +69,11 @@ class LeadCreate(BaseModel):
     company: Optional[str] = None
     preferred_lang: Optional[str] = None
     role: Optional[str] = None
-    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown"
+    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown" | "personal"
     consent_basis: Optional[str] = None
     consent_status: Optional[str] = None
     campaign_id: Optional[int] = None
+    quiet_hours_disabled: Optional[bool] = None  # True = disable quiet hours for this lead (for personal contacts or less restricted)
 
 
 class LeadUpdate(BaseModel):
@@ -81,10 +82,11 @@ class LeadUpdate(BaseModel):
     company: Optional[str] = None
     preferred_lang: Optional[str] = None
     role: Optional[str] = None
-    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown"
+    nature: Optional[str] = None  # "b2b" | "b2c" | "unknown" | "personal"
     consent_basis: Optional[str] = None
     consent_status: Optional[str] = None
     campaign_id: Optional[int] = None
+    quiet_hours_disabled: Optional[bool] = None  # True = disable quiet hours for this lead (for personal contacts or less restricted)
 
 
 # ============================================================================
@@ -522,6 +524,7 @@ async def list_leads(
                     "consent_basis": l.consent_basis,
                     "consent_status": l.consent_status,
                     "campaign_id": l.campaign_id,
+                    "quiet_hours_disabled": bool(l.quiet_hours_disabled) if l.quiet_hours_disabled is not None else None,
                     "created_at": l.created_at.isoformat(),
                 }
                 for l in rows
@@ -551,6 +554,7 @@ async def create_lead(request: Request, body: LeadCreate) -> Dict[str, Any]:
             consent_status=body.consent_status or "unknown",
             country_iso=country_iso_from_e164(body.phone),
             campaign_id=body.campaign_id,
+            quiet_hours_disabled=1 if body.quiet_hours_disabled else (0 if body.quiet_hours_disabled is False else None),
         )
         session.add(l)
         session.commit()
@@ -574,6 +578,9 @@ async def update_lead(request: Request, lead_id: int, body: LeadUpdate) -> Dict[
         # Auto-detect nature from company if not provided but company is set
         if (body.nature is None or l.nature == "unknown") and body.company is not None:
             l.nature = "b2b"
+        # Update quiet_hours_disabled if provided
+        if body.quiet_hours_disabled is not None:
+            l.quiet_hours_disabled = 1 if body.quiet_hours_disabled else 0
         session.commit()
     return {"ok": True}
 

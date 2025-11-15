@@ -174,54 +174,60 @@ def check_compliance(
             checks["dnc_registry"] = {"passed": None, "message": "Public DNC check not yet implemented"}
             warnings.append(f"DNC registry check required for {country_iso} but API not implemented")
     
-    # 2. Quiet Hours Check - Priority: Campaign > Default Settings > Country
-    quiet_hours_rule: Dict[str, Any] = {}
-    settings = get_settings()  # Load settings once for priority check
-    settings_qh_enabled = bool(settings.quiet_hours_enabled or 0) if settings else False
-    
-    # Check campaign quiet hours first (highest priority)
-    if campaign and campaign.quiet_hours_enabled is not None:
-        if campaign.quiet_hours_enabled == 1:
+    # 2. Quiet Hours Check - Priority: Lead (bypass) > Campaign > Default Settings > Country
+    # First check if lead has quiet hours disabled (highest priority - bypass all)
+    if lead and lead.quiet_hours_disabled == 1:
+        # Lead explicitly has quiet hours disabled - bypass all quiet hours checks
+        quiet_hours_rule = {"quiet_hours_enabled": False}
+        quiet_hours_source = "lead_override"
+    else:
+        quiet_hours_rule: Dict[str, Any] = {}
+        settings = get_settings()  # Load settings once for priority check
+        settings_qh_enabled = bool(settings.quiet_hours_enabled or 0) if settings else False
+        
+        # Check campaign quiet hours first (highest priority after lead override)
+        if campaign and campaign.quiet_hours_enabled is not None:
+            if campaign.quiet_hours_enabled == 1:
+                quiet_hours_rule = {
+                    "quiet_hours_enabled": True,
+                    "quiet_hours_weekdays": campaign.quiet_hours_weekdays,
+                    "quiet_hours_saturday": campaign.quiet_hours_saturday,
+                    "quiet_hours_sunday": campaign.quiet_hours_sunday,
+                    "timezone": campaign.quiet_hours_timezone or campaign.timezone or "UTC",
+                }
+            else:
+                # Campaign explicitly disabled quiet hours
+                quiet_hours_rule = {"quiet_hours_enabled": False}
+        # Check default settings (second priority)
+        elif settings_qh_enabled:
             quiet_hours_rule = {
                 "quiet_hours_enabled": True,
-                "quiet_hours_weekdays": campaign.quiet_hours_weekdays,
-                "quiet_hours_saturday": campaign.quiet_hours_saturday,
-                "quiet_hours_sunday": campaign.quiet_hours_sunday,
-                "timezone": campaign.quiet_hours_timezone or campaign.timezone or "UTC",
+                "quiet_hours_weekdays": settings.quiet_hours_weekdays,
+                "quiet_hours_saturday": settings.quiet_hours_saturday,
+                "quiet_hours_sunday": settings.quiet_hours_sunday,
+                "timezone": settings.quiet_hours_timezone or "UTC",
+            }
+        # Check country rule (lowest priority)
+        elif rule.get("quiet_hours_enabled"):
+            quiet_hours_rule = {
+                "quiet_hours_enabled": True,
+                "quiet_hours_weekdays": rule.get("quiet_hours_weekdays"),
+                "quiet_hours_saturday": rule.get("quiet_hours_saturday"),
+                "quiet_hours_sunday": rule.get("quiet_hours_sunday"),
+                "timezone": rule.get("timezone", "UTC"),
             }
         else:
-            # Campaign explicitly disabled quiet hours
             quiet_hours_rule = {"quiet_hours_enabled": False}
-    # Check default settings (second priority)
-    elif settings_qh_enabled:
-        quiet_hours_rule = {
-            "quiet_hours_enabled": True,
-            "quiet_hours_weekdays": settings.quiet_hours_weekdays,
-            "quiet_hours_saturday": settings.quiet_hours_saturday,
-            "quiet_hours_sunday": settings.quiet_hours_sunday,
-            "timezone": settings.quiet_hours_timezone or "UTC",
-        }
-    # Check country rule (lowest priority)
-    elif rule.get("quiet_hours_enabled"):
-        quiet_hours_rule = {
-            "quiet_hours_enabled": True,
-            "quiet_hours_weekdays": rule.get("quiet_hours_weekdays"),
-            "quiet_hours_saturday": rule.get("quiet_hours_saturday"),
-            "quiet_hours_sunday": rule.get("quiet_hours_sunday"),
-            "timezone": rule.get("timezone", "UTC"),
-        }
-    else:
-        quiet_hours_rule = {"quiet_hours_enabled": False}
-    
-    # Determine source for quiet hours (for reporting)
-    if campaign and campaign.quiet_hours_enabled == 1:
-        quiet_hours_source = "campaign"
-    elif settings_qh_enabled:
-        quiet_hours_source = "default"
-    elif rule.get("quiet_hours_enabled"):
-        quiet_hours_source = "country"
-    else:
-        quiet_hours_source = "none"
+        
+        # Determine source for quiet hours (for reporting)
+        if campaign and campaign.quiet_hours_enabled == 1:
+            quiet_hours_source = "campaign"
+        elif settings_qh_enabled:
+            quiet_hours_source = "default"
+        elif rule.get("quiet_hours_enabled"):
+            quiet_hours_source = "country"
+        else:
+            quiet_hours_source = "none"
     
     # Apply quiet hours check
     if quiet_hours_rule.get("quiet_hours_enabled"):
