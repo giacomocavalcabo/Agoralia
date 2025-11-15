@@ -560,21 +560,121 @@ async def create_web_call(payload: WebCallRequest):
 
 @router.get("/retell/calls/{provider_call_id}")
 async def retell_get_call(provider_call_id: str):
-    """Get call details from Retell"""
-    data = await retell_get_json(f"/v2/get-call?call_id={urllib.parse.quote(provider_call_id)}")
-    return data
+    """Get call details from Retell AI
+    
+    According to Retell AI docs:
+    - GET /v2/get-call/{call_id} retrieves call details
+    """
+    try:
+        data = await retell_get_json(f"/v2/get-call/{urllib.parse.quote(provider_call_id)}")
+        return data
+    except HTTPException as e:
+        # Fallback to query param format if path param doesn't work
+        try:
+            data = await retell_get_json(f"/v2/get-call?call_id={urllib.parse.quote(provider_call_id)}")
+            return data
+        except Exception:
+            raise e
+
+
+class ListCallsFilter(BaseModel):
+    """Filter criteria for listing calls"""
+    agent_id: Optional[List[str]] = None
+    call_status: Optional[List[str]] = None  # registered, not_connected, ongoing, ended, error
+    call_type: Optional[List[str]] = None  # phone_call, web_call
+    direction: Optional[List[str]] = None  # inbound, outbound
+    user_sentiment: Optional[List[str]] = None
+    call_successful: Optional[List[bool]] = None
+    start_timestamp: Optional[Dict[str, int]] = None  # upper_threshold, lower_threshold
+
+
+class ListCallsRequest(BaseModel):
+    """Request body for listing calls"""
+    filter_criteria: Optional[ListCallsFilter] = None
+    sort_order: Optional[str] = Field(default="descending", pattern="^(ascending|descending)$")
+    limit: Optional[int] = Field(default=50, ge=1, le=1000)
+    pagination_key: Optional[str] = None
+
+
+@router.post("/retell/calls/list")
+async def retell_list_calls(body: ListCallsRequest):
+    """List calls from Retell AI
+    
+    According to Retell AI docs:
+    - POST /v2/list-calls lists calls with filters, sorting, and pagination
+    - Body contains filter_criteria, sort_order, limit, pagination_key
+    """
+    request_body: Dict[str, Any] = {
+        "sort_order": body.sort_order or "descending",
+        "limit": min(max(1, body.limit or 50), 1000),
+    }
+    
+    if body.filter_criteria:
+        filter_dict: Dict[str, Any] = {}
+        if body.filter_criteria.agent_id:
+            filter_dict["agent_id"] = body.filter_criteria.agent_id
+        if body.filter_criteria.call_status:
+            filter_dict["call_status"] = body.filter_criteria.call_status
+        if body.filter_criteria.call_type:
+            filter_dict["call_type"] = body.filter_criteria.call_type
+        if body.filter_criteria.direction:
+            filter_dict["direction"] = body.filter_criteria.direction
+        if body.filter_criteria.user_sentiment:
+            filter_dict["user_sentiment"] = body.filter_criteria.user_sentiment
+        if body.filter_criteria.call_successful is not None:
+            filter_dict["call_successful"] = body.filter_criteria.call_successful
+        if body.filter_criteria.start_timestamp:
+            filter_dict["start_timestamp"] = body.filter_criteria.start_timestamp
+        
+        if filter_dict:
+            request_body["filter_criteria"] = filter_dict
+    
+    if body.pagination_key:
+        request_body["pagination_key"] = body.pagination_key
+    
+    try:
+        data = await retell_post_json("/v2/list-calls", request_body)
+        return data
+    except HTTPException as e:
+        # Fallback to old GET endpoint if POST doesn't work
+        try:
+            # Legacy GET endpoint for backward compatibility
+            qs = {"limit": request_body["limit"]}
+            if body.pagination_key:
+                qs["cursor"] = body.pagination_key
+            query = urllib.parse.urlencode(qs)
+            data = await retell_get_json(f"/v2/list-phone-calls?{query}")
+            return data
+        except Exception:
+            raise e
 
 
 @router.get("/retell/calls")
-async def retell_list_calls(limit: int = 50, cursor: Optional[str] = None):
-    """List calls from Retell"""
-    qs = {"limit": max(1, min(limit, 100))}
-    if cursor:
-        qs["cursor"] = cursor
-    query = urllib.parse.urlencode(qs)
-    # Use correct Retell API endpoint
-    data = await retell_get_json(f"/v2/list-phone-calls?{query}")
-    return data
+async def retell_list_calls_simple(
+    limit: int = 50,
+    cursor: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    call_status: Optional[str] = None,
+    call_type: Optional[str] = None,
+):
+    """Simple GET endpoint for listing calls (backward compatibility)
+    
+    Internally converts to POST /v2/list-calls format
+    """
+    filter_criteria = None
+    if agent_id or call_status or call_type:
+        filter_criteria = ListCallsFilter(
+            agent_id=[agent_id] if agent_id else None,
+            call_status=[call_status] if call_status else None,
+            call_type=[call_type] if call_type else None,
+        )
+    
+    body = ListCallsRequest(
+        filter_criteria=filter_criteria,
+        limit=limit,
+        pagination_key=cursor,
+    )
+    return await retell_list_calls(body)
 
 
 @router.patch("/retell/calls/{provider_call_id}")
@@ -582,22 +682,20 @@ async def retell_update_call(provider_call_id: str, body: Dict[str, Any]):
     """Update a call in Retell AI
     
     According to Retell AI docs:
-    - PATCH /v2/update-call?call_id={call_id} updates a call
-    - Body can contain metadata updates
+    - PATCH /v2/update-call/{call_id} updates call metadata and data storage settings
+    - Body can contain: metadata, data_storage_setting, override_dynamic_variables
     """
-    # Retell API uses query parameter for call_id
-    path = f"/v2/update-call?call_id={urllib.parse.quote(provider_call_id)}"
-    
     try:
-        data = await retell_patch_json(path, body)
+        # Use path parameter as per official docs
+        data = await retell_patch_json(f"/v2/update-call/{urllib.parse.quote(provider_call_id)}", body)
         return {
             "success": True,
             "response": data,
         }
     except HTTPException as e:
-        # Try non-v2 endpoint
+        # Fallback to query param format if path param doesn't work
         try:
-            path = f"/update-call?call_id={urllib.parse.quote(provider_call_id)}"
+            path = f"/v2/update-call?call_id={urllib.parse.quote(provider_call_id)}"
             data = await retell_patch_json(path, body)
             return {
                 "success": True,
@@ -612,23 +710,21 @@ async def retell_delete_call(provider_call_id: str):
     """Delete a call from Retell AI
     
     According to Retell AI docs:
-    - DELETE /v2/delete-call?call_id={call_id} deletes a call record
-    - Note: This deletes the record, not the active call
+    - DELETE /v2/delete-call/{call_id} deletes a call record and its associated data
+    - Returns 204 No Content on success
     """
-    # Retell API uses query parameter for call_id
-    path = f"/v2/delete-call?call_id={urllib.parse.quote(provider_call_id)}"
-    
     try:
-        data = await retell_delete_json(path)
+        # Use path parameter as per official docs
+        data = await retell_delete_json(f"/v2/delete-call/{urllib.parse.quote(provider_call_id)}")
         return {
             "success": True,
             "message": "Call deleted successfully",
             "response": data,
         }
     except HTTPException as e:
-        # Try non-v2 endpoint
+        # Fallback to query param format if path param doesn't work
         try:
-            path = f"/delete-call?call_id={urllib.parse.quote(provider_call_id)}"
+            path = f"/v2/delete-call?call_id={urllib.parse.quote(provider_call_id)}"
             data = await retell_delete_json(path)
             return {
                 "success": True,
