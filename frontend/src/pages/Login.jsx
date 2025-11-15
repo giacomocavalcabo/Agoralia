@@ -16,6 +16,18 @@ export default function Login() {
     try {
       const path = mode === 'login' ? '/auth/login' : '/auth/register'
       const body = mode === 'login' ? { email, password } : { email, password, name, admin_secret: adminSecret }
+      
+      // Debug: log dell'URL completo
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const normalizedPath = path.startsWith('/') ? path : '/' + path
+      let url
+      if (BASE_URL && BASE_URL !== 'http://127.0.0.1:8000' && !BASE_URL.includes('localhost')) {
+        url = `${BASE_URL}${normalizedPath}`
+      } else {
+        url = `/api${normalizedPath}`
+      }
+      console.log('Login URL:', url)
+      
       const res = await apiFetch(path, { method: 'POST', body })
       
       // Verifica content-type prima di parsare JSON
@@ -26,8 +38,10 @@ export default function Login() {
       } else {
         // Se non è JSON, probabilmente è HTML (404 o errore)
         const text = await res.text()
-        console.error('Risposta non-JSON ricevuta:', text.substring(0, 100))
-        throw new Error(`Errore del server: ${res.status} ${res.statusText}. La risposta non è JSON.`)
+        console.error('Risposta non-JSON ricevuta:', text.substring(0, 200))
+        console.error('Response URL:', res.url)
+        console.error('Response status:', res.status)
+        throw new Error(`Errore del server: ${res.status} ${res.statusText}. La risposta non è JSON. URL: ${res.url}`)
       }
       
       if (!res.ok) throw new Error(data.detail || res.statusText)
