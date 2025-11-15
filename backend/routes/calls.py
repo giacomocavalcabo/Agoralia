@@ -1480,8 +1480,8 @@ async def retell_create_knowledge_base(
     
     # Add URLs if provided
     if body.knowledge_base_urls:
-        # Retell expects array format - send as list
-        form_data["knowledge_base_urls"] = body.knowledge_base_urls
+        # Convert to JSON string for consistency with Retell API format
+        form_data["knowledge_base_urls"] = json.dumps(body.knowledge_base_urls)
     
     # Add auto-refresh if provided
     if body.enable_auto_refresh is not None:
@@ -1639,7 +1639,8 @@ async def retell_add_knowledge_base_sources(
     
     # Add URLs if provided
     if body.knowledge_base_urls:
-        form_data["knowledge_base_urls"] = body.knowledge_base_urls
+        # Convert to JSON string for consistency with Retell API format
+        form_data["knowledge_base_urls"] = json.dumps(body.knowledge_base_urls)
     
     if not form_data:
         raise HTTPException(status_code=400, detail="At least one source (texts or URLs) must be provided")
