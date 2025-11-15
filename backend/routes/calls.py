@@ -15,7 +15,12 @@ from models.agents import KnowledgeSection
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
 from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent, _resolve_from_number
-from utils.retell import get_retell_headers, get_retell_base_url, retell_get_json
+from utils.retell import (
+    get_retell_headers,
+    get_retell_base_url,
+    retell_get_json,
+    retell_post_json,
+)
 from utils.websocket import manager as ws_manager
 from services.settings import get_settings
 from services.enforcement import (
