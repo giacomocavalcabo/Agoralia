@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from config.database import engine
 from models.calls import CallRecord, CallSegment
-from models.agents import KnowledgeSection
+from models.agents import KnowledgeSection, KnowledgeBase
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
 from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent, _resolve_from_number
@@ -126,13 +126,15 @@ class OutboundCallRequest(BaseModel):
     override_agent_version: Optional[int] = Field(None, description="Agent version to use (Retell API)")
     agent_override: Optional[AgentOverride] = Field(None, description="Complete agent override for per-call customization")
     retell_llm_dynamic_variables: Optional[Dict[str, str]] = Field(None, description="Dynamic variables for personalization (all values must be strings)")
-    kb_id: Optional[int] = None
+    kb_id: Optional[int] = Field(None, description="Agoralia Knowledge Base ID (will be converted to Retell KB ID)")
+    knowledge_base_ids: Optional[List[str]] = Field(None, description="Retell Knowledge Base IDs (e.g., ['knowledge_base_xxx']) - takes precedence over kb_id")
 
 
 class WebCallRequest(BaseModel):
     agent_id: str = Field(...)
     metadata: Optional[dict] = None
-    kb_id: Optional[int] = None
+    kb_id: Optional[int] = Field(None, description="Agoralia Knowledge Base ID (will be converted to Retell KB ID)")
+    knowledge_base_ids: Optional[List[str]] = Field(None, description="Retell Knowledge Base IDs (e.g., ['knowledge_base_xxx']) - takes precedence over kb_id")
 
 
 class InjectBody(BaseModel):
@@ -530,6 +532,65 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             logger.info(f"[create_outbound_call] Dynamic variables applied: {payload.retell_llm_dynamic_variables}")
             print(f"[DEBUG] Dynamic variables applied: {payload.retell_llm_dynamic_variables}", flush=True)
         
+        # Knowledge Base IDs: Collect all KB IDs (priority: knowledge_base_ids > kb_id converted to retell_kb_id)
+        knowledge_base_ids_list: List[str] = []
+        
+        # 1. If knowledge_base_ids provided directly, use them
+        if payload.knowledge_base_ids:
+            knowledge_base_ids_list.extend(payload.knowledge_base_ids)
+            logger.info(f"[create_outbound_call] Using knowledge_base_ids from payload: {payload.knowledge_base_ids}")
+        
+        # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID
+        if payload.kb_id is not None:
+            with Session(engine) as session:
+                kb = session.get(KnowledgeBase, payload.kb_id)
+                if kb and kb.retell_kb_id:
+                    if kb.retell_kb_id not in knowledge_base_ids_list:
+                        knowledge_base_ids_list.append(kb.retell_kb_id)
+                        logger.info(f"[create_outbound_call] Converted kb_id {payload.kb_id} to retell_kb_id: {kb.retell_kb_id}")
+                    else:
+                        logger.info(f"[create_outbound_call] retell_kb_id {kb.retell_kb_id} already in knowledge_base_ids")
+                elif kb and not kb.retell_kb_id:
+                    # Fallback to old behavior: use metadata kb (for backward compatibility)
+                    secs = (
+                        session.query(KnowledgeSection)
+                        .filter(KnowledgeSection.kb_id == payload.kb_id)
+                        .order_by(KnowledgeSection.id.asc())
+                        .all()
+                    )
+                    if secs:
+                        body.setdefault("metadata", {})
+                        body["metadata"]["kb"] = {
+                            "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
+                            "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
+                            "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
+                        }
+                        logger.info(f"[create_outbound_call] Using legacy metadata kb (kb_id {payload.kb_id} has no retell_kb_id)")
+        
+        # 3. Apply knowledge_base_ids to agent_override if present, or create one if needed
+        if knowledge_base_ids_list:
+            # If agent_override already exists, merge knowledge_base_ids into retell_llm
+            if payload.agent_override:
+                if not agent_override_dict:
+                    agent_override_dict = {}
+                if "retell_llm" not in agent_override_dict:
+                    agent_override_dict["retell_llm"] = {}
+                # Merge knowledge_base_ids (combine with existing if any)
+                existing_kb_ids = agent_override_dict["retell_llm"].get("knowledge_base_ids", [])
+                combined_kb_ids = list(set(existing_kb_ids + knowledge_base_ids_list))
+                agent_override_dict["retell_llm"]["knowledge_base_ids"] = combined_kb_ids
+                body["agent_override"] = agent_override_dict
+                logger.info(f"[create_outbound_call] Added knowledge_base_ids to agent_override.retell_llm: {combined_kb_ids}")
+            else:
+                # Create agent_override with retell_llm containing knowledge_base_ids
+                agent_override_dict = {
+                    "retell_llm": {
+                        "knowledge_base_ids": knowledge_base_ids_list
+                    }
+                }
+                body["agent_override"] = agent_override_dict
+                logger.info(f"[create_outbound_call] Created agent_override with knowledge_base_ids: {knowledge_base_ids_list}")
+        
         body.setdefault("metadata", {})
         body["metadata"]["lang"] = lang
         if is_multi:
@@ -542,22 +603,6 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 pass
         if payload.metadata is not None:
             body["metadata"].update(payload.metadata)
-        # Attach knowledge pack
-        if payload.kb_id is not None:
-            with Session(engine) as session:
-                secs = (
-                    session.query(KnowledgeSection)
-                    .filter(KnowledgeSection.kb_id == payload.kb_id)
-                    .order_by(KnowledgeSection.id.asc())
-                    .all()
-                )
-                if secs:
-                    body.setdefault("metadata", {})
-                    body["metadata"]["kb"] = {
-                        "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
-                        "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
-                        "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
-                    }
 
         logger.info(f"[create_outbound_call] body prepared: {json.dumps(body)}")
         
@@ -671,22 +716,46 @@ async def create_web_call(payload: WebCallRequest):
         body["metadata"]["lang"] = lang
         if payload.metadata:
             body["metadata"].update(payload.metadata)
-    # Attach knowledge pack if kb_id passed
+    
+    # Knowledge Base IDs: Collect all KB IDs (priority: knowledge_base_ids > kb_id converted to retell_kb_id)
+    knowledge_base_ids_list: List[str] = []
+    
+    # 1. If knowledge_base_ids provided directly, use them
+    if payload.knowledge_base_ids:
+        knowledge_base_ids_list.extend(payload.knowledge_base_ids)
+    
+    # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID
     if payload.kb_id is not None:
         with Session(engine) as session:
-            secs = (
-                session.query(KnowledgeSection)
-                .filter(KnowledgeSection.kb_id == payload.kb_id)
-                .order_by(KnowledgeSection.id.asc())
-                .all()
-            )
-            if secs:
-                body.setdefault("metadata", {})
-                body["metadata"]["kb"] = {
-                    "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
-                    "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
-                    "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
-                }
+            kb = session.get(KnowledgeBase, payload.kb_id)
+            if kb and kb.retell_kb_id:
+                if kb.retell_kb_id not in knowledge_base_ids_list:
+                    knowledge_base_ids_list.append(kb.retell_kb_id)
+            elif kb and not kb.retell_kb_id:
+                # Fallback to old behavior: use metadata kb (for backward compatibility)
+                secs = (
+                    session.query(KnowledgeSection)
+                    .filter(KnowledgeSection.kb_id == payload.kb_id)
+                    .order_by(KnowledgeSection.id.asc())
+                    .all()
+                )
+                if secs:
+                    body.setdefault("metadata", {})
+                    body["metadata"]["kb"] = {
+                        "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
+                        "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
+                        "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
+                    }
+    
+    # 3. Apply knowledge_base_ids to body (web calls use agent_override or direct retell_llm config)
+    if knowledge_base_ids_list:
+        # For web calls, add to agent_override.retell_llm or create one
+        if "agent_override" not in body:
+            body["agent_override"] = {}
+        if "retell_llm" not in body["agent_override"]:
+            body["agent_override"]["retell_llm"] = {}
+        body["agent_override"]["retell_llm"]["knowledge_base_ids"] = knowledge_base_ids_list
+    
     # Add kb_version if present
     try:
         s = get_settings()
