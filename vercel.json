@@ -4,7 +4,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm ci",
   "framework": "vite",
-  "rootDirectory": "frontend",
   "rewrites": [
     {
       "source": "/api/(.*)",
