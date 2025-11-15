@@ -49,7 +49,7 @@ export default function Settings() {
       apiFetch('/settings/languages').then(r=>r.json()).catch(()=>null),
       apiFetch('/settings/telephony').then(r=>r.json()).catch(()=>null),
       apiFetch('/settings/compliance').then(r=>r.json()).catch(()=>null),
-      apiFetch('/entitlements').then(r=>r.json()).catch(()=>null),
+      apiFetch('/billing/entitlements').then(r=>r.json()).catch(()=>null),
       apiFetch('/numbers').then(r=>r.json()).catch(()=>[]),
     ]).then(([g, l, tel, comp, ent, nums]) => {
       if (g) {

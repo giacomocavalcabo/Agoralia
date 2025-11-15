@@ -94,7 +94,7 @@ export default function CrmMapping() {
   }
 
   useEffect(() => { loadConnections(); loadProviders() }, [])
-  useEffect(() => { apiFetch('/entitlements').then(r=>r.json()).then(setEntitlements).catch(()=>{}) }, [])
+  useEffect(() => { apiFetch('/billing/entitlements').then(r=>r.json()).then(setEntitlements).catch(()=>{}) }, [])
   useEffect(() => { loadMapping(); loadSuggestions(); loadCanonical(); loadCanonicalExample() }, [provider, objectType])
 
   return (

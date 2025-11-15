@@ -5,7 +5,7 @@ import { useI18n } from '../lib/i18n.jsx'
 export default function Analytics() {
   const { t } = useI18n()
   const [ent, setEnt] = useState({ analytics_advanced: false })
-  useEffect(() => { apiFetch('/entitlements').then(r=>r.json()).then(setEnt).catch(()=>{}) }, [])
+  useEffect(() => { apiFetch('/billing/entitlements').then(r=>r.json()).then(setEnt).catch(()=>{}) }, [])
   return (
     <div>
       <h1>

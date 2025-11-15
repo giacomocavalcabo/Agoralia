@@ -44,7 +44,7 @@ export default function Calendar() {
   }, [range.start, range.end])
 
   useEffect(() => {
-    apiFetch('/entitlements').then((r) => r.json()).then((j)=> setEnt(j || {})).catch(()=>{})
+    apiFetch('/billing/entitlements').then((r) => r.json()).then((j)=> setEnt(j || {})).catch(()=>{})
   }, [])
 
   const days = useMemo(() => {

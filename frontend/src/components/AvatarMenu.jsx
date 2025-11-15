@@ -11,6 +11,15 @@ export default function AvatarMenu({ email = 'user@example.com' }) {
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
 
+  const handleLogout = () => {
+    // Rimuovi solo le chiavi di autenticazione, mantieni tema e altre preferenze
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('tenant_id')
+    localStorage.removeItem('is_admin')
+    // Forza il refresh completo per assicurarsi che il redirect funzioni
+    window.location.href = '/login'
+  }
+
   const initials = String(email).slice(0, 2).toUpperCase()
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -26,7 +35,7 @@ export default function AvatarMenu({ email = 'user@example.com' }) {
             if (v) document.documentElement.setAttribute('data-theme', v); else document.documentElement.removeAttribute('data-theme')
             localStorage.setItem('ui_theme', v || 'light')
           }}>Toggle theme</button>
-          <button className="btn" onClick={() => { localStorage.clear(); window.location.href = '/'; }}>Logout</button>
+          <button className="btn" onClick={handleLogout}>Logout</button>
         </div>
       )}
     </div>

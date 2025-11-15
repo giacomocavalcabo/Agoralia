@@ -3,7 +3,7 @@ import { apiFetch } from '../lib/api'
 
 export default function UsageBar() {
   const [ov, setOv] = useState(null)
-  useEffect(() => { apiFetch('/me/usage').then(r=>r.json()).then(setOv).catch(()=>{}) }, [])
+  useEffect(() => { apiFetch('/billing/me/usage').then(r=>r.json()).then(setOv).catch(()=>{}) }, [])
   const { used, cap, pct } = useMemo(() => {
     const used = Number(ov?.minutes_month_to_date || 0)
     // Prefer backend-provided cap if present; fallback by plan

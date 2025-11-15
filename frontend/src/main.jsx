@@ -24,14 +24,21 @@ import Calendar from './pages/Calendar.jsx'
 import Billing from './pages/Billing.jsx'
 import { I18nProvider } from './lib/i18n.jsx'
 import ToastProvider from './components/ToastProvider.jsx'
-// import Login from './pages/Login.jsx'
+import Login from './pages/Login.jsx'
 import HubSpotCallback from './pages/HubSpotCallback.jsx'
 import GoogleCallback from './pages/GoogleCallback.jsx'
 import GoogleLoginCallback from './pages/GoogleLoginCallback.jsx'
 import Admin from './pages/Admin.jsx'
 
 function Protected({ children }) {
-  // Temporaneamente disabilitato per sviluppo
+  const token = localStorage.getItem('auth_token')
+  const tenantId = localStorage.getItem('tenant_id')
+  
+  // Se non c'è token o tenant_id, redirect a login
+  if (!token || !tenantId) {
+    return <Navigate to="/login" replace />
+  }
+  
   return children
 }
 
@@ -66,8 +73,8 @@ const router = createBrowserRouter([
       { path: 'admin', element: <Admin /> },
     ],
   },
+  { path: '/login', element: <Login /> },
   { path: '*', element: <Navigate to="/" replace /> },
-  // { path: '/login', element: <Login /> },
   { path: '/hubspot/callback', element: <HubSpotCallback /> },
   { path: '/google/callback', element: <GoogleCallback /> },
   { path: '/google-login/callback', element: <GoogleLoginCallback /> },

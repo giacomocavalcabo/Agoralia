@@ -14,7 +14,7 @@ export default function Numbers() {
     setRows(data)
   }
   useEffect(() => { load() }, [])
-  useEffect(() => { apiFetch('/entitlements').then((r)=>r.json()).then(setEnt).catch(()=>{}) }, [])
+  useEffect(() => { apiFetch('/billing/entitlements').then((r)=>r.json()).then(setEnt).catch(()=>{}) }, [])
 
   async function add() {
     const res = await apiFetch('/numbers', { method: 'POST', body: { e164, type } })

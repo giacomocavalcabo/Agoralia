@@ -1,7 +1,25 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 export async function apiFetch(path, options = {}) {
-  const url = path.startsWith('http') ? path : `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`
+  let url
+  // Se path inizia con http, usalo direttamente
+  if (path.startsWith('http')) {
+    url = path
+  } else {
+    // Normalizza il path: aggiungi / se manca
+    const normalizedPath = path.startsWith('/') ? path : '/' + path
+    
+    // Se BASE_URL è impostato (production), usa direttamente il backend
+    // Altrimenti usa /api come prefisso per il rewrite di Vercel
+    if (BASE_URL && BASE_URL !== 'http://127.0.0.1:8000' && !BASE_URL.includes('localhost')) {
+      // Production: usa BASE_URL direttamente (es. https://api.agoralia.app)
+      url = `${BASE_URL}${normalizedPath}`
+    } else {
+      // Development o Vercel: usa /api come prefisso per il rewrite
+      url = `/api${normalizedPath}`
+    }
+  }
+  
   const headers = new Headers(options.headers || {})
   const tenantId = localStorage.getItem('tenant_id')
   if (tenantId) headers.set('X-Tenant-Id', tenantId)
@@ -30,9 +48,18 @@ export function wsUrl(path) {
   const tenantId = localStorage.getItem('tenant_id')
   const qp = tenantId ? (path.includes('?') ? `&tenant_id=${tenantId}` : `?tenant_id=${tenantId}`) : ''
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  // Convert HTTP/HTTPS to WS/WSS
-  const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
-  return `${wsBase}${path}${qp}`
+  
+  // Se siamo in production con BASE_URL configurato, usa direttamente
+  if (apiBase && apiBase !== 'http://127.0.0.1:8000' && !apiBase.includes('localhost')) {
+    const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
+    const normalizedPath = path.startsWith('/') ? path : '/' + path
+    return `${wsBase}${normalizedPath}${qp}`
+  } else {
+    // Development o Vercel: usa /api come prefisso per il rewrite
+    const normalizedPath = path.startsWith('/') ? path : '/' + path
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${protocol}//${window.location.host}/api${normalizedPath}${qp}`
+  }
 }
 
 
