@@ -479,9 +479,8 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
         # Agent Override: Complete per-call customization
         # According to Retell docs: if both override_agent_id and agent_override are provided,
         # we first resolve the target agent by id/version, then apply agent_override on top
+        agent_override_dict: Dict[str, Any] = {}
         if payload.agent_override:
-            agent_override_dict: Dict[str, Any] = {}
-            
             if payload.agent_override.agent:
                 agent_dict: Dict[str, Any] = {}
                 agent_override = payload.agent_override.agent
@@ -570,26 +569,15 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
         # 3. Apply knowledge_base_ids to agent_override if present, or create one if needed
         if knowledge_base_ids_list:
             # If agent_override already exists, merge knowledge_base_ids into retell_llm
-            if payload.agent_override:
-                if not agent_override_dict:
-                    agent_override_dict = {}
-                if "retell_llm" not in agent_override_dict:
-                    agent_override_dict["retell_llm"] = {}
-                # Merge knowledge_base_ids (combine with existing if any)
-                existing_kb_ids = agent_override_dict["retell_llm"].get("knowledge_base_ids", [])
-                combined_kb_ids = list(set(existing_kb_ids + knowledge_base_ids_list))
-                agent_override_dict["retell_llm"]["knowledge_base_ids"] = combined_kb_ids
-                body["agent_override"] = agent_override_dict
-                logger.info(f"[create_outbound_call] Added knowledge_base_ids to agent_override.retell_llm: {combined_kb_ids}")
-            else:
-                # Create agent_override with retell_llm containing knowledge_base_ids
-                agent_override_dict = {
-                    "retell_llm": {
-                        "knowledge_base_ids": knowledge_base_ids_list
-                    }
-                }
-                body["agent_override"] = agent_override_dict
-                logger.info(f"[create_outbound_call] Created agent_override with knowledge_base_ids: {knowledge_base_ids_list}")
+            if "retell_llm" not in agent_override_dict:
+                agent_override_dict["retell_llm"] = {}
+            # Merge knowledge_base_ids (combine with existing if any)
+            existing_kb_ids = agent_override_dict["retell_llm"].get("knowledge_base_ids", [])
+            combined_kb_ids = list(set(existing_kb_ids + knowledge_base_ids_list))
+            agent_override_dict["retell_llm"]["knowledge_base_ids"] = combined_kb_ids
+            body["agent_override"] = agent_override_dict
+            logger.info(f"[create_outbound_call] Added knowledge_base_ids to agent_override.retell_llm: {combined_kb_ids}")
+            print(f"[DEBUG] Added knowledge_base_ids to agent_override.retell_llm: {combined_kb_ids}", flush=True)
         
         body.setdefault("metadata", {})
         body["metadata"]["lang"] = lang
