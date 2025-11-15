@@ -605,7 +605,7 @@ async def retell_get_agent(agent_id: str):
                 raise e
 
 
-@router.post("/retell/agents/create-test")
+@router.post("/retell/agents/test-create")
 async def retell_create_agent_test(request: Request):
     """Test endpoint to create Retell agent and see full response"""
     from services.agents import create_retell_agent
