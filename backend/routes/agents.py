@@ -70,8 +70,9 @@ async def create_agent(request: Request, body: AgentCreate):
             )
             # Log full response for debugging
             import logging
+            import json as json_lib
             logging.info(f"Retell AI create response: {retell_response}")
-            print(f"[DEBUG] Retell AI create response: {retell_response}", flush=True)
+            print(f"[DEBUG] Retell AI create response: {json_lib.dumps(retell_response, indent=2)}", flush=True)
             
             # Extract Retell agent ID from response
             # Retell API returns: {"agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD", ...}
@@ -79,6 +80,16 @@ async def create_agent(request: Request, body: AgentCreate):
             if isinstance(retell_response, dict):
                 # The correct key is "agent_id" (not "retell_llm_id" or "llm_id")
                 retell_agent_id = retell_response.get("agent_id")
+                
+                # Debug: log all keys in response
+                all_keys = list(retell_response.keys())
+                logging.info(f"Response keys: {all_keys}")
+                print(f"[DEBUG] Response keys: {all_keys}", flush=True)
+                
+                if not retell_agent_id:
+                    logging.error(f"No agent_id in response! Available keys: {all_keys}")
+                    print(f"[DEBUG] ERROR: No agent_id in response! Available keys: {all_keys}", flush=True)
+                    print(f"[DEBUG] Full response: {json_lib.dumps(retell_response, indent=2)}", flush=True)
         except Exception as e:
             # If Retell creation fails, still create local agent but without retell_agent_id
             # This allows users to retry or fix configuration
