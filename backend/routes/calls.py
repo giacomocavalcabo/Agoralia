@@ -38,6 +38,83 @@ router = APIRouter()
 # Request/Response Models
 # ============================================================================
 
+class AgentOverrideAgent(BaseModel):
+    """Partial Agent settings for agent override"""
+    voice_id: Optional[str] = None
+    voice_model: Optional[str] = None
+    fallback_voice_ids: Optional[List[str]] = None
+    voice_temperature: Optional[float] = None
+    voice_speed: Optional[float] = None
+    volume: Optional[float] = None
+    language: Optional[str] = None
+    normalize_for_speech: Optional[bool] = None
+    pronunciation_dictionary: Optional[List[Dict[str, Any]]] = None
+    boosted_keywords: Optional[List[str]] = None
+    stt_mode: Optional[str] = None
+    vocab_specialization: Optional[Dict[str, Any]] = None
+    denoising_mode: Optional[str] = None
+    responsiveness: Optional[float] = None
+    interruption_sensitivity: Optional[float] = None
+    enable_backchannel: Optional[bool] = None
+    backchannel_frequency: Optional[float] = None
+    backchannel_words: Optional[List[str]] = None
+    end_call_after_silence_ms: Optional[int] = None
+    max_call_duration_ms: Optional[int] = None
+    begin_message_delay_ms: Optional[int] = None
+    ring_duration_ms: Optional[int] = None
+    reminder_trigger_ms: Optional[int] = None
+    reminder_max_count: Optional[int] = None
+    ambient_sound: Optional[str] = None
+    ambient_sound_volume: Optional[float] = None
+    allow_user_dtmf: Optional[bool] = None
+    user_dtmf_options: Optional[List[str]] = None
+    voicemail_option: Optional[Dict[str, Any]] = None
+    webhook_url: Optional[str] = None
+    webhook_timeout_ms: Optional[int] = None
+    data_storage_setting: Optional[Dict[str, Any]] = None
+    opt_in_signed_url: Optional[str] = None
+    pii_config: Optional[Dict[str, Any]] = None
+    post_call_analysis_data: Optional[Dict[str, Any]] = None
+    post_call_analysis_model: Optional[str] = None
+    begin_message: Optional[str] = None
+
+
+class AgentOverrideRetellLLM(BaseModel):
+    """Partial Retell LLM settings for agent override"""
+    model: Optional[str] = None
+    s2s_model: Optional[str] = None
+    model_temperature: Optional[float] = None
+    knowledge_base_ids: Optional[List[str]] = None
+    kb_config: Optional[Dict[str, Any]] = None
+    start_speaker: Optional[str] = None  # "agent" or "user"
+    begin_after_user_silence_ms: Optional[int] = None
+    begin_message: Optional[str] = None
+
+
+class AgentOverrideConversationFlow(BaseModel):
+    """Partial Conversation Flow settings for agent override"""
+    model_choice: Optional[Dict[str, Any]] = None
+    model_temperature: Optional[float] = None
+    knowledge_base_ids: Optional[List[str]] = None
+    kb_config: Optional[Dict[str, Any]] = None
+    start_speaker: Optional[str] = None  # "agent" or "user"
+    begin_after_user_silence_ms: Optional[int] = None
+    begin_message: Optional[str] = None
+
+
+class AgentOverride(BaseModel):
+    """Complete agent override configuration for per-call customization
+    
+    According to Retell AI docs:
+    - agent_override allows overriding agent behavior without modifying the saved agent
+    - Overrides are applied only for this specific call
+    - Must satisfy same validation rules as agent creation
+    """
+    agent: Optional[AgentOverrideAgent] = None
+    retell_llm: Optional[AgentOverrideRetellLLM] = None
+    conversation_flow: Optional[AgentOverrideConversationFlow] = None
+
+
 class OutboundCallRequest(BaseModel):
     to: str = Field(..., description="E.164 destination, es. +39XXXXXXXXXX")
     from_number: Optional[str] = Field(None, description="Caller ID E.164 se disponibile")
@@ -45,6 +122,9 @@ class OutboundCallRequest(BaseModel):
     objective: str = Field("Qualifica lead secondo BANT in italiano")
     metadata: Optional[dict] = None
     agent_id: Optional[str] = None
+    override_agent_version: Optional[int] = Field(None, description="Agent version to use (Retell API)")
+    agent_override: Optional[AgentOverride] = Field(None, description="Complete agent override for per-call customization")
+    retell_llm_dynamic_variables: Optional[Dict[str, str]] = Field(None, description="Dynamic variables for personalization (all values must be strings)")
     kb_id: Optional[int] = None
 
 
@@ -386,9 +466,69 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             "from_number": from_num,
             "to_number": payload.to,
         }
-        # Use override_agent_id if we have an agent_id (Retell API parameter name)
+        
+        # Agent override: Use override_agent_id/override_agent_version if provided
         if agent_id:
             body["override_agent_id"] = agent_id
+        if payload.override_agent_version is not None:
+            body["override_agent_version"] = payload.override_agent_version
+        
+        # Agent Override: Complete per-call customization
+        # According to Retell docs: if both override_agent_id and agent_override are provided,
+        # we first resolve the target agent by id/version, then apply agent_override on top
+        if payload.agent_override:
+            agent_override_dict: Dict[str, Any] = {}
+            
+            if payload.agent_override.agent:
+                agent_dict: Dict[str, Any] = {}
+                agent_override = payload.agent_override.agent
+                # Only include fields that are not None
+                for field_name in AgentOverrideAgent.__fields__.keys():
+                    value = getattr(agent_override, field_name, None)
+                    if value is not None:
+                        agent_dict[field_name] = value
+                if agent_dict:
+                    agent_override_dict["agent"] = agent_dict
+            
+            if payload.agent_override.retell_llm:
+                retell_llm_dict: Dict[str, Any] = {}
+                retell_llm_override = payload.agent_override.retell_llm
+                for field_name in AgentOverrideRetellLLM.__fields__.keys():
+                    value = getattr(retell_llm_override, field_name, None)
+                    if value is not None:
+                        retell_llm_dict[field_name] = value
+                if retell_llm_dict:
+                    agent_override_dict["retell_llm"] = retell_llm_dict
+            
+            if payload.agent_override.conversation_flow:
+                conversation_flow_dict: Dict[str, Any] = {}
+                conversation_flow_override = payload.agent_override.conversation_flow
+                for field_name in AgentOverrideConversationFlow.__fields__.keys():
+                    value = getattr(conversation_flow_override, field_name, None)
+                    if value is not None:
+                        conversation_flow_dict[field_name] = value
+                if conversation_flow_dict:
+                    agent_override_dict["conversation_flow"] = conversation_flow_dict
+            
+            if agent_override_dict:
+                body["agent_override"] = agent_override_dict
+                logger.info(f"[create_outbound_call] Agent override applied: {json.dumps(agent_override_dict)}")
+                print(f"[DEBUG] Agent override applied: {json.dumps(agent_override_dict)}", flush=True)
+        
+        # Dynamic Variables: Personalize agent responses with {{variable_name}} syntax
+        # According to Retell docs: all values must be strings
+        if payload.retell_llm_dynamic_variables:
+            # Validate all values are strings
+            for key, value in payload.retell_llm_dynamic_variables.items():
+                if not isinstance(value, str):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"retell_llm_dynamic_variables.{key} must be a string (got {type(value).__name__})"
+                    )
+            body["retell_llm_dynamic_variables"] = payload.retell_llm_dynamic_variables
+            logger.info(f"[create_outbound_call] Dynamic variables applied: {payload.retell_llm_dynamic_variables}")
+            print(f"[DEBUG] Dynamic variables applied: {payload.retell_llm_dynamic_variables}", flush=True)
+        
         body.setdefault("metadata", {})
         body["metadata"]["lang"] = lang
         if is_multi:
