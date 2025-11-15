@@ -433,13 +433,21 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 session.commit()
             await ws_manager.broadcast({"type": "call.created", "data": data})
             return data
-    except HTTPException:
+    except HTTPException as he:
+        logger.error(f"[create_outbound_call] HTTPException: {he.status_code} - {he.detail}")
         raise
     except Exception as e:
         error_msg = str(e)
         error_traceback = traceback.format_exc()
         logger.error(f"[create_outbound_call] Exception: {error_msg}\n{error_traceback}")
-        raise HTTPException(status_code=500, detail=f"Internal error: {error_msg}")
+        # Return full error details for debugging
+        import sys
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        error_detail = f"{exc_type.__name__}: {error_msg}"
+        if exc_tb:
+            tb_lines = traceback.format_tb(exc_tb)
+            error_detail += f"\nTraceback: {''.join(tb_lines[-3:])}"  # Last 3 frames
+        raise HTTPException(status_code=500, detail=f"Internal error: {error_detail}")
 
 
 @router.post("/retell/web")
