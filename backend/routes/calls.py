@@ -605,6 +605,37 @@ async def retell_get_agent(agent_id: str):
                 raise e
 
 
+@router.post("/retell/agents/create-test")
+async def retell_create_agent_test(request: Request):
+    """Test endpoint to create Retell agent and see full response"""
+    from services.agents import create_retell_agent
+    
+    try:
+        # Test creation with minimal config
+        response = await create_retell_agent(
+            name="Test Direct Retell",
+            language="it-IT",
+            voice_id="11labs-Adrian",
+        )
+        return {
+            "success": True,
+            "response": response,
+            "retell_agent_id": (
+                response.get("retell_llm_id") or
+                response.get("llm_id") or
+                response.get("id") or
+                response.get("agent_id")
+            ),
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+        }
+
+
 @router.patch("/retell/phone-numbers/{phone_number}")
 async def update_retell_phone_number(
     phone_number: str,
