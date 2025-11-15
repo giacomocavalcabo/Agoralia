@@ -55,7 +55,10 @@ async def create_retell_agent(
     voice_id: Optional[str] = None,
     webhook_url: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Create a Retell LLM agent"""
+    """Create a Retell LLM agent
+    
+    Returns: Response dict from Retell AI, which should contain retell_llm_id
+    """
     # Build Retell LLM config
     # Default voice if not provided
     if not voice_id:
@@ -81,16 +84,30 @@ async def create_retell_agent(
     if webhook_url:
         body["agent"]["webhook_url"] = webhook_url
     
+    # Log request for debugging
+    import logging
+    logging.info(f"Creating Retell agent with body: {body}")
+    print(f"[DEBUG] Creating Retell agent with body: {body}", flush=True)
+    
     try:
         # Try v2 endpoint first
         data = await retell_post_json("/v2/create-retell-llm", body)
+        # Log full response for debugging
+        logging.info(f"Retell AI create response (v2): {data}")
+        print(f"[DEBUG] Retell AI create response (v2): {data}", flush=True)
         return data
     except HTTPException as e:
-        # Try alternative endpoint
+        # Log error and try alternative endpoint
+        logging.warning(f"v2 endpoint failed ({e.status_code}): {e.detail}, trying alternative")
+        print(f"[DEBUG] v2 endpoint failed: {e.detail}, trying alternative", flush=True)
         try:
             data = await retell_post_json("/create-retell-llm", body)
+            logging.info(f"Retell AI create response (v1): {data}")
+            print(f"[DEBUG] Retell AI create response (v1): {data}", flush=True)
             return data
-        except Exception:
+        except Exception as ex:
+            logging.error(f"Both endpoints failed: {ex}")
+            print(f"[DEBUG] Both endpoints failed: {ex}", flush=True)
             raise e
 
 
