@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from models.agents import KnowledgeBase, KnowledgeSection
-from utils.retell import retell_post_multipart, retell_delete_json, retell_get_json, get_retell_api_key
-from config.database import engine
+from utils.retell import retell_post_multipart, retell_delete_json
 
 logger = logging.getLogger(__name__)
 
