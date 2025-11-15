@@ -226,7 +226,16 @@ async def list_kbs(request: Request) -> List[Dict[str, Any]]:
         if tenant_id is not None:
             q = q.filter(KnowledgeBase.tenant_id == tenant_id)
         rows = q.order_by(KnowledgeBase.id.desc()).limit(200).all()
-        return [{"id": k.id, "lang": k.lang, "scope": k.scope} for k in rows]
+        return [
+            {
+                "id": k.id,
+                "lang": k.lang,
+                "scope": k.scope,
+                "retell_kb_id": k.retell_kb_id,
+                "synced": k.retell_kb_id is not None
+            }
+            for k in rows
+        ]
 
 
 class KbCreate(BaseModel):
@@ -236,13 +245,18 @@ class KbCreate(BaseModel):
 
 @router.post("/kbs")
 async def create_kb(request: Request, body: KbCreate):
-    """Create knowledge base"""
+    """Create knowledge base
+    
+    Note: KB is created in Agoralia only. Lazy sync to Retell happens when KB is first used in a call.
+    Use POST /kbs/{kb_id}/sync to sync immediately.
+    """
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         k = KnowledgeBase(lang=body.lang, scope=body.scope, tenant_id=tenant_id)
         session.add(k)
         session.commit()
-    return {"ok": True}
+        kb_id = k.id
+    return {"ok": True, "id": kb_id}
 
 
 class KbUpdate(BaseModel):
@@ -252,7 +266,11 @@ class KbUpdate(BaseModel):
 
 @router.patch("/kbs/{kb_id}")
 async def update_kb(request: Request, kb_id: int, body: KbUpdate):
-    """Update knowledge base"""
+    """Update knowledge base
+    
+    Note: Updates Agoralia KB only. If KB is synced to Retell (has retell_kb_id),
+    use POST /kbs/{kb_id}/sync to update Retell KB after modifying sections.
+    """
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         k = session.get(KnowledgeBase, kb_id)
@@ -268,15 +286,68 @@ async def update_kb(request: Request, kb_id: int, body: KbUpdate):
 
 @router.delete("/kbs/{kb_id}")
 async def delete_kb(request: Request, kb_id: int):
-    """Delete knowledge base"""
+    """Delete knowledge base
+    
+    Also deletes corresponding Retell KB if retell_kb_id exists.
+    """
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         k = session.get(KnowledgeBase, kb_id)
         if not k or (tenant_id is not None and k.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="KB not found")
+        
+        # Delete from Retell if synced
+        if k.retell_kb_id:
+            try:
+                from services.kb_sync import sync_kb_delete_from_retell
+                await sync_kb_delete_from_retell(kb_id, session, tenant_id)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"[delete_kb] Error deleting Retell KB: {e}")
+                # Continue with Agoralia KB deletion even if Retell deletion fails
+        
         session.delete(k)
         session.commit()
     return {"ok": True}
+
+
+@router.post("/kbs/{kb_id}/sync")
+async def sync_kb(request: Request, kb_id: int, force: bool = False):
+    """Synchronize Agoralia KB to Retell AI
+    
+    Creates or updates Retell KB from Agoralia KB.
+    - If KB has no retell_kb_id: creates new Retell KB
+    - If KB has retell_kb_id and force=False: updates existing Retell KB
+    - If KB has retell_kb_id and force=True: recreates Retell KB
+    
+    Args:
+        kb_id: Agoralia KB ID
+        force: Force recreation of Retell KB even if retell_kb_id exists
+    
+    Returns:
+        retell_kb_id: Retell KB ID
+    """
+    tenant_id = extract_tenant_id(request)
+    with Session(engine) as session:
+        from services.kb_sync import sync_kb_to_retell
+        
+        try:
+            retell_kb_id = await sync_kb_to_retell(kb_id, session, tenant_id, force=force)
+            return {
+                "ok": True,
+                "kb_id": kb_id,
+                "retell_kb_id": retell_kb_id,
+                "message": "KB synchronized successfully"
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            import traceback
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"[sync_kb] Error syncing KB {kb_id}: {e}\n{traceback.format_exc()}")
+            raise HTTPException(status_code=500, detail=f"Error syncing KB: {str(e)}")
 
 
 # ============================================================================

@@ -539,32 +539,35 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             knowledge_base_ids_list.extend(payload.knowledge_base_ids)
             logger.info(f"[create_outbound_call] Using knowledge_base_ids from payload: {payload.knowledge_base_ids}")
         
-        # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID
+        # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID (lazy sync)
         if payload.kb_id is not None:
             with Session(engine) as session:
-                kb = session.get(KnowledgeBase, payload.kb_id)
-                if kb and kb.retell_kb_id:
-                    if kb.retell_kb_id not in knowledge_base_ids_list:
-                        knowledge_base_ids_list.append(kb.retell_kb_id)
-                        logger.info(f"[create_outbound_call] Converted kb_id {payload.kb_id} to retell_kb_id: {kb.retell_kb_id}")
+                from services.kb_sync import ensure_kb_synced
+                retell_kb_id = await ensure_kb_synced(payload.kb_id, session, tenant_id)
+                if retell_kb_id:
+                    if retell_kb_id not in knowledge_base_ids_list:
+                        knowledge_base_ids_list.append(retell_kb_id)
+                        logger.info(f"[create_outbound_call] Synced kb_id {payload.kb_id} to retell_kb_id: {retell_kb_id}")
                     else:
-                        logger.info(f"[create_outbound_call] retell_kb_id {kb.retell_kb_id} already in knowledge_base_ids")
-                elif kb and not kb.retell_kb_id:
-                    # Fallback to old behavior: use metadata kb (for backward compatibility)
-                    secs = (
-                        session.query(KnowledgeSection)
-                        .filter(KnowledgeSection.kb_id == payload.kb_id)
-                        .order_by(KnowledgeSection.id.asc())
-                        .all()
-                    )
-                    if secs:
-                        body.setdefault("metadata", {})
-                        body["metadata"]["kb"] = {
-                            "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
-                            "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
-                            "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
-                        }
-                        logger.info(f"[create_outbound_call] Using legacy metadata kb (kb_id {payload.kb_id} has no retell_kb_id)")
+                        logger.info(f"[create_outbound_call] retell_kb_id {retell_kb_id} already in knowledge_base_ids")
+                else:
+                    # Fallback to old behavior: use metadata kb (for backward compatibility or if sync fails)
+                    kb = session.get(KnowledgeBase, payload.kb_id)
+                    if kb and not kb.retell_kb_id:
+                        secs = (
+                            session.query(KnowledgeSection)
+                            .filter(KnowledgeSection.kb_id == payload.kb_id)
+                            .order_by(KnowledgeSection.id.asc())
+                            .all()
+                        )
+                        if secs:
+                            body.setdefault("metadata", {})
+                            body["metadata"]["kb"] = {
+                                "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
+                                "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
+                                "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
+                            }
+                            logger.warning(f"[create_outbound_call] Using legacy metadata kb (sync failed for kb_id {payload.kb_id})")
         
         # 3. Apply knowledge_base_ids to agent_override if present, or create one if needed
         if knowledge_base_ids_list:
@@ -712,28 +715,31 @@ async def create_web_call(payload: WebCallRequest):
     if payload.knowledge_base_ids:
         knowledge_base_ids_list.extend(payload.knowledge_base_ids)
     
-    # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID
+    # 2. If kb_id provided, convert Agoralia KB ID to Retell KB ID (lazy sync)
     if payload.kb_id is not None:
         with Session(engine) as session:
-            kb = session.get(KnowledgeBase, payload.kb_id)
-            if kb and kb.retell_kb_id:
-                if kb.retell_kb_id not in knowledge_base_ids_list:
-                    knowledge_base_ids_list.append(kb.retell_kb_id)
-            elif kb and not kb.retell_kb_id:
-                # Fallback to old behavior: use metadata kb (for backward compatibility)
-                secs = (
-                    session.query(KnowledgeSection)
-                    .filter(KnowledgeSection.kb_id == payload.kb_id)
-                    .order_by(KnowledgeSection.id.asc())
-                    .all()
-                )
-                if secs:
-                    body.setdefault("metadata", {})
-                    body["metadata"]["kb"] = {
-                        "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
-                        "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
-                        "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
-                    }
+            from services.kb_sync import ensure_kb_synced
+            retell_kb_id = await ensure_kb_synced(payload.kb_id, session, tenant_id=None)
+            if retell_kb_id:
+                if retell_kb_id not in knowledge_base_ids_list:
+                    knowledge_base_ids_list.append(retell_kb_id)
+            else:
+                # Fallback to old behavior: use metadata kb (for backward compatibility or if sync fails)
+                kb = session.get(KnowledgeBase, payload.kb_id)
+                if kb and not kb.retell_kb_id:
+                    secs = (
+                        session.query(KnowledgeSection)
+                        .filter(KnowledgeSection.kb_id == payload.kb_id)
+                        .order_by(KnowledgeSection.id.asc())
+                        .all()
+                    )
+                    if secs:
+                        body.setdefault("metadata", {})
+                        body["metadata"]["kb"] = {
+                            "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
+                            "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
+                            "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
+                        }
     
     # 3. Apply knowledge_base_ids to body (web calls use agent_override or direct retell_llm config)
     if knowledge_base_ids_list:
