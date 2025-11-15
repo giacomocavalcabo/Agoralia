@@ -10,7 +10,7 @@
       "destination": "https://api.agoralia.app/$1"
     },
     {
-      "source": "/((?!api|assets|_next).*)",
+      "source": "/((?!api|assets|_next|.*\\..*).*)",
       "destination": "/index.html"
     }
   ],
