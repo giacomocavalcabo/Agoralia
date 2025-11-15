@@ -22,6 +22,7 @@ from utils.retell import (
     retell_post_json,
     retell_patch_json,
     retell_delete_json,
+    retell_post_multipart,
 )
 from utils.websocket import manager as ws_manager
 from services.settings import get_settings
@@ -1425,6 +1426,248 @@ async def retell_backfill(request: Request, limit: int = 100):
             new_count += 1
         session.commit()
     return {"backfilled": new_count}
+
+
+# ============================================================================
+# Retell Knowledge Base Endpoints
+# ============================================================================
+
+@router.post("/retell/knowledge-bases")
+async def retell_create_knowledge_base(
+    request: Request,
+    knowledge_base_name: str,
+    knowledge_base_texts: Optional[List[Dict[str, str]]] = None,
+    knowledge_base_urls: Optional[List[str]] = None,
+    enable_auto_refresh: Optional[bool] = None,
+):
+    """Create a new knowledge base in Retell AI
+    
+    According to Retell AI docs:
+    - POST /create-knowledge-base creates a KB with texts, URLs, or files
+    - Returns knowledge_base_id and status
+    
+    Args:
+        knowledge_base_name: Name of the KB (required, max 40 chars)
+        knowledge_base_texts: Array of {text, title} objects (optional)
+        knowledge_base_urls: Array of URLs to scrape (optional)
+        enable_auto_refresh: Enable auto-refresh for URLs every 12h (optional)
+    
+    Note: File uploads (knowledge_base_files) not yet supported via this endpoint.
+    Use multipart/form-data directly if files are needed.
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    # Prepare form data
+    form_data: Dict[str, Any] = {
+        "knowledge_base_name": knowledge_base_name,
+    }
+    
+    # Add texts if provided
+    if knowledge_base_texts:
+        # For multipart, we need to send as JSON string array
+        form_data["knowledge_base_texts"] = json.dumps(knowledge_base_texts)
+    
+    # Add URLs if provided
+    if knowledge_base_urls:
+        # Retell expects array format - send as list
+        form_data["knowledge_base_urls"] = knowledge_base_urls
+    
+    # Add auto-refresh if provided
+    if enable_auto_refresh is not None:
+        form_data["enable_auto_refresh"] = "true" if enable_auto_refresh else "false"
+    
+    try:
+        # Use multipart helper even without files
+        data = await retell_post_multipart(
+            "/create-knowledge-base",
+            data=form_data,
+            tenant_id=tenant_id
+        )
+        
+        # Extract KB ID
+        kb_id = data.get("knowledge_base_id")
+        
+        return {
+            "success": True,
+            "knowledge_base_id": kb_id,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating Retell KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error creating knowledge base: {str(e)}")
+
+
+@router.get("/retell/knowledge-bases/{kb_id}")
+async def retell_get_knowledge_base(request: Request, kb_id: str):
+    """Get knowledge base details from Retell AI
+    
+    According to Retell AI docs:
+    - GET /get-knowledge-base/{kb_id} retrieves KB details
+    - Returns KB info including status and sources
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_get_json(f"/get-knowledge-base/{urllib.parse.quote(kb_id)}")
+        return {
+            "success": True,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error getting Retell KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error getting knowledge base: {str(e)}")
+
+
+@router.get("/retell/knowledge-bases")
+async def retell_list_knowledge_bases(request: Request):
+    """List all knowledge bases from Retell AI
+    
+    According to Retell AI docs:
+    - GET /list-knowledge-bases returns all KBs
+    - Returns array of KB objects
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_get_json("/list-knowledge-bases")
+        # Ensure we return an array
+        if isinstance(data, list):
+            return data
+        return data.get("knowledge_bases", []) if isinstance(data, dict) else []
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing Retell KBs: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error listing knowledge bases: {str(e)}")
+
+
+@router.delete("/retell/knowledge-bases/{kb_id}")
+async def retell_delete_knowledge_base(request: Request, kb_id: str):
+    """Delete a knowledge base from Retell AI
+    
+    According to Retell AI docs:
+    - DELETE /delete-knowledge-base/{kb_id} deletes a KB
+    - Returns 204 No Content on success
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_delete_json(f"/delete-knowledge-base/{urllib.parse.quote(kb_id)}")
+        return {
+            "success": True,
+            "message": "Knowledge base deleted successfully",
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deleting Retell KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error deleting knowledge base: {str(e)}")
+
+
+@router.post("/retell/knowledge-bases/{kb_id}/sources")
+async def retell_add_knowledge_base_sources(
+    request: Request,
+    kb_id: str,
+    knowledge_base_texts: Optional[List[Dict[str, str]]] = None,
+    knowledge_base_urls: Optional[List[str]] = None,
+):
+    """Add sources to a knowledge base in Retell AI
+    
+    According to Retell AI docs:
+    - POST /add-knowledge-base-sources/{kb_id} adds texts, URLs, or files
+    - Returns updated KB info
+    
+    Args:
+        kb_id: Retell KB ID (required)
+        knowledge_base_texts: Array of {text, title} objects (optional)
+        knowledge_base_urls: Array of URLs to scrape (optional)
+    
+    Note: File uploads not yet supported via this endpoint.
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    # Prepare form data
+    form_data: Dict[str, Any] = {}
+    
+    # Add texts if provided
+    if knowledge_base_texts:
+        form_data["knowledge_base_texts"] = json.dumps(knowledge_base_texts)
+    
+    # Add URLs if provided
+    if knowledge_base_urls:
+        form_data["knowledge_base_urls"] = knowledge_base_urls
+    
+    if not form_data:
+        raise HTTPException(status_code=400, detail="At least one source (texts or URLs) must be provided")
+    
+    try:
+        data = await retell_post_multipart(
+            f"/add-knowledge-base-sources/{urllib.parse.quote(kb_id)}",
+            data=form_data,
+            tenant_id=tenant_id
+        )
+        
+        return {
+            "success": True,
+            "knowledge_base_id": kb_id,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error adding sources to Retell KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error adding sources: {str(e)}")
+
+
+@router.delete("/retell/knowledge-bases/{kb_id}/sources/{source_id}")
+async def retell_delete_knowledge_base_source(request: Request, kb_id: str, source_id: str):
+    """Delete a source from a knowledge base in Retell AI
+    
+    According to Retell AI docs:
+    - DELETE /delete-knowledge-base-source/{kb_id}/source/{source_id} deletes a source
+    - Returns updated KB info
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_delete_json(
+            f"/delete-knowledge-base-source/{urllib.parse.quote(kb_id)}/source/{urllib.parse.quote(source_id)}"
+        )
+        return {
+            "success": True,
+            "message": "Source deleted successfully",
+            "knowledge_base_id": kb_id,
+            "source_id": source_id,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deleting source from Retell KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error deleting source: {str(e)}")
 
 
 # ============================================================================

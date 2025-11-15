@@ -32,6 +32,7 @@ class KnowledgeBase(Base):
     tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     lang: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     scope: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    retell_kb_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)  # Retell AI KB ID (knowledge_base_xxx)
 
 
 class KnowledgeSection(Base):

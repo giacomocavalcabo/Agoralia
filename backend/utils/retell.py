@@ -124,3 +124,57 @@ async def retell_delete_json(path: str) -> Dict[str, Any]:
             return {}
         return resp.json() if resp.content else {}
 
+
+async def retell_post_multipart(
+    path: str,
+    files: Optional[Dict[str, Any]] = None,
+    data: Optional[Dict[str, Any]] = None,
+    tenant_id: Optional[int] = None
+) -> Dict[str, Any]:
+    """Make a POST request with multipart/form-data to Retell API
+    
+    Used for knowledge base creation which requires file uploads.
+    
+    Args:
+        path: API path (e.g., "/create-knowledge-base")
+        files: Dict of file fields for httpx format (e.g., {"knowledge_base_files": (filename, content, content_type)})
+        data: Dict of form data fields (strings, lists of strings for JSON arrays, etc.)
+        tenant_id: Optional tenant ID for BYO Retell account support
+    
+    Returns:
+        JSON response from Retell API
+    """
+    api_key = get_retell_api_key(tenant_id)
+    headers = {"Authorization": f"Bearer {api_key}"}
+    # Don't set Content-Type - httpx will set it automatically for multipart
+    
+    # Prepare form data - merge files and data
+    form_data = {}
+    if data:
+        for key, value in data.items():
+            if isinstance(value, list):
+                # For lists, send each item separately with the same key (Retell API expects array format)
+                for item in value:
+                    if key not in form_data:
+                        form_data[key] = []
+                    form_data[key].append(item)
+            else:
+                form_data[key] = value
+    if files:
+        form_data.update(files)
+    
+    async with httpx.AsyncClient(timeout=60) as client:  # Longer timeout for file uploads
+        resp = await client.post(
+            f"{get_retell_base_url()}{path}",
+            headers=headers,
+            files=form_data if form_data else None
+        )
+        if resp.status_code >= 400:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        if resp.status_code == 204 or not resp.content:
+            return {}
+        try:
+            return resp.json()
+        except Exception:
+            return {}
+
