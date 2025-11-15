@@ -29,12 +29,25 @@ def upgrade() -> None:
         if 'version_num' in columns:
             version_num_col = columns['version_num']
             # Check if column is VARCHAR(32) or shorter
-            if hasattr(version_num_col['type'], 'length') and version_num_col['type'].length and version_num_col['type'].length <= 32:
+            col_type = version_num_col['type']
+            col_length = None
+            
+            # Get length from type
+            if hasattr(col_type, 'length'):
+                col_length = col_type.length
+            elif str(col_type).startswith('VARCHAR'):
+                # Extract length from string like 'VARCHAR(32)'
+                import re
+                match = re.search(r'\((\d+)\)', str(col_type))
+                if match:
+                    col_length = int(match.group(1))
+            
+            if col_length and col_length <= 32:
                 # Alter column to VARCHAR(128) to accommodate longer revision names
                 op.alter_column(
                     'alembic_version',
                     'version_num',
-                    existing_type=sa.String(version_num_col['type'].length or 32),
+                    existing_type=sa.String(col_length),
                     type_=sa.String(128),
                     existing_nullable=False
                 )
