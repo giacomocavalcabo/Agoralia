@@ -35,6 +35,14 @@ class CallRecord(Base):
     
     # Summary fields (from summaries table)
     summary_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON: {"bullets": [...]}
+    
+    # Billing fields
+    duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    call_cost_cents: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Cost in cents to avoid float issues
+    
+    # Idempotency fields for webhook processing
+    last_event_type: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    last_event_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class CallSegment(Base):

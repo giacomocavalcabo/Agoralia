@@ -123,15 +123,135 @@ async def webhooks_retell(request: Request, x_signature: Optional[str] = Header(
         del EVENTS[: len(EVENTS) - 200]
     await ws_manager.broadcast({"type": event_type, "data": payload})
 
-    # Process event: upsert call status, segments, summary, media, disposition
+    # ============================================================================
+    # Tenant Resolution: Formalized order of resolution
+    # ============================================================================
+    # 1. Primary: Lookup by provider_call_id in CallRecord
+    # 2. Inference: If not found, infer from metadata/phone_number and create lazy CallRecord
+    # 3. Never trust tenant_id from external sources (query param, metadata) as truth
+    
     ref_id = payload.get("call_id") or payload.get("id") or (payload.get("data") or {}).get("call_id")
+    tenant_id = None
+    
     try:
         with Session(engine) as session:
+            # Step 1: Primary lookup by provider_call_id
             rec = session.query(CallRecord).filter(CallRecord.provider_call_id == str(ref_id)).one_or_none()
+            
             if rec:
-                if event_type and ("finished" in event_type or event_type == "call.finished"):
-                    rec.status = "ended"
-                    rec.updated_at = datetime.now(timezone.utc)
+                # Found existing CallRecord - use its tenant_id as source of truth
+                tenant_id = rec.tenant_id
+            else:
+                # Step 2: Inference - CallRecord doesn't exist yet (inbound or race condition)
+                # Try to infer tenant_id from other sources and create CallRecord lazily
+                
+                inferred_tenant_id = None
+                
+                # 2a. Try metadata.tenant_id (but don't trust it as truth, only as hint)
+                metadata = payload.get("metadata") or {}
+                metadata_tenant_hint = metadata.get("tenant_id")
+                
+                # 2b. Try from_number or to_number via PhoneNumber lookup
+                from_number = payload.get("from_number") or (payload.get("data") or {}).get("from_number")
+                to_number = payload.get("to_number") or (payload.get("data") or {}).get("to_number")
+                
+                # Lookup tenant via phone number
+                from models.agents import PhoneNumber
+                if from_number:
+                    phone_rec = session.query(PhoneNumber).filter(PhoneNumber.e164 == from_number).first()
+                    if phone_rec and phone_rec.tenant_id:
+                        inferred_tenant_id = phone_rec.tenant_id
+                
+                if not inferred_tenant_id and to_number:
+                    phone_rec = session.query(PhoneNumber).filter(PhoneNumber.e164 == to_number).first()
+                    if phone_rec and phone_rec.tenant_id:
+                        inferred_tenant_id = phone_rec.tenant_id
+                
+                # 2c. If we have inferred_tenant_id, verify metadata_hint matches (sanity check)
+                if inferred_tenant_id and metadata_tenant_hint:
+                    if inferred_tenant_id != metadata_tenant_hint:
+                        # Log mismatch but trust DB over metadata
+                        import logging
+                        logging.warning(
+                            f"Tenant mismatch: DB says {inferred_tenant_id}, metadata says {metadata_tenant_hint}. "
+                            f"Trusting DB. call_id={ref_id}"
+                        )
+                
+                # Use inferred_tenant_id (from DB lookup), fallback to metadata_hint only if DB lookup failed
+                final_tenant_id = inferred_tenant_id or metadata_tenant_hint
+                
+                if final_tenant_id and ref_id:
+                    # Create CallRecord lazily
+                    direction = "inbound" if (payload.get("direction") or "").lower() == "inbound" else "outbound"
+                    
+                    rec = CallRecord(
+                        provider_call_id=str(ref_id),
+                        tenant_id=final_tenant_id,
+                        direction=direction,
+                        status="in_progress" if event_type == "call.started" else "created",
+                        from_number=from_number,
+                        to_number=to_number,
+                        raw_response=json.dumps(payload),
+                    )
+                    session.add(rec)
+                    session.commit()
+                    session.refresh(rec)
+                    
+                    tenant_id = final_tenant_id
+                else:
+                    # Could not infer tenant - log error but continue processing
+                    import logging
+                    logging.error(
+                        f"Could not infer tenant_id for webhook. call_id={ref_id}, "
+                        f"from_number={from_number}, to_number={to_number}, metadata={metadata}"
+                    )
+                    # Continue without tenant_id (will be None)
+            
+            # At this point, rec should exist (either found or created)
+            if not rec:
+                # Still no CallRecord - cannot process further
+                return {"received": True, "type": event_type, "error": "No CallRecord found or created"}
+            # Process event: upsert call status, segments, summary, media, disposition
+            # Now rec should exist (either found or created above)
+            
+            # Idempotency check: Skip if same event already processed
+            event_id_for_check = payload.get("event_id") or event_id
+            if rec.last_event_type == event_type and rec.last_event_at:
+                # Check if this is a duplicate event (same type, recent timestamp)
+                event_timestamp = payload.get("timestamp") or payload.get("data", {}).get("timestamp")
+                if event_timestamp:
+                    # Compare timestamps if available
+                    try:
+                        from datetime import datetime
+                        event_dt = datetime.fromtimestamp(event_timestamp / 1000) if isinstance(event_timestamp, (int, float)) else None
+                        if event_dt and rec.last_event_at:
+                            time_diff = abs((event_dt.replace(tzinfo=timezone.utc) - rec.last_event_at).total_seconds())
+                            if time_diff < 5:  # Same event within 5 seconds
+                                return {"received": True, "type": event_type, "duplicate": True}
+                    except Exception:
+                        pass
+            
+            # Update last_event tracking
+            rec.last_event_type = event_type
+            rec.last_event_at = datetime.now(timezone.utc)
+            
+            if event_type and ("finished" in event_type or event_type == "call.finished"):
+                rec.status = "ended"
+                rec.updated_at = datetime.now(timezone.utc)
+                
+                # Update duration and cost if available
+                data = payload.get("data") or payload
+                if data.get("duration_seconds"):
+                    rec.duration_seconds = int(data.get("duration_seconds"))
+                if data.get("cost") is not None:
+                    # Convert cost to cents if it's a decimal
+                    cost_value = data.get("cost")
+                    if isinstance(cost_value, float):
+                        rec.call_cost_cents = int(cost_value * 100)
+                    elif isinstance(cost_value, int):
+                        rec.call_cost_cents = cost_value * 100  # Assume dollars, convert to cents
+                    else:
+                        rec.call_cost_cents = int(cost_value) if cost_value else None
                 # Save transcript/summary/media
                 data = payload.get("data") or payload
                 if event_type == "call.transcript.append":
