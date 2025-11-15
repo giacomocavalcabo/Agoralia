@@ -271,12 +271,12 @@ tenant_id = phone_record.tenant_id if phone_record else None
 ### 3. **Numero Telefono Condiviso**
 **Scenario:** Un numero può essere usato da più tenant (es. frontdesk comune).
 
-**Problema:**
-- PhoneNumber `+14157774444` ha `tenant_id=1`
-- Tenant 2 vuole usare lo stesso numero
-- **❌ Non supportato**
+**Policy:**
+- **Nella prima versione non consentiamo la condivisione di numeri tra tenant**
+- Se un numero è condiviso, la logica di routing inbound (chi riceve la chiamata?) deve essere definita con grande chiarezza prima di attivarla
+- **⚠️ Attenzione:** Chiamata inbound su numero condiviso → devi decidere **chi riceve la chiamata**. Se non hai una regola forte per questo, è un ottimo motivo per **non** supportare la condivisione di numeri all'inizio
 
-**Soluzione Proposta:**
+**Soluzione Proposta (se dovesse servire in futuro):**
 - Tabella `phone_number_tenants` con `phone_number_id` e `tenant_id` (many-to-many)
 - Oppure `tenant_id=NULL` per numeri condivisi
 
