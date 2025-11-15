@@ -633,6 +633,89 @@ async def retell_get_agent(agent_id: str, version: Optional[int] = None):
             raise e
 
 
+@router.post("/retell/agents/{agent_id}/publish")
+async def retell_publish_agent(agent_id: str):
+    """Publish the latest version of an agent and create a new draft with newer version
+    
+    According to Retell AI docs:
+    - POST /publish-agent/{agent_id} publishes the agent
+    - Response: 200 with "Agent successfully published"
+    """
+    try:
+        # Publish agent
+        data = await retell_post_json(f"/publish-agent/{agent_id}", {})
+        return {
+            "success": True,
+            "message": "Agent successfully published",
+            "response": data,
+        }
+    except HTTPException as e:
+        # Try v2 endpoint
+        try:
+            data = await retell_post_json(f"/v2/publish-agent/{agent_id}", {})
+            return {
+                "success": True,
+                "message": "Agent successfully published",
+                "response": data,
+            }
+        except Exception:
+            raise e
+
+
+@router.get("/retell/agents/{agent_id}/versions")
+async def retell_get_agent_versions(agent_id: str, version: Optional[int] = None):
+    """Get all versions of an agent
+    
+    According to Retell AI docs:
+    - GET /get-agent-versions/{agent_id} returns all versions
+    - Returns array of agent objects with different versions
+    """
+    path = f"/get-agent-versions/{agent_id}"
+    if version is not None:
+        path += f"?version={version}"
+    
+    try:
+        data = await retell_get_json(path)
+        return data
+    except HTTPException as e:
+        # Try v2 endpoint
+        try:
+            v2_path = f"/v2/get-agent-versions/{agent_id}"
+            if version is not None:
+                v2_path += f"?version={version}"
+            data = await retell_get_json(v2_path)
+            return data
+        except Exception:
+            raise e
+
+
+@router.get("/retell/agents/{agent_id}/mcp-tools")
+async def retell_get_mcp_tools(agent_id: str, mcp_id: str, version: Optional[int] = None):
+    """Get MCP tools for a specific agent
+    
+    According to Retell AI docs:
+    - GET /get-mcp-tools/{agent_id}?mcp_id=... returns MCP tools
+    - Returns array of tool definitions with name, description, inputSchema
+    """
+    path = f"/get-mcp-tools/{agent_id}?mcp_id={mcp_id}"
+    if version is not None:
+        path += f"&version={version}"
+    
+    try:
+        data = await retell_get_json(path)
+        return data
+    except HTTPException as e:
+        # Try v2 endpoint
+        try:
+            v2_path = f"/v2/get-mcp-tools/{agent_id}?mcp_id={mcp_id}"
+            if version is not None:
+                v2_path += f"&version={version}"
+            data = await retell_get_json(v2_path)
+            return data
+        except Exception:
+            raise e
+
+
 @router.post("/retell/agents/test-create")
 async def retell_create_agent_test(request: Request):
     """Test endpoint to create Retell agent and see full response"""
