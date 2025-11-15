@@ -921,6 +921,163 @@ async def retell_get_mcp_tools(agent_id: str, mcp_id: str, version: Optional[int
             raise e
 
 
+@router.post("/retell/agents")
+async def retell_create_agent(
+    request: Request,
+    agent_name: str,
+    language: Optional[str] = "en-US",
+    voice_id: Optional[str] = None,
+    webhook_url: Optional[str] = None,
+    begin_message: Optional[str] = None,
+    enable_transcription: Optional[bool] = None,
+    enable_recording: Optional[bool] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+):
+    """Create a new Retell AI agent directly
+    
+    According to Retell AI docs:
+    - POST /create-agent creates an agent with Retell LLM as response engine
+    
+    This endpoint creates an agent directly in Retell AI without creating an Agoralia agent.
+    Use this when you want to manage Retell agents independently.
+    
+    Args:
+        agent_name: Name of the agent (required)
+        language: Language code (e.g., "en-US", "it-IT", default: "en-US")
+        voice_id: Voice ID (e.g., "11labs-Adrian", default: uses default)
+        webhook_url: Optional webhook URL for call events
+        begin_message: Optional beginning message for the agent
+        enable_transcription: Enable transcription (optional)
+        enable_recording: Enable recording (optional)
+        metadata: Optional metadata dict
+    """
+    from services.agents import create_retell_agent
+    from utils.auth import extract_tenant_id
+    
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        response = await create_retell_agent(
+            name=agent_name,
+            language=language or "en-US",
+            voice_id=voice_id,
+            webhook_url=webhook_url,
+        )
+        
+        # Extract agent_id from response
+        agent_id = (
+            response.get("agent_id") or
+            response.get("retell_llm_id") or
+            response.get("llm_id") or
+            response.get("id")
+        )
+        
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "response": response,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating Retell agent: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error creating agent: {str(e)}")
+
+
+@router.patch("/retell/agents/{agent_id}")
+async def retell_update_agent(
+    request: Request,
+    agent_id: str,
+    agent_name: Optional[str] = None,
+    language: Optional[str] = None,
+    voice_id: Optional[str] = None,
+    webhook_url: Optional[str] = None,
+):
+    """Update a Retell AI agent directly
+    
+    According to Retell AI docs:
+    - PATCH /update-agent/{agent_id} updates an agent
+    
+    This endpoint updates an agent directly in Retell AI without updating Agoralia agents.
+    
+    Args:
+        agent_id: Retell agent ID (required)
+        agent_name: New name (optional)
+        language: New language code (optional)
+        voice_id: New voice ID (optional)
+        webhook_url: New webhook URL (optional)
+    """
+    from services.agents import update_retell_agent
+    from utils.auth import extract_tenant_id
+    
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        response = await update_retell_agent(
+            retell_agent_id=agent_id,
+            name=agent_name,
+            language=language,
+            voice_id=voice_id,
+            webhook_url=webhook_url,
+        )
+        
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "response": response,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error updating Retell agent: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error updating agent: {str(e)}")
+
+
+@router.delete("/retell/agents/{agent_id}")
+async def retell_delete_agent(
+    request: Request,
+    agent_id: str,
+):
+    """Delete a Retell AI agent directly
+    
+    According to Retell AI docs:
+    - DELETE /delete-agent/{agent_id} deletes an agent
+    
+    This endpoint deletes an agent directly from Retell AI without deleting Agoralia agents.
+    Use with caution: this action cannot be undone.
+    
+    Args:
+        agent_id: Retell agent ID (required)
+    """
+    from services.agents import delete_retell_agent
+    from utils.auth import extract_tenant_id
+    
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        await delete_retell_agent(retell_agent_id=agent_id)
+        
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "message": "Agent deleted successfully",
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error deleting Retell agent: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error deleting agent: {str(e)}")
+
+
 @router.post("/retell/agents/test-create")
 async def retell_create_agent_test(request: Request):
     """Test endpoint to create Retell agent and see full response"""
