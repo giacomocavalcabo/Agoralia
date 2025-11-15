@@ -1959,7 +1959,16 @@ async def retell_register_phone_call(request: Request, body: RegisterPhoneCallRe
         retell_body["direction"] = body.direction
     
     try:
-        data = await retell_post_json("/register-phone-call", retell_body, tenant_id=tenant_id)
+        # Try /v2/register-phone-call first (v2 endpoint)
+        try:
+            data = await retell_post_json("/v2/register-phone-call", retell_body, tenant_id=tenant_id)
+        except HTTPException as e:
+            if e.status_code == 404:
+                # Fallback to /register-phone-call (without v2)
+                data = await retell_post_json("/register-phone-call", retell_body, tenant_id=tenant_id)
+            else:
+                raise e
+        
         call_id = data.get("call_id") or data.get("id")
         sip_uri = f"sip:{call_id}@sip.retellai.com" if call_id else None
         
