@@ -289,9 +289,18 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
 async def create_outbound_call(request: Request, payload: OutboundCallRequest):
     """Create outbound phone call via Retell"""
     import traceback
+    import sys
     import logging
     logger = logging.getLogger(__name__)
     
+    # Configure logging to stdout if not configured
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.INFO)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    
+    error_step = "initialization"
     try:
         api_key = os.getenv("RETELL_API_KEY")
         if not api_key:
@@ -310,7 +319,9 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             lead_id = payload.metadata.get("lead_id")
         
         logger.info(f"[create_outbound_call] tenant_id={tenant_id}, campaign_id={campaign_id}, lead_id={lead_id}")
+        print(f"[DEBUG] tenant_id={tenant_id}, campaign_id={campaign_id}, lead_id={lead_id}", flush=True)
         
+        error_step = "resolve_from_number"
         with Session(engine) as session:
             # Load lead if needed
             lead = None
@@ -392,6 +403,8 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
         # Compliance + subscription + budget gating
         # Reload lead in new session for compliance check
         logger.info("[create_outbound_call] Starting compliance checks...")
+        print("[DEBUG] Starting compliance checks...", flush=True)
+        error_step = "compliance_check"
         with Session(engine) as session:
             lead_for_compliance = None
             if lead_id:
@@ -400,22 +413,31 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
                 if lead_for_compliance and tenant_id is not None and lead_for_compliance.tenant_id != tenant_id:
                     lead_for_compliance = None
             logger.info("[create_outbound_call] Enforcing subscription...")
+            print("[DEBUG] Enforcing subscription...", flush=True)
             enforce_subscription_or_raise(session, request)
             logger.info("[create_outbound_call] Enforcing compliance...")
+            print("[DEBUG] Enforcing compliance...", flush=True)
             enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead_for_compliance)
             logger.info("[create_outbound_call] Enforcing budget...")
+            print("[DEBUG] Enforcing budget...", flush=True)
             enforce_budget_or_raise(session, request)
         
         logger.info(f"[create_outbound_call] Calling Retell API: {endpoint}")
+        print(f"[DEBUG] Calling Retell API: {endpoint}", flush=True)
+        error_step = "retell_api_call"
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(endpoint, headers=headers, json=body)
             logger.info(f"[create_outbound_call] Retell API response status: {resp.status_code}")
+            print(f"[DEBUG] Retell API response status: {resp.status_code}", flush=True)
             if resp.status_code >= 400:
                 error_text = resp.text
                 logger.error(f"[create_outbound_call] Retell API error: {error_text}")
+                print(f"[DEBUG] Retell API error: {error_text}", flush=True)
                 raise HTTPException(status_code=resp.status_code, detail=error_text)
             data = resp.json()
             logger.info(f"[create_outbound_call] Retell API success: {data.get('call_id') or data.get('id')}")
+            print(f"[DEBUG] Retell API success: {data.get('call_id') or data.get('id')}", flush=True)
+            error_step = "persist_call"
             # Persist call
             tenant_id = extract_tenant_id(request)
             with Session(engine) as session:
@@ -434,20 +456,22 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
             await ws_manager.broadcast({"type": "call.created", "data": data})
             return data
     except HTTPException as he:
-        logger.error(f"[create_outbound_call] HTTPException: {he.status_code} - {he.detail}")
+        logger.error(f"[create_outbound_call] HTTPException at step {error_step}: {he.status_code} - {he.detail}")
+        print(f"[DEBUG] HTTPException at step {error_step}: {he.status_code} - {he.detail}", flush=True)
         raise
     except Exception as e:
         error_msg = str(e)
         error_traceback = traceback.format_exc()
-        logger.error(f"[create_outbound_call] Exception: {error_msg}\n{error_traceback}")
+        logger.error(f"[create_outbound_call] Exception at step {error_step}: {error_msg}\n{error_traceback}")
+        print(f"[DEBUG] Exception at step {error_step}: {error_msg}", flush=True)
+        print(f"[DEBUG] Traceback:\n{error_traceback}", flush=True)
         # Return full error details for debugging
-        import sys
         exc_type, exc_value, exc_tb = sys.exc_info()
-        error_detail = f"{exc_type.__name__}: {error_msg}"
+        error_detail = f"Error at {error_step}: {exc_type.__name__}: {error_msg}"
         if exc_tb:
             tb_lines = traceback.format_tb(exc_tb)
-            error_detail += f"\nTraceback: {''.join(tb_lines[-3:])}"  # Last 3 frames
-        raise HTTPException(status_code=500, detail=f"Internal error: {error_detail}")
+            error_detail += f"\nTraceback:\n{''.join(tb_lines[-5:])}"  # Last 5 frames
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.post("/retell/web")
