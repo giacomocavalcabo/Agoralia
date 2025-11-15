@@ -23,6 +23,7 @@ class Agent(Base):
     name: Mapped[str] = mapped_column(String(128))
     lang: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     voice_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    retell_agent_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)  # Retell AI agent ID (llm_xxx)
 
 
 class KnowledgeBase(Base):

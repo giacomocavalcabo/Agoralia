@@ -195,6 +195,7 @@ async def get_entitlements(request: Request) -> Dict[str, Any]:
                 "calendar_week_day": True,
                 "workflows_limit": None,
                 "languages_allowance": None,
+                "agents_limit": None,  # Unlimited
                 "integrations": ["hubspot", "zoho", "odoo", "csv"],
                 "analytics_advanced": True,
                 "roles_enabled": True,
@@ -213,6 +214,7 @@ async def get_entitlements(request: Request) -> Dict[str, Any]:
                 "calendar_week_day": True,
                 "workflows_limit": None,
                 "languages_allowance": None,
+                "agents_limit": 20,  # 20 agents max
                 "integrations": ["hubspot", "zoho", "odoo", "csv"],
                 "analytics_advanced": True,
                 "roles_enabled": True,
@@ -223,6 +225,7 @@ async def get_entitlements(request: Request) -> Dict[str, Any]:
                 "calendar_week_day": True,
                 "workflows_limit": 3,
                 "languages_allowance": 3,
+                "agents_limit": 5,  # 5 agents max
                 "integrations": ["hubspot", "zoho", "odoo", "csv"],
             }
         return {
@@ -230,6 +233,7 @@ async def get_entitlements(request: Request) -> Dict[str, Any]:
             "calendar_week_day": False,
             "workflows_limit": 0,
             "languages_allowance": 1,
+            "agents_limit": 1,  # 1 agent max (Free plan)
             "integrations": ["csv"],
         }
     

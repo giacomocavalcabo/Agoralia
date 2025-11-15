@@ -42,3 +42,30 @@ async def retell_post_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         return resp.json()
 
+
+async def retell_patch_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    """Make a PATCH request to Retell API"""
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.patch(
+            f"{get_retell_base_url()}{path}",
+            headers=get_retell_headers(),
+            json=body
+        )
+        if resp.status_code >= 400:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        return resp.json()
+
+
+async def retell_delete_json(path: str) -> Dict[str, Any]:
+    """Make a DELETE request to Retell API"""
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.delete(
+            f"{get_retell_base_url()}{path}",
+            headers=get_retell_headers()
+        )
+        if resp.status_code >= 400:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+        if resp.status_code == 204:
+            return {}
+        return resp.json() if resp.content else {}
+

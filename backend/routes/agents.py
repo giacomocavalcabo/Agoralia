@@ -8,6 +8,8 @@ from config.database import engine
 from models.agents import Agent, KnowledgeBase, KnowledgeSection, PhoneNumber
 from utils.auth import extract_tenant_id
 from utils.helpers import country_iso_from_e164
+from services.agents import check_agent_limit, create_retell_agent, update_retell_agent, delete_retell_agent
+from services.enforcement import enforce_subscription_or_raise
 
 router = APIRouter()
 
@@ -25,7 +27,16 @@ async def list_agents(request: Request) -> List[Dict[str, Any]]:
         if tenant_id is not None:
             q = q.filter(Agent.tenant_id == tenant_id)
         rows = q.order_by(Agent.id.desc()).limit(200).all()
-        return [{"id": a.id, "name": a.name, "lang": a.lang, "voice_id": a.voice_id} for a in rows]
+        return [
+            {
+                "id": a.id,
+                "name": a.name,
+                "lang": a.lang,
+                "voice_id": a.voice_id,
+                "retell_agent_id": a.retell_agent_id,
+            }
+            for a in rows
+        ]
 
 
 class AgentCreate(BaseModel):
@@ -36,13 +47,58 @@ class AgentCreate(BaseModel):
 
 @router.post("/agents")
 async def create_agent(request: Request, body: AgentCreate):
-    """Create agent"""
+    """Create agent in Agoralia and corresponding Retell AI agent"""
     tenant_id = extract_tenant_id(request)
+    
+    # Subscription gating
     with Session(engine) as session:
-        a = Agent(name=body.name, lang=body.lang, voice_id=body.voice_id, tenant_id=tenant_id)
+        enforce_subscription_or_raise(session, request)
+        
+        # Check agent limit based on plan
+        check_agent_limit(session, tenant_id)
+        
+        # Determine language and voice defaults
+        lang = body.lang or "it-IT"
+        voice_id = body.voice_id or "11labs-Adrian"  # Default voice
+        
+        # Create agent in Retell AI first
+        try:
+            retell_response = await create_retell_agent(
+                name=body.name,
+                language=lang,
+                voice_id=voice_id,
+            )
+            # Extract Retell agent ID (can be llm_xxx or in response object)
+            retell_agent_id = None
+            if isinstance(retell_response, dict):
+                retell_agent_id = retell_response.get("retell_llm_id") or retell_response.get("llm_id") or retell_response.get("id")
+        except Exception as e:
+            # If Retell creation fails, still create local agent but without retell_agent_id
+            # This allows users to retry or fix configuration
+            retell_agent_id = None
+            # Log error but don't block agent creation in Agoralia
+            import logging
+            logging.error(f"Failed to create Retell agent for {body.name}: {e}")
+        
+        # Create agent in Agoralia database
+        a = Agent(
+            name=body.name,
+            lang=lang,
+            voice_id=voice_id,
+            tenant_id=tenant_id,
+            retell_agent_id=retell_agent_id,
+        )
         session.add(a)
         session.commit()
-    return {"ok": True}
+        session.refresh(a)
+        
+        return {
+            "ok": True,
+            "id": a.id,
+            "name": a.name,
+            "retell_agent_id": a.retell_agent_id,
+            "retell_created": retell_agent_id is not None,
+        }
 
 
 class AgentUpdate(BaseModel):
@@ -53,12 +109,29 @@ class AgentUpdate(BaseModel):
 
 @router.patch("/agents/{agent_id}")
 async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
-    """Update agent"""
+    """Update agent in Agoralia and corresponding Retell AI agent"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         a = session.get(Agent, agent_id)
         if not a or (tenant_id is not None and a.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="Agent not found")
+        
+        # Update Retell AI agent if retell_agent_id exists
+        if a.retell_agent_id:
+            try:
+                await update_retell_agent(
+                    retell_agent_id=a.retell_agent_id,
+                    name=body.name,
+                    language=body.lang,
+                    voice_id=body.voice_id,
+                )
+            except Exception as e:
+                # Log error but don't block update in Agoralia
+                import logging
+                logging.error(f"Failed to update Retell agent {a.retell_agent_id}: {e}")
+                # Continue with local update
+        
+        # Update local agent
         if body.name is not None:
             a.name = body.name
         if body.lang is not None:
@@ -66,20 +139,41 @@ async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
         if body.voice_id is not None:
             a.voice_id = body.voice_id
         session.commit()
-    return {"ok": True}
+        
+        return {
+            "ok": True,
+            "retell_updated": a.retell_agent_id is not None,
+        }
 
 
 @router.delete("/agents/{agent_id}")
 async def delete_agent(request: Request, agent_id: int):
-    """Delete agent"""
+    """Delete agent from Agoralia and corresponding Retell AI agent"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         a = session.get(Agent, agent_id)
         if not a or (tenant_id is not None and a.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="Agent not found")
+        
+        # Delete Retell AI agent if retell_agent_id exists
+        retell_agent_id = a.retell_agent_id
+        if retell_agent_id:
+            try:
+                await delete_retell_agent(retell_agent_id)
+            except Exception as e:
+                # Log error but continue with local deletion
+                import logging
+                logging.error(f"Failed to delete Retell agent {retell_agent_id}: {e}")
+                # Continue with local deletion
+        
+        # Delete local agent
         session.delete(a)
         session.commit()
-    return {"ok": True}
+        
+        return {
+            "ok": True,
+            "retell_deleted": retell_agent_id is not None,
+        }
 
 
 # ============================================================================
