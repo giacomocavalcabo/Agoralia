@@ -1,5 +1,6 @@
 """Retell AI API client utilities"""
 import os
+import json
 import httpx
 from typing import Dict, Any, Optional
 from fastapi import HTTPException

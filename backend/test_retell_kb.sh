@@ -4,7 +4,22 @@
 # Tests CRUD operations for Retell KB
 
 BASE_URL="${AGORALIA_URL:-https://api.agoralia.app}"
-AUTH_TOKEN="${AUTH_TOKEN:-test-token}"  # Default test token
+TEST_EMAIL="${TEST_EMAIL:-test@agoralia.app}"
+TEST_PASSWORD="${TEST_PASSWORD:-test123456}"
+
+# Try to get AUTH_TOKEN from environment or login
+if [ -z "$AUTH_TOKEN" ]; then
+    echo "🔍 Getting AUTH_TOKEN via login..."
+    LOGIN_RESPONSE=$(curl -s -X POST "${BASE_URL}/auth/login" \
+        -H "Content-Type: application/json" \
+        -d "{\"email\":\"${TEST_EMAIL}\",\"password\":\"${TEST_PASSWORD}\"}")
+    AUTH_TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('token', ''))" 2>/dev/null || echo "")
+    if [ -z "$AUTH_TOKEN" ]; then
+        echo "❌ Login failed. Response: $LOGIN_RESPONSE"
+        exit 1
+    fi
+    echo "✅ Login successful"
+fi
 
 # Colors
 GREEN='\033[0;32m'

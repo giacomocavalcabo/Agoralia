@@ -1488,12 +1488,21 @@ async def retell_create_knowledge_base(
         form_data["enable_auto_refresh"] = "true" if body.enable_auto_refresh else "false"
     
     try:
+        # Log form data for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[retell_create_kb] Form data: {form_data}")
+        print(f"[DEBUG] [retell_create_kb] Form data: {form_data}", flush=True)
+        
         # Use multipart helper even without files
         data = await retell_post_multipart(
             "/create-knowledge-base",
             data=form_data,
             tenant_id=tenant_id
         )
+        
+        logger.info(f"[retell_create_kb] Retell response: {data}")
+        print(f"[DEBUG] [retell_create_kb] Retell response: {data}", flush=True)
         
         # Extract KB ID
         kb_id = data.get("knowledge_base_id")
@@ -1504,12 +1513,20 @@ async def retell_create_knowledge_base(
             "response": data,
         }
     except HTTPException as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"[retell_create_kb] HTTPException: {e.status_code} - {e.detail}")
+        print(f"[DEBUG] [retell_create_kb] HTTPException: {e.status_code} - {e.detail}", flush=True)
         raise e
     except Exception as e:
         import traceback
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Error creating Retell KB: {e}\n{traceback.format_exc()}")
+        error_msg = str(e)
+        error_traceback = traceback.format_exc()
+        logger.error(f"[retell_create_kb] Exception: {error_msg}\n{error_traceback}")
+        print(f"[DEBUG] [retell_create_kb] Exception: {error_msg}", flush=True)
+        print(f"[DEBUG] Traceback:\n{error_traceback}", flush=True)
         raise HTTPException(status_code=500, detail=f"Error creating knowledge base: {str(e)}")
 
 
