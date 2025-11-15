@@ -1771,6 +1771,283 @@ async def retell_delete_knowledge_base_source(request: Request, kb_id: str, sour
 
 
 # ============================================================================
+# Batch Calls API
+# ============================================================================
+
+class BatchCallTask(BaseModel):
+    """A single call task in a batch call"""
+    to_number: str = Field(..., description="E.164 destination number")
+    dynamic_variables: Optional[Dict[str, str]] = Field(None, description="Dynamic variables for personalization")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Call metadata")
+
+
+class BatchCallCreate(BaseModel):
+    """Request body for creating a batch call"""
+    from_number: str = Field(..., description="E.164 caller ID (must be owned by Retell)")
+    tasks: List[BatchCallTask] = Field(..., min_items=1, description="List of call tasks")
+    name: Optional[str] = Field(None, description="Batch call name (for reference)")
+    trigger_timestamp: Optional[int] = Field(None, description="Unix timestamp in milliseconds (scheduled time)")
+
+
+@router.post("/retell/batch")
+async def retell_create_batch_call(request: Request, body: BatchCallCreate):
+    """Create a batch call in Retell AI
+    
+    According to Retell AI docs:
+    - POST /create-batch-call creates a batch of calls
+    - Returns batch_call_id, name, from_number, scheduled_timestamp, total_task_count
+    
+    Args:
+        from_number: E.164 format number (must be owned by Retell)
+        tasks: List of call tasks (each with to_number and optional dynamic_variables/metadata)
+        name: Optional batch call name (for reference)
+        trigger_timestamp: Optional Unix timestamp in milliseconds (scheduled time, defaults to now)
+    
+    Returns:
+        batch_call_id, name, from_number, scheduled_timestamp, total_task_count
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    # Prepare body for Retell API
+    retell_body: Dict[str, Any] = {
+        "from_number": body.from_number,
+        "tasks": [
+            {
+                "to_number": task.to_number,
+                **({"dynamic_variables": task.dynamic_variables} if task.dynamic_variables else {}),
+                **({"metadata": task.metadata} if task.metadata else {}),
+            }
+            for task in body.tasks
+        ]
+    }
+    
+    if body.name:
+        retell_body["name"] = body.name
+    
+    if body.trigger_timestamp is not None:
+        retell_body["trigger_timestamp"] = body.trigger_timestamp
+    
+    try:
+        data = await retell_post_json("/create-batch-call", retell_body, tenant_id=tenant_id)
+        return {
+            "success": True,
+            "batch_call_id": data.get("batch_call_id"),
+            "name": data.get("name"),
+            "from_number": data.get("from_number"),
+            "scheduled_timestamp": data.get("scheduled_timestamp"),
+            "total_task_count": data.get("total_task_count"),
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating batch call: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error creating batch call: {str(e)}")
+
+
+# ============================================================================
+# Voice Management
+# ============================================================================
+
+@router.get("/retell/voices")
+async def retell_list_voices(request: Request):
+    """List all voices available in Retell AI
+    
+    According to Retell AI docs:
+    - GET /list-voices returns all available voices
+    - Returns array of voice objects with voice_id, voice_name, provider, gender, accent, age, preview_audio_url
+    
+    Use Case: UI for voice selection, filters by language/gender/provider
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_get_json("/list-voices", tenant_id=tenant_id)
+        # Ensure we return an array
+        if isinstance(data, list):
+            return data
+        return data.get("voices", []) if isinstance(data, dict) else []
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing voices: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error listing voices: {str(e)}")
+
+
+@router.get("/retell/voices/{voice_id}")
+async def retell_get_voice(request: Request, voice_id: str):
+    """Get details of a specific voice
+    
+    According to Retell AI docs:
+    - GET /get-voice/{voice_id} returns voice details
+    - Returns voice object with voice_id, voice_name, provider, gender, accent, age, preview_audio_url
+    
+    Args:
+        voice_id: Unique voice ID (e.g., "11labs-Adrian")
+    
+    Use Case: UI for voice selection, preview audio
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        data = await retell_get_json(f"/get-voice/{urllib.parse.quote(voice_id)}", tenant_id=tenant_id)
+        return {
+            "success": True,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error getting voice: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error getting voice: {str(e)}")
+
+
+# ============================================================================
+# Custom Telephony
+# ============================================================================
+
+class RegisterPhoneCallRequest(BaseModel):
+    """Request body for registering a phone call (Custom Telephony)"""
+    agent_id: str = Field(..., description="Retell agent ID")
+    from_number: Optional[str] = Field(None, description="E.164 caller number (optional)")
+    to_number: Optional[str] = Field(None, description="E.164 destination number (optional)")
+    direction: Optional[str] = Field(None, description="Call direction: inbound or outbound (optional)")
+
+
+@router.post("/retell/custom-telephony/register")
+async def retell_register_phone_call(request: Request, body: RegisterPhoneCallRequest):
+    """Register a phone call for Custom Telephony (Dial to SIP URI)
+    
+    According to Retell AI docs:
+    - POST /register-phone-call registers a call and returns call_id
+    - Use call_id to construct SIP URI: sip:{call_id}@sip.retellai.com
+    - Use this SIP URI in your telephony provider (Twilio/Telnyx/etc.) to dial the call
+    
+    Args:
+        agent_id: Retell agent ID (required)
+        from_number: E.164 caller number (optional)
+        to_number: E.164 destination number (optional)
+        direction: Call direction: "inbound" or "outbound" (optional)
+    
+    Returns:
+        call_id: Use this to construct SIP URI (sip:{call_id}@sip.retellai.com)
+    
+    Use Case: Custom Telephony integration (Twilio/Telnyx/etc.) for international calls
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    retell_body: Dict[str, Any] = {
+        "agent_id": body.agent_id,
+    }
+    
+    if body.from_number:
+        retell_body["from_number"] = body.from_number
+    
+    if body.to_number:
+        retell_body["to_number"] = body.to_number
+    
+    if body.direction:
+        retell_body["direction"] = body.direction
+    
+    try:
+        data = await retell_post_json("/register-phone-call", retell_body, tenant_id=tenant_id)
+        call_id = data.get("call_id") or data.get("id")
+        sip_uri = f"sip:{call_id}@sip.retellai.com" if call_id else None
+        
+        return {
+            "success": True,
+            "call_id": call_id,
+            "sip_uri": sip_uri,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error registering phone call: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error registering phone call: {str(e)}")
+
+
+class ImportPhoneNumberRequest(BaseModel):
+    """Request body for importing a phone number (Custom Telephony)"""
+    phone_number: str = Field(..., description="E.164 format number to import")
+    # Additional fields may be needed based on provider (Twilio/Telnyx)
+    # These are optional and provider-specific
+    provider: Optional[str] = Field(None, description="Provider name: twilio, telnyx, vonage, etc.")
+    provider_account_id: Optional[str] = Field(None, description="Provider account ID (if needed)")
+    sip_uri: Optional[str] = Field(None, description="SIP URI for the number (if needed)")
+    inbound_agent_id: Optional[str] = Field(None, description="Retell agent ID for inbound calls")
+
+
+@router.post("/retell/phone-numbers/import")
+async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRequest):
+    """Import a phone number from Custom Telephony provider to Retell
+    
+    According to Retell AI docs:
+    - POST /import-phone-number imports a number from Twilio/Telnyx/etc.
+    - Requires Elastic SIP Trunking setup with your provider
+    - Returns imported number details
+    
+    Args:
+        phone_number: E.164 format number to import (required)
+        provider: Provider name (optional, e.g., "twilio", "telnyx", "vonage")
+        provider_account_id: Provider account ID (optional, if needed)
+        sip_uri: SIP URI for the number (optional, if needed)
+        inbound_agent_id: Retell agent ID for inbound calls (optional)
+    
+    Returns:
+        Imported number details
+    
+    Use Case: Import existing numbers from Twilio/Telnyx for international calls
+    Note: Requires Elastic SIP Trunking setup. See Retell Custom Telephony docs.
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    retell_body: Dict[str, Any] = {
+        "phone_number": body.phone_number,
+    }
+    
+    if body.provider:
+        retell_body["provider"] = body.provider
+    
+    if body.provider_account_id:
+        retell_body["provider_account_id"] = body.provider_account_id
+    
+    if body.sip_uri:
+        retell_body["sip_uri"] = body.sip_uri
+    
+    if body.inbound_agent_id:
+        retell_body["inbound_agent_id"] = body.inbound_agent_id
+    
+    try:
+        data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
+        return {
+            "success": True,
+            "phone_number": data.get("phone_number") or body.phone_number,
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error importing phone number: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error importing phone number: {str(e)}")
+
+
+# ============================================================================
 # Call Management Endpoints
 # ============================================================================
 

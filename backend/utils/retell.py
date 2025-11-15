@@ -67,24 +67,41 @@ def get_retell_base_url() -> str:
     return os.getenv("RETELL_BASE_URL", "https://api.retellai.com")
 
 
-async def retell_get_json(path: str) -> Dict[str, Any]:
-    """Make a GET request to Retell API"""
+async def retell_get_json(path: str, tenant_id: Optional[int] = None) -> Dict[str, Any]:
+    """Make a GET request to Retell API
+    
+    Args:
+        path: API path (e.g., "/list-voices")
+        tenant_id: Optional tenant ID for BYO Retell account support
+    
+    Returns:
+        JSON response from Retell API
+    """
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(
             f"{get_retell_base_url()}{path}",
-            headers=get_retell_headers()
+            headers=get_retell_headers(tenant_id)
         )
         if resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         return resp.json()
 
 
-async def retell_post_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
-    """Make a POST request to Retell API"""
+async def retell_post_json(path: str, body: Dict[str, Any], tenant_id: Optional[int] = None) -> Dict[str, Any]:
+    """Make a POST request to Retell API
+    
+    Args:
+        path: API path (e.g., "/create-batch-call")
+        body: Request body as dict
+        tenant_id: Optional tenant ID for BYO Retell account support
+    
+    Returns:
+        JSON response from Retell API (or empty dict for 204 No Content)
+    """
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
-            headers=get_retell_headers(),
+            headers=get_retell_headers(tenant_id),
             json=body
         )
         if resp.status_code >= 400:
