@@ -45,12 +45,19 @@ def country_iso_from_e164(e164: Optional[str]) -> Optional[str]:
 def _resolve_lang(session: Session, request: Request, to_number: Optional[str], provided_lang: Optional[str]) -> str:
     """Resolve language for a call"""
     from services.settings import get_settings
+    from utils.auth import extract_tenant_id
     
     # Order: provided -> lead.preferred_lang -> settings.default_lang -> en-US
     if provided_lang:
         return provided_lang
     if to_number:
-        lead = session.query(Lead).filter(Lead.phone == to_number).one_or_none()
+        # Use first() instead of one_or_none() since there might be multiple leads with same phone
+        # Filter by tenant_id if available for better isolation
+        tenant_id = extract_tenant_id(request)
+        query = session.query(Lead).filter(Lead.phone == to_number)
+        if tenant_id is not None:
+            query = query.filter(Lead.tenant_id == tenant_id)
+        lead = query.order_by(Lead.id.desc()).first()  # Get most recent lead
         if lead and lead.preferred_lang:
             return lead.preferred_lang
     s = get_settings()
