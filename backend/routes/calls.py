@@ -288,129 +288,158 @@ async def test_retell_api(request: Request, agent_id: Optional[str] = None):
 @router.post("/retell/outbound")
 async def create_outbound_call(request: Request, payload: OutboundCallRequest):
     """Create outbound phone call via Retell"""
-    api_key = os.getenv("RETELL_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
-
-    base_url = get_retell_base_url()
-    endpoint = f"{base_url}/v2/create-phone-call"
-    headers = get_retell_headers()
-
-    # Resolve from_number with priority: explicit -> campaign -> settings -> env
-    tenant_id = extract_tenant_id(request)
-    lead_id = None
-    campaign_id = None
-    if payload.metadata:
-        campaign_id = payload.metadata.get("campaign_id")
-        lead_id = payload.metadata.get("lead_id")
+    import traceback
+    import logging
+    logger = logging.getLogger(__name__)
     
-    with Session(engine) as session:
-        # Load lead if needed
-        lead = None
-        if lead_id:
-            from models.campaigns import Lead
-            lead = session.get(Lead, lead_id)
-            if lead and tenant_id is not None and lead.tenant_id != tenant_id:
-                lead = None
-            elif lead and lead.campaign_id:
-                campaign_id = lead.campaign_id
-        
-        from_num = _resolve_from_number(
-            session,
-            from_number=payload.from_number,
-            campaign_id=campaign_id,
-            lead_id=lead.id if lead else None,
-            tenant_id=tenant_id,
-        )
-        if not from_num:
-            raise HTTPException(
-                status_code=400,
-                detail="from_number mancante: imposta DEFAULT_FROM_NUMBER nelle settings/env o passa un Caller ID valido"
-            )
-        lang = _resolve_lang(
-            session, request, payload.to,
-            (payload.metadata or {}).get("lang") if payload.metadata else None
-        )
-        agent_id = payload.agent_id
-        is_multi = False
-        if not agent_id:
-            aid, is_multi = _resolve_agent(session, tenant_id, "voice", lang)
-            if aid:
-                agent_id = aid
-    
-    # Build request body - Retell AI requires: from_number, to_number
-    # agent_id is optional - if not provided, Retell uses the agent bound to from_number
-    body = {
-        "from_number": from_num,
-        "to_number": payload.to,
-    }
-    # Use override_agent_id if we have an agent_id (Retell API parameter name)
-    if agent_id:
-        body["override_agent_id"] = agent_id
-    body.setdefault("metadata", {})
-    body["metadata"]["lang"] = lang
-    if is_multi:
-        body["metadata"]["instruction"] = f"rispondi sempre in {lang}"
-        # Attach kb version for traceability
-        try:
-            s = get_settings()
-            body["metadata"]["kb_version"] = int(s.kb_version_outbound or 0)
-        except Exception:
-            pass
-    if payload.metadata is not None:
-        body["metadata"].update(payload.metadata)
-    # Attach knowledge pack
-    if payload.kb_id is not None:
-        with Session(engine) as session:
-            secs = (
-                session.query(KnowledgeSection)
-                .filter(KnowledgeSection.kb_id == payload.kb_id)
-                .order_by(KnowledgeSection.id.asc())
-                .all()
-            )
-            if secs:
-                body.setdefault("metadata", {})
-                body["metadata"]["kb"] = {
-                    "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
-                    "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
-                    "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
-                }
+    try:
+        api_key = os.getenv("RETELL_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
 
-    # Compliance + subscription + budget gating
-    # Reload lead in new session for compliance check
-    with Session(engine) as session:
-        lead_for_compliance = None
-        if lead_id:
-            from models.campaigns import Lead
-            lead_for_compliance = session.get(Lead, lead_id)
-            if lead_for_compliance and tenant_id is not None and lead_for_compliance.tenant_id != tenant_id:
-                lead_for_compliance = None
-        enforce_subscription_or_raise(session, request)
-        enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead_for_compliance)
-        enforce_budget_or_raise(session, request)
+        base_url = get_retell_base_url()
+        endpoint = f"{base_url}/v2/create-phone-call"
+        headers = get_retell_headers()
 
-    async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(endpoint, headers=headers, json=body)
-        if resp.status_code >= 400:
-            raise HTTPException(status_code=resp.status_code, detail=resp.text)
-        data = resp.json()
-        # Persist call
+        # Resolve from_number with priority: explicit -> campaign -> settings -> env
         tenant_id = extract_tenant_id(request)
+        lead_id = None
+        campaign_id = None
+        if payload.metadata:
+            campaign_id = payload.metadata.get("campaign_id")
+            lead_id = payload.metadata.get("lead_id")
+        
+        logger.info(f"[create_outbound_call] tenant_id={tenant_id}, campaign_id={campaign_id}, lead_id={lead_id}")
+        
         with Session(engine) as session:
-            rec = CallRecord(
-                direction="outbound",
-                provider="retell",
-                to_number=payload.to,
-                from_number=from_num,
-                provider_call_id=str(data.get("call_id") or data.get("id") or ""),
-                status="created",
-                raw_response=str(data),
+            # Load lead if needed
+            lead = None
+            if lead_id:
+                from models.campaigns import Lead
+                lead = session.get(Lead, lead_id)
+                logger.info(f"[create_outbound_call] lead loaded: {lead is not None}")
+                if lead and tenant_id is not None and lead.tenant_id != tenant_id:
+                    lead = None
+                elif lead and lead.campaign_id:
+                    campaign_id = lead.campaign_id
+            
+            from_num = _resolve_from_number(
+                session,
+                from_number=payload.from_number,
+                campaign_id=campaign_id,
+                lead_id=lead.id if lead else None,
                 tenant_id=tenant_id,
             )
-            session.add(rec)
-            session.commit()
-        await ws_manager.broadcast({"type": "call.created", "data": data})
-        return data
+            logger.info(f"[create_outbound_call] from_num resolved: {from_num}")
+            if not from_num:
+                raise HTTPException(
+                    status_code=400,
+                    detail="from_number mancante: imposta DEFAULT_FROM_NUMBER nelle settings/env o passa un Caller ID valido"
+                )
+            lang = _resolve_lang(
+                session, request, payload.to,
+                (payload.metadata or {}).get("lang") if payload.metadata else None
+            )
+            logger.info(f"[create_outbound_call] lang resolved: {lang}")
+            agent_id = payload.agent_id
+            is_multi = False
+            if not agent_id:
+                aid, is_multi = _resolve_agent(session, tenant_id, "voice", lang)
+                if aid:
+                    agent_id = aid
+            logger.info(f"[create_outbound_call] agent_id: {agent_id}, is_multi: {is_multi}")
+        
+        # Build request body - Retell AI requires: from_number, to_number
+        # agent_id is optional - if not provided, Retell uses the agent bound to from_number
+        body = {
+            "from_number": from_num,
+            "to_number": payload.to,
+        }
+        # Use override_agent_id if we have an agent_id (Retell API parameter name)
+        if agent_id:
+            body["override_agent_id"] = agent_id
+        body.setdefault("metadata", {})
+        body["metadata"]["lang"] = lang
+        if is_multi:
+            body["metadata"]["instruction"] = f"rispondi sempre in {lang}"
+            # Attach kb version for traceability
+            try:
+                s = get_settings()
+                body["metadata"]["kb_version"] = int(s.kb_version_outbound or 0)
+            except Exception:
+                pass
+        if payload.metadata is not None:
+            body["metadata"].update(payload.metadata)
+        # Attach knowledge pack
+        if payload.kb_id is not None:
+            with Session(engine) as session:
+                secs = (
+                    session.query(KnowledgeSection)
+                    .filter(KnowledgeSection.kb_id == payload.kb_id)
+                    .order_by(KnowledgeSection.id.asc())
+                    .all()
+                )
+                if secs:
+                    body.setdefault("metadata", {})
+                    body["metadata"]["kb"] = {
+                        "knowledge": [s.content_text for s in secs if s.kind == "knowledge" and s.content_text],
+                        "rules": [s.content_text for s in secs if s.kind == "rules" and s.content_text],
+                        "style": [s.content_text for s in secs if s.kind == "style" and s.content_text],
+                    }
+
+        logger.info(f"[create_outbound_call] body prepared: {json.dumps(body)}")
+        
+        # Compliance + subscription + budget gating
+        # Reload lead in new session for compliance check
+        logger.info("[create_outbound_call] Starting compliance checks...")
+        with Session(engine) as session:
+            lead_for_compliance = None
+            if lead_id:
+                from models.campaigns import Lead
+                lead_for_compliance = session.get(Lead, lead_id)
+                if lead_for_compliance and tenant_id is not None and lead_for_compliance.tenant_id != tenant_id:
+                    lead_for_compliance = None
+            logger.info("[create_outbound_call] Enforcing subscription...")
+            enforce_subscription_or_raise(session, request)
+            logger.info("[create_outbound_call] Enforcing compliance...")
+            enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead_for_compliance)
+            logger.info("[create_outbound_call] Enforcing budget...")
+            enforce_budget_or_raise(session, request)
+        
+        logger.info(f"[create_outbound_call] Calling Retell API: {endpoint}")
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(endpoint, headers=headers, json=body)
+            logger.info(f"[create_outbound_call] Retell API response status: {resp.status_code}")
+            if resp.status_code >= 400:
+                error_text = resp.text
+                logger.error(f"[create_outbound_call] Retell API error: {error_text}")
+                raise HTTPException(status_code=resp.status_code, detail=error_text)
+            data = resp.json()
+            logger.info(f"[create_outbound_call] Retell API success: {data.get('call_id') or data.get('id')}")
+            # Persist call
+            tenant_id = extract_tenant_id(request)
+            with Session(engine) as session:
+                rec = CallRecord(
+                    direction="outbound",
+                    provider="retell",
+                    to_number=payload.to,
+                    from_number=from_num,
+                    provider_call_id=str(data.get("call_id") or data.get("id") or ""),
+                    status="created",
+                    raw_response=str(data),
+                    tenant_id=tenant_id,
+                )
+                session.add(rec)
+                session.commit()
+            await ws_manager.broadcast({"type": "call.created", "data": data})
+            return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = str(e)
+        error_traceback = traceback.format_exc()
+        logger.error(f"[create_outbound_call] Exception: {error_msg}\n{error_traceback}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {error_msg}")
 
 
 @router.post("/retell/web")
