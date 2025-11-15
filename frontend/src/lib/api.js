@@ -1,14 +1,19 @@
 // Semplificato: usa sempre VITE_API_BASE_URL se configurato, altrimenti default basato su window.location
 function getBaseUrl() {
-  // Se VITE_API_BASE_URL è configurato, usalo
+  // Se VITE_API_BASE_URL è configurato, usalo (priorità massima)
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL
   }
   // Se siamo su localhost, usa backend locale
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return 'http://127.0.0.1:8000'
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:8000'
+    }
+    // Altrimenti (qualsiasi altro dominio, incluso Vercel preview e produzione), usa sempre api.agoralia.app
+    return 'https://api.agoralia.app'
   }
-  // Altrimenti (produzione su app.agoralia.app), usa sempre api.agoralia.app
+  // Fallback se window non è disponibile (SSR, ma non dovrebbe succedere)
   return 'https://api.agoralia.app'
 }
 
@@ -22,8 +27,9 @@ export async function apiFetch(path, options = {}) {
   } else {
     // Normalizza il path: aggiungi / se manca
     const normalizedPath = path.startsWith('/') ? path : '/' + path
-    // Costruisci URL completo usando BASE_URL
-    url = `${BASE_URL}${normalizedPath}`
+    // Costruisci URL completo usando BASE_URL (sempre assoluto, mai relativo)
+    const base = getBaseUrl() // Richiama getBaseUrl() per assicurarsi che sia aggiornato
+    url = `${base}${normalizedPath}`
   }
   
   const headers = new Headers(options.headers || {})
