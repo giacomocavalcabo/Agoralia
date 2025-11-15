@@ -1,6 +1,18 @@
-// Semplificato: usa sempre VITE_API_BASE_URL se configurato, altrimenti default diretto
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD ? 'https://api.agoralia.app' : 'http://127.0.0.1:8000')
+// Semplificato: usa sempre VITE_API_BASE_URL se configurato, altrimenti default basato su window.location
+function getBaseUrl() {
+  // Se VITE_API_BASE_URL è configurato, usalo
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
+  }
+  // Se siamo su localhost, usa backend locale
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://127.0.0.1:8000'
+  }
+  // Altrimenti (produzione su app.agoralia.app), usa sempre api.agoralia.app
+  return 'https://api.agoralia.app'
+}
+
+const BASE_URL = getBaseUrl()
 
 export async function apiFetch(path, options = {}) {
   let url
@@ -41,9 +53,8 @@ export async function apiFetch(path, options = {}) {
 export function wsUrl(path) {
   const tenantId = localStorage.getItem('tenant_id')
   const qp = tenantId ? (path.includes('?') ? `&tenant_id=${tenantId}` : `?tenant_id=${tenantId}`) : ''
-  // Usa lo stesso BASE_URL di apiFetch (semplificato)
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 
-    (import.meta.env.PROD ? 'https://api.agoralia.app' : 'http://127.0.0.1:8000')
+  // Usa lo stesso BASE_URL di apiFetch
+  const apiBase = getBaseUrl()
   const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
   const normalizedPath = path.startsWith('/') ? path : '/' + path
   return `${wsBase}${normalizedPath}${qp}`
