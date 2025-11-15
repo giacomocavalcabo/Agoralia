@@ -1432,13 +1432,24 @@ async def retell_backfill(request: Request, limit: int = 100):
 # Retell Knowledge Base Endpoints
 # ============================================================================
 
+class KnowledgeBaseCreate(BaseModel):
+    """Request body for creating a knowledge base"""
+    knowledge_base_name: str = Field(..., max_length=40, description="Name of the KB (max 40 chars)")
+    knowledge_base_texts: Optional[List[Dict[str, str]]] = Field(None, description="Array of {text, title} objects")
+    knowledge_base_urls: Optional[List[str]] = Field(None, description="Array of URLs to scrape")
+    enable_auto_refresh: Optional[bool] = Field(None, description="Enable auto-refresh for URLs every 12h")
+
+
+class KnowledgeBaseSourcesAdd(BaseModel):
+    """Request body for adding sources to a knowledge base"""
+    knowledge_base_texts: Optional[List[Dict[str, str]]] = Field(None, description="Array of {text, title} objects")
+    knowledge_base_urls: Optional[List[str]] = Field(None, description="Array of URLs to scrape")
+
+
 @router.post("/retell/knowledge-bases")
 async def retell_create_knowledge_base(
     request: Request,
-    knowledge_base_name: str,
-    knowledge_base_texts: Optional[List[Dict[str, str]]] = None,
-    knowledge_base_urls: Optional[List[str]] = None,
-    enable_auto_refresh: Optional[bool] = None,
+    body: KnowledgeBaseCreate,
 ):
     """Create a new knowledge base in Retell AI
     
@@ -1457,24 +1468,24 @@ async def retell_create_knowledge_base(
     """
     tenant_id = extract_tenant_id(request)
     
-    # Prepare form data
+    # Prepare form data for Retell API (multipart/form-data)
     form_data: Dict[str, Any] = {
-        "knowledge_base_name": knowledge_base_name,
+        "knowledge_base_name": body.knowledge_base_name,
     }
     
     # Add texts if provided
-    if knowledge_base_texts:
+    if body.knowledge_base_texts:
         # For multipart, we need to send as JSON string array
-        form_data["knowledge_base_texts"] = json.dumps(knowledge_base_texts)
+        form_data["knowledge_base_texts"] = json.dumps(body.knowledge_base_texts)
     
     # Add URLs if provided
-    if knowledge_base_urls:
+    if body.knowledge_base_urls:
         # Retell expects array format - send as list
-        form_data["knowledge_base_urls"] = knowledge_base_urls
+        form_data["knowledge_base_urls"] = body.knowledge_base_urls
     
     # Add auto-refresh if provided
-    if enable_auto_refresh is not None:
-        form_data["enable_auto_refresh"] = "true" if enable_auto_refresh else "false"
+    if body.enable_auto_refresh is not None:
+        form_data["enable_auto_refresh"] = "true" if body.enable_auto_refresh else "false"
     
     try:
         # Use multipart helper even without files
@@ -1585,8 +1596,7 @@ async def retell_delete_knowledge_base(request: Request, kb_id: str):
 async def retell_add_knowledge_base_sources(
     request: Request,
     kb_id: str,
-    knowledge_base_texts: Optional[List[Dict[str, str]]] = None,
-    knowledge_base_urls: Optional[List[str]] = None,
+    body: KnowledgeBaseSourcesAdd,
 ):
     """Add sources to a knowledge base in Retell AI
     
@@ -1603,16 +1613,16 @@ async def retell_add_knowledge_base_sources(
     """
     tenant_id = extract_tenant_id(request)
     
-    # Prepare form data
+    # Prepare form data for Retell API (multipart/form-data)
     form_data: Dict[str, Any] = {}
     
     # Add texts if provided
-    if knowledge_base_texts:
-        form_data["knowledge_base_texts"] = json.dumps(knowledge_base_texts)
+    if body.knowledge_base_texts:
+        form_data["knowledge_base_texts"] = json.dumps(body.knowledge_base_texts)
     
     # Add URLs if provided
-    if knowledge_base_urls:
-        form_data["knowledge_base_urls"] = knowledge_base_urls
+    if body.knowledge_base_urls:
+        form_data["knowledge_base_urls"] = body.knowledge_base_urls
     
     if not form_data:
         raise HTTPException(status_code=400, detail="At least one source (texts or URLs) must be provided")

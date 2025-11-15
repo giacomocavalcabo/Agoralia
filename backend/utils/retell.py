@@ -148,26 +148,36 @@ async def retell_post_multipart(
     headers = {"Authorization": f"Bearer {api_key}"}
     # Don't set Content-Type - httpx will set it automatically for multipart
     
-    # Prepare form data - merge files and data
-    form_data = {}
+    # Prepare form data for httpx - merge files and data
+    # httpx expects: files={"field_name": ("filename", content, "content-type")} for files
+    # and data={"field_name": value} for regular form fields
+    form_files: Dict[str, Any] = {}
+    form_data_dict: Dict[str, Any] = {}
+    
+    # Process data fields
     if data:
         for key, value in data.items():
-            if isinstance(value, list):
-                # For lists, send each item separately with the same key (Retell API expects array format)
-                for item in value:
-                    if key not in form_data:
-                        form_data[key] = []
-                    form_data[key].append(item)
+            # Skip JSON string fields (like knowledge_base_texts) - send as-is in data
+            if isinstance(value, str) and (value.startswith("[") or value.startswith("{")):
+                # JSON string - send as regular form field
+                form_data_dict[key] = value
+            elif isinstance(value, list):
+                # For lists of strings (like knowledge_base_urls), send as multiple form fields
+                # httpx will handle this correctly for multipart
+                form_data_dict[key] = value
             else:
-                form_data[key] = value
+                form_data_dict[key] = value
+    
+    # Process file fields (if any)
     if files:
-        form_data.update(files)
+        form_files.update(files)
     
     async with httpx.AsyncClient(timeout=60) as client:  # Longer timeout for file uploads
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
             headers=headers,
-            files=form_data if form_data else None
+            files=form_files if form_files else None,
+            data=form_data_dict if form_data_dict else None
         )
         if resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
