@@ -39,7 +39,8 @@ echo ""
 TEST1_BODY=$(cat <<EOF
 {
   "to": "+393408994869",
-  "agent_id": "agent_d96425328c574cd8ae683142fc",
+  "from_number": "${TEST_FROM_NUMBER}",
+  "agent_id": "${TEST_AGENT_ID}",
   "agent_override": {
     "agent": {
       "voice_id": "11labs-Adrian",
@@ -94,7 +95,8 @@ echo ""
 TEST2_BODY=$(cat <<EOF
 {
   "to": "+393408994869",
-  "agent_id": "agent_d96425328c574cd8ae683142fc",
+  "from_number": "${TEST_FROM_NUMBER}",
+  "agent_id": "${TEST_AGENT_ID}",
   "retell_llm_dynamic_variables": {
     "customer_name": "Mario Rossi",
     "product_name": "Prodotto Premium",
@@ -141,7 +143,8 @@ echo ""
 TEST3_BODY=$(cat <<EOF
 {
   "to": "+393408994869",
-  "agent_id": "agent_d96425328c574cd8ae683142fc",
+  "from_number": "${TEST_FROM_NUMBER}",
+  "agent_id": "${TEST_AGENT_ID}",
   "agent_override": {
     "retell_llm": {
       "model": "gpt-4o-mini",
