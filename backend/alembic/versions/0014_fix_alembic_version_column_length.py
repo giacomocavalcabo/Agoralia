@@ -23,34 +23,20 @@ def upgrade() -> None:
     
     # Check if alembic_version table exists
     if 'alembic_version' in inspector.get_table_names():
-        # Get current column definition
-        columns = {col['name']: col for col in inspector.get_columns('alembic_version')}
+        # Use raw SQL to alter column - more reliable than op.alter_column for type changes
+        # First check current column type
+        result = conn.execute(text("""
+            SELECT character_maximum_length 
+            FROM information_schema.columns 
+            WHERE table_name = 'alembic_version' 
+            AND column_name = 'version_num'
+        """))
+        row = result.fetchone()
         
-        if 'version_num' in columns:
-            version_num_col = columns['version_num']
-            # Check if column is VARCHAR(32) or shorter
-            col_type = version_num_col['type']
-            col_length = None
-            
-            # Get length from type
-            if hasattr(col_type, 'length'):
-                col_length = col_type.length
-            elif str(col_type).startswith('VARCHAR'):
-                # Extract length from string like 'VARCHAR(32)'
-                import re
-                match = re.search(r'\((\d+)\)', str(col_type))
-                if match:
-                    col_length = int(match.group(1))
-            
-            if col_length and col_length <= 32:
-                # Alter column to VARCHAR(128) to accommodate longer revision names
-                op.alter_column(
-                    'alembic_version',
-                    'version_num',
-                    existing_type=sa.String(col_length),
-                    type_=sa.String(128),
-                    existing_nullable=False
-                )
+        if row and row[0] and row[0] <= 32:
+            # Column is VARCHAR(32) or shorter - need to expand to VARCHAR(128)
+            conn.execute(text("ALTER TABLE alembic_version ALTER COLUMN version_num TYPE VARCHAR(128)"))
+            conn.commit()
 
 
 def downgrade() -> None:
