@@ -73,22 +73,12 @@ async def create_agent(request: Request, body: AgentCreate):
             logging.info(f"Retell AI create response: {retell_response}")
             print(f"[DEBUG] Retell AI create response: {retell_response}", flush=True)
             
-            # Extract Retell agent ID (can be llm_xxx or in response object)
-            # Retell API returns: {"retell_llm_id": "llm_xxx", ...} or similar
+            # Extract Retell agent ID from response
+            # Retell API returns: {"agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD", ...}
             retell_agent_id = None
             if isinstance(retell_response, dict):
-                # Try multiple possible keys
-                retell_agent_id = (
-                    retell_response.get("retell_llm_id") or
-                    retell_response.get("llm_id") or
-                    retell_response.get("id") or
-                    retell_response.get("agent_id")
-                )
-                # Sometimes it's nested in a "retell_llm" key
-                if not retell_agent_id and "retell_llm" in retell_response:
-                    retell_llm = retell_response["retell_llm"]
-                    if isinstance(retell_llm, dict):
-                        retell_agent_id = retell_llm.get("retell_llm_id") or retell_llm.get("llm_id") or retell_llm.get("id")
+                # The correct key is "agent_id" (not "retell_llm_id" or "llm_id")
+                retell_agent_id = retell_response.get("agent_id")
         except Exception as e:
             # If Retell creation fails, still create local agent but without retell_agent_id
             # This allows users to retry or fix configuration
