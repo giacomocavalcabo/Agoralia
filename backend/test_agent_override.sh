@@ -15,6 +15,20 @@ else
     SKIP_RETELL_DIRECT=0
 fi
 
+# Try to get real from_number and agent_id from API
+echo "🔍 Retrieving real from_number and agent_id from API..."
+REAL_FROM_NUMBER=$(curl -s -X GET "${BASE_URL}/numbers" \
+  -H "Authorization: Bearer ${AUTH_TOKEN}" 2>/dev/null | \
+  jq -r 'if type == "array" and length > 0 then .[0].e164 // empty else empty end' 2>/dev/null || echo "")
+
+REAL_AGENT_ID=$(curl -s -X GET "${BASE_URL}/agents" \
+  -H "Authorization: Bearer ${AUTH_TOKEN}" 2>/dev/null | \
+  jq -r 'if type == "array" and length > 0 then ([.[] | select(.retell_agent_id != null and .retell_agent_id != "")] | .[0].retell_agent_id) // empty else empty end' 2>/dev/null || echo "")
+
+# Use defaults if not found
+TEST_FROM_NUMBER="${REAL_FROM_NUMBER:-+14157547511}"
+TEST_AGENT_ID="${REAL_AGENT_ID:-agent_d3428155f1be2fd2dc81d57d0a}"
+
 echo "=== 🧪 TEST AGENT OVERRIDE & DYNAMIC VARIABLES ==="
 echo ""
 echo "📋 Test Plan:"
@@ -22,6 +36,9 @@ echo "1. Test Agent Override (voice settings)"
 echo "2. Test Dynamic Variables"
 echo "3. Test Combined (Agent Override + Dynamic Variables)"
 echo "4. Direct Retell AI test"
+echo ""
+echo "📞 Using from_number: ${TEST_FROM_NUMBER}"
+echo "🤖 Using agent_id: ${TEST_AGENT_ID}"
 echo ""
 
 # Colors
@@ -36,9 +53,12 @@ echo "🧪 TEST 1: Agent Override (Voice Settings)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
+# Use US number for testing (Retell US numbers can only call US/CA)
+TEST_TO_NUMBER="${TEST_TO_NUMBER:-+12025551235}"  # Default US test number
+
 TEST1_BODY=$(cat <<EOF
 {
-  "to": "+393408994869",
+  "to": "${TEST_TO_NUMBER}",
   "from_number": "${TEST_FROM_NUMBER}",
   "agent_id": "${TEST_AGENT_ID}",
   "agent_override": {
@@ -94,7 +114,7 @@ echo ""
 
 TEST2_BODY=$(cat <<EOF
 {
-  "to": "+393408994869",
+  "to": "${TEST_TO_NUMBER}",
   "from_number": "${TEST_FROM_NUMBER}",
   "agent_id": "${TEST_AGENT_ID}",
   "retell_llm_dynamic_variables": {
@@ -142,7 +162,7 @@ echo ""
 
 TEST3_BODY=$(cat <<EOF
 {
-  "to": "+393408994869",
+  "to": "${TEST_TO_NUMBER}",
   "from_number": "${TEST_FROM_NUMBER}",
   "agent_id": "${TEST_AGENT_ID}",
   "agent_override": {
