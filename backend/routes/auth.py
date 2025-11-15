@@ -85,21 +85,11 @@ async def auth_google_start(body: dict):
     """Start Google OAuth login"""
     import urllib.parse
     import os
-    # Debug: verifica tutte le variabili Google OAuth
-    client_id = os.getenv("GOOGLE_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
-    
-    # Log per debug (rimuovere in produzione se non necessario)
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"GOOGLE_CLIENT_ID present: {bool(client_id)}")
-    logger.info(f"GOOGLE_CLIENT_SECRET present: {bool(client_secret)}")
+    # Supporta sia OAUTH_GOOGLE_CLIENT_ID che GOOGLE_CLIENT_ID (per retrocompatibilità)
+    client_id = os.getenv("OAUTH_GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
     
     if not client_id:
-        # Verifica se esiste con nomi alternativi (per debug)
-        env_vars = {k: v[:10] + "..." if v and len(v) > 10 else v for k, v in os.environ.items() if "GOOGLE" in k.upper()}
-        logger.error(f"Google OAuth vars found: {list(env_vars.keys())}")
-        raise HTTPException(status_code=500, detail=f"GOOGLE_CLIENT_ID missing. Found env vars: {list(env_vars.keys())}")
+        raise HTTPException(status_code=500, detail="OAUTH_GOOGLE_CLIENT_ID or GOOGLE_CLIENT_ID missing")
     scopes = "openid email profile"
     params = {
         "client_id": client_id,
@@ -124,10 +114,19 @@ async def auth_google_callback(body: dict):
     from models.users import User
     
     token_url = "https://oauth2.googleapis.com/token"
+    # Supporta sia OAUTH_GOOGLE_* che GOOGLE_* (per retrocompatibilità)
+    client_id = os.getenv("OAUTH_GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("OAUTH_GOOGLE_CLIENT_SECRET") or os.getenv("GOOGLE_CLIENT_SECRET")
+    
+    if not client_id:
+        raise HTTPException(status_code=500, detail="OAUTH_GOOGLE_CLIENT_ID or GOOGLE_CLIENT_ID missing")
+    if not client_secret:
+        raise HTTPException(status_code=500, detail="OAUTH_GOOGLE_CLIENT_SECRET or GOOGLE_CLIENT_SECRET missing")
+    
     data = {
         "grant_type": "authorization_code",
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+        "client_id": client_id,
+        "client_secret": client_secret,
         "redirect_uri": body.get("redirect_uri"),
         "code": body.get("code"),
     }
