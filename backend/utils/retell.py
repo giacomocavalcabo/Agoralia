@@ -40,7 +40,9 @@ async def retell_post_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
         )
         if resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
-        return resp.json()
+        if resp.status_code == 204:
+            return {}
+        return resp.json() if resp.content else {}
 
 
 async def retell_patch_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
