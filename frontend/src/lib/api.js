@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+// Semplificato: usa sempre VITE_API_BASE_URL se configurato, altrimenti default diretto
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD ? 'https://api.agoralia.app' : 'http://127.0.0.1:8000')
 
 export async function apiFetch(path, options = {}) {
   let url
@@ -8,16 +10,8 @@ export async function apiFetch(path, options = {}) {
   } else {
     // Normalizza il path: aggiungi / se manca
     const normalizedPath = path.startsWith('/') ? path : '/' + path
-    
-    // Se BASE_URL è configurato, usalo direttamente (priorità a variabile d'ambiente)
-    // Altrimenti usa /api come prefisso per il rewrite di Vercel (fallback)
-    if (BASE_URL && BASE_URL !== 'http://127.0.0.1:8000' && !BASE_URL.includes('localhost')) {
-      // Production: usa BASE_URL direttamente (es. https://api.agoralia.app)
-      url = `${BASE_URL}${normalizedPath}`
-    } else {
-      // Development o fallback: usa /api come prefisso per il rewrite di Vercel
-      url = `/api${normalizedPath}`
-    }
+    // Costruisci URL completo usando BASE_URL
+    url = `${BASE_URL}${normalizedPath}`
   }
   
   const headers = new Headers(options.headers || {})
@@ -47,19 +41,12 @@ export async function apiFetch(path, options = {}) {
 export function wsUrl(path) {
   const tenantId = localStorage.getItem('tenant_id')
   const qp = tenantId ? (path.includes('?') ? `&tenant_id=${tenantId}` : `?tenant_id=${tenantId}`) : ''
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  
-  // Se siamo in production con BASE_URL configurato, usa direttamente
-  if (apiBase && apiBase !== 'http://127.0.0.1:8000' && !apiBase.includes('localhost')) {
-    const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
-    const normalizedPath = path.startsWith('/') ? path : '/' + path
-    return `${wsBase}${normalizedPath}${qp}`
-  } else {
-    // Development o Vercel: usa /api come prefisso per il rewrite
-    const normalizedPath = path.startsWith('/') ? path : '/' + path
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${window.location.host}/api${normalizedPath}${qp}`
-  }
+  // Usa lo stesso BASE_URL di apiFetch (semplificato)
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 
+    (import.meta.env.PROD ? 'https://api.agoralia.app' : 'http://127.0.0.1:8000')
+  const wsBase = apiBase.replace(/^http/, 'ws').replace(/^https/, 'wss')
+  const normalizedPath = path.startsWith('/') ? path : '/' + path
+  return `${wsBase}${normalizedPath}${qp}`
 }
 
 
