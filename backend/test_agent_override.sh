@@ -55,7 +55,8 @@ TEST1_BODY=$(cat <<EOF
     }
   },
   "metadata": {
-    "test": "agent_override_voice"
+    "test": "agent_override_voice",
+    "legal_accepted": true
   }
 }
 EOF
@@ -101,7 +102,8 @@ TEST2_BODY=$(cat <<EOF
     "appointment_date": "28 Marzo 2024"
   },
   "metadata": {
-    "test": "dynamic_variables"
+    "test": "dynamic_variables",
+    "legal_accepted": true
   }
 }
 EOF
@@ -152,7 +154,8 @@ TEST3_BODY=$(cat <<EOF
     "product_name": "Piano Pro"
   },
   "metadata": {
-    "test": "combined_override_and_dynamic"
+    "test": "combined_override_and_dynamic",
+    "legal_accepted": true
   }
 }
 EOF
