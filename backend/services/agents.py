@@ -56,10 +56,6 @@ async def create_retell_agent(
     webhook_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create a Retell LLM agent"""
-    base_url = get_retell_base_url()
-    endpoint = f"{base_url}/v2/create-retell-llm"
-    headers = get_retell_headers()
-    
     # Build Retell LLM config
     # Default voice if not provided
     if not voice_id:
