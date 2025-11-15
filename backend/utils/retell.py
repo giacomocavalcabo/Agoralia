@@ -1,15 +1,63 @@
 """Retell AI API client utilities"""
 import os
 import httpx
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from config.database import engine
 
 
-def get_retell_headers() -> Dict[str, str]:
-    """Get Retell API headers"""
+def get_retell_api_key(tenant_id: Optional[int] = None) -> str:
+    """Get Retell API key for a tenant
+    
+    Supports BYO (Bring Your Own) Retell account:
+    - If tenant has retell_api_key set, use that
+    - Otherwise, fallback to global RETELL_API_KEY
+    
+    Args:
+        tenant_id: Optional tenant ID. If None, uses global key.
+    
+    Returns:
+        Retell API key string
+    """
+    if tenant_id is not None:
+        # Check if tenant has custom Retell API key (BYO account)
+        try:
+            with Session(engine) as session:
+                # Check if tenants table exists and has retell_api_key column
+                from sqlalchemy import inspect, text
+                inspector = inspect(engine)
+                if 'tenants' in inspector.get_table_names():
+                    columns = [col['name'] for col in inspector.get_columns('tenants')]
+                    if 'retell_api_key' in columns:
+                        result = session.execute(
+                            text("SELECT retell_api_key FROM tenants WHERE id = :tenant_id"),
+                            {"tenant_id": tenant_id}
+                        ).first()
+                        if result and result[0]:
+                            return result[0]  # Use tenant's custom key
+        except Exception:
+            # If lookup fails, fallback to global key
+            pass
+    
+    # Fallback to global RETELL_API_KEY
     api_key = os.getenv("RETELL_API_KEY")
     if not api_key:
         raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
+    return api_key
+
+
+def get_retell_headers(tenant_id: Optional[int] = None) -> Dict[str, str]:
+    """Get Retell API headers
+    
+    Args:
+        tenant_id: Optional tenant ID for BYO Retell account support
+    
+    Returns:
+        Dict with Authorization and Content-Type headers
+    """
+    api_key = get_retell_api_key(tenant_id)
     return {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
 
