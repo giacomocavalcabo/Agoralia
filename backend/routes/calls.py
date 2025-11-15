@@ -567,16 +567,22 @@ async def create_outbound_call(request: Request, payload: OutboundCallRequest):
         error_step = "compliance_check"
         with Session(engine) as session:
             lead_for_compliance = None
+            from models.campaigns import Lead
             if lead_id:
-                from models.campaigns import Lead
                 lead_for_compliance = session.get(Lead, lead_id)
                 if lead_for_compliance and tenant_id is not None and lead_for_compliance.tenant_id != tenant_id:
                     lead_for_compliance = None
+            # If no lead found from lead_id, try to find by phone number (for quiet_hours_disabled check)
+            if not lead_for_compliance and payload.to:
+                query = session.query(Lead).filter(Lead.phone == payload.to)
+                if tenant_id is not None:
+                    query = query.filter(Lead.tenant_id == tenant_id)
+                lead_for_compliance = query.order_by(Lead.id.desc()).first()  # Get most recent lead
             logger.info("[create_outbound_call] Enforcing subscription...")
             print("[DEBUG] Enforcing subscription...", flush=True)
             enforce_subscription_or_raise(session, request)
             logger.info("[create_outbound_call] Enforcing compliance...")
-            print("[DEBUG] Enforcing compliance...", flush=True)
+            print(f"[DEBUG] Enforcing compliance with lead={lead_for_compliance.id if lead_for_compliance else None}, quiet_hours_disabled={lead_for_compliance.quiet_hours_disabled if lead_for_compliance else None}", flush=True)
             enforce_compliance_or_raise(session, request, payload.to, payload.metadata, lead=lead_for_compliance)
             logger.info("[create_outbound_call] Enforcing budget...")
             print("[DEBUG] Enforcing budget...", flush=True)
