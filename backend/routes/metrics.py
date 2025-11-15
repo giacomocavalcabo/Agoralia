@@ -10,7 +10,7 @@ from utils.redis_client import get_redis
 from utils.auth import extract_tenant_id
 from config.database import engine
 from models.calls import CallRecord
-from models.billing import CostEvent
+from models.compliance import CostEvent
 
 router = APIRouter()
 
