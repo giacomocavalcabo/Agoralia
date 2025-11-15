@@ -367,28 +367,46 @@ signature = request.headers.get("X-Signature")
 - Isolamento multi-tenant tramite `tenant_id` in tutte le tabelle
 - Webhook lookup tramite `provider_call_id` per identificare tenant
 - Metadata nelle chiamate per tracciare tenant_id
+- **✅ Unique indices** su `provider_call_id`, `retell_agent_id`, `e164` per garantire one-to-one mapping
+- **✅ Lazy CallRecord creation** nei webhook per gestire inbound/race conditions
+- **✅ Idempotency tracking** (`last_event_type`, `last_event_at`) per evitare doppi effetti
+- **✅ Billing fields** (`duration_seconds`, `call_cost_cents`) su CallRecord
+- **✅ BYO Retell account support** (campo `retell_api_key` su tenants, nullable)
+- **✅ Webhook signature verification** con supporto per-tenant secrets
 
-**⚠️ Cosa Migliorare:**
-- Webhook URL con parametri per identificare tenant più facilmente
-- Gestione chiamate inbound senza mapping preesistente
-- Supporto agenti/numeri condivisi tra tenant
-- Tracciamento costi per tenant per billing
+**✅ Miglioramenti Implementati:**
+- **Indici e vincoli univoci** su tutti i mapping (garantisce one-to-one Retell ↔ Agoralia)
+- **Formalizzato ordine risoluzione tenant** nei webhook con creazione lazy CallRecord
+- **Webhook URL con query params** (`phone_number` o `num_token`) come hint, mai come verità
+- **Tabelle di join** pronte per agenti/numeri condivisi (`agent_tenants`, `phone_number_tenants`)
+- **Billing completo** con tracciamento costi per tenant
+- **Idempotenza webhook** per evitare processi duplicati
 
-**🎯 Architettura Attuale:**
+**🎯 Architettura Finale:**
 ```
-Agoralia (Multi-Tenant)          Retell AI (Singolo Account)
+Agoralia (Multi-Tenant)          Retell AI (Singolo Account o BYO)
 ┌─────────────────────┐          ┌─────────────────────┐
 │ Tenant 1            │          │                     │
 │ - Agent A → agent_1 │ ───────→ │ agent_1             │
 │ - Number +1415      │          │ +14157774444        │
-│                     │          │ call_xxx            │
+│ retell_api_key?     │          │ call_xxx            │
+│                     │          │                     │
 │ Tenant 2            │          │                     │
 │ - Agent B → agent_2 │ ───────→ │ agent_2             │
 │ - Number +1416      │          │ +14157775555        │
+│ (default key)       │          │ call_yyy            │
 └─────────────────────┘          └─────────────────────┘
          ↑                                │
          │                                │
          └──────── Webhook ───────────────┘
-              (call_xxx → Lookup → Tenant 1)
+    (call_xxx → Lookup DB → Tenant 1)
+    (call_yyy → Create lazy → Tenant 2)
 ```
+
+## 🚀 Prossimi Passi (Opzionali)
+
+1. **Reconciliation job** per confrontare costi Agoralia vs Retell export
+2. **Token opaco** per `num_token` invece di E.164 in query string
+3. **Alerting** quando chiamate inbound arrivano senza mapping numero
+4. **Audit log** per tutte le operazioni Retell ↔ Agoralia
 
