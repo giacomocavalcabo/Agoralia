@@ -68,15 +68,63 @@ async def webhooks_test(body: WebhookTest):
 
 
 @router.post("/retell")
-async def webhooks_retell(request: Request, x_signature: Optional[str] = Header(None)):
-    """Handle Retell webhook events"""
+async def webhooks_retell(
+    request: Request,
+    x_signature: Optional[str] = Header(None),
+    phone_number: Optional[str] = None,  # Query param: ?phone_number=+14157774444
+    num_token: Optional[str] = None,  # Query param: ?num_token=abc123 (opaque token for phone number)
+):
+    """Handle Retell webhook events
+    
+    Query params (optional):
+    - phone_number: E.164 phone number for tenant lookup (helpful hint, not source of truth)
+    - num_token: Opaque token mapping to phone_number (alternative to phone_number)
+    
+    Note: tenant_id is NEVER trusted from query params. Always resolved from DB.
+    """
     raw = await request.body()
-    secret = os.getenv("RETELL_WEBHOOK_SECRET")
+    payload = json.loads(raw.decode("utf-8"))
+    
+    # Verify webhook signature
+    # Support both global secret and per-tenant secrets (for BYO accounts)
+    secret = None
+    inferred_tenant_for_secret = None
+    
+    # Quick lookup for tenant (just for secret verification, not for processing)
+    if phone_number:
+        with Session(engine) as session:
+            from models.agents import PhoneNumber
+            phone_rec = session.query(PhoneNumber).filter(PhoneNumber.e164 == phone_number).first()
+            if phone_rec:
+                inferred_tenant_for_secret = phone_rec.tenant_id
+    
+    # Get webhook secret: tenant-specific or global
+    if inferred_tenant_for_secret:
+        try:
+            from sqlalchemy import inspect, text
+            inspector = inspect(engine)
+            if 'tenants' in inspector.get_table_names():
+                columns = [col['name'] for col in inspector.get_columns('tenants')]
+                if 'retell_webhook_secret' in columns:
+                    with Session(engine) as session:
+                        result = session.execute(
+                            text("SELECT retell_webhook_secret FROM tenants WHERE id = :tenant_id"),
+                            {"tenant_id": inferred_tenant_for_secret}
+                        ).first()
+                        if result and result[0]:
+                            secret = result[0]
+        except Exception:
+            pass
+    
+    # Fallback to global secret
+    if not secret:
+        secret = os.getenv("RETELL_WEBHOOK_SECRET")
+    
+    # Verify signature if secret is configured
     if secret:
         expected = _compute_signature(secret, raw)
         if not x_signature or not hmac.compare_digest(expected, x_signature):
             raise HTTPException(status_code=401, detail="invalid signature")
-    payload = json.loads(raw.decode("utf-8"))
     # Idempotency key strategy: prefer event_id/id from payload, fallback to sha256 of body
     event_id = str(payload.get("event_id") or payload.get("id") or hashlib.sha256(raw).hexdigest())
     event_type = payload.get("type") or (payload.get("data") or {}).get("type")
@@ -252,8 +300,9 @@ async def webhooks_retell(request: Request, x_signature: Optional[str] = Header(
                         rec.call_cost_cents = cost_value * 100  # Assume dollars, convert to cents
                     else:
                         rec.call_cost_cents = int(cost_value) if cost_value else None
+                
                 # Save transcript/summary/media
-                data = payload.get("data") or payload
+                # Note: data is already set above from payload.get("data") or payload
                 if event_type == "call.transcript.append":
                     seg = CallSegment(
                         call_id=rec.id,
