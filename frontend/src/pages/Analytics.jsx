@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 import { useI18n } from '../lib/i18n.jsx'
 
 export default function Analytics() {
   const { t } = useI18n()
   const [ent, setEnt] = useState({ analytics_advanced: false })
-  useEffect(() => { apiFetch('/billing/entitlements').then(r=>r.json()).then(setEnt).catch(()=>{}) }, [])
+  const toast = useToast()
+  useEffect(() => {
+    apiRequest('/billing/entitlements').then((r) => {
+      if (r.ok && r.data) setEnt(r.data)
+      else { setEnt({ analytics_advanced: false }); if (!r.ok) toast.error(`Entitlements: ${r.error}`) }
+    })
+  }, [])
   return (
     <div>
       <h1>

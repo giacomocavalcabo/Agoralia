@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 import { useI18n } from '../lib/i18n.jsx'
 
 function startOfDay(d) {
@@ -16,6 +17,7 @@ function addDays(d, n) {
 
 export default function Calendar() {
   const { t } = useI18n()
+  const toast = useToast()
   const [mode, setMode] = useState('month') // week | month
   const [anchor, setAnchor] = useState(() => startOfDay(new Date()))
   const [events, setEvents] = useState([])
@@ -40,11 +42,22 @@ export default function Calendar() {
 
   useEffect(() => {
     const qs = new URLSearchParams({ start: range.start.toISOString(), end: range.end.toISOString() })
-    apiFetch(`/calendar?${qs}`).then((r) => r.json()).then(setEvents).catch(() => setEvents([]))
+    apiRequest(`/calendar?${qs}`).then((r) => {
+      if (!r.ok) {
+        toast.error(`Calendar: ${r.error}`)
+        setEvents([])
+      } else {
+        const data = Array.isArray(r.data) ? r.data : []
+        setEvents(data)
+      }
+    })
   }, [range.start, range.end])
 
   useEffect(() => {
-    apiFetch('/billing/entitlements').then((r) => r.json()).then((j)=> setEnt(j || {})).catch(()=>{})
+    apiRequest('/billing/entitlements').then((r) => {
+      if (r.ok && r.data) setEnt(r.data)
+      else setEnt({ calendar_full: false, calendar_week_day: true })
+    })
   }, [])
 
   const days = useMemo(() => {
