@@ -22,6 +22,8 @@ const Leads = lazy(() => import('./pages/Leads.jsx'))
 const Campaigns = lazy(() => import('./pages/Campaigns.jsx'))
 const Calendar = lazy(() => import('./pages/Calendar.jsx'))
 const Billing = lazy(() => import('./pages/Billing.jsx'))
+const Setup = lazy(() => import('./pages/Setup.jsx'))
+const CampaignNew = lazy(() => import('./pages/CampaignNew.jsx'))
 import { I18nProvider } from './lib/i18n.jsx'
 import ToastProvider from './components/ToastProvider.jsx'
 import Login from './pages/Login.jsx'
@@ -56,6 +58,8 @@ const router = createBrowserRouter([
       { path: 'contacts', element: <Navigate to="/leads" replace /> },
       { path: 'contatti', element: <Navigate to="/leads" replace /> },
       { path: 'campaigns', element: <Campaigns /> },
+      { path: 'campaigns/new', element: <CampaignNew /> },
+      { path: 'setup', element: <Setup /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'calendar', element: <Calendar /> },
       { path: 'billing', element: <Billing /> },

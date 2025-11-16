@@ -26,6 +26,10 @@ export default function CreateResourceModal({
   // Form state per number
   const [numberE164, setNumberE164] = useState(initialData?.e164 || '')
   
+  // Form state per knowledge
+  const [kbLang, setKbLang] = useState(initialData?.lang || 'it-IT')
+  const [kbScope, setKbScope] = useState(initialData?.scope || 'tenant')
+  
   async function handleCreate() {
     setLoading(true)
     try {
@@ -45,6 +49,12 @@ export default function CreateResourceModal({
           e164: numberE164.trim(),
           type: 'retell'
         }
+      } else if (type === 'knowledge') {
+        endpoint = '/kbs'
+        body = {
+          lang: kbLang || undefined,
+          scope: kbScope || 'tenant'
+        }
       } else {
         toast.error(t('common.error') + ': ' + (t('pages.settings.tabs.agents') || 'Unknown type'))
         setLoading(false)
@@ -55,13 +65,21 @@ export default function CreateResourceModal({
       
       if (res.ok) {
         toast.success(t('common.success'))
-        onCreate?.(res.data)
+        // For KB, we need to reload the KB with its full data
+        if (type === 'knowledge' && res.data?.id) {
+          const kbRes = await apiRequest(`/kbs/${res.data.id}`)
+          onCreate?.(kbRes.ok ? kbRes.data : res.data)
+        } else {
+          onCreate?.(res.data)
+        }
         onClose?.()
         // Reset form
         setAgentName('')
         setAgentLang('it-IT')
         setAgentVoiceId('')
         setNumberE164('')
+        setKbLang('it-IT')
+        setKbScope('tenant')
       } else {
         toast.error(t('common.error') + ': ' + (res.error || res.status))
       }
@@ -76,6 +94,8 @@ export default function CreateResourceModal({
     ? agentName.trim().length > 0
     : type === 'number'
     ? numberE164.trim().length > 0
+    : type === 'knowledge'
+    ? true  // KB always valid (lang and scope have defaults)
     : false
   
   const title = type === 'agent' 
@@ -179,9 +199,53 @@ export default function CreateResourceModal({
         </div>
       )}
       
-      {(type === 'knowledge' || type === 'leads') && (
+      {type === 'knowledge' && (
+        <div style={{ display: 'grid', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500 }}>
+              {t('common.lang')}
+            </label>
+            <select
+              className="input"
+              value={kbLang}
+              onChange={(e) => setKbLang(e.target.value)}
+              disabled={loading}
+            >
+              {LANG_OPTIONS.map((opt) => (
+                <option key={opt.locale} value={opt.locale}>
+                  {opt.label} ({opt.locale})
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500 }}>
+              Scope
+            </label>
+            <select
+              className="input"
+              value={kbScope}
+              onChange={(e) => setKbScope(e.target.value)}
+              disabled={loading}
+            >
+              <option value="tenant">Tenant</option>
+              <option value="global">Global</option>
+            </select>
+          </div>
+          
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+            {t('pages.dashboard.setup.bricks.knowledge.description')}
+          </p>
+        </div>
+      )}
+      
+      {type === 'leads' && (
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--muted)' }}>
-          {t('common.loading')}... ({type} creation not yet implemented)
+          {t('pages.dashboard.setup.bricks.leads.description')}<br/>
+          <small style={{ fontSize: 12 }}>
+            {t('pages.import.title')} {t('pages.import.import_csv')} {t('common.or')} {t('pages.import.or_paste_numbers')}
+          </small>
         </div>
       )}
     </Modal>
