@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 
 export default function GoogleLoginCallback() {
   const navigate = useNavigate()
+  const toast = useToast()
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search)
     const code = qp.get('code')
@@ -16,9 +18,10 @@ export default function GoogleLoginCallback() {
         localStorage.setItem('auth_token', data.token)
         localStorage.setItem('tenant_id', String(data.tenant_id))
         if (data.is_admin) localStorage.setItem('is_admin', '1'); else localStorage.removeItem('is_admin')
+        toast.success('Login con Google riuscito')
         navigate('/', { replace: true })
       } else {
-        alert(`Errore login Google: ${data.detail || res.status}`)
+        toast.error(`Errore login Google: ${data.detail || res.status}`)
         navigate('/login', { replace: true })
       }
     })()
