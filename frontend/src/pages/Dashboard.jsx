@@ -1,19 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '../lib/i18n.jsx'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-import { Line } from 'react-chartjs-2'
 import { apiRequest, wsUrl } from '../lib/api'
 import { endpoints } from '../lib/endpoints'
-import { useMetricsDaily } from '../lib/hooks/useMetrics'
 import { createReconnectingWebSocket } from '../lib/ws'
 import { useToast } from '../components/ToastProvider.jsx'
 import Button from '../components/ui/Button'
@@ -22,17 +10,13 @@ import Input from '../components/ui/Input'
 import WebCallButton from '../components/WebCallButton.jsx'
 import { safeArray } from '../lib/util'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend)
-
 export default function Dashboard() {
   const { t } = useI18n()
   const toast = useToast()
-  const { loading: loadingDaily, data: dailyData } = useMetricsDaily(7)
   const [health, setHealth] = useState('ok')
   const [liveCalls, setLiveCalls] = useState([])
   const [now, setNow] = useState(Date.now())
   const [activeCalls, setActiveCalls] = useState(0)
-  const [successRate, setSuccessRate] = useState('—')
   const [costToday, setCostToday] = useState({ amount: 0, currency: 'EUR' })
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -42,14 +26,6 @@ export default function Dashboard() {
       if (ok) setHealth(data?.status || 'ok')
     }).catch(() => setHealth('down'))
   }, [])
-
-  // Success rate from daily data
-  useEffect(() => {
-    if (dailyData?.rate?.length) {
-      const latest = dailyData.rate[dailyData.rate.length - 1] || 0
-      setSuccessRate(`${Math.round(latest)}%`)
-    }
-  }, [dailyData])
 
   // WebSocket for real-time updates
   useEffect(() => {
@@ -139,7 +115,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Key metrics - simplified to 3 main KPIs */}
+      {/* Key metrics - simplified to 2 main KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
         <Card>
           <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
@@ -151,14 +127,6 @@ export default function Dashboard() {
         </Card>
         <Card>
           <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
-            {t('pages.dashboard.success_rate')}
-          </div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
-            {successRate}
-          </div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
             {t('pages.dashboard.cost_today')}
           </div>
           <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
@@ -166,60 +134,6 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
-
-      {/* Main chart - calls per day */}
-      <Card>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
-          {t('pages.dashboard.calls_per_day')}
-        </div>
-        <div style={{ height: 300, position: 'relative' }}>
-          {loadingDaily ? (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
-              Caricamento...
-            </div>
-          ) : dailyData?.labels?.length > 0 ? (
-            <Line
-              data={{
-                labels: safeArray(dailyData.labels).map((d) => d.slice(5)),
-                datasets: [
-                  {
-                    label: t('pages.dashboard.create'),
-                    data: safeArray(dailyData.created),
-                    borderColor: 'var(--indigo-600)',
-                    backgroundColor: 'rgba(79, 70, 229, 0.08)',
-                    tension: 0.4,
-                    fill: true,
-                  },
-                  {
-                    label: t('pages.dashboard.finish'),
-                    data: safeArray(dailyData.finished),
-                    borderColor: 'var(--green)',
-                    backgroundColor: 'rgba(34, 197, 94, 0.08)',
-                    tension: 0.4,
-                    fill: true,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                  legend: { display: true, position: 'bottom' },
-                  tooltip: { mode: 'index', intersect: false }
-                },
-                scales: { 
-                  y: { beginAtZero: true, grid: { color: 'var(--border)' } },
-                  x: { grid: { display: false } }
-                },
-              }}
-            />
-          ) : (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
-              Nessun dato disponibile
-            </div>
-          )}
-        </div>
-      </Card>
 
       {/* Live calls table */}
       <Card>
