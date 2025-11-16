@@ -50,6 +50,7 @@
     "accepted": "Accettati: {n}",
     "completed": "Completato",
     "no_results": "Nessun risultato",
-    "success": "Successo"
+    "success": "Successo",
+    "complete": "Completa"
   }
 }

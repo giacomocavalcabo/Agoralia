@@ -50,6 +50,7 @@
     "accepted": "Accepted: {n}",
     "completed": "Completed",
     "no_results": "No results",
-    "success": "Success"
+    "success": "Success",
+    "complete": "Complete"
   }
 }
