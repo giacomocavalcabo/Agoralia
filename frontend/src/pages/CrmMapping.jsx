@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 const CANONICAL_OBJECTS = ['company','contact','lead','deal','activity','owner']
 
@@ -21,80 +23,83 @@ export default function CrmMapping() {
   const [redirectUri, setRedirectUri] = useState(`${window.location.origin}/hubspot/callback`)
   const [entitlements, setEntitlements] = useState({ integrations: ['csv'] })
 
+  const toast = useToast()
   async function loadConnections() {
-    const res = await apiFetch('/crm/connections')
-    setConnections(await res.json())
+    const res = await apiRequest('/crm/connections')
+    if (res.ok) setConnections(safeArray(res.data)); else { setConnections([]); toast.error(`CRM connections: ${res.error}`) }
   }
 
   async function loadProviders() {
-    const res = await apiFetch('/crm/providers')
-    setProviders(await res.json())
+    const res = await apiRequest('/crm/providers')
+    if (res.ok) setProviders(safeArray(res.data)); else toast.error(`CRM providers: ${res.error}`)
   }
 
   async function saveConnection() {
-    await apiFetch('/crm/connections', { method: 'POST', body: { provider, enabled, auth: {} } })
+    const r = await apiRequest('/crm/connections', { method: 'POST', body: { provider, enabled, auth: {} } })
+    if (!r.ok) toast.error(`Save connection: ${r.error}`)
     await loadConnections()
     alert('Connection saved')
   }
 
   async function loadMapping() {
-    const res = await apiFetch(`/crm/mappings?provider=${encodeURIComponent(provider)}&object_type=${encodeURIComponent(objectType)}`)
-    const arr = await res.json()
+    const res = await apiRequest(`/crm/mappings?provider=${encodeURIComponent(provider)}&object_type=${encodeURIComponent(objectType)}`)
+    const arr = safeArray(res.data)
     const fm = arr[0]?.field_map || {}
     setFieldMap(JSON.stringify(fm, null, 2))
   }
 
   async function loadSuggestions() {
-    const res = await apiFetch(`/crm/suggest_mapping?provider=${encodeURIComponent(provider)}&object_type=${encodeURIComponent(objectType)}`)
-    setSuggested(await res.json())
+    const res = await apiRequest(`/crm/suggest_mapping?provider=${encodeURIComponent(provider)}&object_type=${encodeURIComponent(objectType)}`)
+    setSuggested(res.ok ? (res.data || {}) : {})
   }
 
   async function loadCanonical() {
-    const res = await apiFetch(`/crm/canonical_schema?object_type=${encodeURIComponent(objectType)}`)
-    const { keys } = await res.json()
+    const res = await apiRequest(`/crm/canonical_schema?object_type=${encodeURIComponent(objectType)}`)
+    const { keys } = res.data || {}
     setCanonicalKeys(keys || [])
   }
 
   async function validateMapping() {
     let parsed = {}
     try { parsed = JSON.parse(fieldMap || '{}') } catch { parsed = {} }
-    const res = await apiFetch('/crm/validate_mapping', { method: 'POST', body: { provider, object_type: objectType, field_map: parsed } })
-    setValidation(await res.json())
+    const res = await apiRequest('/crm/validate_mapping', { method: 'POST', body: { provider, object_type: objectType, field_map: parsed } })
+    setValidation(res.ok ? (res.data || {}) : { error: res.error })
   }
 
   async function applyPreset(objs) {
-    await apiFetch('/crm/mappings/apply_preset', { method: 'POST', body: { provider, object_types: objs } })
+    const r = await apiRequest('/crm/mappings/apply_preset', { method: 'POST', body: { provider, object_types: objs } })
+    if (!r.ok) toast.error(`Apply preset: ${r.error}`)
     setPresetApplied(`Applied preset for ${provider}: ${objs && objs.length ? objs.join(', ') : 'all'}`)
     await loadMapping()
   }
 
   async function loadCanonicalExample() {
-    const res = await apiFetch(`/crm/canonical_example?object_type=${encodeURIComponent(objectType)}`)
-    const { example } = await res.json()
+    const res = await apiRequest(`/crm/canonical_example?object_type=${encodeURIComponent(objectType)}`)
+    const { example } = res.data || {}
     setCanonicalExample(JSON.stringify(example || {}, null, 2))
   }
 
   async function saveMapping() {
     let parsed = {}
     try { parsed = JSON.parse(fieldMap || '{}') } catch { parsed = {} }
-    await apiFetch('/crm/mappings', { method: 'PUT', body: { provider, object_type: objectType, field_map: parsed } })
-    alert('Mapping salvato')
+    const r = await apiRequest('/crm/mappings', { method: 'PUT', body: { provider, object_type: objectType, field_map: parsed } })
+    if (r.ok) alert('Mapping salvato'); else toast.error(`Save mapping: ${r.error}`)
   }
 
   async function testPush() {
-    const res = await apiFetch('/crm/test_push_activity', { method: 'POST', body: { provider, object_type: 'activity', use_last_call: true } })
-    setTestResult(await res.json())
+    const res = await apiRequest('/crm/test_push_activity', { method: 'POST', body: { provider, object_type: 'activity', use_last_call: true } })
+    setTestResult(res.ok ? (res.data || {}) : { error: res.error })
   }
 
   async function testGenericTransform() {
     let src = {}
     try { src = JSON.parse(testSource || '{}') } catch { src = {} }
-    const res = await apiFetch('/crm/test_transform', { method: 'POST', body: { provider, object_type: objectType, source: src } })
-    setTestTransform(await res.json())
+    const res = await apiRequest('/crm/test_transform', { method: 'POST', body: { provider, object_type: objectType, source: src } })
+    setTestTransform(res.ok ? (res.data || {}) : { error: res.error })
   }
 
   useEffect(() => { loadConnections(); loadProviders() }, [])
-  useEffect(() => { apiFetch('/billing/entitlements').then(r=>r.json()).then(setEntitlements).catch(()=>{}) }, [])
+  useEffect(() => { apiRequest('/billing/entitlements').then(r=>{ if (r.ok) setEntitlements(r.data || { integrations: ['csv'] }) }) }, [])
   useEffect(() => { loadMapping(); loadSuggestions(); loadCanonical(); loadCanonicalExample() }, [provider, objectType])
 
   return (
@@ -104,7 +109,7 @@ export default function CrmMapping() {
         <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr 1fr', gap: 12, alignItems: 'center' }}>
           <label>Provider</label>
           <select className="input" value={provider} onChange={(e) => setProvider(e.target.value)}>
-            {providers.map(p => (
+            {safeArray(providers).map(p => (
               <option key={p} value={p} disabled={!entitlements.integrations?.includes(p) && p!=='csv'}>{p}</option>
             ))}
           </select>

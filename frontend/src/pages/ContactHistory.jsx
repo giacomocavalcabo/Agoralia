@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 export default function ContactHistory() {
   const { phone } = useParams()
@@ -9,6 +11,7 @@ export default function ContactHistory() {
   const [outcome, setOutcome] = useState('')
   const [fromTs, setFromTs] = useState('')
   const [toTs, setToTs] = useState('')
+  const toast = useToast()
 
   async function load() {
     setLoading(true)
@@ -16,9 +19,8 @@ export default function ContactHistory() {
     if (outcome) params.set('outcome', outcome)
     if (fromTs) params.set('created_gte', fromTs)
     if (toTs) params.set('created_lte', toTs)
-    const res = await apiFetch(`/history/${encodeURIComponent(phone)}${params.toString() ? `?${params.toString()}` : ''}`)
-    const data = await res.json()
-    setRows(data)
+    const { ok, data, error } = await apiRequest(`/history/${encodeURIComponent(phone)}${params.toString() ? `?${params.toString()}` : ''}`)
+    if (!ok) { toast.error(`History: ${error}`); setRows([]) } else setRows(safeArray(data))
     setLoading(false)
   }
   useEffect(() => { load() }, [phone])
@@ -59,7 +61,7 @@ export default function ContactHistory() {
         <table className="table">
           <thead><tr><th>When</th><th>Direction</th><th>To</th><th>From</th><th>Status</th><th>Detail</th></tr></thead>
           <tbody>
-            {rows.map((r) => (
+            {safeArray(rows).map((r) => (
               <tr key={r.id}>
                 <td>{new Date(r.created_at).toLocaleString()}</td>
                 <td>{r.direction}</td>

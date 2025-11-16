@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { safeArray } from '../lib/util'
 import { useToast } from '../components/ToastProvider.jsx'
 import { useI18n } from '../lib/i18n.jsx'
 
@@ -13,9 +14,9 @@ export default function Billing() {
   const [inboundQty, setInboundQty] = useState(0)
 
   async function load() {
-    const res = await apiFetch('/billing/overview')
-    setOv(await res.json())
-    const a = await apiFetch('/addons').then(r=>r.json()).catch(()=>[])
+    const res = await apiRequest('/billing/overview')
+    if (res.ok) setOv(res.data || {}); else { setOv({ plan:'free', status:'trialing', minutes_month_to_date:0 }); toast.error(`Billing: ${res.error}`) }
+    const a = await apiRequest('/addons').then(r=> r.ok ? (r.data || []) : [])
     setAddons(a)
     const inbound = a.find(x=>x.type==='inbound_slot')
     setInboundQty(inbound?.qty || 0)
@@ -25,20 +26,18 @@ export default function Billing() {
   async function checkout(plan) {
     setLoading(true)
     try {
-      const res = await apiFetch(`/billing/checkout?plan=${encodeURIComponent(plan)}`, { method: 'POST' })
-      const j = await res.json()
-      if (res.ok && j.url) window.location.href = j.url
-      else toast.error(j.detail || `Error ${res.status}`)
+      const r = await apiRequest(`/billing/checkout?plan=${encodeURIComponent(plan)}`, { method: 'POST' })
+      if (r.ok && r.data?.url) window.location.href = r.data.url
+      else toast.error(r.error || `Error ${r.status}`)
     } finally { setLoading(false) }
   }
 
   async function portal() {
     setLoading(true)
     try {
-      const res = await apiFetch('/billing/portal')
-      const j = await res.json()
-      if (res.ok && j.url) window.location.href = j.url
-      else toast.error(j.detail || `Error ${res.status}`)
+      const r = await apiRequest('/billing/portal')
+      if (r.ok && r.data?.url) window.location.href = r.data.url
+      else toast.error(r.error || `Error ${r.status}`)
     } finally { setLoading(false) }
   }
 
@@ -69,7 +68,7 @@ export default function Billing() {
         <div className="kpi-title">{t('pages.billing.inbound_slots')}</div>
         <div style={{ display:'flex', gap: 8, alignItems:'center' }}>
           <input className="input" type="number" min={0} value={inboundQty} onChange={(e)=> setInboundQty(parseInt(e.target.value||'0',10))} style={{ width:120 }} />
-          <button className="btn" disabled={loading} onClick={async ()=>{ setLoading(true); try{ await apiFetch('/addons/inbound_slot', { method:'POST', body:{ qty: inboundQty } }); await load() } finally{ setLoading(false) } }}>{t('common.save')}</button>
+          <button className="btn" disabled={loading} onClick={async ()=>{ setLoading(true); try{ const r = await apiRequest('/addons/inbound_slot', { method:'POST', body:{ qty: inboundQty } }); if (!r.ok) toast.error(`Add-on: ${r.error}`); await load() } finally{ setLoading(false) } }}>{t('common.save')}</button>
         </div>
         <div style={{ color:'#6b7280' }}>{t('pages.billing.slots_note')}</div>
       </div>

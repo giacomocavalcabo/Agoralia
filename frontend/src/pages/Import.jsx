@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import LegalReviewModal from '../components/LegalReviewModal.jsx'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { safeArray } from '../lib/util'
 import { useI18n } from '../lib/i18n.jsx'
 import { useToast } from '../components/ToastProvider.jsx'
 
@@ -40,14 +41,15 @@ export default function ImportPage() {
 
   useEffect(() => {
     // defaults
-    apiFetch('/settings').then((r) => r.json()).then((s) => {
+    apiRequest('/settings').then((res) => {
+      const s = res.ok ? (res.data || {}) : {}
       if (s.default_from_number) setFromNum(s.default_from_number)
       if (s.default_spacing_ms != null) setSpacing(s.default_spacing_ms)
       if (typeof s.require_legal_review === 'boolean') setRequireLegal(s.require_legal_review)
       if (s.legal_defaults) setLegalDefaults(s.legal_defaults)
     }).catch(() => {})
-    apiFetch('/agents').then((r) => r.json()).then(setAgents).catch(() => {})
-    apiFetch('/kbs').then((r) => r.json()).then(setKbs).catch(() => {})
+    apiRequest('/agents').then((r) => { if (r.ok && Array.isArray(r.data)) setAgents(r.data) })
+    apiRequest('/kbs').then((r) => { if (r.ok && Array.isArray(r.data)) setKbs(r.data) })
     // prefill from Leads bulk action
     const pre = localStorage.getItem('batch_prefill')
     if (pre) {
@@ -58,7 +60,7 @@ export default function ImportPage() {
 
   async function loadNotices(prefixList) {
     const results = await Promise.all(
-      prefixList.map((p) => apiFetch(`/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => r.json()).catch(() => ({ country_iso: 'UNKNOWN', notice: '' })))
+      prefixList.map((p) => apiRequest(`/legal/notice?e164=${encodeURIComponent(p)}`).then((r) => (r.ok ? (r.data || {}) : { country_iso: 'UNKNOWN', notice: '' })).catch(() => ({ country_iso: 'UNKNOWN', notice: '' })))
     )
     return results
   }
@@ -165,10 +167,9 @@ export default function ImportPage() {
       }
     }).filter(Boolean)
 
-    const res = await apiFetch('/batch', { method: 'POST', body: final })
-    const data = await res.json()
-    if (res.ok) toast.success(t('common.accepted', { n: data.accepted }))
-    else toast.error(t('common.error_code', { code: data.detail || res.status }))
+    const res = await apiRequest('/batch', { method: 'POST', body: final })
+    if (res.ok) toast.success(t('common.accepted', { n: res.data?.accepted || final.length }))
+    else toast.error(t('common.error_code', { code: res.error || res.status }))
     setStatus('')
   }
 
@@ -188,14 +189,14 @@ export default function ImportPage() {
           <label>{t('pages.import.agent')}</label>
           <select className="input" value={agentId} onChange={(e) => setAgentId(e.target.value)}>
             <option value="">{t('common.default')}</option>
-            {agents.map((a) => (
+            {safeArray(agents).map((a) => (
               <option key={a.id} value={a.id}>{a.name} ({a.lang})</option>
             ))}
           </select>
           <label>{t('pages.import.knowledge')}</label>
           <select className="input" value={kbId} onChange={(e) => setKbId(e.target.value)}>
             <option value="">{t('common.none')}</option>
-            {kbs.map((k) => (
+            {safeArray(kbs).map((k) => (
               <option key={k.id} value={k.id}>{k.lang || 'any'} · {k.scope || 'global'} · #{k.id}</option>
             ))}
           </select>
