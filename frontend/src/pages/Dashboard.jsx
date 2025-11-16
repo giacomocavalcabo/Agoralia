@@ -172,52 +172,53 @@ export default function Dashboard() {
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
           {t('pages.dashboard.calls_per_day')}
         </div>
-        {loadingDaily ? (
-          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
-            Caricamento...
-          </div>
-        ) : dailyData?.labels?.length > 0 ? (
-          <Line
-            data={{
-              labels: safeArray(dailyData.labels).map((d) => d.slice(5)),
-              datasets: [
-                {
-                  label: t('pages.dashboard.create'),
-                  data: safeArray(dailyData.created),
-                  borderColor: 'var(--indigo-600)',
-                  backgroundColor: 'rgba(79, 70, 229, 0.08)',
-                  tension: 0.4,
-                  fill: true,
+        <div style={{ height: 300, position: 'relative' }}>
+          {loadingDaily ? (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+              Caricamento...
+            </div>
+          ) : dailyData?.labels?.length > 0 ? (
+            <Line
+              data={{
+                labels: safeArray(dailyData.labels).map((d) => d.slice(5)),
+                datasets: [
+                  {
+                    label: t('pages.dashboard.create'),
+                    data: safeArray(dailyData.created),
+                    borderColor: 'var(--indigo-600)',
+                    backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                    tension: 0.4,
+                    fill: true,
+                  },
+                  {
+                    label: t('pages.dashboard.finish'),
+                    data: safeArray(dailyData.finished),
+                    borderColor: 'var(--green)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                    tension: 0.4,
+                    fill: true,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                  legend: { display: true, position: 'bottom' },
+                  tooltip: { mode: 'index', intersect: false }
                 },
-                {
-                  label: t('pages.dashboard.finish'),
-                  data: safeArray(dailyData.finished),
-                  borderColor: 'var(--green)',
-                  backgroundColor: 'rgba(34, 197, 94, 0.08)',
-                  tension: 0.4,
-                  fill: true,
+                scales: { 
+                  y: { beginAtZero: true, grid: { color: 'var(--border)' } },
+                  x: { grid: { display: false } }
                 },
-              ],
-            }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { 
-                legend: { display: true, position: 'bottom' },
-                tooltip: { mode: 'index', intersect: false }
-              },
-              scales: { 
-                y: { beginAtZero: true, grid: { color: 'var(--border)' } },
-                x: { grid: { display: false } }
-              },
-            }}
-            height={240}
-          />
-        ) : (
-          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
-            Nessun dato disponibile
-          </div>
-        )}
+              }}
+            />
+          ) : (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+              Nessun dato disponibile
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* Live calls table */}
