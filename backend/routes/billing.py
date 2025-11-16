@@ -238,26 +238,40 @@ async def get_entitlements(request: Request) -> Dict[str, Any]:
         }
     
     with Session(engine) as session:
-        sub = (
-            session.query(Subscription)
-            .filter(Subscription.tenant_id == (tenant_id or 0))
-            .order_by(Subscription.id.desc())
-            .first()
-        )
-        base = _plan_entitlements(sub.plan_code if sub else "free")
-        addons = session.query(Addon).filter(Addon.tenant_id == (tenant_id or 0), Addon.active == 1).all()
-        inbound_slots = 0
-        for a in addons:
-            if a.type == "inbound_slot" and a.qty and a.qty > 0:
-                inbound_slots += int(a.qty)
-        base["inbound_enabled"] = inbound_slots > 0
-        base["inbound_slots"] = inbound_slots
-        rows = session.query(Entitlement).filter(Entitlement.tenant_id == (tenant_id or 0)).all()
-        for e in rows:
-            try:
-                base[e.key] = json.loads(e.value) if e.value else True
-            except Exception:
-                base[e.key] = e.value
+        try:
+            sub = (
+                session.query(Subscription)
+                .filter(Subscription.tenant_id == (tenant_id or 0))
+                .order_by(Subscription.id.desc())
+                .first()
+            )
+            plan_code = (sub.plan_code if sub and hasattr(sub, 'plan_code') and sub.plan_code else None) or "free"
+            base = _plan_entitlements(plan_code)
+        except Exception as e:
+            # Fallback to free plan on any error
+            base = _plan_entitlements("free")
+        try:
+            addons = session.query(Addon).filter(Addon.tenant_id == (tenant_id or 0), Addon.active == 1).all()
+            inbound_slots = 0
+            for a in addons:
+                if a and a.type == "inbound_slot" and a.qty and a.qty > 0:
+                    inbound_slots += int(a.qty)
+            base["inbound_enabled"] = inbound_slots > 0
+            base["inbound_slots"] = inbound_slots
+        except Exception:
+            base["inbound_enabled"] = False
+            base["inbound_slots"] = 0
+        
+        try:
+            rows = session.query(Entitlement).filter(Entitlement.tenant_id == (tenant_id or 0)).all()
+            for e in rows:
+                if e and hasattr(e, 'key') and hasattr(e, 'value'):
+                    try:
+                        base[e.key] = json.loads(e.value) if e.value else True
+                    except Exception:
+                        base[e.key] = e.value
+        except Exception:
+            pass  # Ignore entitlement errors
     return base
 
 
