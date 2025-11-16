@@ -1,37 +1,38 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Contacts from './pages/Contacts.jsx'
-import Analytics from './pages/Analytics.jsx'
-import Settings from './pages/Settings.jsx'
-import Root from './layouts/Root.jsx'
-import Calls from './pages/Calls.jsx'
-import History from './pages/History.jsx'
-import ContactHistory from './pages/ContactHistory.jsx'
-import CallDetail from './pages/CallDetail.jsx'
-import ImportPage from './pages/Import.jsx'
-import CrmMapping from './pages/CrmMapping.jsx'
-import Agents from './pages/Agents.jsx'
-import KnowledgeBases from './pages/KnowledgeBases.jsx'
-import Numbers from './pages/Numbers.jsx'
-import Compliance from './pages/Compliance.jsx'
-import Leads from './pages/Leads.jsx'
-import Campaigns from './pages/Campaigns.jsx'
-import Calendar from './pages/Calendar.jsx'
-import Billing from './pages/Billing.jsx'
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+const Contacts = lazy(() => import('./pages/Contacts.jsx'))
+const Analytics = lazy(() => import('./pages/Analytics.jsx'))
+const Settings = lazy(() => import('./pages/Settings.jsx'))
+const Root = lazy(() => import('./layouts/Root.jsx'))
+const Calls = lazy(() => import('./pages/Calls.jsx'))
+const History = lazy(() => import('./pages/History.jsx'))
+const ContactHistory = lazy(() => import('./pages/ContactHistory.jsx'))
+const CallDetail = lazy(() => import('./pages/CallDetail.jsx'))
+const ImportPage = lazy(() => import('./pages/Import.jsx'))
+const CrmMapping = lazy(() => import('./pages/CrmMapping.jsx'))
+const Agents = lazy(() => import('./pages/Agents.jsx'))
+const KnowledgeBases = lazy(() => import('./pages/KnowledgeBases.jsx'))
+const Numbers = lazy(() => import('./pages/Numbers.jsx'))
+const Compliance = lazy(() => import('./pages/Compliance.jsx'))
+const Leads = lazy(() => import('./pages/Leads.jsx'))
+const Campaigns = lazy(() => import('./pages/Campaigns.jsx'))
+const Calendar = lazy(() => import('./pages/Calendar.jsx'))
+const Billing = lazy(() => import('./pages/Billing.jsx'))
 import { I18nProvider } from './lib/i18n.jsx'
 import ToastProvider from './components/ToastProvider.jsx'
 import Login from './pages/Login.jsx'
-import HubSpotCallback from './pages/HubSpotCallback.jsx'
-import GoogleCallback from './pages/GoogleCallback.jsx'
-import GoogleLoginCallback from './pages/GoogleLoginCallback.jsx'
-import Admin from './pages/Admin.jsx'
+const HubSpotCallback = lazy(() => import('./pages/HubSpotCallback.jsx'))
+const GoogleCallback = lazy(() => import('./pages/GoogleCallback.jsx'))
+const GoogleLoginCallback = lazy(() => import('./pages/GoogleLoginCallback.jsx'))
+const Admin = lazy(() => import('./pages/Admin.jsx'))
 import { AuthProvider, RequireAuth } from './lib/auth.jsx'
 import NotFound from './pages/NotFound.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import RouteLoader from './components/RouteLoader.jsx'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('auth_token')
@@ -84,7 +85,9 @@ createRoot(document.getElementById('root')).render(
     <I18nProvider>
       <AuthProvider>
         <ToastProvider>
-          <RouterProvider router={router} />
+          <Suspense fallback={<RouteLoader />}>
+            <RouterProvider router={router} />
+          </Suspense>
         </ToastProvider>
       </AuthProvider>
     </I18nProvider>
