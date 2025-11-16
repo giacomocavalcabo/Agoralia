@@ -20,7 +20,37 @@
       "live_calls": "Chiamate live",
       "no_active_calls": "Nessuna chiamata attiva.",
       "webhooks_monitor": "Monitor webhooks",
-      "backfill_recent": "Backfill recenti"
+      "backfill_recent": "Backfill recenti",
+      "search_live": "Cerca live…",
+      "setup": {
+        "title": "Setup Incompleto",
+        "description": "Per lanciare la prima campagna:",
+        "ready": "Sistema pronto per chiamare",
+        "incomplete": "Setup incompleto",
+        "progress": "{completed}/{total} completati",
+        "start_setup": "Inizia Setup",
+        "complete_now": "Completa ora",
+        "import_now": "Importa ora",
+        "bricks": {
+          "number": {
+            "label": "Numero telefonico",
+            "description": "Serve almeno un numero attivo per chiamare i tuoi clienti"
+          },
+          "knowledge": {
+            "label": "Knowledge Base",
+            "description": "La KB fornisce informazioni al tuo agent durante le chiamate"
+          },
+          "agent": {
+            "label": "Agent",
+            "description": "L'agent è la voce AI che farà le chiamate per te"
+          },
+          "leads": {
+            "label": "Leads",
+            "description": "I leads sono i contatti che riceveranno le chiamate"
+          }
+        }
+      },
+      "create_campaign": "Crea Campagna"
     },
     "leads": {
       "title": "Leads",

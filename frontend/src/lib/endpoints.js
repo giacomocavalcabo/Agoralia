@@ -33,6 +33,10 @@ export const endpoints = {
   integrations: {
     googleCallback: '/integrations/google/auth/callback',
   },
+  agents: '/agents',
+  numbers: '/numbers',
+  kbs: '/kbs',
+  leads: '/leads',
 }
 
 

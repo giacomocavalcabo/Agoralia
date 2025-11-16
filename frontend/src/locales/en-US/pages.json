@@ -21,7 +21,36 @@
       "no_active_calls": "No active calls.",
       "webhooks_monitor": "Webhooks monitor",
       "backfill_recent": "Backfill recent",
-      "search_live": "Search live…"
+      "search_live": "Search live…",
+      "setup": {
+        "title": "Setup Incomplete",
+        "description": "To launch your first campaign:",
+        "ready": "System ready to call",
+        "incomplete": "Setup incomplete",
+        "progress": "{completed}/{total} completed",
+        "start_setup": "Start Setup",
+        "complete_now": "Complete now",
+        "import_now": "Import now",
+        "bricks": {
+          "number": {
+            "label": "Phone number",
+            "description": "You need at least one active number to call your clients"
+          },
+          "knowledge": {
+            "label": "Knowledge Base",
+            "description": "The KB provides information to your agent during calls"
+          },
+          "agent": {
+            "label": "Agent",
+            "description": "The agent is the AI voice that will make calls for you"
+          },
+          "leads": {
+            "label": "Leads",
+            "description": "Leads are the contacts that will receive calls"
+          }
+        }
+      },
+      "create_campaign": "Create Campaign"
     },
     "leads": {
       "title": "Leads",

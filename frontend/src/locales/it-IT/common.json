@@ -47,6 +47,9 @@
     "saving": "Salvataggio…",
     "send": "Invia",
     "loading": "Caricamento…",
-    "accepted": "Accettati: {n}"
+    "accepted": "Accettati: {n}",
+    "completed": "Completato",
+    "no_results": "Nessun risultato",
+    "success": "Successo"
   }
 }

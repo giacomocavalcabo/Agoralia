@@ -1,23 +1,37 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../lib/i18n.jsx'
 import { apiRequest, wsUrl } from '../lib/api'
 import { endpoints } from '../lib/endpoints'
 import { createReconnectingWebSocket } from '../lib/ws'
 import { useToast } from '../components/ToastProvider.jsx'
+import PageHeader from '../components/layout/PageHeader'
+import SectionHeader from '../components/layout/SectionHeader'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Input from '../components/ui/Input'
+import StatCard from '../components/stats/StatCard'
+import StatGrid from '../components/stats/StatGrid'
+import SetupChecklist from '../components/setup/SetupChecklist'
 import { safeArray } from '../lib/util'
 
 export default function Dashboard() {
   const { t } = useI18n()
   const toast = useToast()
+  const navigate = useNavigate()
   const [health, setHealth] = useState('ok')
   const [liveCalls, setLiveCalls] = useState([])
   const [now, setNow] = useState(Date.now())
   const [activeCalls, setActiveCalls] = useState(0)
   const [costToday, setCostToday] = useState({ amount: 0, currency: 'EUR' })
   const [searchQuery, setSearchQuery] = useState('')
+  const [setupStatus, setSetupStatus] = useState({
+    numbers: false,
+    knowledge: false,
+    agent: false,
+    leads: false,
+    loading: true
+  })
 
   // Health check
   useEffect(() => {
@@ -47,6 +61,38 @@ export default function Dashboard() {
       }
     })
     return () => close()
+  }, [])
+
+  // Check setup status
+  useEffect(() => {
+    async function checkSetup() {
+      try {
+        const [numbersRes, kbsRes, agentsRes, leadsRes] = await Promise.all([
+          apiRequest(endpoints.numbers),
+          apiRequest(endpoints.kbs),
+          apiRequest(endpoints.agents),
+          apiRequest(`${endpoints.leads}?limit=1`)
+        ])
+        
+        const hasNumbers = numbersRes.ok && safeArray(numbersRes.data).length > 0 && 
+          safeArray(numbersRes.data).some(n => n.verified)
+        const hasKnowledge = kbsRes.ok && safeArray(kbsRes.data).length > 0 &&
+          safeArray(kbsRes.data).some(kb => kb.status === 'ready' || kb.status === 'synced')
+        const hasAgent = agentsRes.ok && safeArray(agentsRes.data).length > 0
+        const hasLeads = leadsRes.ok && leadsRes.data?.total > 0
+        
+        setSetupStatus({
+          numbers: hasNumbers,
+          knowledge: hasKnowledge,
+          agent: hasAgent,
+          leads: hasLeads,
+          loading: false
+        })
+      } catch {
+        setSetupStatus(prev => ({ ...prev, loading: false }))
+      }
+    }
+    checkSetup()
   }, [])
 
   // Initial load
@@ -86,10 +132,10 @@ export default function Dashboard() {
   async function endCall(id) {
     const { ok } = await apiRequest(`/calls/${id}/end`, { method: 'POST' })
     if (ok) {
-      toast.success('Chiamata terminata')
+      toast.success(t('common.end') + ' - ' + t('common.success'))
       loadLiveCalls()
     } else {
-      toast.error('Errore nella terminazione')
+      toast.error(t('common.end') + ' - ' + t('common.error'))
     }
   }
 
@@ -101,52 +147,103 @@ export default function Dashboard() {
            String(c.status || '').toLowerCase().includes(q)
   })
 
+  const setupItems = [
+    {
+      id: 'number',
+      type: 'number',
+      label: t('pages.dashboard.setup.bricks.number.label'),
+      description: t('pages.dashboard.setup.bricks.number.description'),
+      completed: setupStatus.numbers,
+      onAction: () => navigate('/numbers'),
+      actionLabel: setupStatus.numbers ? undefined : t('pages.dashboard.setup.complete_now')
+    },
+    {
+      id: 'knowledge',
+      type: 'knowledge',
+      label: t('pages.dashboard.setup.bricks.knowledge.label'),
+      description: t('pages.dashboard.setup.bricks.knowledge.description'),
+      completed: setupStatus.knowledge,
+      onAction: () => navigate('/settings?tab=kbs'),
+      actionLabel: setupStatus.knowledge ? undefined : t('pages.dashboard.setup.complete_now')
+    },
+    {
+      id: 'agent',
+      type: 'agent',
+      label: t('pages.dashboard.setup.bricks.agent.label'),
+      description: t('pages.dashboard.setup.bricks.agent.description'),
+      completed: setupStatus.agent,
+      onAction: () => navigate('/agents'),
+      actionLabel: setupStatus.agent ? undefined : t('pages.dashboard.setup.complete_now')
+    },
+    {
+      id: 'leads',
+      type: 'leads',
+      label: t('pages.dashboard.setup.bricks.leads.label'),
+      description: t('pages.dashboard.setup.bricks.leads.description'),
+      completed: setupStatus.leads,
+      onAction: () => navigate('/leads'),
+      actionLabel: setupStatus.leads ? undefined : t('pages.dashboard.setup.import_now')
+    }
+  ]
+
+  const totalCompleted = setupItems.filter(item => item.completed).length
+  const isSetupComplete = totalCompleted === 4
+
   return (
     <div style={{ display: 'grid', gap: 24 }}>
       {/* Header with quick actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <h1 style={{ margin: 0 }}>{t('pages.dashboard.title')}</h1>
-        <Button variant="secondary" size="sm" onClick={loadLiveCalls}>
-          {t('common.refresh')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('pages.dashboard.title')}
+        primaryAction={isSetupComplete ? {
+          label: t('pages.dashboard.create_campaign'),
+          onClick: () => navigate('/campaigns/new'),
+          size: 'lg'
+        } : undefined}
+        secondaryAction={{
+          label: t('common.refresh'),
+          onClick: loadLiveCalls,
+          size: 'sm'
+        }}
+      />
+
+      {/* Setup Checklist or Success Banner */}
+      {!setupStatus.loading && (
+        <SetupChecklist
+          items={setupItems}
+          totalCompleted={totalCompleted}
+          totalItems={4}
+          onStartSetup={!isSetupComplete ? () => navigate('/setup') : undefined}
+        />
+      )}
 
       {/* Key metrics - simplified to 2 main KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-        <Card>
-          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
-            {t('pages.dashboard.active_calls')}
-          </div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
-            {activeCalls}
-          </div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
-            {t('pages.dashboard.cost_today')}
-          </div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
-            {costToday.amount} {costToday.currency}
-          </div>
-        </Card>
-      </div>
+      <StatGrid>
+        <StatCard
+          label={t('pages.dashboard.active_calls')}
+          value={activeCalls}
+        />
+        <StatCard
+          label={t('pages.dashboard.cost_today')}
+          value={`${costToday.amount} ${costToday.currency}`}
+        />
+      </StatGrid>
 
       {/* Live calls table */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>
-            {t('pages.dashboard.live_calls')}
-          </div>
-          <Input
-            placeholder={t('pages.dashboard.search_live') || 'Cerca…'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ maxWidth: 240 }}
-          />
-        </div>
+        <SectionHeader
+          title={t('pages.dashboard.live_calls')}
+          actions={
+            <Input
+              placeholder={t('pages.dashboard.search_live') || 'Cerca…'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ maxWidth: 240 }}
+            />
+          }
+        />
         {filteredCalls.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--muted)' }}>
-            {searchQuery ? 'Nessun risultato' : t('pages.dashboard.no_active_calls')}
+            {searchQuery ? t('common.no_results') : t('pages.dashboard.no_active_calls')}
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
