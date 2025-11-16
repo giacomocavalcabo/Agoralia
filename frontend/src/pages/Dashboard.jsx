@@ -7,7 +7,6 @@ import { useToast } from '../components/ToastProvider.jsx'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Input from '../components/ui/Input'
-import WebCallButton from '../components/WebCallButton.jsx'
 import { safeArray } from '../lib/util'
 
 export default function Dashboard() {
@@ -107,12 +106,9 @@ export default function Dashboard() {
       {/* Header with quick actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <h1 style={{ margin: 0 }}>{t('pages.dashboard.title')}</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <WebCallButton />
-          <Button variant="secondary" size="sm" onClick={loadLiveCalls}>
-            {t('common.refresh')}
-          </Button>
-        </div>
+        <Button variant="secondary" size="sm" onClick={loadLiveCalls}>
+          {t('common.refresh')}
+        </Button>
       </div>
 
       {/* Key metrics - simplified to 2 main KPIs */}
