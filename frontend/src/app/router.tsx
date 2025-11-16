@@ -3,6 +3,12 @@ import { RootLayout } from '@/shared/layout/RootLayout'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { NotFoundPage } from '@/shared/pages/NotFoundPage'
+import { SetupPage } from '@/features/setup/pages/SetupPage'
+import { AgentsPage } from '@/features/agents/pages/AgentsPage'
+import { NumbersPage } from '@/features/numbers/pages/NumbersPage'
+import { KnowledgePage } from '@/features/knowledge/pages/KnowledgePage'
+import { LeadsPage } from '@/features/leads/pages/LeadsPage'
+import { CampaignsPage } from '@/features/campaigns/pages/CampaignsPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('auth_token')
@@ -29,10 +35,17 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      // TODO: Aggiungere altre route quando implementate
-      // { path: 'setup', element: <SetupPage /> },
-      // { path: 'campaigns', element: <CampaignListPage /> },
-      // ...
+      { path: 'setup', element: <SetupPage /> },
+      { path: 'agents', element: <AgentsPage /> },
+      { path: 'numbers', element: <NumbersPage /> },
+      { path: 'knowledge', element: <KnowledgePage /> },
+      { path: 'leads', element: <LeadsPage /> },
+      { path: 'campaigns', element: <CampaignsPage /> },
+      // TODO: Add more routes
+      // { path: 'campaigns/new', element: <CampaignNewPage /> },
+      // { path: 'campaigns/:id', element: <CampaignDetailPage /> },
+      // { path: 'calls', element: <CallsPage /> },
+      // { path: 'compliance', element: <CompliancePage /> },
     ],
   },
   {

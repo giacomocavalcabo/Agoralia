@@ -39,3 +39,7 @@ export function getTenantId(): number | null {
   return tid ? parseInt(tid, 10) : null
 }
 
+export function setTenantId(tenantId: string | number) {
+  localStorage.setItem('tenant_id', String(tenantId))
+}
+

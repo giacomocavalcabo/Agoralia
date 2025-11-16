@@ -3,12 +3,13 @@ import { cn } from '@/shared/utils/cn'
 
 const navItems = [
   { path: '/', label: 'Dashboard' },
+  { path: '/setup', label: 'Setup' },
   { path: '/campaigns', label: 'Campagne' },
-  { path: '/calls', label: 'Chiamate' },
   { path: '/agents', label: 'Agents' },
   { path: '/numbers', label: 'Numeri' },
   { path: '/knowledge', label: 'Knowledge Bases' },
   { path: '/leads', label: 'Leads' },
+  { path: '/calls', label: 'Chiamate' },
   { path: '/compliance', label: 'Compliance' },
   { path: '/billing', label: 'Billing' },
 ]
