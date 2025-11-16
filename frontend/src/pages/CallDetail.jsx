@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { apiFetch, wsUrl } from '../lib/api'
+import { apiRequest, wsUrl } from '../lib/api'
+import { createReconnectingWebSocket } from '../lib/ws'
+import { useToast } from '../components/ToastProvider.jsx'
 
 export default function CallDetail() {
   const { id } = useParams()
+  const toast = useToast()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [segments, setSegments] = useState([])
@@ -16,23 +19,21 @@ export default function CallDetail() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const res = await apiFetch(`/calls/${id}`)
-      const json = await res.json()
-      setData(json)
+      const res = await apiRequest(`/calls/${id}`)
+      if (!res.ok) { toast.error(`Call detail: ${res.error}`); setData(null) } else setData(res.data || null)
       setLoading(false)
     }
     load()
   }, [id])
 
   async function refreshSegments() {
-    const res = await apiFetch(`/calls/${id}/segments`)
-    const json = await res.json()
-    setSegments(json || [])
+    const res = await apiRequest(`/calls/${id}/segments`)
+    setSegments(Array.isArray(res.data) ? res.data : [])
   }
 
   async function refreshSummary() {
-    const res = await apiFetch(`/calls/${id}/summary`)
-    const json = await res.json()
+    const res = await apiRequest(`/calls/${id}/summary`)
+    const json = res.data || {}
     setSummary(json?.summary || null)
     // attach structured if present
     if (json?.bant || json?.trade) {
@@ -47,8 +48,8 @@ export default function CallDetail() {
 
   // Subscribe to websocket for live updates
   useEffect(() => {
-    const ws = new WebSocket(wsUrl('/ws'))
-    ws.onmessage = (evt) => {
+    const { close } = createReconnectingWebSocket(wsUrl('/ws'), {
+      onMessage: (evt) => {
       try {
         const msg = JSON.parse(evt.data || '{}')
         const t = msg?.type
@@ -62,8 +63,9 @@ export default function CallDetail() {
           refreshSummary()
         }
       } catch {}
-    }
-    return () => { try { ws.close() } catch {} }
+      }
+    })
+    return () => { try { close() } catch {} }
   }, [providerCallId])
 
   if (loading || !data) return <div>Loading…</div>
@@ -107,11 +109,10 @@ export default function CallDetail() {
           <input className="input" placeholder="Note" value={note} onChange={(e) => setNote(e.target.value)} />
           <button className="btn" onClick={async () => {
             if (!outcome) return
-            await apiFetch(`/calls/${id}/disposition`, { method: 'POST', body: { outcome, note } })
+            await apiRequest(`/calls/${id}/disposition`, { method: 'POST', body: { outcome, note } })
             // refresh header
-            const res = await apiFetch(`/calls/${id}`)
-            const json = await res.json()
-            setData(json)
+            const res = await apiRequest(`/calls/${id}`)
+            if (res.ok) setData(res.data || null)
           }}>Save</button>
         </div>
       </div>
@@ -137,8 +138,8 @@ export default function CallDetail() {
       <div className="panel" style={{ marginTop: 12 }}>
         <div className="kpi-title">Transcript</div>
         <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
-          {segments.length === 0 && <div style={{ color: '#6b7280' }}>No transcript yet.</div>}
-          {segments.map((s) => (
+          {(Array.isArray(segments) ? segments : []).length === 0 && <div style={{ color: '#6b7280' }}>No transcript yet.</div>}
+          {(Array.isArray(segments) ? segments : []).map((s) => (
             <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 12 }}>
               <div style={{ color: '#6b7280' }}>{typeof s.start_ms === 'number' ? `${(s.start_ms/1000).toFixed(1)}s` : ''}</div>
               <div>
