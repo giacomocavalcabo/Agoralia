@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiFetch, apiRequest } from '../lib/api'
+import { endpoints } from '../lib/endpoints'
 import Agents from './Agents.jsx'
 import KnowledgeBases from './KnowledgeBases.jsx'
 import Numbers from './Numbers.jsx'
@@ -45,12 +46,12 @@ export default function Settings() {
     if (t) setTenantId(t)
     // load sectioned settings
     Promise.all([
-      apiFetch('/settings/general').then(r=>r.json()).catch(()=>null),
-      apiFetch('/settings/languages').then(r=>r.json()).catch(()=>null),
-      apiFetch('/settings/telephony').then(r=>r.json()).catch(()=>null),
-      apiFetch('/settings/compliance').then(r=>r.json()).catch(()=>null),
-      apiFetch('/billing/entitlements').then(r=>r.json()).catch(()=>null),
-      apiFetch('/numbers').then(r=>r.json()).catch(()=>[]),
+      apiRequest('/settings/general').then(r=> r.ok ? r.data : null),
+      apiRequest('/settings/languages').then(r=> r.ok ? r.data : null),
+      apiRequest('/settings/telephony').then(r=> r.ok ? r.data : null),
+      apiRequest('/settings/compliance').then(r=> r.ok ? r.data : null),
+      apiRequest(endpoints.billing.entitlements).then(r=> r.ok ? r.data : null),
+      apiRequest('/numbers').then(r=> r.ok ? r.data : []),
     ]).then(([g, l, tel, comp, ent, nums]) => {
       if (g) {
         if (g.ui_locale) setDefaultLang(g.ui_locale)
@@ -92,8 +93,8 @@ export default function Settings() {
   }
 
   async function startWebCall() {
-    if (!agentId) return alert('Imposta prima agent_id')
-    const res = await apiFetch('/calls/retell/web', {
+    if (!agentId) return toast.error('Imposta prima agent_id')
+    const res = await apiFetch(endpoints.calls.outboundRetell.replace('/retell/outbound','/retell/web'), {
       method: 'POST',
       body: { agent_id: agentId }
     })
@@ -116,13 +117,18 @@ export default function Settings() {
       parsed = dict
     }
     try {
-      await Promise.all([
-        apiFetch('/settings/general', { method: 'PUT', body: { ui_locale: defaultLang, workspace_name: wsName, timezone: tz, brand: { logo_url: brandLogo, color: brandColor } } }),
-        apiFetch('/settings/languages', { method: 'PUT', body: { default_lang: defaultLang, supported_langs: supportedLangs, prefer_detect: detectLang } }),
-        apiFetch('/settings/telephony', { method: 'PUT', body: { default_from_number: fromNumber, spacing_ms: spacingMs } }),
-        apiFetch('/settings/compliance', { method: 'PUT', body: { require_legal_review: requireLegal, country_rules: parsed } }),
+      const results = await Promise.all([
+        apiRequest('/settings/general', { method: 'PUT', body: { ui_locale: defaultLang, workspace_name: wsName, timezone: tz, brand: { logo_url: brandLogo, color: brandColor } } }),
+        apiRequest('/settings/languages', { method: 'PUT', body: { default_lang: defaultLang, supported_langs: supportedLangs, prefer_detect: detectLang } }),
+        apiRequest('/settings/telephony', { method: 'PUT', body: { default_from_number: fromNumber, spacing_ms: spacingMs } }),
+        apiRequest('/settings/compliance', { method: 'PUT', body: { require_legal_review: requireLegal, country_rules: parsed } }),
       ])
-      toast.success('Settings salvate')
+      const failed = results.find(r => !r.ok)
+      if (failed) {
+        toast.error(`Save failed: ${failed.error}`)
+      } else {
+        toast.success('Settings salvate')
+      }
     } finally {
       setSaving(false)
     }
@@ -294,8 +300,9 @@ export default function Settings() {
                     <input className="input" id="test-call-id" placeholder={t('pages.settings.call_id_optional')} />
                     <button className="btn" onClick={async ()=>{
                       const callId = document.getElementById('test-call-id').value
-                      await apiFetch('/webhooks/test', { method: 'POST', body: { call_id: callId || null } })
-                      toast.success(t('pages.settings.webhook_sent'))
+                      const r = await apiRequest('/webhooks/test', { method: 'POST', body: { call_id: callId || null } })
+                      if (r.ok) toast.success(t('pages.settings.webhook_sent'))
+                      else toast.error(`Webhook error: ${r.error}`)
                     }}>{t('common.send')}</button>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 140px', gap: 12, alignItems: 'center' }}>
