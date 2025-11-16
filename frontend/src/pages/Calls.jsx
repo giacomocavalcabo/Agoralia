@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 
 export default function Calls() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
+  const toast = useToast()
 
   async function load() {
     setLoading(true)
-    const res = await apiFetch('/calls')
-    const data = await res.json()
-    setRows(data)
+    const res = await apiRequest('/calls')
+    if (!res.ok) {
+      toast.error(`Calls: ${res.error}`)
+      setRows([])
+    } else {
+      setRows(res.data || [])
+    }
     setLoading(false)
   }
 

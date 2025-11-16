@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 import { useI18n } from '../lib/i18n.jsx'
 
 export default function History() {
   const { t } = useI18n()
+  const toast = useToast()
   const [rows, setRows] = useState([])
   const [leads, setLeads] = useState([])
   const [q, setQ] = useState('')
@@ -13,11 +15,13 @@ export default function History() {
   async function load() {
     setLoading(true)
     const [callsRes, leadsRes] = await Promise.all([
-      apiFetch('/calls').then((r) => r.json()),
-      apiFetch('/leads').then((r) => r.json()).catch(() => []),
+      apiRequest('/calls'),
+      apiRequest('/leads'),
     ])
-    setRows(callsRes)
-    setLeads(leadsRes)
+    if (!callsRes.ok) toast.error(`Calls: ${callsRes.error}`)
+    if (!leadsRes.ok) toast.error(`Leads: ${leadsRes.error}`)
+    setRows(callsRes.ok ? (callsRes.data || []) : [])
+    setLeads(leadsRes.ok ? (leadsRes.data || []) : [])
     setLoading(false)
   }
 
