@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 import { useMemo } from 'react'
 
 export default function Numbers() {
@@ -7,18 +8,19 @@ export default function Numbers() {
   const [e164, setE164] = useState('')
   const [type, setType] = useState('retell')
   const [ent, setEnt] = useState({ inbound_enabled: false })
+  const toast = useToast()
 
   async function load() {
-    const res = await apiFetch('/numbers')
-    const data = await res.json()
-    setRows(data)
+    const res = await apiRequest('/numbers')
+    if (!res.ok) { toast.error(`Numbers: ${res.error}`); setRows([]) }
+    else setRows(Array.isArray(res.data) ? res.data : [])
   }
   useEffect(() => { load() }, [])
-  useEffect(() => { apiFetch('/billing/entitlements').then((r)=>r.json()).then(setEnt).catch(()=>{}) }, [])
+  useEffect(() => { apiRequest('/billing/entitlements').then((r)=> { if (r.ok && r.data) setEnt(r.data) }) }, [])
 
   async function add() {
-    const res = await apiFetch('/numbers', { method: 'POST', body: { e164, type } })
-    if (res.ok) { setE164(''); load() }
+    const res = await apiRequest('/numbers', { method: 'POST', body: { e164, type } })
+    if (res.ok) { setE164(''); load() } else toast.error(`Add number: ${res.error}`)
   }
 
   return (
@@ -36,10 +38,10 @@ export default function Numbers() {
         <table className="table">
           <thead><tr><th>ID</th><th>Number</th><th>Type</th><th>Verified</th><th>Country</th><th>Actions</th></tr></thead>
           <tbody>
-            {rows.map((r) => (
+            {(Array.isArray(rows) ? rows : []).map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td><td>{r.e164}</td><td>{r.type}</td><td>{r.verified ? 'yes' : 'no'}</td><td>{r.country || '—'}</td>
-                <td><button className="btn" onClick={async () => { await apiFetch(`/numbers/${r.id}`, { method: 'DELETE' }); load() }}>Delete</button></td>
+                <td><button className="btn" onClick={async () => { const d = await apiRequest(`/numbers/${r.id}`, { method: 'DELETE' }); if (!d.ok) toast.error(`Delete: ${d.error}`); load() }}>Delete</button></td>
               </tr>
             ))}
           </tbody>

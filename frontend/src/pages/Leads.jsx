@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
 import Modal from '../components/Modal.jsx'
 import Drawer from '../components/Drawer.jsx'
 import { LANG_OPTIONS, displayLang } from '../lib/languages'
@@ -31,11 +31,11 @@ export default function Leads() {
 
   async function load() {
     const [cs, as] = await Promise.all([
-      apiFetch('/campaigns').then((r) => r.json()),
-      apiFetch('/agents').then((r) => r.json()),
+      apiRequest('/campaigns'),
+      apiRequest('/agents'),
     ])
-    setCampaigns(cs)
-    setAgents(as)
+    setCampaigns(Array.isArray(cs.data) ? cs.data : [])
+    setAgents(Array.isArray(as.data) ? as.data : [])
   }
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -78,8 +78,8 @@ export default function Leads() {
     params.set('limit', String(limit))
     params.set('offset', String(offset))
     const path = `/leads${params.toString() ? `?${params.toString()}` : ''}`
-    const res = await apiFetch(path)
-    const data = await res.json()
+    const { ok, data, error } = await apiRequest(path)
+    if (!ok) { toast.error(`Leads: ${error}`) }
     setLeads(Array.isArray(data.items) ? data.items : (Array.isArray(data) ? data : []))
     setTotal(Number(data.total || 0))
     if (typeof data.limit === 'number') setLimit(data.limit)
@@ -90,17 +90,16 @@ export default function Leads() {
 
   async function addLead() {
     const body = { ...form, campaign_id: selectedCampaign ? Number(selectedCampaign) : null }
-    await apiFetch('/leads', { method: 'POST', body })
+    await apiRequest('/leads', { method: 'POST', body })
     setForm({ name: '', phone: '', company: '', role: '', preferred_lang: form.preferred_lang, consent_basis: 'consent', consent_status: 'unknown' })
     loadLeads()
     setShowModal(false)
   }
 
   async function callLead(phone) {
-    const res = await apiFetch('/calls/retell/outbound', { method: 'POST', body: { to: phone, agent_id: agentId || undefined, metadata: { legal_accepted: true } } })
-    const data = await res.json()
-    if (res.ok) toast.success(t('pages.leads.call_created'))
-    else toast.error(t('common.error_code', { code: data.detail || res.status }))
+    const r = await apiRequest('/calls/retell/outbound', { method: 'POST', body: { to: phone, agent_id: agentId || undefined, metadata: { legal_accepted: true } } })
+    if (r.ok) toast.success(t('pages.leads.call_created'))
+    else toast.error(t('common.error_code', { code: r.error || r.status }))
   }
 
   function collectSelectedPhones() {
@@ -111,11 +110,8 @@ export default function Leads() {
   async function confirmSchedule() {
     const delayMs = scheduleAt ? Math.max(0, new Date(scheduleAt).getTime() - Date.now()) : (Math.max(1, Number(scheduleOffsetMin) || 0) * 60 * 1000)
     const items = schedulePhones.map((p) => ({ to: p, delay_ms: delayMs, metadata: { legal_accepted: true }, agent_id: agentId || undefined }))
-    const res = await apiFetch('/schedule/bulk', { method: 'POST', body: items })
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}))
-      alert(j.detail || `Errore ${res.status}`)
-    }
+    const res = await apiRequest('/schedule/bulk', { method: 'POST', body: items })
+    if (!res.ok) { alert(res.error || `Errore ${res.status}`) }
     setScheduleOpen(false)
   }
 
@@ -282,7 +278,7 @@ export default function Leads() {
                 <td style={{ display: 'flex', gap: 6 }}>
                   <button className="btn" onClick={() => callLead(l.phone)} disabled={l.consent_status === 'denied'}>{t('pages.leads.call')}</button>
                   <button className="btn" onClick={() => { setSchedulePhones([l.phone]); setScheduleAt(''); setScheduleOffsetMin(60); setScheduleOpen(true) }}>{t('pages.leads.schedule')}</button>
-                  <button className="btn" onClick={async () => { await apiFetch(`/leads/${l.id}`, { method: 'DELETE' }); loadLeads() }}>{t('common.delete')}</button>
+                  <button className="btn" onClick={async () => { await apiRequest(`/leads/${l.id}`, { method: 'DELETE' }); loadLeads() }}>{t('common.delete')}</button>
                 </td>
               </tr>
             ))}
