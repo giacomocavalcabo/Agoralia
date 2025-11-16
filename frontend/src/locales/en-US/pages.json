@@ -90,7 +90,12 @@
       "calls": "Calls",
       "qualified": "Qualified",
       "qualified_rate": "Qualified %",
-      "created": "Campaign created (#{id})"
+      "created": "Campaign created (#{id})",
+      "status": {
+        "ready": "Campaign ready to launch",
+        "not_ready": "Campaign cannot launch",
+        "outside_hours": "outside business hours"
+      }
     },
     "analytics": {
       "title": "Analytics",

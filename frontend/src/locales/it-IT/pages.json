@@ -90,7 +90,12 @@
       "calls": "Chiamate",
       "qualified": "Qualificati",
       "qualified_rate": "% qualificati",
-      "created": "Campagna creata (#{id})"
+      "created": "Campagna creata (#{id})",
+      "status": {
+        "ready": "Campagna pronta per partire",
+        "not_ready": "Campagna non può partire",
+        "outside_hours": "fuori orario lavorativo"
+      }
     },
     "analytics": {
       "title": "Analitiche",
