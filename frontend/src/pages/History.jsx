@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../lib/api'
 import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 import { useI18n } from '../lib/i18n.jsx'
 
 export default function History() {
@@ -29,8 +30,8 @@ export default function History() {
 
   const groups = useMemo(() => {
     const map = new Map()
-    const phoneToCompany = new Map(leads.map((l) => [l.phone, l.company || '']))
-    for (const r of rows) {
+    const phoneToCompany = new Map(safeArray(leads).map((l) => [l.phone, l.company || '']))
+    for (const r of safeArray(rows)) {
       const phone = r.to || r.from || '—'
       const company = phoneToCompany.get(phone) || ''
       const key = groupByCompany ? (company || '—') : phone

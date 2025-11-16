@@ -1,23 +1,25 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 export default function Agents() {
   const [rows, setRows] = useState([])
   const [name, setName] = useState('')
   const [lang, setLang] = useState('it-IT')
   const [voiceId, setVoiceId] = useState('')
+  const toast = useToast()
 
   async function load() {
-    const res = await apiFetch('/agents')
-    const data = await res.json()
-    setRows(data)
+    const res = await apiRequest('/agents')
+    if (res.ok) setRows(safeArray(res.data)); else { setRows([]); toast.error(`Agents: ${res.error}`) }
   }
 
   useEffect(() => { load() }, [])
 
   async function createAgent() {
-    const res = await apiFetch('/agents', { method: 'POST', body: { name, lang, voice_id: voiceId } })
-    if (res.ok) { setName(''); setVoiceId(''); load() }
+    const res = await apiRequest('/agents', { method: 'POST', body: { name, lang, voice_id: voiceId } })
+    if (res.ok) { setName(''); setVoiceId(''); load() } else toast.error(`Create agent: ${res.error}`)
   }
 
   return (
@@ -41,10 +43,10 @@ export default function Agents() {
             <tr><th>ID</th><th>Name</th><th>Lang</th><th>Voice</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {safeArray(rows).map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td><td>{r.name}</td><td>{r.lang}</td><td>{r.voice_id || '—'}</td>
-                <td><button className="btn" onClick={async () => { await apiFetch(`/agents/${r.id}`, { method: 'DELETE' }); load() }}>Delete</button></td>
+                <td><button className="btn" onClick={async () => { const d = await apiRequest(`/agents/${r.id}`, { method: 'DELETE' }); if (!d.ok) toast.error(`Delete agent: ${d.error}`); load() }}>Delete</button></td>
               </tr>
             ))}
           </tbody>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 export default function TenantAgents() {
   const [rows, setRows] = useState([])
@@ -7,16 +9,18 @@ export default function TenantAgents() {
   const [lang, setLang] = useState('')
   const [agentId, setAgentId] = useState('')
   const [isMulti, setIsMulti] = useState(false)
+  const toast = useToast()
 
   async function load() {
-    const res = await apiFetch('/tenant_agents')
-    setRows(await res.json())
+    const res = await apiRequest('/tenant_agents')
+    if (res.ok) setRows(safeArray(res.data)); else { setRows([]); toast.error(`Tenant agents: ${res.error}`) }
   }
   useEffect(() => { load() }, [])
 
   async function save() {
     if (!agentId) return
-    await apiFetch('/tenant_agents', { method:'POST', body:{ kind, lang: lang || null, agent_id: agentId, is_multi: isMulti } })
+    const r = await apiRequest('/tenant_agents', { method:'POST', body:{ kind, lang: lang || null, agent_id: agentId, is_multi: isMulti } })
+    if (!r.ok) toast.error(`Save tenant agent: ${r.error}`)
     setAgentId(''); setLang(''); setIsMulti(false)
     await load()
   }
@@ -41,10 +45,10 @@ export default function TenantAgents() {
         <table className="table">
           <thead><tr><th>ID</th><th>Kind</th><th>Lang</th><th>Agent ID</th><th>Multi</th><th>Actions</th></tr></thead>
           <tbody>
-            {rows.map(r => (
+            {safeArray(rows).map(r => (
               <tr key={r.id}>
                 <td>{r.id}</td><td>{r.kind}</td><td>{r.lang || '(any)'}</td><td>{r.agent_id}</td><td>{r.is_multi ? 'yes' : 'no'}</td>
-                <td><button className="btn" onClick={async ()=>{ await apiFetch(`/tenant_agents/${r.id}`, { method:'DELETE' }); await load() }}>Delete</button></td>
+                <td><button className="btn" onClick={async ()=>{ const d = await apiRequest(`/tenant_agents/${r.id}`, { method:'DELETE' }); if (!d.ok) toast.error(`Delete tenant agent: ${d.error}`); await load() }}>Delete</button></td>
               </tr>
             ))}
           </tbody>

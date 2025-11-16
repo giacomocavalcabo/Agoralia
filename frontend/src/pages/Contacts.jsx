@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 const MOCK = [
   { id: 1, name: 'Mario Rossi', phone: '+39333111222', lang: 'it-IT' },
@@ -11,15 +13,16 @@ export default function Contacts() {
   const [rows] = useState(MOCK)
   const [agents, setAgents] = useState([])
   const [agentId, setAgentId] = useState('')
+  const toast = useToast()
 
   useEffect(() => {
-    apiFetch('/agents').then((r) => r.json()).then(setAgents).catch(() => {})
+    apiRequest('/agents').then((r) => { if (r.ok && Array.isArray(r.data)) setAgents(r.data); else if (!r.ok) toast.error(`Agents: ${r.error}`) })
   }, [])
 
   async function callNumber(phone) {
-    const res = await apiFetch('/calls/retell/outbound', { method: 'POST', body: { to: phone, agent_id: agentId || undefined } })
-    const data = await res.json()
-    alert(res.ok ? `Call created: ${JSON.stringify(data)}` : `Errore: ${data.detail || res.status}`)
+    const r = await apiRequest('/calls/retell/outbound', { method: 'POST', body: { to: phone, agent_id: agentId || undefined } })
+    if (r.ok) toast.success('Call created')
+    else toast.error(`Call error: ${r.error}`)
   }
 
   return (
@@ -30,7 +33,7 @@ export default function Contacts() {
           <label>Agent</label>
           <select className="input" value={agentId} onChange={(e) => setAgentId(e.target.value)}>
             <option value="">Default</option>
-            {agents.map((a) => (
+            {safeArray(agents).map((a) => (
               <option key={a.id} value={a.id}>{a.name} ({a.lang})</option>
             ))}
           </select>

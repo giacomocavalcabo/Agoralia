@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 export default function KnowledgeBases() {
   const [rows, setRows] = useState([])
   const [lang, setLang] = useState('it-IT')
   const [scope, setScope] = useState('tenant')
+  const toast = useToast()
 
   async function load() {
-    const res = await apiFetch('/kbs')
-    const data = await res.json()
-    setRows(data)
+    const res = await apiRequest('/kbs')
+    if (res.ok) setRows(safeArray(res.data)); else { setRows([]); toast.error(`KBs: ${res.error}`) }
   }
   useEffect(() => { load() }, [])
 
   async function createKb() {
-    const res = await apiFetch('/kbs', { method: 'POST', body: { lang, scope } })
-    if (res.ok) load()
+    const res = await apiRequest('/kbs', { method: 'POST', body: { lang, scope } })
+    if (res.ok) load(); else toast.error(`Create KB: ${res.error}`)
   }
 
   return (
@@ -37,10 +39,10 @@ export default function KnowledgeBases() {
         <table className="table">
           <thead><tr><th>ID</th><th>Lang</th><th>Scope</th><th>Actions</th></tr></thead>
           <tbody>
-            {rows.map((r) => (
+            {safeArray(rows).map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td><td>{r.lang}</td><td>{r.scope}</td>
-                <td><button className="btn" onClick={async () => { await apiFetch(`/kbs/${r.id}`, { method: 'DELETE' }); load() }}>Delete</button></td>
+                <td><button className="btn" onClick={async () => { const d = await apiRequest(`/kbs/${r.id}`, { method: 'DELETE' }); if (!d.ok) toast.error(`Delete: ${d.error}`); load() }}>Delete</button></td>
               </tr>
             ))}
           </tbody>

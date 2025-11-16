@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
+import { safeArray } from '../lib/util'
 
 export default function Compliance() {
   const [rows, setRows] = useState([])
   const [num, setNum] = useState('')
+  const toast = useToast()
 
   async function load() {
-    const res = await apiFetch('/compliance/dnc')
-    const data = await res.json()
-    setRows(data)
+    const res = await apiRequest('/compliance/dnc')
+    if (res.ok) setRows(safeArray(res.data)); else { setRows([]); toast.error(`DNC: ${res.error}`) }
   }
   useEffect(() => { load() }, [])
 
   async function add() {
     if (!num) return
-    await apiFetch('/compliance/dnc', { method: 'POST', body: { e164: num } })
+    const r = await apiRequest('/compliance/dnc', { method: 'POST', body: { e164: num } })
+    if (!r.ok) toast.error(`DNC add: ${r.error}`)
     setNum('')
     load()
   }
@@ -30,10 +33,10 @@ export default function Compliance() {
         <table className="table">
           <thead><tr><th>ID</th><th>E.164</th><th>Added</th><th>Actions</th></tr></thead>
           <tbody>
-            {rows.map((r) => (
+            {safeArray(rows).map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td><td>{r.e164}</td><td>{new Date(r.created_at).toLocaleString()}</td>
-                <td><button className="btn" onClick={async () => { await apiFetch(`/compliance/dnc/${r.id}`, { method: 'DELETE' }); load() }}>Remove</button></td>
+                <td><button className="btn" onClick={async () => { const d = await apiRequest(`/compliance/dnc/${r.id}`, { method: 'DELETE' }); if (!d.ok) toast.error(`DNC remove: ${d.error}`); load() }}>Remove</button></td>
               </tr>
             ))}
           </tbody>

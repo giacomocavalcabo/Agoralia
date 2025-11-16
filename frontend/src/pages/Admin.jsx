@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { safeArray } from '../lib/util'
 
 export default function Admin() {
   const [rows, setRows] = useState([])
@@ -27,8 +27,8 @@ export default function Admin() {
         <table className="table">
           <thead><tr><th>Tenant</th><th>Plan</th><th>Status</th><th>Minutes MTD</th></tr></thead>
           <tbody>
-            {rows.map((r, i) => (<tr key={i}><td>{r.tenant_id ?? '—'}</td><td>{r.plan}</td><td>{r.status}</td><td>{r.minutes_mtd}</td></tr>))}
-            {!rows.length && <tr><td colSpan="4" className="kpi-title">—</td></tr>}
+            {safeArray(rows).map((r, i) => (<tr key={i}><td>{r.tenant_id ?? '—'}</td><td>{r.plan}</td><td>{r.status}</td><td>{r.minutes_mtd}</td></tr>))}
+            {!safeArray(rows).length && <tr><td colSpan="4" className="kpi-title">—</td></tr>}
           </tbody>
         </table>
       </div>
