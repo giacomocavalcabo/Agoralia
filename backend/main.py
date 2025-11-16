@@ -2,8 +2,10 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+import time
+import logging
 
 # Load environment variables
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -33,6 +35,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Structured request logging (minimal)
+logger = logging.getLogger("agoralia.api")
+logging.basicConfig(level=logging.INFO)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    path = request.url.path
+    method = request.method
+    try:
+        response = await call_next(request)
+        status = response.status_code
+    except Exception as e:
+        status = 500
+        logger.exception("Request error: %s %s -> 500 (%s)", method, path, str(e))
+        raise
+    finally:
+        dur_ms = int((time.time() - start) * 1000)
+        tenant = request.headers.get("X-Tenant-Id") or "-"
+        logger.info("%s %s %s %dms", method, path, f"tenant={tenant}", dur_ms)
+    return response
 
 # Include all API routes
 app.include_router(api_router)
