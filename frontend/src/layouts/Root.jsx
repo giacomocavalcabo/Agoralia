@@ -7,6 +7,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 import AvatarMenu from '../components/AvatarMenu.jsx'
 import UsageBar from '../components/UsageBar.jsx'
 import CommandPalette from '../components/CommandPalette.jsx'
+import Input from '../components/ui/Input.jsx'
 
 export default function Root() {
   const { locale, setLocale, t } = useI18n()
@@ -44,8 +45,7 @@ export default function Root() {
         <header className="topbar">
           <div className="topbar-left">{t('Overview')}</div>
           <div className="topbar-right" style={{ display:'flex', alignItems:'center', gap:8 }}>
-            {/* TODO: Search scoped - MVP placeholder */}
-            <input className="input" style={{ maxWidth: 260 }} placeholder="Search…" />
+            <Input style={{ maxWidth: 260 }} placeholder="Search…" />
             <UsageBar />
             <LanguageSwitcher />
             <AvatarMenu />
