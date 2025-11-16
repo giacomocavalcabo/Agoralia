@@ -10,15 +10,17 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { Line, Bar } from 'react-chartjs-2'
-import { apiFetch, wsUrl } from '../lib/api'
+import { Line } from 'react-chartjs-2'
+import { apiRequest, wsUrl } from '../lib/api'
 import { endpoints } from '../lib/endpoints'
-import { useMetricsDaily, useMetricsOutcomes } from '../lib/hooks/useMetrics'
+import { useMetricsDaily } from '../lib/hooks/useMetrics'
 import { createReconnectingWebSocket } from '../lib/ws'
 import { useToast } from '../components/ToastProvider.jsx'
+import Button from '../components/ui/Button'
+import Card from '../components/ui/Card'
+import Input from '../components/ui/Input'
 import WebCallButton from '../components/WebCallButton.jsx'
-import SkeletonKPI from '../components/SkeletonKPI.jsx'
-import SkeletonTable from '../components/SkeletonTable.jsx'
+import { safeArray } from '../lib/util'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend)
 
@@ -26,78 +28,76 @@ export default function Dashboard() {
   const { t } = useI18n()
   const toast = useToast()
   const { loading: loadingDaily, data: dailyData } = useMetricsDaily(7)
-  const { loading: loadingOutcomes, data: outcomesData } = useMetricsOutcomes(7)
-  const [health, setHealth] = useState('unknown')
-  const [metrics, setMetrics] = useState({
-    active: 0,
-    avgDuration: '—',
-    successRate: '—',
-    spend: '—',
-  })
-  const [daily, setDaily] = useState({ labels: [], rate: [], created: [], finished: [] })
-  const [outcomes, setOutcomes] = useState({ labels: [], counts: [] })
-  const [windowDays, setWindowDays] = useState(7)
+  const [health, setHealth] = useState('ok')
   const [liveCalls, setLiveCalls] = useState([])
   const [now, setNow] = useState(Date.now())
-  const [concurrency, setConcurrency] = useState({ limit: 0, in_use: 0, available: 0 })
-  const [errors24h, setErrors24h] = useState(0)
+  const [activeCalls, setActiveCalls] = useState(0)
+  const [successRate, setSuccessRate] = useState('—')
   const [costToday, setCostToday] = useState({ amount: 0, currency: 'EUR' })
-  const [webhookEvents, setWebhookEvents] = useState([])
-  const [latencyP95, setLatencyP95] = useState(0)
-  const [dlq, setDlq] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
+  // Health check
   useEffect(() => {
-    apiFetch(endpoints.health).then((r) => r.json()).then((d) => setHealth(d.status || 'ok')).catch(() => setHealth('down'))
+    apiRequest(endpoints.health).then(({ ok, data }) => {
+      if (ok) setHealth(data?.status || 'ok')
+    }).catch(() => setHealth('down'))
   }, [])
 
+  // Success rate from daily data
   useEffect(() => {
-    setLoading(loadingDaily || loadingOutcomes)
-    if (dailyData) {
-      setDaily(dailyData)
-      setMetrics((m) => ({ ...m, successRate: `${Math.round((dailyData.rate || []).at(-1) || 0)}%` }))
+    if (dailyData?.rate?.length) {
+      const latest = dailyData.rate[dailyData.rate.length - 1] || 0
+      setSuccessRate(`${Math.round(latest)}%`)
     }
-    if (outcomesData) setOutcomes(outcomesData)
-  }, [loadingDaily, loadingOutcomes, dailyData, outcomesData])
+  }, [dailyData])
 
+  // WebSocket for real-time updates
   useEffect(() => {
     const { close } = createReconnectingWebSocket(wsUrl('/ws'), {
       onMessage: (ev) => {
-      try {
-        const msg = JSON.parse(ev.data)
-        // Simple demo: increment active calls on created events
-        if (msg?.type === 'call.created') {
-          setMetrics((m) => ({ ...m, active: (m.active ?? 0) + 1 }))
-          // refresh live list
-            apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
-        }
-        if (msg?.type === 'call.finished' || msg?.type === 'webcall.finished') {
-          setMetrics((m) => ({ ...m, active: Math.max(0, (m.active ?? 1) - 1) }))
-            apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
-        }
-        if (msg?.type === 'cost.event') {
-            apiFetch(endpoints.metrics.costToday).then((r) => r.json()).then(setCostToday).catch(() => {})
-        }
-      } catch {}
+        try {
+          const msg = JSON.parse(ev.data)
+          if (msg?.type === 'call.created') {
+            setActiveCalls((n) => n + 1)
+            loadLiveCalls()
+          }
+          if (msg?.type === 'call.finished' || msg?.type === 'webcall.finished') {
+            setActiveCalls((n) => Math.max(0, n - 1))
+            loadLiveCalls()
+          }
+          if (msg?.type === 'cost.event') {
+            loadCostToday()
+          }
+        } catch {}
       }
     })
     return () => close()
   }, [])
 
+  // Initial load
   useEffect(() => {
-    apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
-    apiFetch(endpoints.metrics.accountConcurrency).then((r) => r.json()).then(setConcurrency).catch(() => {})
-    apiFetch(endpoints.metrics.errors24h).then((r) => r.json()).then((x) => setErrors24h(x.errors_24h || 0)).catch(() => {})
-    apiFetch(endpoints.metrics.costToday).then((r) => r.json()).then(setCostToday).catch(() => {})
-    apiFetch(endpoints.events).then((r) => r.json()).then(setWebhookEvents).catch(() => {})
-    apiFetch(endpoints.webhooks.dlq).then((r) => r.json()).then(setDlq).catch(() => {})
-    apiFetch(endpoints.metrics.latencyP95).then((r) => r.json()).then((x) => setLatencyP95(x.p95_ms || 0)).catch(() => {})
+    loadLiveCalls()
+    loadCostToday()
   }, [])
 
+  // Timer for duration display
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  async function loadLiveCalls() {
+    const { ok, data } = await apiRequest(endpoints.calls.live)
+    if (ok && Array.isArray(data)) {
+      setLiveCalls(data)
+      setActiveCalls(data.length)
+    }
+  }
+
+  async function loadCostToday() {
+    const { ok, data } = await apiRequest(endpoints.metrics.costToday)
+    if (ok && data) setCostToday(data)
+  }
 
   function durationSince(ts) {
     if (!ts) return '—'
@@ -109,221 +109,194 @@ export default function Dashboard() {
   }
 
   async function endCall(id) {
-    try {
-      const res = await apiFetch(`/calls/${id}/end`, { method: 'POST' })
-      if (!res.ok) throw new Error(String(res.status))
-      apiFetch('/calls/live').then((r) => r.json()).then(setLiveCalls).catch(() => {})
-      toast.success('Call ended')
-    } catch {
-      toast.error('Failed to end call')
+    const { ok } = await apiRequest(`/calls/${id}/end`, { method: 'POST' })
+    if (ok) {
+      toast.success('Chiamata terminata')
+      loadLiveCalls()
+    } else {
+      toast.error('Errore nella terminazione')
     }
   }
 
-  const [dashQ, setDashQ] = useState('')
+  const filteredCalls = safeArray(liveCalls).filter((c) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return String(c.to || '').toLowerCase().includes(q) || 
+           String(c.from || '').toLowerCase().includes(q) ||
+           String(c.status || '').toLowerCase().includes(q)
+  })
 
   return (
-    <div>
-      <h1>{t('pages.dashboard.title')}</h1>
-      <p className="panel" style={{ display: 'inline-block' }}>{t('pages.dashboard.backend')}: {health}</p>
-      <div className="kpi-grid" style={{ marginTop: 12 }}>
-        {loading ? <div className="kpi-card" aria-busy="true"><div className="kpi-title skeleton-line" /><div className="skeleton-block" style={{ height: 28, marginTop: 8, borderRadius: 8 }} /></div> : (
-          <div className="kpi-card">
-            <div className="kpi-title">{t('pages.dashboard.active_calls')}</div>
-            <div className="kpi-value preserve-ltr">{metrics.active}</div>
-          </div>
-        )}
-        {loading ? <div className="kpi-card" aria-busy="true"><div className="kpi-title skeleton-line" /><div className="skeleton-block" style={{ height: 28, marginTop: 8, borderRadius: 8 }} /></div> : (
-          <div className="kpi-card">
-            <div className="kpi-title">{t('pages.dashboard.free_slots')}</div>
-            <div className="kpi-value preserve-ltr">{concurrency.available}/{concurrency.limit}</div>
-          </div>
-        )}
-        {loading ? <div className="kpi-card" aria-busy="true"><div className="kpi-title skeleton-line" /><div className="skeleton-block" style={{ height: 28, marginTop: 8, borderRadius: 8 }} /></div> : (
-          <div className="kpi-card">
-            <div className="kpi-title">{t('pages.dashboard.avg_duration')}</div>
-            <div className="kpi-value preserve-ltr">{metrics.avgDuration}</div>
-          </div>
-        )}
-        {loading ? <div className="kpi-card" aria-busy="true"><div className="kpi-title skeleton-line" /><div className="skeleton-block" style={{ height: 28, marginTop: 8, borderRadius: 8 }} /></div> : (
-          <div className="kpi-card">
-            <div className="kpi-title">{t('pages.dashboard.turn_taking_p95')}</div>
-            <div className="kpi-value preserve-ltr">{Math.round(latencyP95)} ms</div>
-          </div>
-        )}
-        {!loading && (
-          <>
-            <div className="kpi-card">
-              <div className="kpi-title">{t('pages.dashboard.success_rate')}</div>
-              <div className="kpi-value preserve-ltr">{metrics.successRate}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-title">{t('pages.dashboard.errors_24h')}</div>
-              <div className="kpi-value preserve-ltr">{errors24h}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-title">{t('pages.dashboard.cost_today')}</div>
-              <div className="kpi-value preserve-ltr">{costToday.amount} {costToday.currency}</div>
-            </div>
-          </>
-        )}
+    <div style={{ display: 'grid', gap: 24 }}>
+      {/* Header with quick actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>{t('pages.dashboard.title')}</h1>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <WebCallButton />
+          <Button variant="secondary" size="sm" onClick={loadLiveCalls}>
+            {t('common.refresh')}
+          </Button>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12 }}>
-        <span style={{ color: '#6b7280', fontSize: 13 }}>{t('pages.dashboard.period')}</span>
-        <button className="btn" onClick={() => setWindowDays(7)}>{t('pages.dashboard.days',{n:7})}</button>
-        <button className="btn" onClick={() => setWindowDays(30)}>{t('pages.dashboard.days',{n:30})}</button>
-        <div style={{ flex:1 }} />
-        <WebCallButton />
-        <input className="input" placeholder={t('pages.dashboard.search_live') || 'Search live…'} value={dashQ} onChange={(e)=> setDashQ(e.target.value)} style={{ maxWidth: 220 }} />
+      {/* Key metrics - simplified to 3 main KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <Card>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+            {t('pages.dashboard.active_calls')}
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
+            {activeCalls}
+          </div>
+        </Card>
+        <Card>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+            {t('pages.dashboard.success_rate')}
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
+            {successRate}
+          </div>
+        </Card>
+        <Card>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+            {t('pages.dashboard.cost_today')}
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
+            {costToday.amount} {costToday.currency}
+          </div>
+        </Card>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 8 }}>
-        <div className="panel">
-          <div style={{ fontWeight: 600, marginBottom: 8 }} className="preserve-ltr">{t('pages.dashboard.calls_per_day')}</div>
-          {loading ? <div style={{ height: 160 }} className="skeleton-block" /> : <Line
+      {/* Main chart - calls per day */}
+      <Card>
+        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+          {t('pages.dashboard.calls_per_day')}
+        </div>
+        {loadingDaily ? (
+          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+            Caricamento...
+          </div>
+        ) : dailyData?.labels?.length > 0 ? (
+          <Line
             data={{
-              labels: (daily?.labels || []).map((d) => d.slice(5)),
+              labels: safeArray(dailyData.labels).map((d) => d.slice(5)),
               datasets: [
                 {
                   label: t('pages.dashboard.create'),
-                  data: daily?.created || [],
-                  borderColor: 'var(--blue)',
-                  backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                  tension: 0.3,
+                  data: safeArray(dailyData.created),
+                  borderColor: 'var(--indigo-600)',
+                  backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                  tension: 0.4,
+                  fill: true,
                 },
                 {
                   label: t('pages.dashboard.finish'),
-                  data: daily?.finished || [],
+                  data: safeArray(dailyData.finished),
                   borderColor: 'var(--green)',
-                  backgroundColor: 'rgba(22, 163, 74, 0.12)',
-                  tension: 0.3,
+                  backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                  tension: 0.4,
+                  fill: true,
                 },
               ],
             }}
             options={{
               responsive: true,
-              plugins: { legend: { display: true, position: 'bottom' } },
-              scales: { y: { beginAtZero: true } },
+              maintainAspectRatio: false,
+              plugins: { 
+                legend: { display: true, position: 'bottom' },
+                tooltip: { mode: 'index', intersect: false }
+              },
+              scales: { 
+                y: { beginAtZero: true, grid: { color: 'var(--border)' } },
+                x: { grid: { display: false } }
+              },
             }}
-            height={120}
-          />}
-        </div>
-        <div className="panel">
-          <div style={{ fontWeight: 600, marginBottom: 8 }} className="preserve-ltr">{t('pages.dashboard.outcomes_recent')}</div>
-          {loading ? <div style={{ height: 160 }} className="skeleton-block" /> : <Bar
-            data={{
-              labels: outcomes?.labels || [],
-              datasets: [
-                 { label: t('pages.dashboard.count'), data: outcomes?.counts || [], backgroundColor: 'var(--amber)' },
-              ],
-            }}
-            options={{ responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }}
-            height={120}
-          />}
-        </div>
-      </div>
-
-      <div className="panel" style={{ marginTop: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontWeight: 600 }}>{t('pages.dashboard.live_calls')}</div>
-          <button className="btn" onClick={() => apiFetch('/calls/live').then((r) => r.json()).then(setLiveCalls)}>
-            {t('common.refresh')}
-          </button>
-        </div>
-        {loading ? <div className="panel" style={{ marginTop: 8 }}><div className="skeleton-row" style={{ height: 36 }} /><div className="skeleton-row" style={{ height: 44, marginTop: 6 }} /><div className="skeleton-row" style={{ height: 44, marginTop: 6 }} /></div> : <table className="table" style={{ marginTop: 8 }}>
-          <thead>
-            <tr>
-              <th>{t('common.created')}</th>
-              <th>{t('common.to')}</th>
-              <th>{t('common.from')}</th>
-              <th>{t('common.status')}</th>
-              <th>{t('common.detail')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {liveCalls.length === 0 && (
-              <tr>
-                <td colSpan="5" style={{ color: '#6b7280' }}>{t('pages.dashboard.no_active_calls')}</td>
-              </tr>
-            )}
-            {liveCalls.filter(c => {
-              const q = dashQ.toLowerCase().trim(); if (!q) return true;
-              return String(c.to || '').toLowerCase().includes(q) || String(c.from || '').toLowerCase().includes(q) || String(c.status || '').toLowerCase().includes(q)
-            }).map((c) => (
-              <tr key={c.id}>
-                <td>
-                  <div>{new Date(c.created_at).toLocaleTimeString()}</div>
-                  <div className="badge" style={{ display: 'inline-block', marginTop: 4, background: 'var(--blue)', color: 'white', padding: '2px 6px', borderRadius: 6, fontSize: 12 }}>
-                    {durationSince(c.created_at)}
-                  </div>
-                </td>
-                <td className="preserve-ltr">{c.to || '—'}</td>
-                <td className="preserve-ltr">{c.from || '—'}</td>
-                <td>{c.status}</td>
-                <td style={{ display: 'flex', gap: 6 }}>
-                  <a className="btn" href={`/calls/${c.id}`}>{t('common.open')}</a>
-                  <button className="btn" onClick={() => endCall(c.id)}>{t('common.end')}</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>}
-      </div>
-
-      <div className="panel" style={{ marginTop: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontWeight: 600 }}>{t('pages.dashboard.webhooks_monitor')}</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn" onClick={() => apiFetch('/events').then((r) => r.json()).then(setWebhookEvents)}>{t('common.refresh')}</button>
-            <button className="btn" onClick={() => apiFetch('/backfill', { method: 'POST' }).then(() => apiFetch('/calls').then((r) => r.json()).then(() => {}))}>{t('pages.dashboard.backfill_recent')}</button>
+            height={240}
+          />
+        ) : (
+          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+            Nessun dato disponibile
           </div>
+        )}
+      </Card>
+
+      {/* Live calls table */}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ fontSize: 16, fontWeight: 600 }}>
+            {t('pages.dashboard.live_calls')}
+          </div>
+          <Input
+            placeholder={t('pages.dashboard.search_live') || 'Cerca…'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ maxWidth: 240 }}
+          />
         </div>
-        <table className="table" style={{ marginTop: 8 }}>
-          <thead>
-            <tr>
-              <th>{t('common.type')}</th>
-              <th>{t('common.time')}</th>
-              <th>{t('common.ref')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {webhookEvents.slice().reverse().slice(0, 10).map((ev, idx) => (
-              <tr key={idx}>
-                <td>{ev.type}</td>
-                <td>{new Date(ev.ts).toLocaleTimeString()}</td>
-                <td>{ev?.data?.call_id || ev?.data?.id || '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ fontWeight: 600, marginTop: 12 }}>DLQ</div>
-        <table className="table" style={{ marginTop: 8 }}>
-          <thead>
-            <tr>
-              <th>{t('common.id')}</th>
-              <th>{t('common.event')}</th>
-              <th>{t('common.error')}</th>
-              <th>{t('common.time')}</th>
-              <th>{t('common.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dlq.map((r) => (
-              <tr key={r.id}>
-                <td>{r.id}</td>
-                <td>{r.event_id}</td>
-                <td>{r.error}</td>
-                <td>{new Date(r.created_at).toLocaleTimeString()}</td>
-                <td>
-                  <button className="btn" onClick={async () => { await apiFetch(`/webhooks/dlq/${r.id}/replay`, { method: 'POST' }); apiFetch('/webhooks/dlq').then((res) => res.json()).then(setDlq) }}>{t('common.replay')}</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        {filteredCalls.length === 0 ? (
+          <div style={{ padding: 48, textAlign: 'center', color: 'var(--muted)' }}>
+            {searchQuery ? 'Nessun risultato' : t('pages.dashboard.no_active_calls')}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table" style={{ marginTop: 0 }}>
+              <thead>
+                <tr>
+                  <th>{t('common.created')}</th>
+                  <th>{t('common.to')}</th>
+                  <th>{t('common.from')}</th>
+                  <th>{t('common.status')}</th>
+                  <th>{t('common.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCalls.map((c) => (
+                  <tr key={c.id}>
+                    <td>
+                      <div style={{ fontSize: 14 }}>{new Date(c.created_at).toLocaleTimeString()}</div>
+                      <div style={{ 
+                        display: 'inline-block', 
+                        marginTop: 4, 
+                        background: 'var(--indigo-600)', 
+                        color: 'white', 
+                        padding: '2px 8px', 
+                        borderRadius: 6, 
+                        fontSize: 11,
+                        fontWeight: 500
+                      }}>
+                        {durationSince(c.created_at)}
+                      </div>
+                    </td>
+                    <td className="preserve-ltr" style={{ fontFamily: 'monospace' }}>{c.to || '—'}</td>
+                    <td className="preserve-ltr" style={{ fontFamily: 'monospace' }}>{c.from || '—'}</td>
+                    <td>
+                      <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: 4, 
+                        fontSize: 12,
+                        background: c.status === 'ringing' ? 'var(--amber)' : 'var(--border)',
+                        color: c.status === 'ringing' ? 'var(--text)' : 'var(--muted)'
+                      }}>
+                        {c.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <a className="btn btn-sm" href={`/calls/${c.id}`}>
+                          {t('common.open')}
+                        </a>
+                        <Button variant="secondary" size="sm" onClick={() => endCall(c.id)}>
+                          {t('common.end')}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
     </div>
   )
 }
-
-
