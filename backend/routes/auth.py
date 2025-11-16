@@ -2,7 +2,7 @@
 import os
 from typing import Dict, Any
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -171,4 +171,34 @@ async def auth_google_callback(body: dict):
             "exp": (datetime.now(timezone.utc) + timedelta(days=7)).timestamp()
         })
         return {"token": token, "tenant_id": user.tenant_id, "is_admin": bool(user.is_admin)}
+
+
+@router.get("/me")
+async def auth_me(request: Request):
+    """Return basic info about the authenticated user based on Bearer token."""
+    try:
+        auth = request.headers.get("Authorization") or ""
+        if not auth.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="missing bearer token")
+        token = auth[7:]
+        from utils.auth import _decode_token
+        payload = _decode_token(token)
+        user_id = int(payload.get("sub") or 0)
+        tenant_id = int(payload.get("tenant_id") or 0)
+        is_admin = bool(payload.get("is_admin") or False)
+        with Session(engine) as session:
+            user = session.query(User).filter(User.id == user_id).one_or_none()
+            return {
+                "user_id": user_id,
+                "tenant_id": tenant_id,
+                "is_admin": is_admin,
+                "email": user.email if user else None,
+                "name": user.name if user else None,
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=401, detail="invalid token")
 
