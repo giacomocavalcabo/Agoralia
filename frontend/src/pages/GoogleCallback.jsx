@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 
 export default function GoogleCallback() {
+  const navigate = useNavigate()
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search)
     const code = qp.get('code')
@@ -11,11 +13,11 @@ export default function GoogleCallback() {
       const res = await apiFetch('/integrations/google/auth/callback', { method: 'POST', body: { code, redirect_uri } })
       if (res.ok) {
         alert('Google Calendar connected')
-        window.location.href = '/impostazioni'
+        navigate('/settings', { replace: true })
       } else {
         const data = await res.json().catch(()=>({}))
         alert(`Errore Google: ${data.detail || res.status}`)
-        window.location.href = '/impostazioni'
+        navigate('/settings', { replace: true })
       }
     })()
   }, [])

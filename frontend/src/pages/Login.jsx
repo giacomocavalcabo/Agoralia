@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 
 export default function Login() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState('login')
@@ -37,7 +39,7 @@ export default function Login() {
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('tenant_id', String(data.tenant_id))
       if (data.is_admin) localStorage.setItem('is_admin', '1'); else localStorage.removeItem('is_admin')
-      window.location.href = '/'
+      navigate('/', { replace: true })
     } catch (err) {
       alert(`Errore: ${err.message}`)
     } finally {

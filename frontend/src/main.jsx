@@ -29,27 +29,26 @@ import HubSpotCallback from './pages/HubSpotCallback.jsx'
 import GoogleCallback from './pages/GoogleCallback.jsx'
 import GoogleLoginCallback from './pages/GoogleLoginCallback.jsx'
 import Admin from './pages/Admin.jsx'
+import { AuthProvider, RequireAuth } from './lib/auth.jsx'
+import NotFound from './pages/NotFound.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
-function Protected({ children }) {
+function ProtectedRoute({ children }) {
   const token = localStorage.getItem('auth_token')
   const tenantId = localStorage.getItem('tenant_id')
-  
-  // Se non c'è token o tenant_id, redirect a login
-  if (!token || !tenantId) {
-    return <Navigate to="/login" replace />
-  }
-  
-  return children
+  if (!token || !tenantId) return <Navigate to="/login" replace />
+  return <RequireAuth>{children}</RequireAuth>
 }
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <Protected>
+      <ProtectedRoute>
         <Root />
-      </Protected>
+      </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundary><NotFound /></ErrorBoundary>,
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'leads', element: <Leads /> },
@@ -74,7 +73,7 @@ const router = createBrowserRouter([
     ],
   },
   { path: '/login', element: <Login /> },
-  { path: '*', element: <Navigate to="/" replace /> },
+  { path: '*', element: <NotFound /> },
   { path: '/hubspot/callback', element: <HubSpotCallback /> },
   { path: '/google/callback', element: <GoogleCallback /> },
   { path: '/google-login/callback', element: <GoogleLoginCallback /> },
@@ -83,9 +82,11 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <I18nProvider>
-      <ToastProvider>
-        <RouterProvider router={router} />
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
+      </AuthProvider>
     </I18nProvider>
   </StrictMode>,
 )

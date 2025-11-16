@@ -66,4 +66,30 @@ export function wsUrl(path) {
   return `${wsBase}${normalizedPath}${qp}`
 }
 
+// --- Normalized request helper (non-breaking: new API) ---
+async function parseJsonSafe(response) {
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) return { data: null, error: 'non_json_response' }
+  try {
+    const data = await response.json()
+    return { data, error: null }
+  } catch {
+    return { data: null, error: 'invalid_json' }
+  }
+}
+
+export async function apiRequest(path, options = {}) {
+  const response = await apiFetch(path, options)
+  if (response.status === 401) {
+    // Notifica il sistema auth (AuthProvider ascolta questo evento)
+    window.dispatchEvent(new CustomEvent('auth:logout'))
+  }
+  const { data, error } = await parseJsonSafe(response)
+  if (!response.ok) {
+    const errDetail = (data && (data.detail || data.message)) || error || `HTTP_${response.status}`
+    return { ok: false, status: response.status, data: null, error: errDetail, headers: response.headers }
+  }
+  return { ok: true, status: response.status, data, error: null, headers: response.headers }
+}
+
 

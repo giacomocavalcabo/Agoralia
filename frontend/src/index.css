@@ -1,21 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import './styles/tokens.css';
 
-:root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --primary: #111827;
-  --border: #e5e7eb;
-  --radius: 12px;
-  --blue: #2563eb;
-  --green: #16a34a;
-  --amber: #f59e0b;
-  --red: #dc2626;
-  --accent: #10a37f;
-  --accent-light: #f0fdf9;
-  --accent-dark: #064e3b;
-}
+:root { --accent: #10a37f; --accent-light: #f0fdf9; --accent-dark: #064e3b; }
 
 @media (prefers-color-scheme: dark) {
   :root {

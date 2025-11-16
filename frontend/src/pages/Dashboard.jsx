@@ -12,6 +12,9 @@ import {
 } from 'chart.js'
 import { Line, Bar } from 'react-chartjs-2'
 import { apiFetch, wsUrl } from '../lib/api'
+import { endpoints } from '../lib/endpoints'
+import { useMetricsDaily, useMetricsOutcomes } from '../lib/hooks/useMetrics'
+import { createReconnectingWebSocket } from '../lib/ws'
 import { useToast } from '../components/ToastProvider.jsx'
 import WebCallButton from '../components/WebCallButton.jsx'
 import SkeletonKPI from '../components/SkeletonKPI.jsx'
@@ -22,6 +25,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 export default function Dashboard() {
   const { t } = useI18n()
   const toast = useToast()
+  const { loading: loadingDaily, data: dailyData } = useMetricsDaily(7)
+  const { loading: loadingOutcomes, data: outcomesData } = useMetricsOutcomes(7)
   const [health, setHealth] = useState('unknown')
   const [metrics, setMetrics] = useState({
     active: 0,
@@ -43,61 +48,50 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Ping backend health (placeholder for real metrics)
-    apiFetch('/health')
-      .then((r) => r.json())
-      .then((d) => setHealth(d.status || 'ok'))
-      .catch(() => setHealth('down'))
+    apiFetch(endpoints.health).then((r) => r.json()).then((d) => setHealth(d.status || 'ok')).catch(() => setHealth('down'))
   }, [])
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      const [d, o] = await Promise.all([
-        apiFetch(`/metrics/daily?days=${windowDays}`).then((r) => r.json()),
-        apiFetch(`/metrics/outcomes?days=${windowDays}`).then((r) => r.json()),
-      ])
-      setDaily(d)
-      setOutcomes(o)
-      setMetrics((m) => ({ ...m, successRate: `${Math.round((d.rate || []).at(-1) || 0)}%` }))
-      setLoading(false)
+    setLoading(loadingDaily || loadingOutcomes)
+    if (dailyData) {
+      setDaily(dailyData)
+      setMetrics((m) => ({ ...m, successRate: `${Math.round((dailyData.rate || []).at(-1) || 0)}%` }))
     }
-    load()
-  }, [windowDays])
+    if (outcomesData) setOutcomes(outcomesData)
+  }, [loadingDaily, loadingOutcomes, dailyData, outcomesData])
 
   useEffect(() => {
-    const ws = new WebSocket(wsUrl('/ws'))
-    ws.onmessage = (ev) => {
+    const { close } = createReconnectingWebSocket(wsUrl('/ws'), {
+      onMessage: (ev) => {
       try {
         const msg = JSON.parse(ev.data)
         // Simple demo: increment active calls on created events
         if (msg?.type === 'call.created') {
           setMetrics((m) => ({ ...m, active: (m.active ?? 0) + 1 }))
           // refresh live list
-          apiFetch('/calls/live').then((r) => r.json()).then(setLiveCalls).catch(() => {})
+            apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
         }
         if (msg?.type === 'call.finished' || msg?.type === 'webcall.finished') {
           setMetrics((m) => ({ ...m, active: Math.max(0, (m.active ?? 1) - 1) }))
-          apiFetch('/calls/live').then((r) => r.json()).then(setLiveCalls).catch(() => {})
+            apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
         }
         if (msg?.type === 'cost.event') {
-          apiFetch('/metrics/cost/today').then((r) => r.json()).then(setCostToday).catch(() => {})
+            apiFetch(endpoints.metrics.costToday).then((r) => r.json()).then(setCostToday).catch(() => {})
         }
       } catch {}
-    }
-    return () => ws.close()
+      }
+    })
+    return () => close()
   }, [])
 
   useEffect(() => {
-    // initial live load
-    apiFetch('/calls/live').then((r) => r.json()).then(setLiveCalls).catch(() => {})
-    // load additional KPIs
-    apiFetch('/metrics/account/concurrency').then((r) => r.json()).then(setConcurrency).catch(() => {})
-    apiFetch('/metrics/errors/24h').then((r) => r.json()).then((x) => setErrors24h(x.errors_24h || 0)).catch(() => {})
-    apiFetch('/metrics/cost/today').then((r) => r.json()).then(setCostToday).catch(() => {})
-    apiFetch('/events').then((r) => r.json()).then(setWebhookEvents).catch(() => {})
-    apiFetch('/webhooks/dlq').then((r) => r.json()).then(setDlq).catch(() => {})
-    apiFetch('/metrics/latency/p95').then((r) => r.json()).then((x) => setLatencyP95(x.p95_ms || 0)).catch(() => {})
+    apiFetch(endpoints.calls.live).then((r) => r.json()).then(setLiveCalls).catch(() => {})
+    apiFetch(endpoints.metrics.accountConcurrency).then((r) => r.json()).then(setConcurrency).catch(() => {})
+    apiFetch(endpoints.metrics.errors24h).then((r) => r.json()).then((x) => setErrors24h(x.errors_24h || 0)).catch(() => {})
+    apiFetch(endpoints.metrics.costToday).then((r) => r.json()).then(setCostToday).catch(() => {})
+    apiFetch(endpoints.events).then((r) => r.json()).then(setWebhookEvents).catch(() => {})
+    apiFetch(endpoints.webhooks.dlq).then((r) => r.json()).then(setDlq).catch(() => {})
+    apiFetch(endpoints.metrics.latencyP95).then((r) => r.json()).then((x) => setLatencyP95(x.p95_ms || 0)).catch(() => {})
   }, [])
 
   useEffect(() => {

@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../lib/i18n.jsx'
+import { useAuth } from '../lib/auth.jsx'
 
 export default function AvatarMenu({ email = 'user@example.com' }) {
   const { t } = useI18n()
+  const navigate = useNavigate()
+  const { clearAuth } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   useEffect(() => {
@@ -12,12 +16,8 @@ export default function AvatarMenu({ email = 'user@example.com' }) {
   }, [])
 
   const handleLogout = () => {
-    // Rimuovi solo le chiavi di autenticazione, mantieni tema e altre preferenze
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('tenant_id')
-    localStorage.removeItem('is_admin')
-    // Forza il refresh completo per assicurarsi che il redirect funzioni
-    window.location.href = '/login'
+    clearAuth()
+    navigate('/login', { replace: true })
   }
 
   const initials = String(email).slice(0, 2).toUpperCase()
