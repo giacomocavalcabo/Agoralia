@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiRequest } from '../lib/api'
+import { useToast } from '../components/ToastProvider.jsx'
 import { useI18n } from '../lib/i18n.jsx'
 import TemplatesModal from '../components/TemplatesModal.jsx'
 
@@ -11,14 +12,19 @@ export default function Campaigns() {
   const [creating, setCreating] = useState(false)
   const [msg, setMsg] = useState('')
   const [tplOpen, setTplOpen] = useState(false)
+  const toast = useToast()
 
   async function load() {
     const [res, kpi] = await Promise.all([
-      apiFetch('/campaigns').then((r) => r.json()),
-      apiFetch('/campaigns/kpi').then((r) => r.json()).catch(() => []),
+      apiRequest('/campaigns'),
+      apiRequest('/campaigns/kpi'),
     ])
-    const byId = new Map(kpi.map((x) => [x.id, x]))
-    setRows(res.map((c) => ({ ...c, ...(byId.get(c.id) || {}) })))
+    if (!res.ok) toast.error(`Campaigns: ${res.error}`)
+    if (!kpi.ok) toast.error(`Campaigns KPI: ${kpi.error}`)
+    const kpiArr = Array.isArray(kpi.data) ? kpi.data : []
+    const resArr = Array.isArray(res.data) ? res.data : []
+    const byId = new Map(kpiArr.map((x) => [x.id, x]))
+    setRows(resArr.map((c) => ({ ...c, ...(byId.get(c.id) || {}) })))
   }
   useEffect(() => { load() }, [])
 
@@ -26,15 +32,14 @@ export default function Campaigns() {
     if (!name || creating) return
     setCreating(true)
     try {
-      const res = await apiFetch('/campaigns', { method: 'POST', body: { name, status } })
-      const data = await res.json()
+      const res = await apiRequest('/campaigns', { method: 'POST', body: { name, status } })
       if (res.ok) {
-        setMsg(t('pages.campaigns.created', { id: data.id }))
+        setMsg(t('pages.campaigns.created', { id: res.data?.id }))
         setName('')
         load()
         setTimeout(() => setMsg(''), 3000)
       } else {
-        setMsg(data?.detail || t('common.error_code', { code: res.status }))
+        setMsg(res.error || t('common.error_code', { code: res.status }))
         setTimeout(() => setMsg(''), 4000)
       }
     } catch (e) {
