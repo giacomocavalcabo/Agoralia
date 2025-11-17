@@ -86,10 +86,19 @@ export function GeneralSection() {
 
     try {
       const result = await uploadMutation.mutateAsync(file)
-      setValue('brand_logo_url', result.brand_logo_url || '')
+      // The backend returns the full URL or relative path
+      // Store it as-is in the form (validation will pass now)
+      setValue('brand_logo_url', result.brand_logo_url || '', { shouldValidate: false })
       setHasChanges(true)
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     } catch (error: any) {
       alert(`Failed to upload logo: ${error.message}`)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
