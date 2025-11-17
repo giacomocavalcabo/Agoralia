@@ -321,8 +321,12 @@ def update_workspace_settings(
 def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) -> WorkspaceSettings:
     """Internal helper: update settings"""
     # Check if notification columns exist - use direct SQL query for reliability
+    # Force refresh connection to see latest schema changes
     has_notification_columns = False
     try:
+        # Force connection refresh to see latest schema
+        session.connection().invalidate()
+        
         # First, try to get all columns from workspace_settings to see what exists
         all_columns_result = session.execute(
             text("""
