@@ -200,7 +200,11 @@ export function GeneralSection() {
               {logoUrl ? (
                 <div className="flex items-center gap-3">
                   <img
-                    src={logoUrl}
+                    src={
+                      logoUrl.startsWith('/uploads/')
+                        ? `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${logoUrl}`
+                        : logoUrl
+                    }
                     alt="Workspace logo"
                     className="h-16 w-16 rounded-full object-cover border"
                   />
