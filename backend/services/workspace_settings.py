@@ -164,6 +164,18 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
     try:
         settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
         if settings:
+            # Ensure notification fields have defaults if None
+            if has_notification_columns:
+                if getattr(settings, 'email_notifications_enabled', None) is None:
+                    settings.email_notifications_enabled = 1
+                if getattr(settings, 'email_campaign_started', None) is None:
+                    settings.email_campaign_started = 1
+                if getattr(settings, 'email_campaign_paused', None) is None:
+                    settings.email_campaign_paused = 1
+                if getattr(settings, 'email_budget_warning', None) is None:
+                    settings.email_budget_warning = 1
+                if getattr(settings, 'email_compliance_alert', None) is None:
+                    settings.email_compliance_alert = 1
             return settings
     except (ProgrammingError, InternalError) as e:
         # Column doesn't exist yet or transaction aborted - rollback and use raw SQL
