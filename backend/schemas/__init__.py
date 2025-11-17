@@ -4,8 +4,6 @@ from .settings import (
     WorkspaceGeneralResponse,
     WorkspaceIntegrationsResponse,
     WorkspaceIntegrationsUpdate,
-    UserPreferencesUIUpdate,
-    UserPreferencesUIResponse,
     EffectiveSettings,
 )
 
@@ -14,8 +12,6 @@ __all__ = [
     "WorkspaceGeneralResponse",
     "WorkspaceIntegrationsResponse",
     "WorkspaceIntegrationsUpdate",
-    "UserPreferencesUIUpdate",
-    "UserPreferencesUIResponse",
     "EffectiveSettings",
 ]
 
