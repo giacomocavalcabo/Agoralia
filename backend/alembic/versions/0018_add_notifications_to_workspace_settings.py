@@ -18,9 +18,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Check if table exists and column doesn't exist before adding
+    # Use direct SQL to add columns (more reliable than op.add_column)
     from sqlalchemy import inspect, text
-    from sqlalchemy.engine import Connection
     import sys
     
     conn = op.get_bind()
@@ -38,28 +37,29 @@ def upgrade() -> None:
     existing_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
     print(f"[MIGRATION 0018] Existing columns: {existing_columns}", file=sys.stderr, flush=True)
     
-    # Add notification fields to workspace_settings only if they don't exist
+    # Add notification fields using direct SQL (more reliable)
+    columns_to_add = [
+        ('email_notifications_enabled', 'INTEGER NOT NULL DEFAULT 1'),
+        ('email_campaign_started', 'INTEGER NOT NULL DEFAULT 1'),
+        ('email_campaign_paused', 'INTEGER NOT NULL DEFAULT 1'),
+        ('email_budget_warning', 'INTEGER NOT NULL DEFAULT 1'),
+        ('email_compliance_alert', 'INTEGER NOT NULL DEFAULT 1'),
+    ]
+    
     columns_added = []
-    if 'email_notifications_enabled' not in existing_columns:
-        print("[MIGRATION 0018] Adding email_notifications_enabled column", file=sys.stderr, flush=True)
-        op.add_column('workspace_settings', sa.Column('email_notifications_enabled', sa.Integer(), nullable=False, server_default='1'))
-        columns_added.append('email_notifications_enabled')
-    if 'email_campaign_started' not in existing_columns:
-        print("[MIGRATION 0018] Adding email_campaign_started column", file=sys.stderr, flush=True)
-        op.add_column('workspace_settings', sa.Column('email_campaign_started', sa.Integer(), nullable=False, server_default='1'))
-        columns_added.append('email_campaign_started')
-    if 'email_campaign_paused' not in existing_columns:
-        print("[MIGRATION 0018] Adding email_campaign_paused column", file=sys.stderr, flush=True)
-        op.add_column('workspace_settings', sa.Column('email_campaign_paused', sa.Integer(), nullable=False, server_default='1'))
-        columns_added.append('email_campaign_paused')
-    if 'email_budget_warning' not in existing_columns:
-        print("[MIGRATION 0018] Adding email_budget_warning column", file=sys.stderr, flush=True)
-        op.add_column('workspace_settings', sa.Column('email_budget_warning', sa.Integer(), nullable=False, server_default='1'))
-        columns_added.append('email_budget_warning')
-    if 'email_compliance_alert' not in existing_columns:
-        print("[MIGRATION 0018] Adding email_compliance_alert column", file=sys.stderr, flush=True)
-        op.add_column('workspace_settings', sa.Column('email_compliance_alert', sa.Integer(), nullable=False, server_default='1'))
-        columns_added.append('email_compliance_alert')
+    for col_name, col_def in columns_to_add:
+        if col_name not in existing_columns:
+            print(f"[MIGRATION 0018] Adding {col_name} column using SQL", file=sys.stderr, flush=True)
+            try:
+                # Use op.execute with raw SQL for reliability
+                op.execute(text(f"ALTER TABLE workspace_settings ADD COLUMN {col_name} {col_def}"))
+                columns_added.append(col_name)
+                print(f"[MIGRATION 0018] Successfully added {col_name}", file=sys.stderr, flush=True)
+            except Exception as e:
+                print(f"⚠ [MIGRATION 0018] Error adding {col_name}: {e}", file=sys.stderr, flush=True)
+                # If column already exists (race condition), that's OK
+                if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
+                    raise
     
     print(f"[MIGRATION 0018] Added {len(columns_added)} columns: {columns_added}", file=sys.stderr, flush=True)
     
