@@ -12,18 +12,14 @@ import { Loader2, Save, Upload, X } from 'lucide-react'
 const generalSchema = z.object({
   workspace_name: z.string().max(128).optional().or(z.literal('')),
   timezone: z.string().max(64).optional().or(z.literal('')),
-  brand_logo_url: z.string()
+  external_logo_url: z.string()
     .refine(
       (val) => {
         if (!val || val === '') return true
-        // Accept URLs (http/https) or relative paths starting with /uploads/ or workspace-logos/
-        return val.startsWith('http://') || 
-               val.startsWith('https://') || 
-               val.startsWith('/uploads/') || 
-               val.startsWith('workspace-logos/') ||
-               z.string().url().safeParse(val).success
+        // Only accept external URLs (http/https)
+        return val.startsWith('http://') || val.startsWith('https://')
       },
-      { message: 'Must be a valid URL or file path' }
+      { message: 'Must be a valid URL (http:// or https://)' }
     )
     .optional()
     .or(z.literal('')),
@@ -51,32 +47,43 @@ export function GeneralSection() {
     defaultValues: {
       workspace_name: '',
       timezone: '',
-      brand_logo_url: '',
+      external_logo_url: '',
     },
   })
 
-  const logoUrl = watch('brand_logo_url')
+  // Get current logo from data (uploaded file or external URL)
+  const currentLogoUrl = data?.brand_logo_url || ''
+  const isUploadedLogo = currentLogoUrl && !currentLogoUrl.startsWith('http://') && !currentLogoUrl.startsWith('https://')
+  const externalLogoUrl = watch('external_logo_url')
 
   // Sync form with data when it loads
   useEffect(() => {
     if (data) {
+      // Extract external URL if logo is an external URL, otherwise leave empty
+      const logoUrl = data.brand_logo_url || ''
+      const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
+      
       reset({
         workspace_name: data.workspace_name || '',
         timezone: data.timezone || '',
-        brand_logo_url: data.brand_logo_url || '',
+        external_logo_url: isExternal ? logoUrl : '',
       })
       setHasChanges(false)
     }
   }, [data, reset])
 
   // Watch for changes to detect when user edits fields
-  const watchedFields = watch(['workspace_name', 'timezone', 'brand_logo_url'])
+  const watchedFields = watch(['workspace_name', 'timezone', 'external_logo_url'])
   useEffect(() => {
     if (data) {
+      const logoUrl = data.brand_logo_url || ''
+      const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
+      const expectedExternalUrl = isExternal ? logoUrl : ''
+      
       const hasChangesNow = 
         watchedFields[0] !== (data.workspace_name || '') ||
         watchedFields[1] !== (data.timezone || '') ||
-        watchedFields[2] !== (data.brand_logo_url || '')
+        watchedFields[2] !== expectedExternalUrl
       setHasChanges(hasChangesNow)
     }
   }, [watchedFields, data])
@@ -99,11 +106,9 @@ export function GeneralSection() {
 
     try {
       const result = await uploadMutation.mutateAsync(file)
-      // The backend returns the full URL or relative path
-      // Store it as-is in the form (validation will pass now)
-      setValue('brand_logo_url', result.brand_logo_url || '', { shouldValidate: false })
-      // Logo upload saves automatically, so no need to set hasChanges
-      // But if user manually edits the URL field, hasChanges will be set
+      // Logo upload saves automatically, clear external URL field since we're using uploaded file
+      setValue('external_logo_url', '', { shouldValidate: false })
+      setHasChanges(false)
       // Clear the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -119,7 +124,7 @@ export function GeneralSection() {
   const handleRemoveLogo = async () => {
     try {
       await deleteMutation.mutateAsync()
-      setValue('brand_logo_url', '', { shouldValidate: false })
+      setValue('external_logo_url', '', { shouldValidate: false })
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to remove logo: ${error.message}`)
@@ -128,7 +133,6 @@ export function GeneralSection() {
 
   const onSubmit = async (formData: GeneralForm) => {
     try {
-      // Simple updates - logo is handled separately via upload/delete endpoints
       const updates: Record<string, string | null> = {}
       if (formData.workspace_name !== undefined) {
         updates.workspace_name = formData.workspace_name || null
@@ -136,30 +140,17 @@ export function GeneralSection() {
       if (formData.timezone !== undefined) {
         updates.timezone = formData.timezone || null
       }
-      // If brand_logo_url is empty string, delete the logo
-      if (formData.brand_logo_url !== undefined) {
-        if (formData.brand_logo_url === '' || formData.brand_logo_url === null) {
-          // Empty = delete logo
-          updates.brand_logo_url = null
+      // Handle external logo URL
+      if (formData.external_logo_url !== undefined) {
+        if (formData.external_logo_url === '' || formData.external_logo_url === null) {
+          // If external URL is empty and we have an uploaded logo, don't change it
+          // If external URL is empty and we don't have an uploaded logo, delete logo
+          if (!isUploadedLogo) {
+            updates.brand_logo_url = null
+          }
         } else {
-          // Extract relative path if needed
-          let logoValue = formData.brand_logo_url
-          if (logoValue.includes('workspace-logos/')) {
-            const match = logoValue.match(/workspace-logos\/[^/]+\/[^/]+$/)
-            if (match) {
-              logoValue = match[0]
-            } else if (logoValue.startsWith('/uploads/')) {
-              logoValue = logoValue.replace(/^\/uploads\//, '')
-            }
-          } else if (logoValue.startsWith('/uploads/')) {
-            logoValue = logoValue.replace(/^\/uploads\//, '')
-          }
-          // Only update if it's a valid workspace-logos path or external URL
-          if (logoValue.startsWith('workspace-logos/') || 
-              logoValue.startsWith('http://') || 
-              logoValue.startsWith('https://')) {
-            updates.brand_logo_url = logoValue
-          }
+          // Set external URL as logo
+          updates.brand_logo_url = formData.external_logo_url
         }
       }
 
@@ -264,13 +255,14 @@ export function GeneralSection() {
           <div>
             <Label htmlFor="logo">Logo</Label>
             <div className="mt-1.5 space-y-3">
-              {logoUrl ? (
+              {/* Show current logo (uploaded or external) */}
+              {currentLogoUrl ? (
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
                       src={
-                        logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
-                          ? logoUrl
+                        currentLogoUrl.startsWith('http://') || currentLogoUrl.startsWith('https://')
+                          ? currentLogoUrl
                           : (() => {
                               // For static files, always use the full API URL, not the proxy
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
@@ -278,9 +270,9 @@ export function GeneralSection() {
                               const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
                                 ? apiBaseUrl
                                 : 'https://api.agoralia.app'
-                              const path = logoUrl.startsWith('/') 
-                                ? logoUrl 
-                                : `/${logoUrl}`
+                              const path = currentLogoUrl.startsWith('/') 
+                                ? currentLogoUrl 
+                                : `/${currentLogoUrl}`
                               return `${fullApiUrl}${path}`
                             })()
                       }
@@ -372,27 +364,32 @@ export function GeneralSection() {
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              <Input
-                id="brand_logo_url"
-                {...register('brand_logo_url')}
-                placeholder="Or enter logo URL"
-                className="mt-2"
-                onChange={(e) => {
-                  register('brand_logo_url').onChange(e)
-                  setHasChanges(true)
-                }}
-              />
-              {errors.brand_logo_url && (
-                <p className="mt-1 text-sm text-destructive">{errors.brand_logo_url.message}</p>
-              )}
-              <p className="mt-1 text-xs text-muted-foreground">
-                Upload an image file or enter a URL. Max 5MB.
-              </p>
+              <div>
+                <Label htmlFor="external_logo_url" className="text-sm text-muted-foreground">
+                  Or enter external logo URL
+                </Label>
+                <Input
+                  id="external_logo_url"
+                  {...register('external_logo_url')}
+                  placeholder="https://example.com/logo.png"
+                  className="mt-1.5"
+                  onChange={(e) => {
+                    register('external_logo_url').onChange(e)
+                    setHasChanges(true)
+                  }}
+                />
+                {errors.external_logo_url && (
+                  <p className="mt-1 text-sm text-destructive">{errors.external_logo_url.message}</p>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Enter an external URL to use as logo. Click Save to apply.
+                </p>
+              </div>
             </div>
           </div>
 
-          {hasChanges && (
-            <div className="flex items-center justify-end gap-2 pt-4">
+          <div className="flex items-center justify-end gap-2 pt-4">
+            {hasChanges && (
               <Button
                 type="button"
                 variant="outline"
@@ -403,21 +400,21 @@ export function GeneralSection() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
+            )}
+            <Button type="submit" disabled={updateMutation.isPending || (!hasChanges && !currentLogoUrl && !externalLogoUrl)}>
+              {updateMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
