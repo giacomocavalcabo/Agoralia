@@ -91,10 +91,36 @@ export function GeneralSection() {
   }
 
   if (error) {
+    const is403 = (error as any)?.response?.status === 403
     return (
       <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-sm text-destructive">Error loading settings: {error.message}</p>
+        <CardContent className="py-12 text-center space-y-4">
+          <p className="text-sm text-destructive">
+            {is403 
+              ? "Access denied. Your admin status may have changed. Please refresh the page or logout/login to update your token."
+              : `Error loading settings: ${error.message}`}
+          </p>
+          {is403 && (
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                Refresh Page
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.clear()
+                  window.location.href = '/login'
+                }}
+              >
+                Logout & Login
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     )
