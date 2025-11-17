@@ -266,29 +266,41 @@ export function GeneralSection() {
             <div className="mt-1.5 space-y-3">
               {logoUrl ? (
                 <div className="flex items-center gap-3">
-                  <img
-                    src={
-                      logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
-                        ? logoUrl
-                        : (() => {
-                            // For static files, always use the full API URL, not the proxy
-                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
-                            // If VITE_API_BASE_URL is a relative path like /api, use the full URL instead
-                            const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
-                              ? apiBaseUrl
-                              : 'https://api.agoralia.app'
-                            const path = logoUrl.startsWith('/') 
-                              ? logoUrl 
-                              : `/${logoUrl}`
-                            return `${fullApiUrl}${path}`
-                          })()
-                    }
-                    alt="Workspace logo"
-                    className="h-16 w-16 rounded-full object-cover border"
-                    onError={(e) => {
-                      // Silently handle image load errors
-                    }}
-                  />
+                  <div className="relative">
+                    <img
+                      src={
+                        logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
+                          ? logoUrl
+                          : (() => {
+                              // For static files, always use the full API URL, not the proxy
+                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
+                              // If VITE_API_BASE_URL is a relative path like /api, use the full URL instead
+                              const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
+                                ? apiBaseUrl
+                                : 'https://api.agoralia.app'
+                              const path = logoUrl.startsWith('/') 
+                                ? logoUrl 
+                                : `/${logoUrl}`
+                              return `${fullApiUrl}${path}`
+                            })()
+                      }
+                      alt="Workspace logo"
+                      className="h-16 w-16 rounded-full object-cover border"
+                      onError={(e) => {
+                        // Hide broken image and show placeholder
+                        const img = e.target as HTMLImageElement
+                        img.style.display = 'none'
+                        // Show a message that the file is missing
+                        const parent = img.parentElement
+                        if (parent && !parent.querySelector('.logo-error-message')) {
+                          const errorMsg = document.createElement('div')
+                          errorMsg.className = 'logo-error-message flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-muted-foreground bg-muted text-xs text-muted-foreground text-center px-2'
+                          errorMsg.textContent = 'Logo file missing'
+                          parent.appendChild(errorMsg)
+                        }
+                      }}
+                    />
+                  </div>
                   <div className="flex-1">
                     <Button
                       type="button"
