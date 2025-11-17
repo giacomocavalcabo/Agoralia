@@ -240,6 +240,17 @@ def update_workspace_settings(
 
 def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) -> WorkspaceSettings:
     """Internal helper: update settings"""
+    # Check if notification columns exist
+    inspector = inspect(session.bind)
+    table_columns = []
+    if 'workspace_settings' in inspector.get_table_names():
+        try:
+            table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
+        except Exception:
+            pass
+    
+    has_notification_columns = 'email_notifications_enabled' in table_columns
+    
     settings = get_workspace_settings(tenant_id, session)
     
     # Handle encryption for sensitive fields
@@ -251,13 +262,115 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
         value = updates.pop("retell_webhook_secret")
         settings.retell_webhook_secret_encrypted = encrypt_value(value) if value else None
     
-    # Update other fields
+    # Filter out notification fields if columns don't exist
+    updates_to_apply = {}
     for key, value in updates.items():
-        if hasattr(settings, key) and value is not None:
+        if hasattr(settings, key):
+            # Skip notification fields if columns don't exist
+            if not has_notification_columns and key in [
+                'email_notifications_enabled', 'email_campaign_started', 
+                'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
+            ]:
+                continue  # Skip these fields if columns don't exist
+            updates_to_apply[key] = value
+    
+    # Update fields
+    for key, value in updates_to_apply.items():
+        if value is not None:
             setattr(settings, key, value)
     
-    session.commit()
-    session.refresh(settings)
+    try:
+        session.commit()
+        # Only refresh if notification columns exist, otherwise refresh will fail
+        if has_notification_columns:
+            try:
+                session.refresh(settings)
+            except (ProgrammingError, InternalError):
+                # If refresh fails, re-read using safe method
+                session.rollback()
+                settings = get_workspace_settings(tenant_id, session)
+        else:
+            # Re-read using safe method (raw SQL) to get updated values
+            result = session.execute(
+                text("""
+                    SELECT id, tenant_id, default_agent_id, default_from_number, default_spacing_ms,
+                           budget_monthly_cents, budget_warn_percent, budget_stop_enabled,
+                           quiet_hours_enabled, quiet_hours_weekdays, quiet_hours_saturday,
+                           quiet_hours_sunday, quiet_hours_timezone,
+                           require_legal_review, override_country_rules_enabled,
+                           default_lang, supported_langs_json, prefer_detect_language,
+                           kb_version_outbound, kb_version_inbound,
+                           workspace_name, timezone, brand_logo_url, brand_color,
+                           retell_api_key_encrypted, retell_webhook_secret_encrypted,
+                           created_at, updated_at
+                    FROM workspace_settings
+                    WHERE tenant_id = :tid
+                    LIMIT 1
+                """),
+                {"tid": tenant_id}
+            ).first()
+            
+            if result:
+                # Update the settings object with fresh data
+                settings.id = result[0]
+                settings.tenant_id = result[1]
+                settings.default_agent_id = result[2]
+                settings.default_from_number = result[3]
+                settings.default_spacing_ms = result[4] or 1000
+                settings.budget_monthly_cents = result[5]
+                settings.budget_warn_percent = result[6] or 80
+                settings.budget_stop_enabled = result[7] or 1
+                settings.quiet_hours_enabled = result[8] or 0
+                settings.quiet_hours_weekdays = result[9]
+                settings.quiet_hours_saturday = result[10]
+                settings.quiet_hours_sunday = result[11]
+                settings.quiet_hours_timezone = result[12]
+                settings.require_legal_review = result[13] or 1
+                settings.override_country_rules_enabled = result[14] or 0
+                settings.default_lang = result[15]
+                settings.supported_langs_json = result[16]
+                settings.prefer_detect_language = result[17] or 0
+                settings.kb_version_outbound = result[18] or 0
+                settings.kb_version_inbound = result[19] or 0
+                settings.workspace_name = result[20]
+                settings.timezone = result[21]
+                settings.brand_logo_url = result[22]
+                settings.brand_color = result[23]
+                settings.retell_api_key_encrypted = result[24]
+                settings.retell_webhook_secret_encrypted = result[25]
+                settings.created_at = result[26]
+                settings.updated_at = result[27]
+    except (ProgrammingError, InternalError) as e:
+        session.rollback()
+        # If commit fails due to missing columns, try raw SQL update
+        if 'email_notifications_enabled' in str(e) or 'does not exist' in str(e) or 'transaction is aborted' in str(e):
+            # Build UPDATE query with only existing columns
+            set_clauses = []
+            params = {"tid": tenant_id}
+            
+            for key, value in updates_to_apply.items():
+                if key not in ['email_notifications_enabled', 'email_campaign_started', 
+                              'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert']:
+                    set_clauses.append(f"{key} = :{key}")
+                    params[key] = value
+            
+            if set_clauses:
+                session.execute(
+                    text(f"""
+                        UPDATE workspace_settings
+                        SET {', '.join(set_clauses)}, updated_at = now()
+                        WHERE tenant_id = :tid
+                    """),
+                    params
+                )
+                session.commit()
+                # Re-read using safe method
+                settings = get_workspace_settings(tenant_id, session)
+            else:
+                raise
+        else:
+            raise
+    
     return settings
 
 
