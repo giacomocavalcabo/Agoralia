@@ -166,7 +166,7 @@ async def upload_workspace_logo(
         
         print(f"[DEBUG] Uploading logo to R2: key={r2_key}, size={len(file_data)}, content_type={content_type}", flush=True)
         
-        # Check if R2 is configured BEFORE attempting upload
+        # Check if R2 is configured
         import os
         r2_configured = bool(
             os.getenv("R2_ACCESS_KEY_ID") and 
@@ -174,19 +174,29 @@ async def upload_workspace_logo(
             os.getenv("R2_ACCOUNT_ID") and 
             os.getenv("R2_BUCKET")
         )
-        if not r2_configured:
-            error_msg = "R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables."
+        
+        logo_url_to_save = None
+        
+        if r2_configured:
+            # Try to upload to R2
+            uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+            print(f"[DEBUG] R2 upload result: {uploaded}", flush=True)
+            if uploaded:
+                # Successfully uploaded to R2, use R2 key
+                logo_url_to_save = r2_key
+            else:
+                # R2 upload failed even though configured
+                raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage. Please check R2 configuration and try again.")
+        else:
+            # R2 not configured - for now, we'll reject the upload
+            # In the future, we could implement base64 encoding or another storage solution
+            error_msg = "R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables to enable logo uploads."
             print(f"[ERROR] {error_msg}", flush=True)
             raise HTTPException(status_code=500, detail=error_msg)
         
-        uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
-        print(f"[DEBUG] R2 upload result: {uploaded}", flush=True)
-        if not uploaded:
-            raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage. Please check R2 configuration and try again.")
-        
-        # Update settings with R2 key (not full URL)
-        print(f"[DEBUG] Updating settings with brand_logo_url: {r2_key}", flush=True)
-        updates = {"brand_logo_url": r2_key}
+        # Update settings with logo URL
+        print(f"[DEBUG] Updating settings with brand_logo_url: {logo_url_to_save}", flush=True)
+        updates = {"brand_logo_url": logo_url_to_save}
         try:
             settings = update_workspace_settings(tenant_id, updates)
             print(f"[DEBUG] Settings updated successfully", flush=True)
@@ -197,9 +207,14 @@ async def upload_workspace_logo(
             raise HTTPException(status_code=500, detail=f"Error updating settings: {str(e)}")
         
         # Generate presigned URL for response
-        logo_url = r2_presign_get(r2_key, expires_seconds=3600 * 24 * 365)  # 1 year
-        if not logo_url:
-            logo_url = r2_key
+        logo_url = None
+        if logo_url_to_save and logo_url_to_save.startswith("workspace-logos/"):
+            # Generate presigned URL for R2
+            logo_url = r2_presign_get(logo_url_to_save, expires_seconds=3600 * 24 * 365)  # 1 year
+            if not logo_url:
+                logo_url = logo_url_to_save
+        else:
+            logo_url = logo_url_to_save
         
         return WorkspaceGeneralResponse(
             workspace_name=settings.workspace_name,
