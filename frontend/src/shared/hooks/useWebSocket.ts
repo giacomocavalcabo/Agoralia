@@ -33,9 +33,28 @@ export function useWebSocket({ onMessage, onOpen, onClose, onError, enabled = tr
     }
 
     // Build WebSocket URL
-    const wsProtocol = API_BASE_URL.startsWith('https') ? 'wss' : 'ws'
-    const wsBaseUrl = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/api$/, '')
-    const wsUrl = `${wsProtocol}://${wsBaseUrl}/api/ws?tenant_id=${tenantId}`
+    // Handle both absolute URLs (https://api.agoralia.app) and relative paths (/api)
+    let wsUrl: string
+    if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
+      // Absolute URL - convert to WebSocket
+      const wsProtocol = API_BASE_URL.startsWith('https') ? 'wss' : 'ws'
+      const wsBaseUrl = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')
+      wsUrl = `${wsProtocol}://${wsBaseUrl}/ws?tenant_id=${tenantId}`
+    } else {
+      // Relative URL (e.g., /api) - use current origin
+      // On production (app.agoralia.app), /api is proxied to https://api.agoralia.app
+      // So we need to use wss://api.agoralia.app/ws directly
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+      if (window.location.hostname === 'app.agoralia.app' || window.location.hostname.endsWith('.vercel.app')) {
+        // Production: use api.agoralia.app directly
+        wsUrl = `wss://api.agoralia.app/ws?tenant_id=${tenantId}`
+      } else {
+        // Development: use current host
+        const host = window.location.host
+        const apiPath = API_BASE_URL.startsWith('/') ? API_BASE_URL : `/${API_BASE_URL}`
+        wsUrl = `${wsProtocol}://${host}${apiPath}/ws?tenant_id=${tenantId}`
+      }
+    }
 
     const connect = () => {
       try {
