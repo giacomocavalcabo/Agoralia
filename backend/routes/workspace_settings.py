@@ -81,12 +81,28 @@ async def get_workspace_general(
     try:
         settings = get_workspace_settings(tenant_id)
         
-        # Generate presigned URL if logo is in R2
+        # Generate URL for logo (R2 presigned or static file)
         logo_url = settings.brand_logo_url
         if logo_url and logo_url.startswith("workspace-logos/"):
-            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-            if presigned:
-                logo_url = presigned
+            # Check if R2 is configured
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            if r2_configured:
+                # Try R2 presigned URL
+                presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+                if presigned:
+                    logo_url = presigned
+                else:
+                    # Fallback to static file URL
+                    logo_url = f"/uploads/{logo_url}"
+            else:
+                # Use static file URL
+                logo_url = f"/uploads/{logo_url}"
         
         return WorkspaceGeneralResponse(
             workspace_name=settings.workspace_name,
@@ -117,12 +133,28 @@ async def update_workspace_general(
         
         settings = update_workspace_settings(tenant_id, updates)
         
-        # Generate presigned URL if logo is in R2
+        # Generate URL for logo (R2 presigned or static file)
         logo_url = settings.brand_logo_url
         if logo_url and logo_url.startswith("workspace-logos/"):
-            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-            if presigned:
-                logo_url = presigned
+            # Check if R2 is configured
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            if r2_configured:
+                # Try R2 presigned URL
+                presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+                if presigned:
+                    logo_url = presigned
+                else:
+                    # Fallback to static file URL
+                    logo_url = f"/uploads/{logo_url}"
+            else:
+                # Use static file URL
+                logo_url = f"/uploads/{logo_url}"
         
         return WorkspaceGeneralResponse(
             workspace_name=settings.workspace_name,
