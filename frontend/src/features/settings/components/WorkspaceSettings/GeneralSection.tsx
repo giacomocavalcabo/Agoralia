@@ -66,7 +66,12 @@ export function GeneralSection() {
       const logoUrl = data.brand_logo_url || ''
       const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
       // Only show permanent external URLs, not presigned URLs (which are temporary)
-      const isPresigned = logoUrl.includes('r2.cloudflarestorage.com') || logoUrl.includes('X-Amz-Signature')
+      // Presigned URLs have X-Amz-Signature in the query string or contain r2.cloudflarestorage.com
+      const isPresigned = isExternal && (
+        logoUrl.includes('r2.cloudflarestorage.com') || 
+        logoUrl.includes('X-Amz-Signature') ||
+        logoUrl.includes('X-Amz-Algorithm')
+      )
       const shouldShowExternalUrl = isExternal && !isPresigned
       
       reset({
