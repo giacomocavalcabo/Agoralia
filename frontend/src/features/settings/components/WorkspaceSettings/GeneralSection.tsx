@@ -90,7 +90,8 @@ export function GeneralSection() {
       // The backend returns the full URL or relative path
       // Store it as-is in the form (validation will pass now)
       setValue('brand_logo_url', result.brand_logo_url || '', { shouldValidate: false })
-      setHasChanges(true)
+      // Logo upload saves automatically, so no need to set hasChanges
+      // But if user manually edits the URL field, hasChanges will be set
       // Clear the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -150,7 +151,10 @@ export function GeneralSection() {
         }
       }
 
-      await updateMutation.mutateAsync(updates)
+      // Only save if there are actual updates
+      if (Object.keys(updates).length > 0) {
+        await updateMutation.mutateAsync(updates)
+      }
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)
