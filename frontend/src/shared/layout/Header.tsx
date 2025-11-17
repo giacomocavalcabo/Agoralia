@@ -44,7 +44,16 @@ export function Header() {
               alt="Workspace logo"
               className="h-full w-full object-cover"
               onError={(e) => {
-                // Silently handle image load errors
+                // Hide broken image and show white placeholder
+                const img = e.target as HTMLImageElement
+                img.style.display = 'none'
+                // Show white placeholder
+                const parent = img.parentElement
+                if (parent && !parent.querySelector('.logo-placeholder')) {
+                  const placeholder = document.createElement('div')
+                  placeholder.className = 'logo-placeholder h-full w-full bg-white'
+                  parent.appendChild(placeholder)
+                }
               }}
             />
           </div>
