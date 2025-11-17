@@ -255,7 +255,6 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
     
     # Check if settings object is in session (was created via ORM) or manually (raw SQL)
     is_in_session = hasattr(settings, '_sa_instance_state') and settings._sa_instance_state.session is not None
-    print(f"[DEBUG] _update_settings: tenant_id={tenant_id}, is_in_session={is_in_session}, updates={list(updates.keys())}", flush=True)
     
     # Handle encryption for sensitive fields
     if "retell_api_key" in updates:
@@ -298,6 +297,12 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             'workspace_name', 'timezone', 'brand_logo_url', 'brand_color',
             'retell_api_key_encrypted', 'retell_webhook_secret_encrypted',
         }
+        # Add notification columns if they exist
+        if has_notification_columns:
+            valid_columns.update({
+                'email_notifications_enabled', 'email_campaign_started',
+                'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert',
+            })
         
         set_clauses = []
         params = {"tid": tenant_id}
@@ -327,14 +332,11 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
                     SET {', '.join(set_clauses)}, updated_at = now()
                     WHERE tenant_id = :tid
                 """
-                print(f"[DEBUG] Executing raw SQL UPDATE: {sql_query[:200]}...", flush=True)
-                print(f"[DEBUG] Parameters: {list(params.keys())}", flush=True)
                 session.execute(
                     text(sql_query),
                     params
                 )
                 session.commit()
-                print(f"[DEBUG] Raw SQL UPDATE committed successfully", flush=True)
                 # Re-read using safe method
                 return get_workspace_settings(tenant_id, session)
             except Exception as e:
