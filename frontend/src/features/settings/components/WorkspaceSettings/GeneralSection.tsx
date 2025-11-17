@@ -78,7 +78,9 @@ export function GeneralSection() {
     if (data) {
       const logoUrl = data.brand_logo_url || ''
       const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
-      const expectedExternalUrl = isExternal ? logoUrl : ''
+      // Only compare with permanent external URLs, not presigned URLs
+      const isPresigned = logoUrl.includes('r2.cloudflarestorage.com') || logoUrl.includes('X-Amz-Signature')
+      const expectedExternalUrl = (isExternal && !isPresigned) ? logoUrl : ''
       
       const hasChangesNow = 
         watchedFields[0] !== (data.workspace_name || '') ||
@@ -401,7 +403,7 @@ export function GeneralSection() {
                 Cancel
               </Button>
             )}
-            <Button type="submit" disabled={updateMutation.isPending || !hasChanges}>
+            <Button type="submit" disabled={updateMutation.isPending}>
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
