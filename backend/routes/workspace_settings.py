@@ -165,20 +165,24 @@ async def upload_workspace_logo(
         r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
         
         print(f"[DEBUG] Uploading logo to R2: key={r2_key}, size={len(file_data)}, content_type={content_type}", flush=True)
+        
+        # Check if R2 is configured BEFORE attempting upload
+        import os
+        r2_configured = bool(
+            os.getenv("R2_ACCESS_KEY_ID") and 
+            os.getenv("R2_SECRET_ACCESS_KEY") and 
+            os.getenv("R2_ACCOUNT_ID") and 
+            os.getenv("R2_BUCKET")
+        )
+        if not r2_configured:
+            error_msg = "R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables."
+            print(f"[ERROR] {error_msg}", flush=True)
+            raise HTTPException(status_code=500, detail=error_msg)
+        
         uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
         print(f"[DEBUG] R2 upload result: {uploaded}", flush=True)
         if not uploaded:
-            # Check if R2 is configured
-            import os
-            r2_configured = bool(
-                os.getenv("R2_ACCESS_KEY_ID") and 
-                os.getenv("R2_SECRET_ACCESS_KEY") and 
-                os.getenv("R2_ACCOUNT_ID") and 
-                os.getenv("R2_BUCKET")
-            )
-            if not r2_configured:
-                raise HTTPException(status_code=500, detail="R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables.")
-            raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage")
+            raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage. Please check R2 configuration and try again.")
         
         # Update settings with R2 key (not full URL)
         print(f"[DEBUG] Updating settings with brand_logo_url: {r2_key}", flush=True)
