@@ -53,7 +53,9 @@ export function GeneralSection() {
 
   // Get current logo from data (uploaded file or external URL)
   const currentLogoUrl = data?.brand_logo_url || ''
-  const isUploadedLogo = currentLogoUrl && !currentLogoUrl.startsWith('http://') && !currentLogoUrl.startsWith('https://')
+  // Check if logo is uploaded (not external URL) or if it's a presigned URL (temporary)
+  const isPresignedUrl = currentLogoUrl.includes('r2.cloudflarestorage.com') || currentLogoUrl.includes('X-Amz-Signature')
+  const isUploadedLogo = currentLogoUrl && (currentLogoUrl.startsWith('workspace-logos/') || isPresignedUrl || (!currentLogoUrl.startsWith('http://') && !currentLogoUrl.startsWith('https://')))
   const externalLogoUrl = watch('external_logo_url')
 
   // Sync form with data when it loads
@@ -113,6 +115,7 @@ export function GeneralSection() {
     try {
       const result = await uploadMutation.mutateAsync(file)
       // Logo upload saves automatically, clear external URL field since we're using uploaded file
+      // Don't sync with result.brand_logo_url because it might be a presigned URL (temporary)
       setValue('external_logo_url', '', { shouldValidate: false })
       setHasChanges(false)
       // Clear the file input
@@ -262,7 +265,8 @@ export function GeneralSection() {
             <Label htmlFor="logo">Logo</Label>
             <div className="mt-1.5 space-y-3">
               {/* Show current logo (uploaded or external) */}
-              {currentLogoUrl ? (
+              {/* Only show logo preview if we have a logo (even if presigned) */}
+              {(currentLogoUrl && !currentLogoUrl.startsWith('workspace-logos/')) || (currentLogoUrl && currentLogoUrl.startsWith('workspace-logos/') && !externalLogoUrl) ? (
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
