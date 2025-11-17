@@ -78,20 +78,26 @@ async def get_workspace_general(
     if not tenant_id:
         raise HTTPException(status_code=401, detail="Tenant ID required")
     
-    settings = get_workspace_settings(tenant_id)
-    
-    # Generate presigned URL if logo is in R2
-    logo_url = settings.brand_logo_url
-    if logo_url and logo_url.startswith("workspace-logos/"):
-        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-        if presigned:
-            logo_url = presigned
-    
-    return WorkspaceGeneralResponse(
-        workspace_name=settings.workspace_name,
-        timezone=settings.timezone,
-        brand_logo_url=logo_url,
-    )
+    try:
+        settings = get_workspace_settings(tenant_id)
+        
+        # Generate presigned URL if logo is in R2
+        logo_url = settings.brand_logo_url
+        if logo_url and logo_url.startswith("workspace-logos/"):
+            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+            if presigned:
+                logo_url = presigned
+        
+        return WorkspaceGeneralResponse(
+            workspace_name=settings.workspace_name,
+            timezone=settings.timezone,
+            brand_logo_url=logo_url,
+        )
+    except Exception as e:
+        import traceback
+        error_detail = f"Error loading general settings: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error loading general settings: {str(e)}")
 
 
 @router.patch("/general", response_model=WorkspaceGeneralResponse)
@@ -435,17 +441,32 @@ async def get_workspace_notifications(
     if not tenant_id:
         raise HTTPException(status_code=401, detail="Tenant ID required")
     
-    settings = get_workspace_settings(tenant_id)
-    
-    # Handle case where notification fields might not exist yet (before migration)
-    # Use getattr with defaults in case columns don't exist
-    return WorkspaceNotificationsResponse(
-        email_notifications_enabled=bool(getattr(settings, 'email_notifications_enabled', 1)),
-        email_campaign_started=bool(getattr(settings, 'email_campaign_started', 1)),
-        email_campaign_paused=bool(getattr(settings, 'email_campaign_paused', 1)),
-        email_budget_warning=bool(getattr(settings, 'email_budget_warning', 1)),
-        email_compliance_alert=bool(getattr(settings, 'email_compliance_alert', 1)),
-    )
+    try:
+        settings = get_workspace_settings(tenant_id)
+        
+        # Try to access notification fields - if they don't exist, use defaults
+        try:
+            return WorkspaceNotificationsResponse(
+                email_notifications_enabled=bool(settings.email_notifications_enabled),
+                email_campaign_started=bool(settings.email_campaign_started),
+                email_campaign_paused=bool(settings.email_campaign_paused),
+                email_budget_warning=bool(settings.email_budget_warning),
+                email_compliance_alert=bool(settings.email_compliance_alert),
+            )
+        except (AttributeError, KeyError):
+            # Fields don't exist yet (migration not run) - return defaults
+            return WorkspaceNotificationsResponse(
+                email_notifications_enabled=True,
+                email_campaign_started=True,
+                email_campaign_paused=True,
+                email_budget_warning=True,
+                email_compliance_alert=True,
+            )
+    except Exception as e:
+        import traceback
+        error_detail = f"Error loading notification settings: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error loading notification settings: {str(e)}")
 
 
 @router.patch("/notifications", response_model=WorkspaceNotificationsResponse)
