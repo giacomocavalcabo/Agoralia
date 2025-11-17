@@ -63,15 +63,31 @@ def upgrade() -> None:
     
     print(f"[MIGRATION 0018] Added {len(columns_added)} columns: {columns_added}", file=sys.stderr, flush=True)
     
-    # Verify columns were added
+    # Force commit and refresh inspector to verify columns were added
+    # Note: Alembic handles commits automatically, but we need to refresh the inspector
+    # to see the new columns in the same transaction
     try:
+        # Refresh inspector connection to see new columns
+        conn = op.get_bind()
+        inspector = inspect(conn)
         final_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
-        print(f"[MIGRATION 0018] Final columns: {final_columns}", file=sys.stderr, flush=True)
+        print(f"[MIGRATION 0018] Final columns after refresh: {final_columns}", file=sys.stderr, flush=True)
+        
+        # Check which columns were actually added
+        missing = []
         for col in columns_added:
             if col not in final_columns:
-                print(f"⚠ [MIGRATION 0018] WARNING: Column {col} was not added successfully!", file=sys.stderr, flush=True)
+                missing.append(col)
+                print(f"⚠ [MIGRATION 0018] WARNING: Column {col} was not found after addition!", file=sys.stderr, flush=True)
+        
+        if not missing:
+            print(f"[MIGRATION 0018] ✓ All {len(columns_added)} columns verified successfully", file=sys.stderr, flush=True)
+        else:
+            print(f"⚠ [MIGRATION 0018] {len(missing)} columns missing: {missing}", file=sys.stderr, flush=True)
     except Exception as e:
         print(f"⚠ [MIGRATION 0018] Error verifying columns: {e}", file=sys.stderr, flush=True)
+        import traceback
+        print(f"[MIGRATION 0018] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
 
 
 def downgrade() -> None:
