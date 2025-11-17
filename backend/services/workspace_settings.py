@@ -367,14 +367,29 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             updates["retell_webhook_secret_encrypted"] = None
     
     # Filter out notification fields if columns don't exist
+    # BUT: if we're trying to update notifications, force include them anyway
+    # (columns should exist if migration ran, but detection might fail)
     updates_to_apply = {}
     print(f"[DEBUG] _update_settings: has_notification_columns={has_notification_columns}, updates={updates}", flush=True)
+    
+    # Check if we're updating any notification fields
+    notification_fields_in_updates = [
+        'email_notifications_enabled', 'email_campaign_started', 
+        'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
+    ]
+    has_notification_updates = any(key in updates for key in notification_fields_in_updates)
+    
+    # If we have notification updates but columns weren't detected, try to update anyway
+    # (columns might exist but detection failed)
+    if has_notification_updates and not has_notification_columns:
+        print(f"[DEBUG] WARNING: Notification updates detected but columns not found. Attempting update anyway.", flush=True)
+        # Force has_notification_columns to True to allow the update
+        # If columns truly don't exist, the UPDATE will fail and we'll handle it
+        has_notification_columns = True
+    
     for key, value in updates.items():
         # Skip notification fields if columns don't exist
-        if not has_notification_columns and key in [
-            'email_notifications_enabled', 'email_campaign_started', 
-            'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
-        ]:
+        if not has_notification_columns and key in notification_fields_in_updates:
             print(f"[DEBUG] Skipping {key} because notification columns don't exist", flush=True)
             continue  # Skip these fields if columns don't exist
         updates_to_apply[key] = value
