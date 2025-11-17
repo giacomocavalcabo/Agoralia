@@ -117,8 +117,27 @@ export function GeneralSection() {
       if (formData.timezone !== undefined) {
         updates.timezone = formData.timezone || null
       }
+      // For brand_logo_url, if it's a full URL (from R2), save as-is
+      // If it's a relative path like /uploads/..., extract just the relative part
+      // The backend expects workspace-logos/{tenant_id}/logo.{ext} format
       if (formData.brand_logo_url !== undefined) {
-        updates.brand_logo_url = formData.brand_logo_url || null
+        let logoValue = formData.brand_logo_url || null
+        if (logoValue) {
+          // If it's a full URL, extract the path part if it contains workspace-logos
+          if (logoValue.includes('workspace-logos/')) {
+            const match = logoValue.match(/workspace-logos\/[^/]+\/[^/]+$/)
+            if (match) {
+              logoValue = match[0] // Extract just workspace-logos/{tenant_id}/logo.{ext}
+            } else if (logoValue.startsWith('/uploads/')) {
+              // Remove /uploads/ prefix to get workspace-logos/...
+              logoValue = logoValue.replace(/^\/uploads\//, '')
+            }
+          } else if (logoValue.startsWith('http://') || logoValue.startsWith('https://')) {
+            // Full URL from R2 or external source - save as-is
+            // Backend will handle it
+          }
+        }
+        updates.brand_logo_url = logoValue
       }
 
       await updateMutation.mutateAsync(updates)
