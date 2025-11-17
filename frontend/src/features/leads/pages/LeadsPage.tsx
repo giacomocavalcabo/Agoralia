@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { PageHeader } from '@/shared/layout/PageHeader'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { useLeads, useImportLeadsCSV } from '../hooks'
-import { Upload, Plus } from 'lucide-react'
+import { Upload, Users, Phone, Building2 } from 'lucide-react'
 
 export function LeadsPage() {
   const [importModalOpen, setImportModalOpen] = useState(false)
@@ -37,52 +38,78 @@ export function LeadsPage() {
   const leads = leadsData?.items || []
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Leads"
-        subtitle="Manage your leads for campaigns"
-        action={
-          <Button onClick={() => setImportModalOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import CSV
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Leads</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your leads for campaigns
+          </p>
+        </div>
+        <Button onClick={() => setImportModalOpen(true)} size="lg">
+          <Upload className="mr-2 h-4 w-4" />
+          Import CSV
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div>Loading leads...</div>
+        <div className="py-12 text-center text-sm text-muted-foreground">Loading leads...</div>
       ) : error ? (
-        <div className="text-destructive">Error loading leads: {error.message}</div>
-      ) : !leads || leads.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No leads yet. Import your first CSV file to get started.</p>
+            <p className="text-sm text-destructive">Error loading leads: {error.message}</p>
+          </CardContent>
+        </Card>
+      ) : !leads || leads.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">
+              No leads yet. Import your first CSV file to get started.
+            </p>
             <Button onClick={() => setImportModalOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className="mr-2 h-4 w-4" />
               Import CSV
             </Button>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div className="text-sm text-muted-foreground">
-            Showing {leads.length} of {leadsData?.total || 0} leads
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {leads.length} of {leadsData?.total || 0} leads
+            </p>
           </div>
           <div className="space-y-2">
             {leads.map((lead) => (
-              <Card key={lead.id}>
+              <Card key={lead.id} className="transition-colors hover:border-primary/50">
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-medium">{lead.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {lead.phone} {lead.company && `• ${lead.company}`}
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <Users className="h-4 w-4 text-primary" />
                       </div>
-                      {lead.nature && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Type: {lead.nature.toUpperCase()}
+                      <div>
+                        <div className="text-sm font-medium">{lead.name}</div>
+                        <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5" />
+                            <span>{lead.phone}</span>
+                          </div>
+                          {lead.company && (
+                            <div className="flex items-center gap-1.5">
+                              <Building2 className="h-3.5 w-3.5" />
+                              <span>{lead.company}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                        {lead.nature && (
+                          <div className="mt-2">
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                              {lead.nature.toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -92,34 +119,36 @@ export function LeadsPage() {
         </>
       )}
 
-      {importModalOpen && (
-        <Card className="p-6">
-          <CardHeader>
-            <CardTitle>Import Leads from CSV</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import leads from CSV</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); handleImport(); }} className="space-y-4">
             <div>
+              <Label htmlFor="csv-file">CSV file</Label>
               <Input
+                id="csv-file"
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
+                className="mt-1.5"
               />
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="mt-2 text-xs text-muted-foreground">
                 CSV format: name, phone, company (optional)
               </p>
             </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setImportModalOpen(false)}>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setImportModalOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleImport} disabled={!file || importMutation.isPending}>
+              <Button type="submit" disabled={!file || importMutation.isPending}>
                 {importMutation.isPending ? 'Importing...' : 'Import'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-

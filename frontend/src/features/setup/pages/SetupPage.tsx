@@ -1,19 +1,17 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PageHeader } from '@/shared/layout/PageHeader'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card'
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { CheckCircle2, Circle, ArrowRight, Phone, BookOpen, Bot, Users } from 'lucide-react'
 import { useAgents } from '@/features/agents/hooks'
 import { useNumbers } from '@/features/numbers/hooks'
 import { useKnowledgeBases } from '@/features/knowledge/hooks'
 import { useLeads } from '@/features/leads/hooks'
 
 const steps = [
-  { id: 'numbers', label: 'Phone Numbers', route: '/numbers' },
-  { id: 'knowledge', label: 'Knowledge Base', route: '/knowledge' },
-  { id: 'agent', label: 'Agent', route: '/agents' },
-  { id: 'leads', label: 'Leads', route: '/leads' },
+  { id: 'numbers', label: 'Phone Numbers', route: '/numbers', icon: Phone },
+  { id: 'knowledge', label: 'Knowledge Base', route: '/knowledge', icon: BookOpen },
+  { id: 'agent', label: 'Agent', route: '/agents', icon: Bot },
+  { id: 'leads', label: 'Leads', route: '/leads', icon: Users },
 ]
 
 export function SetupPage() {
@@ -34,65 +32,78 @@ export function SetupPage() {
   const isComplete = totalCompleted === steps.length
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Setup"
-        subtitle="Complete these steps to get started with your first campaign"
-      />
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Setup</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Complete these steps to get started with your first campaign
+        </p>
+      </div>
 
       {isComplete && (
-        <Card className="border-green-500 bg-green-50 dark:bg-green-950">
-          <CardContent className="py-6">
-            <div className="flex items-center space-x-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <div>
-                <div className="font-semibold text-green-900 dark:text-green-100">
-                  Setup Complete!
-                </div>
-                <div className="text-sm text-green-700 dark:text-green-300">
-                  You're ready to create your first campaign.
-                </div>
-              </div>
+        <Card className="border-border">
+          <CardContent className="flex items-center gap-3 py-4">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium">Setup complete</p>
+              <p className="text-xs text-muted-foreground">
+                You're ready to create your first campaign.
+              </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="space-y-4">
-        {steps.map((step, index) => {
+      <div className="space-y-3">
+        {steps.map((step) => {
           const isCompleted = completed[step.id as keyof typeof completed]
-          const nextStep = steps[index + 1]
+          const Icon = step.icon
 
           return (
-            <Card key={step.id} className={isCompleted ? 'border-green-500' : ''}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
-                    ) : (
-                      <Circle className="h-6 w-6 text-muted-foreground mt-0.5" />
-                    )}
+            <Card
+              key={step.id}
+              className={`transition-colors ${
+                isCompleted
+                  ? 'border-border bg-muted/30'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`rounded-md p-2 ${
+                        isCompleted
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
                     <div>
-                      <CardTitle className="flex items-center space-x-2">
-                        <span>{step.label}</span>
-                      </CardTitle>
-                      <CardDescription>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold">{step.label}</h3>
+                        {isCompleted && (
+                          <CheckCircle2 className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {isCompleted
                           ? 'Completed'
                           : `Set up your ${step.label.toLowerCase()} to continue`}
-                      </CardDescription>
+                      </p>
                     </div>
                   </div>
                   <Button
                     variant={isCompleted ? 'outline' : 'default'}
+                    size="sm"
                     onClick={() => navigate(step.route)}
                   >
                     {isCompleted ? 'View' : 'Setup'}
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Button>
                 </div>
-              </CardHeader>
+              </CardContent>
             </Card>
           )
         })}
@@ -101,12 +112,11 @@ export function SetupPage() {
       {isComplete && (
         <div className="flex justify-end">
           <Button size="lg" onClick={() => navigate('/campaigns/new')}>
-            Create Your First Campaign
-            <ArrowRight className="h-4 w-4 ml-2" />
+            Create your first campaign
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       )}
     </div>
   )
 }
-
