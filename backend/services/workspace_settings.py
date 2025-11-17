@@ -28,16 +28,28 @@ def get_workspace_settings(tenant_id: int, session: Optional[Session] = None) ->
 
 def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettings:
     """Internal helper: get or create settings (race-safe)"""
-    # Check if notification columns exist BEFORE trying ORM query
-    inspector = inspect(session.bind)
-    table_columns = []
-    if 'workspace_settings' in inspector.get_table_names():
-        try:
-            table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
-        except Exception:
-            pass  # If inspect fails, we'll try ORM query anyway
-    
-    has_notification_columns = 'email_notifications_enabled' in table_columns
+    # Check if notification columns exist - use information_schema (more reliable than inspect)
+    has_notification_columns = False
+    try:
+        result = session.execute(
+            text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'workspace_settings' 
+                AND column_name = 'email_notifications_enabled'
+            """)
+        ).first()
+        has_notification_columns = result is not None
+    except Exception:
+        # Fallback to inspect if information_schema query fails
+        inspector = inspect(session.bind)
+        table_columns = []
+        if 'workspace_settings' in inspector.get_table_names():
+            try:
+                table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
+                has_notification_columns = 'email_notifications_enabled' in table_columns
+            except Exception:
+                pass
     
     # If notification columns don't exist, use raw SQL directly
     if not has_notification_columns:
@@ -320,14 +332,22 @@ def update_workspace_settings(
 
 def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) -> WorkspaceSettings:
     """Internal helper: update settings"""
-    # Check if notification columns exist - use direct SQL query for reliability
-    # Force refresh connection to see latest schema changes
+    # Check if notification columns exist - use information_schema (more reliable than inspect)
+    # Don't use invalidate() as it causes transaction errors
     has_notification_columns = False
     try:
-        # Force connection refresh to see latest schema
-        session.connection().invalidate()
+        # Use information_schema to check for columns (always up-to-date, no cache issues)
+        result = session.execute(
+            text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'workspace_settings' 
+                AND column_name = 'email_notifications_enabled'
+            """)
+        ).first()
+        has_notification_columns = result is not None
         
-        # First, try to get all columns from workspace_settings to see what exists
+        # Also get all columns for debugging
         all_columns_result = session.execute(
             text("""
                 SELECT column_name 
@@ -338,23 +358,12 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
         ).fetchall()
         all_columns = [row[0] for row in all_columns_result]
         print(f"[DEBUG] _update_settings: All columns in workspace_settings: {all_columns}", flush=True)
-        
-        # Check specifically for notification columns
-        result = session.execute(
-            text("""
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = 'workspace_settings' 
-                AND column_name = 'email_notifications_enabled'
-            """)
-        ).first()
-        has_notification_columns = result is not None
-        print(f"[DEBUG] _update_settings: Direct SQL check - has_notification_columns={has_notification_columns}, email_notifications_enabled in columns: {'email_notifications_enabled' in all_columns}", flush=True)
+        print(f"[DEBUG] _update_settings: has_notification_columns={has_notification_columns}, email_notifications_enabled in columns: {'email_notifications_enabled' in all_columns}", flush=True)
     except Exception as e:
         print(f"[DEBUG] _update_settings: Error checking columns with SQL: {e}", flush=True)
         import traceback
         print(f"[DEBUG] _update_settings: Traceback: {traceback.format_exc()}", flush=True)
-        # Fallback to inspect
+        # Fallback to inspect (but it might be cached)
         inspector = inspect(session.bind)
         table_columns = []
         if 'workspace_settings' in inspector.get_table_names():
