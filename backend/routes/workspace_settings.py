@@ -147,40 +147,49 @@ async def upload_workspace_logo(
     if not tenant_id:
         raise HTTPException(status_code=401, detail="Tenant ID required")
     
-    # Validate file type
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
-    
-    # Read file
-    file_data = await file.read()
-    if len(file_data) > 5 * 1024 * 1024:  # 5MB max
-        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
-    
-    # Determine content type
-    content_type = file.content_type or "image/png"
-    
-    # Upload to R2
-    file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
-    r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
-    
-    uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
-    if not uploaded:
-        raise HTTPException(status_code=500, detail="Failed to upload logo")
-    
-    # Update settings with R2 key (not full URL)
-    updates = {"brand_logo_url": r2_key}
-    settings = update_workspace_settings(tenant_id, updates)
-    
-    # Generate presigned URL for response
-    logo_url = r2_presign_get(r2_key, expires_seconds=3600 * 24 * 365)  # 1 year
-    if not logo_url:
-        logo_url = r2_key
-    
-    return WorkspaceGeneralResponse(
-        workspace_name=settings.workspace_name,
-        timezone=settings.timezone,
-        brand_logo_url=logo_url,
-    )
+    try:
+        # Validate file type
+        if not file.content_type or not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Read file
+        file_data = await file.read()
+        if len(file_data) > 5 * 1024 * 1024:  # 5MB max
+            raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+        
+        # Determine content type
+        content_type = file.content_type or "image/png"
+        
+        # Upload to R2
+        file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+        r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
+        
+        uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+        if not uploaded:
+            raise HTTPException(status_code=500, detail="Failed to upload logo to R2")
+        
+        # Update settings with R2 key (not full URL)
+        updates = {"brand_logo_url": r2_key}
+        settings = update_workspace_settings(tenant_id, updates)
+        
+        # Generate presigned URL for response
+        logo_url = r2_presign_get(r2_key, expires_seconds=3600 * 24 * 365)  # 1 year
+        if not logo_url:
+            logo_url = r2_key
+        
+        return WorkspaceGeneralResponse(
+            workspace_name=settings.workspace_name,
+            timezone=settings.timezone,
+            brand_logo_url=logo_url,
+        )
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Error uploading logo: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error uploading logo: {str(e)}")
 
 
 # Telephony
