@@ -437,12 +437,14 @@ async def get_workspace_notifications(
     
     settings = get_workspace_settings(tenant_id)
     
+    # Handle case where notification fields might not exist yet (before migration)
+    # Use getattr with defaults in case columns don't exist
     return WorkspaceNotificationsResponse(
-        email_notifications_enabled=bool(settings.email_notifications_enabled),
-        email_campaign_started=bool(settings.email_campaign_started),
-        email_campaign_paused=bool(settings.email_campaign_paused),
-        email_budget_warning=bool(settings.email_budget_warning),
-        email_compliance_alert=bool(settings.email_compliance_alert),
+        email_notifications_enabled=bool(getattr(settings, 'email_notifications_enabled', 1)),
+        email_campaign_started=bool(getattr(settings, 'email_campaign_started', 1)),
+        email_campaign_paused=bool(getattr(settings, 'email_campaign_paused', 1)),
+        email_budget_warning=bool(getattr(settings, 'email_budget_warning', 1)),
+        email_compliance_alert=bool(getattr(settings, 'email_compliance_alert', 1)),
     )
 
 

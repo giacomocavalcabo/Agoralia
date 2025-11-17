@@ -33,27 +33,35 @@ export function useWebSocket({ onMessage, onOpen, onClose, onError, enabled = tr
     }
 
     // Build WebSocket URL
-    // Handle both absolute URLs (https://api.agoralia.app) and relative paths (/api)
+    // In production (app.agoralia.app), always use wss://api.agoralia.app/ws
+    // In development, use API_BASE_URL to determine WebSocket URL
     let wsUrl: string
-    if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
-      // Absolute URL - convert to WebSocket
+    
+    // Check if we're in production
+    const isProduction = window.location.hostname === 'app.agoralia.app' || 
+                        window.location.hostname.endsWith('.vercel.app') ||
+                        window.location.hostname.includes('agoralia.app')
+    
+    if (isProduction) {
+      // Production: always use api.agoralia.app directly with WSS
+      wsUrl = `wss://api.agoralia.app/ws?tenant_id=${tenantId}`
+    } else if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
+      // Development with absolute URL - convert to WebSocket
       const wsProtocol = API_BASE_URL.startsWith('https') ? 'wss' : 'ws'
       const wsBaseUrl = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')
       wsUrl = `${wsProtocol}://${wsBaseUrl}/ws?tenant_id=${tenantId}`
     } else {
-      // Relative URL (e.g., /api) - use current origin
-      // On production (app.agoralia.app), /api is proxied to https://api.agoralia.app
-      // So we need to use wss://api.agoralia.app/ws directly
+      // Development with relative URL (e.g., /api) - use current origin
+      // But if we're on HTTPS, we must use WSS
       const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      if (window.location.hostname === 'app.agoralia.app' || window.location.hostname.endsWith('.vercel.app')) {
-        // Production: use api.agoralia.app directly
-        wsUrl = `wss://api.agoralia.app/ws?tenant_id=${tenantId}`
-      } else {
-        // Development: use current host
-        const host = window.location.host
-        const apiPath = API_BASE_URL.startsWith('/') ? API_BASE_URL : `/${API_BASE_URL}`
-        wsUrl = `${wsProtocol}://${host}${apiPath}/ws?tenant_id=${tenantId}`
-      }
+      const host = window.location.host
+      const apiPath = API_BASE_URL.startsWith('/') ? API_BASE_URL : `/${API_BASE_URL}`
+      wsUrl = `${wsProtocol}://${host}${apiPath}/ws?tenant_id=${tenantId}`
+    }
+    
+    // Safety check: if we're on HTTPS but URL is ws://, force wss://
+    if (window.location.protocol === 'https:' && wsUrl.startsWith('ws://')) {
+      wsUrl = wsUrl.replace('ws://', 'wss://')
     }
 
     const connect = () => {
