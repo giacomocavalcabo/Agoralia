@@ -69,6 +69,18 @@ export function GeneralSection() {
     }
   }, [data, reset])
 
+  // Watch for changes to detect when user edits fields
+  const watchedFields = watch(['workspace_name', 'timezone', 'brand_logo_url'])
+  useEffect(() => {
+    if (data) {
+      const hasChangesNow = 
+        watchedFields[0] !== (data.workspace_name || '') ||
+        watchedFields[1] !== (data.timezone || '') ||
+        watchedFields[2] !== (data.brand_logo_url || '')
+      setHasChanges(hasChangesNow)
+    }
+  }, [watchedFields, data])
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return

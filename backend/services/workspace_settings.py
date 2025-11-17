@@ -353,14 +353,19 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
     
     # Filter out notification fields if columns don't exist
     updates_to_apply = {}
+    print(f"[DEBUG] _update_settings: has_notification_columns={has_notification_columns}, updates={updates}", flush=True)
     for key, value in updates.items():
         # Skip notification fields if columns don't exist
         if not has_notification_columns and key in [
             'email_notifications_enabled', 'email_campaign_started', 
             'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
         ]:
+            print(f"[DEBUG] Skipping {key} because notification columns don't exist", flush=True)
             continue  # Skip these fields if columns don't exist
         updates_to_apply[key] = value
+        print(f"[DEBUG] Added {key} = {value} to updates_to_apply", flush=True)
+    
+    print(f"[DEBUG] updates_to_apply final: {updates_to_apply}", flush=True)
     
     # If object is not in session (created manually with raw SQL), use raw SQL UPDATE
     if not is_in_session:
