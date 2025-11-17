@@ -352,18 +352,18 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             # No updates to apply
             return settings
     
-           # Object is in session, use ORM update
-           # Ensure settings object is in session (merge if needed)
-           if settings not in session:
-               settings = session.merge(settings)
-           
-           # Update fields
-           for key, value in updates_to_apply.items():
-               # Handle None values explicitly
-               if value is None:
-                   setattr(settings, key, None)
-               else:
-                   setattr(settings, key, value)
+    # Object is in session, use ORM update
+    # Ensure settings object is in session (merge if needed)
+    if settings not in session:
+        settings = session.merge(settings)
+    
+    # Update fields
+    for key, value in updates_to_apply.items():
+        # Handle None values explicitly
+        if value is None:
+            setattr(settings, key, None)
+        else:
+            setattr(settings, key, value)
     
     try:
         session.commit()
