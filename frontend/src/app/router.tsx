@@ -13,6 +13,7 @@ import { CampaignNewPage } from '@/features/campaigns/pages/CampaignNewPage'
 import { CampaignDetailPage } from '@/features/campaigns/pages/CampaignDetailPage'
 import { CallsPage } from '@/features/calls/pages/CallsPage'
 import { CallDetailPage } from '@/features/calls/pages/CallDetailPage'
+import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('auth_token')
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: 'numbers', element: <NumbersPage /> },
       { path: 'knowledge', element: <KnowledgePage /> },
       { path: 'leads', element: <LeadsPage /> },
+      { path: 'settings', element: <SettingsPage /> },
       {
         path: 'campaigns',
         children: [

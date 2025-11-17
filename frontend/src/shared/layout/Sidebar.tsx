@@ -10,6 +10,7 @@ const navItems = [
   { path: '/knowledge', label: 'Knowledge Bases' },
   { path: '/leads', label: 'Leads' },
   { path: '/calls', label: 'Chiamate' },
+  { path: '/settings', label: 'Settings' },
   { path: '/compliance', label: 'Compliance' },
   { path: '/billing', label: 'Billing' },
 ]
