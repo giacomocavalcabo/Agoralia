@@ -47,10 +47,15 @@ export function IntegrationsSection() {
 
   const onSubmit = async (formData: IntegrationsForm) => {
     try {
-      await updateMutation.mutateAsync({
-        retell_api_key: formData.retell_api_key || null,
-        retell_webhook_secret: formData.retell_webhook_secret || null,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, string | null> = {}
+      if (formData.retell_api_key !== undefined) {
+        updates.retell_api_key = formData.retell_api_key || null
+      }
+      if (formData.retell_webhook_secret !== undefined) {
+        updates.retell_webhook_secret = formData.retell_webhook_secret || null
+      }
+      await updateMutation.mutateAsync(updates)
       reset({
         retell_api_key: '',
         retell_webhook_secret: '',

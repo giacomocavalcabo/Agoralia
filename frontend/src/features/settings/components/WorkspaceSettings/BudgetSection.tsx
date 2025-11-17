@@ -71,11 +71,18 @@ export function BudgetSection() {
 
   const onSubmit = async (formData: BudgetForm) => {
     try {
-      await updateMutation.mutateAsync({
-        budget_monthly_cents: formData.budget_monthly_cents ?? null,
-        budget_warn_percent: formData.budget_warn_percent,
-        budget_stop_enabled: formData.budget_stop_enabled,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, any> = {}
+      if (formData.budget_monthly_cents !== undefined) {
+        updates.budget_monthly_cents = formData.budget_monthly_cents ?? null
+      }
+      if (formData.budget_warn_percent !== undefined) {
+        updates.budget_warn_percent = formData.budget_warn_percent
+      }
+      if (formData.budget_stop_enabled !== undefined) {
+        updates.budget_stop_enabled = formData.budget_stop_enabled
+      }
+      await updateMutation.mutateAsync(updates)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)

@@ -62,10 +62,15 @@ export function ComplianceSection() {
 
   const onSubmit = async (formData: ComplianceForm) => {
     try {
-      await updateMutation.mutateAsync({
-        require_legal_review: formData.require_legal_review,
-        override_country_rules_enabled: formData.override_country_rules_enabled,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, boolean> = {}
+      if (formData.require_legal_review !== undefined) {
+        updates.require_legal_review = formData.require_legal_review
+      }
+      if (formData.override_country_rules_enabled !== undefined) {
+        updates.override_country_rules_enabled = formData.override_country_rules_enabled
+      }
+      await updateMutation.mutateAsync(updates)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)
