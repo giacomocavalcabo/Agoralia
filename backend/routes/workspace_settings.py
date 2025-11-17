@@ -346,6 +346,10 @@ async def upload_workspace_logo(
         
         # Fallback to disk if R2 not configured or upload failed
         if not logo_url_to_save:
+            # WARNING: Files saved to disk will be lost on container restart/deploy
+            # This is a temporary solution - R2 should be configured for production
+            print(f"[WARNING] R2 not configured - saving logo to disk. File will be lost on container restart/deploy!", flush=True)
+            
             # Use same path as main.py for consistency
             backend_dir = Path(__file__).resolve().parent.parent
             uploads_dir = backend_dir / "uploads" / "workspace-logos"
@@ -361,6 +365,7 @@ async def upload_workspace_logo(
                 with open(file_path, "wb") as f:
                     f.write(file_data)
                 logo_url_to_save = storage_key  # Use same format for consistency
+                print(f"[INFO] Logo saved to disk: {file_path}. WARNING: This file will be lost on container restart/deploy!", flush=True)
             except Exception as e:
                 import traceback
                 error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"

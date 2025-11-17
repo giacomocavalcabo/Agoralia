@@ -71,8 +71,17 @@ def get_effective_settings(user_id: int, tenant_id: int) -> EffectiveSettings:
                     # Fallback to static file URL
                     logo_url = f"/uploads/{logo_url}"
             else:
-                # Use static file URL
-                logo_url = f"/uploads/{logo_url}"
+                # Use static file URL - but verify file exists on disk
+                from pathlib import Path
+                backend_dir = Path(__file__).resolve().parent.parent.parent
+                file_path = backend_dir / "uploads" / logo_url
+                if not file_path.exists():
+                    # File doesn't exist on disk (probably lost after container restart)
+                    # Return None to indicate logo is missing
+                    logo_url = None
+                else:
+                    # File exists, use static file URL
+                    logo_url = f"/uploads/{logo_url}"
         
         return EffectiveSettings(
             timezone=timezone,
