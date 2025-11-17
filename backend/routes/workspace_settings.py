@@ -196,8 +196,9 @@ async def upload_workspace_logo(
         import os
         from pathlib import Path
         
-        # Create uploads directory if it doesn't exist
-        uploads_dir = Path("uploads/workspace-logos")
+        # Use same path as main.py for consistency
+        backend_dir = Path(__file__).resolve().parent.parent
+        uploads_dir = backend_dir / "uploads" / "workspace-logos"
         uploads_dir.mkdir(parents=True, exist_ok=True)
         
         # Determine file extension
@@ -213,6 +214,7 @@ async def upload_workspace_logo(
             with open(file_path, "wb") as f:
                 f.write(file_data)
             print(f"[DEBUG] Logo saved to disk: {file_path}", flush=True)
+            print(f"[DEBUG] Logo will be served at: /uploads/workspace-logos/{tenant_id}/{filename}", flush=True)
         except Exception as e:
             import traceback
             error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"

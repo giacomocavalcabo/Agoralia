@@ -65,5 +65,10 @@ app.include_router(api_router)
 # Serve static files (logos, etc.)
 uploads_dir = BACKEND_DIR / "uploads"
 uploads_dir.mkdir(exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+print(f"[INFO] Static files directory: {uploads_dir}", flush=True)
+try:
+    app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    print(f"[INFO] Static files mounted at /uploads", flush=True)
+except Exception as e:
+    print(f"[WARNING] Failed to mount static files: {e}", flush=True)
 
