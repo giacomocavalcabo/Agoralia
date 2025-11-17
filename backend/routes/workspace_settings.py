@@ -130,29 +130,37 @@ async def delete_workspace_logo(
         settings = get_workspace_settings(tenant_id)
         old_logo_url = settings.brand_logo_url
         
-        # Delete file if exists
-        if old_logo_url and old_logo_url.startswith("workspace-logos/"):
-            import os
-            r2_configured = bool(
-                os.getenv("R2_ACCESS_KEY_ID") and 
-                os.getenv("R2_SECRET_ACCESS_KEY") and 
-                os.getenv("R2_ACCOUNT_ID") and 
-                os.getenv("R2_BUCKET")
-            )
-            
-            if r2_configured:
-                # Delete from R2
-                from utils.r2_client import r2_delete
-                r2_delete(old_logo_url)
-            else:
-                # Delete from disk
-                from pathlib import Path
-                from utils.r2_client import delete_file_from_disk
-                backend_dir = Path(__file__).resolve().parent.parent
-                file_path = backend_dir / "uploads" / old_logo_url
-                delete_file_from_disk(str(file_path))
+        # Delete ALL logo files for this tenant (all extensions)
+        import os
+        r2_configured = bool(
+            os.getenv("R2_ACCESS_KEY_ID") and 
+            os.getenv("R2_SECRET_ACCESS_KEY") and 
+            os.getenv("R2_ACCOUNT_ID") and 
+            os.getenv("R2_BUCKET")
+        )
         
-        # Update settings to remove logo
+        if r2_configured:
+            # Delete from R2 - delete all possible logo extensions
+            from utils.r2_client import r2_delete
+            tenant_logo_prefix = f"workspace-logos/{tenant_id}/logo."
+            # Try common extensions
+            for ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']:
+                r2_delete(f"{tenant_logo_prefix}{ext}")
+            # Also try to delete the exact old_logo_url if it exists
+            if old_logo_url and old_logo_url.startswith("workspace-logos/"):
+                r2_delete(old_logo_url)
+        else:
+            # Delete from disk - delete all possible logo extensions
+            from pathlib import Path
+            from utils.r2_client import delete_file_from_disk
+            backend_dir = Path(__file__).resolve().parent.parent
+            tenant_logo_dir = backend_dir / "uploads" / "workspace-logos" / str(tenant_id)
+            if tenant_logo_dir.exists():
+                # Delete all logo.* files in tenant directory
+                for logo_file in tenant_logo_dir.glob("logo.*"):
+                    delete_file_from_disk(str(logo_file))
+        
+        # Update settings to remove logo (set to NULL in database)
         updates = {"brand_logo_url": None}
         settings = update_workspace_settings(tenant_id, updates)
         
