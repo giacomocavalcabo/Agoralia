@@ -275,14 +275,40 @@ async def upload_workspace_logo(
         # Determine content type
         content_type = file.content_type or "image/png"
         
-        # Save file - try R2 first, fallback to disk
+        # Get current logo to delete old one (replace behavior)
+        current_settings = get_workspace_settings(tenant_id)
+        old_logo_url = current_settings.brand_logo_url
+        
+        # Delete old logo if exists (replace behavior)
+        if old_logo_url and old_logo_url.startswith("workspace-logos/"):
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            
+            if r2_configured:
+                # Delete from R2
+                from utils.r2_client import r2_delete
+                r2_delete(old_logo_url)
+            else:
+                # Delete from disk
+                from pathlib import Path
+                from utils.r2_client import delete_file_from_disk
+                backend_dir = Path(__file__).resolve().parent.parent
+                file_path = backend_dir / "uploads" / old_logo_url
+                delete_file_from_disk(str(file_path))
+        
+        # Save new file - try R2 first, fallback to disk
         import os
         from pathlib import Path
         
         # Determine file extension
         file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
         filename = f"logo.{file_ext}"
-        r2_key = f"workspace-logos/{tenant_id}/{filename}"
+        storage_key = f"workspace-logos/{tenant_id}/{filename}"
         
         # Try R2 first (persistent storage)
         r2_configured = bool(
@@ -296,9 +322,9 @@ async def upload_workspace_logo(
         
         if r2_configured:
             # Upload to R2 (persistent)
-            uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+            uploaded = r2_put_bytes(storage_key, file_data, content_type=content_type)
             if uploaded:
-                logo_url_to_save = r2_key
+                logo_url_to_save = storage_key
             else:
                 # R2 upload failed, fallback to disk
                 pass
@@ -315,11 +341,11 @@ async def upload_workspace_logo(
             # Create tenant-specific directory
             file_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Save file to disk
+            # Save file to disk (overwrites if exists)
             try:
                 with open(file_path, "wb") as f:
                     f.write(file_data)
-                logo_url_to_save = r2_key  # Use same format for consistency
+                logo_url_to_save = storage_key  # Use same format for consistency
             except Exception as e:
                 import traceback
                 error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"
