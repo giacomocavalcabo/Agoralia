@@ -51,13 +51,28 @@ def get_effective_settings(user_id: int, tenant_id: int) -> EffectiveSettings:
         # Resolve theme
         theme = user_prefs.theme or "system"
         
-        # Generate presigned URL if logo is in R2
+        # Generate URL for logo (R2 presigned or static file)
         logo_url = workspace.brand_logo_url
         if logo_url and logo_url.startswith("workspace-logos/"):
-            from utils.r2_client import r2_presign_get
-            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-            if presigned:
-                logo_url = presigned
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            if r2_configured:
+                # Try R2 presigned URL
+                from utils.r2_client import r2_presign_get
+                presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+                if presigned:
+                    logo_url = presigned
+                else:
+                    # Fallback to static file URL
+                    logo_url = f"/uploads/{logo_url}"
+            else:
+                # Use static file URL
+                logo_url = f"/uploads/{logo_url}"
         
         return EffectiveSettings(
             timezone=timezone,

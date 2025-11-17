@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import time
 import logging
 
@@ -60,4 +61,9 @@ async def log_requests(request: Request, call_next):
 
 # Include all API routes
 app.include_router(api_router)
+
+# Serve static files (logos, etc.)
+uploads_dir = BACKEND_DIR / "uploads"
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 

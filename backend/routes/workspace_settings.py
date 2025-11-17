@@ -160,39 +160,35 @@ async def upload_workspace_logo(
         # Determine content type
         content_type = file.content_type or "image/png"
         
-        # Upload to R2
-        file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
-        r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
-        
-        print(f"[DEBUG] Uploading logo to R2: key={r2_key}, size={len(file_data)}, content_type={content_type}", flush=True)
-        
-        # Check if R2 is configured
+        # Save file to disk (simple solution that works for all tenants)
         import os
-        r2_configured = bool(
-            os.getenv("R2_ACCESS_KEY_ID") and 
-            os.getenv("R2_SECRET_ACCESS_KEY") and 
-            os.getenv("R2_ACCOUNT_ID") and 
-            os.getenv("R2_BUCKET")
-        )
+        from pathlib import Path
         
-        logo_url_to_save = None
+        # Create uploads directory if it doesn't exist
+        uploads_dir = Path("uploads/workspace-logos")
+        uploads_dir.mkdir(parents=True, exist_ok=True)
         
-        if r2_configured:
-            # Try to upload to R2
-            uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
-            print(f"[DEBUG] R2 upload result: {uploaded}", flush=True)
-            if uploaded:
-                # Successfully uploaded to R2, use R2 key
-                logo_url_to_save = r2_key
-            else:
-                # R2 upload failed even though configured
-                raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage. Please check R2 configuration and try again.")
-        else:
-            # R2 not configured - for now, we'll reject the upload
-            # In the future, we could implement base64 encoding or another storage solution
-            error_msg = "R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables to enable logo uploads."
-            print(f"[ERROR] {error_msg}", flush=True)
-            raise HTTPException(status_code=500, detail=error_msg)
+        # Determine file extension
+        file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+        filename = f"logo.{file_ext}"
+        file_path = uploads_dir / str(tenant_id) / filename
+        
+        # Create tenant-specific directory
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save file to disk
+        try:
+            with open(file_path, "wb") as f:
+                f.write(file_data)
+            print(f"[DEBUG] Logo saved to disk: {file_path}", flush=True)
+        except Exception as e:
+            import traceback
+            error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"
+            print(f"[ERROR] {error_detail}", flush=True)
+            raise HTTPException(status_code=500, detail=f"Failed to save logo: {str(e)}")
+        
+        # Save relative path in database (will be served as static file)
+        logo_url_to_save = f"workspace-logos/{tenant_id}/{filename}"
         
         # Update settings with logo URL
         print(f"[DEBUG] Updating settings with brand_logo_url: {logo_url_to_save}", flush=True)
@@ -206,13 +202,29 @@ async def upload_workspace_logo(
             print(f"[ERROR] {error_detail}", flush=True)
             raise HTTPException(status_code=500, detail=f"Error updating settings: {str(e)}")
         
-        # Generate presigned URL for response
+        # Generate URL for response
+        # If it's an R2 key, try to get presigned URL, otherwise use static file URL
         logo_url = None
         if logo_url_to_save and logo_url_to_save.startswith("workspace-logos/"):
-            # Generate presigned URL for R2
-            logo_url = r2_presign_get(logo_url_to_save, expires_seconds=3600 * 24 * 365)  # 1 year
-            if not logo_url:
-                logo_url = logo_url_to_save
+            # Check if R2 is configured and try to get presigned URL
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            if r2_configured:
+                # Try R2 presigned URL
+                presigned = r2_presign_get(logo_url_to_save, expires_seconds=3600 * 24 * 365)
+                if presigned:
+                    logo_url = presigned
+                else:
+                    # Fallback to static file URL
+                    logo_url = f"/uploads/{logo_url_to_save}"
+            else:
+                # Use static file URL
+                logo_url = f"/uploads/{logo_url_to_save}"
         else:
             logo_url = logo_url_to_save
         
