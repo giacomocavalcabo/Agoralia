@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { PageHeader } from '@/shared/layout/PageHeader'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { useAgents, useDeleteAgent } from '../hooks'
 import { CreateAgentModal } from '../components/CreateAgentModal'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Bot, Globe, Mic } from 'lucide-react'
 
 export function AgentsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -22,63 +21,76 @@ export function AgentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Agents"
-        subtitle="Manage your AI voice agents"
-        action={
-          <Button onClick={() => setCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Agent
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Agents</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your AI voice agents
+          </p>
+        </div>
+        <Button onClick={() => setCreateModalOpen(true)} size="lg">
+          <Plus className="mr-2 h-4 w-4" />
+          Create agent
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div>Loading agents...</div>
+        <div className="py-12 text-center text-sm text-muted-foreground">Loading agents...</div>
       ) : error ? (
-        <div className="text-destructive">Error loading agents: {error.message}</div>
-      ) : !agents || agents.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No agents yet. Create your first agent to get started.</p>
+            <p className="text-sm text-destructive">Error loading agents: {error.message}</p>
+          </CardContent>
+        </Card>
+      ) : !agents || agents.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">
+              No agents yet. Create your first agent to get started.
+            </p>
             <Button onClick={() => setCreateModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Agent
+              <Plus className="mr-2 h-4 w-4" />
+              Create agent
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent) => (
             <Card key={agent.id}>
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle>{agent.name}</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-md bg-primary/10 p-2">
+                      <Bot className="h-4 w-4 text-primary" />
+                    </div>
+                    <CardTitle className="text-base font-semibold">{agent.name}</CardTitle>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(agent.id)}
-                    className="text-destructive"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Language:</span> {agent.lang || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Voice:</span> {agent.voice_id || 'N/A'}
-                  </div>
-                  {agent.retell_agent_id && (
-                    <div className="text-xs text-muted-foreground">
-                      Retell ID: {agent.retell_agent_id.substring(0, 8)}...
-                    </div>
-                  )}
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>{agent.lang || 'N/A'}</span>
                 </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mic className="h-3.5 w-3.5" />
+                  <span>{agent.voice_id || 'N/A'}</span>
+                </div>
+                {agent.retell_agent_id && (
+                  <div className="pt-1 text-xs text-muted-foreground">
+                    Retell ID: {agent.retell_agent_id.substring(0, 12)}...
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -93,4 +105,3 @@ export function AgentsPage() {
     </div>
   )
 }
-

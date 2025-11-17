@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { PageHeader } from '@/shared/layout/PageHeader'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { useNumbers, useCreateNumber, useDeleteNumber } from '../hooks'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Phone, CheckCircle2, XCircle, Globe } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -47,61 +46,83 @@ export function NumbersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Phone Numbers"
-        subtitle="Manage your phone numbers for outbound calls"
-        action={
-          <Button onClick={() => setCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Number
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Phone numbers</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your phone numbers for outbound calls
+          </p>
+        </div>
+        <Button onClick={() => setCreateModalOpen(true)} size="lg">
+          <Plus className="mr-2 h-4 w-4" />
+          Add number
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div>Loading numbers...</div>
+        <div className="py-12 text-center text-sm text-muted-foreground">Loading numbers...</div>
       ) : error ? (
-        <div className="text-destructive">Error loading numbers: {error.message}</div>
-      ) : !numbers || numbers.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No phone numbers yet. Add your first number to get started.</p>
+            <p className="text-sm text-destructive">Error loading numbers: {error.message}</p>
+          </CardContent>
+        </Card>
+      ) : !numbers || numbers.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">
+              No phone numbers yet. Add your first number to get started.
+            </p>
             <Button onClick={() => setCreateModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Number
+              <Plus className="mr-2 h-4 w-4" />
+              Add number
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {numbers.map((number) => (
             <Card key={number.id}>
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle>{number.e164}</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-md bg-primary/10 p-2">
+                      <Phone className="h-4 w-4 text-primary" />
+                    </div>
+                    <CardTitle className="text-base font-semibold">{number.e164}</CardTitle>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(number.id)}
-                    className="text-destructive"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Type:</span> {number.type}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Country:</span> {number.country || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Verified:</span>{' '}
-                    {number.verified ? 'Yes' : 'No'}
-                  </div>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span className="font-medium">Type:</span>
+                  <span>{number.type}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>{number.country || 'N/A'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  {number.verified ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                      <span>Verified</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Not verified</span>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -112,24 +133,25 @@ export function NumbersPage() {
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Phone Number</DialogTitle>
+            <DialogTitle>Add phone number</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="e164">Phone Number (E.164 format)</Label>
+              <Label htmlFor="e164">Phone number (E.164 format)</Label>
               <Input
                 id="e164"
                 {...register('e164')}
                 placeholder="+1234567890"
                 error={errors.e164?.message}
+                className="mt-1.5"
               />
             </div>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setCreateModalOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Adding...' : 'Add Number'}
+                {createMutation.isPending ? 'Adding...' : 'Add number'}
               </Button>
             </div>
           </form>
@@ -138,4 +160,3 @@ export function NumbersPage() {
     </div>
   )
 }
-

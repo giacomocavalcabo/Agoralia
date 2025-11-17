@@ -1,18 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PageHeader } from '@/shared/layout/PageHeader'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { useCampaigns, useStartCampaign, usePauseCampaign, useDeleteCampaign } from '../hooks'
-import { Plus, Play, Pause, Trash2 } from 'lucide-react'
+import { Plus, Play, Pause, Trash2, Calendar, DollarSign, Phone } from 'lucide-react'
 
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-  scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
-  running: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-  paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-  completed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
+const statusConfig = {
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  scheduled: { label: 'Scheduled', color: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300' },
+  running: { label: 'Running', color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' },
+  paused: { label: 'Paused', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
+  completed: { label: 'Completed', color: 'bg-muted text-muted-foreground' },
+  cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' },
 }
 
 export function CampaignsPage() {
@@ -49,99 +48,117 @@ export function CampaignsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Campaigns"
-        subtitle="Manage your calling campaigns"
-        action={
-          <Button onClick={() => navigate('/campaigns/new')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Campaign
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Campaigns</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your calling campaigns
+          </p>
+        </div>
+        <Button onClick={() => navigate('/campaigns/new')} size="lg">
+          <Plus className="mr-2 h-4 w-4" />
+          Create campaign
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div>Loading campaigns...</div>
+        <div className="py-12 text-center text-sm text-muted-foreground">Loading campaigns...</div>
       ) : error ? (
-        <div className="text-destructive">Error loading campaigns: {error.message}</div>
-      ) : !campaigns || campaigns.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No campaigns yet. Create your first campaign to get started.</p>
+            <p className="text-sm text-destructive">Error loading campaigns: {error.message}</p>
+          </CardContent>
+        </Card>
+      ) : !campaigns || campaigns.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">
+              No campaigns yet. Create your first campaign to get started.
+            </p>
             <Button onClick={() => navigate('/campaigns/new')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Campaign
+              <Plus className="mr-2 h-4 w-4" />
+              Create campaign
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="cursor-pointer" onClick={() => navigate(`/campaigns/${campaign.id}`)}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle>{campaign.name}</CardTitle>
-                  <span className={`text-xs px-2 py-1 rounded-full ${statusColors[campaign.status] || statusColors.draft}`}>
-                    {campaign.status}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm mb-4">
-                  <div>
-                    <span className="text-muted-foreground">Calls made:</span> {campaign.calls_made || 0}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {campaigns.map((campaign) => {
+            const status = statusConfig[campaign.status as keyof typeof statusConfig] || statusConfig.draft
+            return (
+              <Card
+                key={campaign.id}
+                className="cursor-pointer transition-colors hover:border-primary/50"
+                onClick={() => navigate(`/campaigns/${campaign.id}`)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-base font-semibold">{campaign.name}</CardTitle>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.color}`}>
+                      {status.label}
+                    </span>
                   </div>
-                  {campaign.total_cost_cents && (
-                    <div>
-                      <span className="text-muted-foreground">Total cost:</span> €
-                      {((campaign.total_cost_cents || 0) / 100).toFixed(2)}
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" />
+                      <span>{campaign.calls_made || 0} calls</span>
                     </div>
-                  )}
-                  {campaign.start_date && (
-                    <div className="text-xs text-muted-foreground">
-                      Started: {new Date(campaign.start_date).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-                <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
-                  {campaign.status === 'draft' || campaign.status === 'paused' ? (
+                    {campaign.total_cost_cents && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        <span>€{((campaign.total_cost_cents || 0) / 100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {campaign.start_date && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>{new Date(campaign.start_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                    {campaign.status === 'draft' || campaign.status === 'paused' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleStart(campaign.id)}
+                        disabled={startMutation.isPending}
+                        className="flex-1"
+                      >
+                        <Play className="mr-1.5 h-3.5 w-3.5" />
+                        Start
+                      </Button>
+                    ) : campaign.status === 'running' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePause(campaign.id)}
+                        disabled={pauseMutation.isPending}
+                        className="flex-1"
+                      >
+                        <Pause className="mr-1.5 h-3.5 w-3.5" />
+                        Pause
+                      </Button>
+                    ) : null}
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={() => handleStart(campaign.id)}
-                      disabled={startMutation.isPending}
+                      variant="ghost"
+                      onClick={() => handleDelete(campaign.id)}
+                      className="text-destructive hover:text-destructive"
+                      disabled={deleteMutation.isPending}
                     >
-                      <Play className="h-3 w-3 mr-1" />
-                      Start
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  ) : campaign.status === 'running' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handlePause(campaign.id)}
-                      disabled={pauseMutation.isPending}
-                    >
-                      <Pause className="h-3 w-3 mr-1" />
-                      Pause
-                    </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDelete(campaign.id)}
-                    className="text-destructive"
-                    disabled={deleteMutation.isPending}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
   )
 }
-
