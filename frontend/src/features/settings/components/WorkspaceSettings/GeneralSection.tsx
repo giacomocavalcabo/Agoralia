@@ -12,7 +12,21 @@ import { Loader2, Save, Upload, X } from 'lucide-react'
 const generalSchema = z.object({
   workspace_name: z.string().max(128).optional().or(z.literal('')),
   timezone: z.string().max(64).optional().or(z.literal('')),
-  brand_logo_url: z.string().url().optional().or(z.literal('')),
+  brand_logo_url: z.string()
+    .refine(
+      (val) => {
+        if (!val || val === '') return true
+        // Accept URLs (http/https) or relative paths starting with /uploads/ or workspace-logos/
+        return val.startsWith('http://') || 
+               val.startsWith('https://') || 
+               val.startsWith('/uploads/') || 
+               val.startsWith('workspace-logos/') ||
+               z.string().url().safeParse(val).success
+      },
+      { message: 'Must be a valid URL or file path' }
+    )
+    .optional()
+    .or(z.literal('')),
 })
 
 type GeneralForm = z.infer<typeof generalSchema>
