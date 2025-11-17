@@ -280,6 +280,7 @@ async def upload_workspace_logo(
         old_logo_url = current_settings.brand_logo_url
         
         # Delete old logo if exists (replace behavior)
+        # Delete ALL logo files for this tenant (different extensions)
         if old_logo_url and old_logo_url.startswith("workspace-logos/"):
             import os
             r2_configured = bool(
@@ -290,16 +291,22 @@ async def upload_workspace_logo(
             )
             
             if r2_configured:
-                # Delete from R2
+                # Delete from R2 - delete all possible logo extensions
                 from utils.r2_client import r2_delete
-                r2_delete(old_logo_url)
+                tenant_logo_prefix = f"workspace-logos/{tenant_id}/logo."
+                # Try common extensions
+                for ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']:
+                    r2_delete(f"{tenant_logo_prefix}{ext}")
             else:
-                # Delete from disk
+                # Delete from disk - delete all possible logo extensions
                 from pathlib import Path
                 from utils.r2_client import delete_file_from_disk
                 backend_dir = Path(__file__).resolve().parent.parent
-                file_path = backend_dir / "uploads" / old_logo_url
-                delete_file_from_disk(str(file_path))
+                tenant_logo_dir = backend_dir / "uploads" / "workspace-logos" / str(tenant_id)
+                if tenant_logo_dir.exists():
+                    # Delete all logo.* files in tenant directory
+                    for logo_file in tenant_logo_dir.glob("logo.*"):
+                        delete_file_from_disk(str(logo_file))
         
         # Save new file - try R2 first, fallback to disk
         import os
