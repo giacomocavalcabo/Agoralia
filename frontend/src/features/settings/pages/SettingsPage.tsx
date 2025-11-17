@@ -7,6 +7,9 @@ import { BudgetSection } from '../components/WorkspaceSettings/BudgetSection'
 import { ComplianceSection } from '../components/WorkspaceSettings/ComplianceSection'
 import { QuietHoursSection } from '../components/WorkspaceSettings/QuietHoursSection'
 import { IntegrationsSection } from '../components/WorkspaceSettings/IntegrationsSection'
+import { UISection } from '../components/UserPreferences/UISection'
+import { NotificationsSection } from '../components/UserPreferences/NotificationsSection'
+import { DashboardSection } from '../components/UserPreferences/DashboardSection'
 import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks'
@@ -59,11 +62,11 @@ export function SettingsPage() {
       case 'integrations':
         return <IntegrationsSection />
       case 'ui':
-        return <div>UI Preferences (coming soon)</div>
+        return <UISection />
       case 'notifications':
-        return <div>Notifications (coming soon)</div>
+        return <NotificationsSection />
       case 'dashboard':
-        return <div>Dashboard (coming soon)</div>
+        return <DashboardSection />
       default:
         return <div>Section not found</div>
     }
