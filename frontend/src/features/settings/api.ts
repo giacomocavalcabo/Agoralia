@@ -44,6 +44,11 @@ export async function uploadWorkspaceLogo(file: File): Promise<WorkspaceGeneral>
   return data
 }
 
+export async function deleteWorkspaceLogo(): Promise<WorkspaceGeneral> {
+  const { data } = await api.delete<WorkspaceGeneral>('/settings/workspace/general/logo')
+  return data
+}
+
 export async function getWorkspaceNotifications(): Promise<WorkspaceNotifications> {
   const { data } = await api.get<WorkspaceNotifications>('/settings/workspace/notifications')
   return data

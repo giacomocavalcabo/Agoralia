@@ -4,6 +4,7 @@ import {
   getWorkspaceGeneral,
   updateWorkspaceGeneral,
   uploadWorkspaceLogo,
+  deleteWorkspaceLogo,
   getWorkspaceNotifications,
   updateWorkspaceNotifications,
   getWorkspaceTelephony,
@@ -52,6 +53,17 @@ export function useUploadWorkspaceLogo() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: uploadWorkspaceLogo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
+      queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
+    },
+  })
+}
+
+export function useDeleteWorkspaceLogo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteWorkspaceLogo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
       queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })

@@ -116,6 +116,58 @@ async def get_workspace_general(
         raise HTTPException(status_code=500, detail=f"Error loading general settings: {str(e)}")
 
 
+@router.delete("/general/logo", response_model=WorkspaceGeneralResponse)
+async def delete_workspace_logo(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceGeneralResponse:
+    """Delete workspace logo (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    try:
+        settings = get_workspace_settings(tenant_id)
+        old_logo_url = settings.brand_logo_url
+        
+        # Delete file if exists
+        if old_logo_url and old_logo_url.startswith("workspace-logos/"):
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            
+            if r2_configured:
+                # Delete from R2
+                from utils.r2_client import r2_delete
+                r2_delete(old_logo_url)
+            else:
+                # Delete from disk
+                from pathlib import Path
+                from utils.r2_client import delete_file_from_disk
+                backend_dir = Path(__file__).resolve().parent.parent
+                file_path = backend_dir / "uploads" / old_logo_url
+                delete_file_from_disk(str(file_path))
+        
+        # Update settings to remove logo
+        updates = {"brand_logo_url": None}
+        settings = update_workspace_settings(tenant_id, updates)
+        
+        return WorkspaceGeneralResponse(
+            workspace_name=settings.workspace_name,
+            timezone=settings.timezone,
+            brand_logo_url=None,
+        )
+    except Exception as e:
+        import traceback
+        error_detail = f"Error deleting logo: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error deleting logo: {str(e)}")
+
+
 @router.patch("/general", response_model=WorkspaceGeneralResponse)
 async def update_workspace_general(
     body: WorkspaceGeneralUpdate,
@@ -130,6 +182,37 @@ async def update_workspace_general(
     try:
         # Convert Pydantic model to dict, excluding None values
         updates = body.model_dump(exclude_none=True)
+        
+        # Handle logo deletion: if brand_logo_url is explicitly set to null/empty, delete the file
+        if "brand_logo_url" in updates and (updates["brand_logo_url"] is None or updates["brand_logo_url"] == ""):
+            # Get current logo before deleting
+            current_settings = get_workspace_settings(tenant_id)
+            old_logo_url = current_settings.brand_logo_url
+            
+            # Delete file if exists
+            if old_logo_url and old_logo_url.startswith("workspace-logos/"):
+                import os
+                r2_configured = bool(
+                    os.getenv("R2_ACCESS_KEY_ID") and 
+                    os.getenv("R2_SECRET_ACCESS_KEY") and 
+                    os.getenv("R2_ACCOUNT_ID") and 
+                    os.getenv("R2_BUCKET")
+                )
+                
+                if r2_configured:
+                    # Delete from R2
+                    from utils.r2_client import r2_delete
+                    r2_delete(old_logo_url)
+                else:
+                    # Delete from disk
+                    from pathlib import Path
+                    from utils.r2_client import delete_file_from_disk
+                    backend_dir = Path(__file__).resolve().parent.parent
+                    file_path = backend_dir / "uploads" / old_logo_url
+                    delete_file_from_disk(str(file_path))
+            
+            # Set to None in database
+            updates["brand_logo_url"] = None
         
         settings = update_workspace_settings(tenant_id, updates)
         

@@ -60,3 +60,29 @@ def r2_presign_get(key: str, expires_seconds: int = 3600) -> Optional[str]:
     except Exception:
         return None
 
+
+def r2_delete(key: str) -> bool:
+    """Delete object from R2"""
+    s3 = get_r2_client()
+    bucket = os.getenv("R2_BUCKET")
+    if s3 is None or not bucket:
+        return False
+    try:
+        s3.delete_object(Bucket=bucket, Key=key)
+        return True
+    except Exception:
+        return False
+
+
+def delete_file_from_disk(file_path: str) -> bool:
+    """Delete file from disk"""
+    from pathlib import Path
+    try:
+        path = Path(file_path)
+        if path.exists():
+            path.unlink()
+            return True
+        return False
+    except Exception:
+        return False
+

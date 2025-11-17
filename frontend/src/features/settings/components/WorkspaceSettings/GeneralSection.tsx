@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { useWorkspaceGeneral, useUpdateWorkspaceGeneral, useUploadWorkspaceLogo } from '../../hooks'
+import { useWorkspaceGeneral, useUpdateWorkspaceGeneral, useUploadWorkspaceLogo, useDeleteWorkspaceLogo } from '../../hooks'
 import { Loader2, Save, Upload, X } from 'lucide-react'
 
 const generalSchema = z.object({
@@ -35,6 +35,7 @@ export function GeneralSection() {
   const { data, isLoading, error } = useWorkspaceGeneral()
   const updateMutation = useUpdateWorkspaceGeneral()
   const uploadMutation = useUploadWorkspaceLogo()
+  const deleteMutation = useDeleteWorkspaceLogo()
   const [hasChanges, setHasChanges] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
