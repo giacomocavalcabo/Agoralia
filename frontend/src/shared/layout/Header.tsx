@@ -28,23 +28,30 @@ export function Header() {
               src={
                 effectiveSettings.brand_logo_url.startsWith('http://') || effectiveSettings.brand_logo_url.startsWith('https://')
                   ? effectiveSettings.brand_logo_url
-                  : `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
-                      effectiveSettings.brand_logo_url.startsWith('/') 
+                  : (() => {
+                      // For static files, always use the full API URL, not the proxy
+                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
+                      // If VITE_API_BASE_URL is a relative path like /api, use the full URL instead
+                      const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
+                        ? apiBaseUrl
+                        : 'https://api.agoralia.app'
+                      const path = effectiveSettings.brand_logo_url.startsWith('/') 
                         ? effectiveSettings.brand_logo_url 
                         : `/${effectiveSettings.brand_logo_url}`
-                    }`
+                      return `${fullApiUrl}${path}`
+                    })()
               }
               alt="Workspace logo"
               className="h-full w-full object-cover"
               onError={(e) => {
-                console.error('Failed to load logo:', effectiveSettings.brand_logo_url, 'Full URL:', 
-                  effectiveSettings.brand_logo_url.startsWith('http://') || effectiveSettings.brand_logo_url.startsWith('https://')
-                    ? effectiveSettings.brand_logo_url
-                    : `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
-                        effectiveSettings.brand_logo_url.startsWith('/') 
-                          ? effectiveSettings.brand_logo_url 
-                          : `/${effectiveSettings.brand_logo_url}`
-                      }`, e)
+                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
+                const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
+                  ? apiBaseUrl
+                  : 'https://api.agoralia.app'
+                const path = effectiveSettings.brand_logo_url.startsWith('/') 
+                  ? effectiveSettings.brand_logo_url 
+                  : `/${effectiveSettings.brand_logo_url}`
+                console.error('Failed to load logo:', effectiveSettings.brand_logo_url, 'Full URL:', `${fullApiUrl}${path}`, e)
               }}
             />
           </div>
