@@ -4,13 +4,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { SetupChecklist } from '../components/SetupChecklist'
 import { KPICard } from '../components/KPICard'
 import { useDashboardKPIs, useLiveCalls } from '../hooks'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/shared/api/client'
+import { useWebSocket } from '@/shared/hooks/useWebSocket'
 
 export function DashboardPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: kpis, isLoading: kpisLoading } = useDashboardKPIs()
   const { data: liveCalls, isLoading: callsLoading } = useLiveCalls()
+
+  // WebSocket integration for real-time updates
+  useWebSocket({
+    onMessage: (message) => {
+      // Invalidate relevant queries when call events occur
+      if (message.type === 'call.created' || message.type === 'call.finished' || message.type === 'webcall.created') {
+        queryClient.invalidateQueries({ queryKey: ['calls'] })
+        queryClient.invalidateQueries({ queryKey: ['calls', 'live'] })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      }
+    },
+  })
 
   // Fetch setup status
   const { data: numbers } = useQuery({
@@ -153,12 +167,13 @@ export function DashboardPage() {
               {liveCalls.map((call) => (
                 <div
                   key={call.id}
-                  className="flex items-center justify-between rounded-md border p-3"
+                  className="flex items-center justify-between rounded-md border p-3 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => navigate(`/calls/${call.id}`)}
                 >
                   <div>
-                    <div className="font-medium">{call.to_number}</div>
+                    <div className="font-medium">{call.to || call.to_number}</div>
                     <div className="text-sm text-muted-foreground">
-                      Da: {call.from_number} • {call.status}
+                      Da: {call.from || call.from_number} • {call.status}
                     </div>
                   </div>
                 </div>

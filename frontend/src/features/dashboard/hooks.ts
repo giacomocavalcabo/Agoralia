@@ -3,7 +3,7 @@ import { fetchLiveCalls, fetchDashboardKPIs } from './api'
 
 export function useLiveCalls() {
   return useQuery({
-    queryKey: ['dashboard', 'live-calls'],
+    queryKey: ['calls', 'live', 6],
     queryFn: fetchLiveCalls,
     refetchInterval: 5000, // Refresh ogni 5 secondi
   })

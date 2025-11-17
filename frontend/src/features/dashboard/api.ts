@@ -17,8 +17,7 @@ export interface DashboardKPIs {
 }
 
 export async function fetchLiveCalls(): Promise<LiveCall[]> {
-  // TODO: Implementare endpoint /calls/live quando disponibile
-  const { data } = await api.get('/calls', { params: { limit: 10, status: 'ringing' } })
+  const { data } = await api.get('/calls/live', { params: { hours: 6 } })
   return Array.isArray(data) ? data : []
 }
 
