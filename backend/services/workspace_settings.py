@@ -253,35 +253,70 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
     
     settings = get_workspace_settings(tenant_id, session)
     
+    # Check if settings object is in session (was created via ORM) or manually (raw SQL)
+    is_in_session = hasattr(settings, '_sa_instance_state') and settings._sa_instance_state.session is not None
+    
     # Handle encryption for sensitive fields
     if "retell_api_key" in updates:
         value = updates.pop("retell_api_key")
-        settings.retell_api_key_encrypted = encrypt_value(value) if value else None
+        if value:
+            updates["retell_api_key_encrypted"] = encrypt_value(value)
+        else:
+            updates["retell_api_key_encrypted"] = None
     
     if "retell_webhook_secret" in updates:
         value = updates.pop("retell_webhook_secret")
-        settings.retell_webhook_secret_encrypted = encrypt_value(value) if value else None
+        if value:
+            updates["retell_webhook_secret_encrypted"] = encrypt_value(value)
+        else:
+            updates["retell_webhook_secret_encrypted"] = None
     
     # Filter out notification fields if columns don't exist
     updates_to_apply = {}
     for key, value in updates.items():
-        if hasattr(settings, key):
-            # Skip notification fields if columns don't exist
-            if not has_notification_columns and key in [
-                'email_notifications_enabled', 'email_campaign_started', 
-                'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
-            ]:
-                continue  # Skip these fields if columns don't exist
-            updates_to_apply[key] = value
+        # Skip notification fields if columns don't exist
+        if not has_notification_columns and key in [
+            'email_notifications_enabled', 'email_campaign_started', 
+            'email_campaign_paused', 'email_budget_warning', 'email_compliance_alert'
+        ]:
+            continue  # Skip these fields if columns don't exist
+        updates_to_apply[key] = value
+    
+    # If object is not in session (created manually with raw SQL), use raw SQL UPDATE
+    if not is_in_session:
+        # Use raw SQL UPDATE
+        set_clauses = []
+        params = {"tid": tenant_id}
+        
+        for key, value in updates_to_apply.items():
+            set_clauses.append(f"{key} = :{key}")
+            params[key] = value
+        
+        if set_clauses:
+            session.execute(
+                text(f"""
+                    UPDATE workspace_settings
+                    SET {', '.join(set_clauses)}, updated_at = now()
+                    WHERE tenant_id = :tid
+                """),
+                params
+            )
+            session.commit()
+            # Re-read using safe method
+            return get_workspace_settings(tenant_id, session)
+        else:
+            # No updates to apply
+            return settings
+    
+    # Object is in session, use ORM update
+    # Ensure settings object is in session (merge if needed)
+    if settings not in session:
+        settings = session.merge(settings)
     
     # Update fields
     for key, value in updates_to_apply.items():
         if value is not None:
             setattr(settings, key, value)
-    
-    # Ensure settings object is in session (if it was created manually, merge it)
-    if settings not in session:
-        settings = session.merge(settings)
     
     try:
         session.commit()
