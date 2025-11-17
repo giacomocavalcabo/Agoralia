@@ -294,5 +294,11 @@ async def get_effective_settings_endpoint(request: Request) -> EffectiveSettings
     if not user_id or not tenant_id:
         raise HTTPException(status_code=401, detail="Invalid token payload")
     
-    return get_effective_settings(int(user_id), int(tenant_id))
+    try:
+        return get_effective_settings(int(user_id), int(tenant_id))
+    except Exception as e:
+        import traceback
+        error_detail = f"Error loading effective settings: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error loading effective settings: {str(e)}")
 

@@ -24,47 +24,53 @@ def get_effective_settings(user_id: int, tenant_id: int) -> EffectiveSettings:
     Returns:
         EffectiveSettings with resolved values
     """
-    workspace = get_workspace_settings(tenant_id)
-    user_prefs = get_user_preferences(user_id, tenant_id)
-    
-    # Resolve timezone
-    timezone = (
-        user_prefs.timezone or
-        workspace.timezone or
-        "UTC"
-    )
-    
-    # Resolve locale
-    locale = (
-        user_prefs.ui_locale or
-        workspace.default_lang or
-        "en-US"
-    )
-    
-    # Resolve date format
-    date_format = user_prefs.date_format or "YYYY-MM-DD"
-    
-    # Resolve time format
-    time_format = user_prefs.time_format or "24h"
-    
-    # Resolve theme
-    theme = user_prefs.theme or "system"
-    
-    # Generate presigned URL if logo is in R2
-    logo_url = workspace.brand_logo_url
-    if logo_url and logo_url.startswith("workspace-logos/"):
-        from utils.r2_client import r2_presign_get
-        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-        if presigned:
-            logo_url = presigned
-    
-    return EffectiveSettings(
-        timezone=timezone,
-        locale=locale,
-        date_format=date_format,
-        time_format=time_format,
-        theme=theme,
-        workspace_name=workspace.workspace_name,
-        brand_logo_url=logo_url,
-    )
+    try:
+        workspace = get_workspace_settings(tenant_id)
+        user_prefs = get_user_preferences(user_id, tenant_id)
+        
+        # Resolve timezone
+        timezone = (
+            user_prefs.timezone or
+            workspace.timezone or
+            "UTC"
+        )
+        
+        # Resolve locale
+        locale = (
+            user_prefs.ui_locale or
+            workspace.default_lang or
+            "en-US"
+        )
+        
+        # Resolve date format
+        date_format = user_prefs.date_format or "YYYY-MM-DD"
+        
+        # Resolve time format
+        time_format = user_prefs.time_format or "24h"
+        
+        # Resolve theme
+        theme = user_prefs.theme or "system"
+        
+        # Generate presigned URL if logo is in R2
+        logo_url = workspace.brand_logo_url
+        if logo_url and logo_url.startswith("workspace-logos/"):
+            from utils.r2_client import r2_presign_get
+            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+            if presigned:
+                logo_url = presigned
+        
+        return EffectiveSettings(
+            timezone=timezone,
+            locale=locale,
+            date_format=date_format,
+            time_format=time_format,
+            theme=theme,
+            workspace_name=workspace.workspace_name,
+            brand_logo_url=logo_url,
+        )
+    except Exception as e:
+        import traceback
+        error_detail = f"Error in get_effective_settings: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise
 
