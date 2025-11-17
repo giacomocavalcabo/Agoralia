@@ -715,11 +715,18 @@ async def update_workspace_notifications(
     
     updates = body.model_dump(exclude_none=True)
     
-    # Convert bool to int for storage
-    for key in ["email_notifications_enabled", "email_campaign_started", "email_campaign_paused", 
-                "email_budget_warning", "email_compliance_alert"]:
+    # Convert boolean values to integers (0/1) for database storage
+    # IMPORTANT: Convert ALL boolean fields, even if they're already in updates
+    boolean_fields = ["email_notifications_enabled", "email_campaign_started", "email_campaign_paused", 
+                     "email_budget_warning", "email_compliance_alert"]
+    for key in boolean_fields:
         if key in updates:
-            updates[key] = 1 if updates[key] else 0
+            # Ensure it's converted to int (0 or 1)
+            updates[key] = 1 if bool(updates[key]) else 0
+    
+    # Debug: log what we're sending
+    import logging
+    logging.debug(f"Updating notifications for tenant {tenant_id}: {updates}")
     
     settings = update_workspace_settings(tenant_id, updates)
     
