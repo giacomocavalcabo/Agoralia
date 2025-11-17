@@ -305,10 +305,15 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             # Only update valid columns
             if key not in valid_columns:
                 continue
-            # Use parameterized query to prevent SQL injection
-            param_name = f"val_{key}"  # Use unique param name
-            set_clauses.append(f"{key} = :{param_name}")
-            params[param_name] = value
+            # Skip None values (they should be handled explicitly if needed)
+            if value is None:
+                # For None values, explicitly set to NULL
+                set_clauses.append(f"{key} = NULL")
+            else:
+                # Use parameterized query to prevent SQL injection
+                param_name = f"val_{key}"  # Use unique param name
+                set_clauses.append(f"{key} = :{param_name}")
+                params[param_name] = value
         
         if set_clauses:
             try:
