@@ -1,6 +1,9 @@
 """Workspace settings endpoints"""
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, HTTPException, Depends, UploadFile, File, Form
+from typing import Optional
 from utils.auth import extract_tenant_id, _decode_token
+from utils.r2_client import r2_put_bytes, r2_presign_get
+import os
 from services.workspace_settings import (
     get_workspace_settings,
     update_workspace_settings,
@@ -65,11 +68,17 @@ async def get_workspace_general(
     
     settings = get_workspace_settings(tenant_id)
     
+    # Generate presigned URL if logo is in R2
+    logo_url = settings.brand_logo_url
+    if logo_url and logo_url.startswith("workspace-logos/"):
+        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+        if presigned:
+            logo_url = presigned
+    
     return WorkspaceGeneralResponse(
         workspace_name=settings.workspace_name,
         timezone=settings.timezone,
-        brand_logo_url=settings.brand_logo_url,
-        brand_color=settings.brand_color,
+        brand_logo_url=logo_url,
     )
 
 
@@ -89,11 +98,64 @@ async def update_workspace_general(
     
     settings = update_workspace_settings(tenant_id, updates)
     
+    # Generate presigned URL if logo is in R2
+    logo_url = settings.brand_logo_url
+    if logo_url and logo_url.startswith("workspace-logos/"):
+        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+        if presigned:
+            logo_url = presigned
+    
     return WorkspaceGeneralResponse(
         workspace_name=settings.workspace_name,
         timezone=settings.timezone,
-        brand_logo_url=settings.brand_logo_url,
-        brand_color=settings.brand_color,
+        brand_logo_url=logo_url,
+    )
+
+
+@router.post("/general/logo", response_model=WorkspaceGeneralResponse)
+async def upload_workspace_logo(
+    request: Request,
+    file: UploadFile = File(...),
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceGeneralResponse:
+    """Upload workspace logo (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    # Validate file type
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Read file
+    file_data = await file.read()
+    if len(file_data) > 5 * 1024 * 1024:  # 5MB max
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    
+    # Determine content type
+    content_type = file.content_type or "image/png"
+    
+    # Upload to R2
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+    r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
+    
+    uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+    if not uploaded:
+        raise HTTPException(status_code=500, detail="Failed to upload logo")
+    
+    # Update settings with R2 key (not full URL)
+    updates = {"brand_logo_url": r2_key}
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    # Generate presigned URL for response
+    logo_url = r2_presign_get(r2_key, expires_seconds=3600 * 24 * 365)  # 1 year
+    if not logo_url:
+        logo_url = r2_key
+    
+    return WorkspaceGeneralResponse(
+        workspace_name=settings.workspace_name,
+        timezone=settings.timezone,
+        brand_logo_url=logo_url,
     )
 
 

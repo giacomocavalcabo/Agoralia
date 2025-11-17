@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,18 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { useWorkspaceGeneral, useUpdateWorkspaceGeneral } from '../../hooks'
-import { Loader2, Save } from 'lucide-react'
+import { useWorkspaceGeneral, useUpdateWorkspaceGeneral, useUploadWorkspaceLogo } from '../../hooks'
+import { Loader2, Save, Upload, X } from 'lucide-react'
 
 const generalSchema = z.object({
   workspace_name: z.string().max(128).optional().or(z.literal('')),
   timezone: z.string().max(64).optional().or(z.literal('')),
   brand_logo_url: z.string().url().optional().or(z.literal('')),
-  brand_color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color (#RRGGBB)')
-    .optional()
-    .or(z.literal('')),
 })
 
 type GeneralForm = z.infer<typeof generalSchema>
@@ -25,22 +20,27 @@ type GeneralForm = z.infer<typeof generalSchema>
 export function GeneralSection() {
   const { data, isLoading, error } = useWorkspaceGeneral()
   const updateMutation = useUpdateWorkspaceGeneral()
+  const uploadMutation = useUploadWorkspaceLogo()
   const [hasChanges, setHasChanges] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<GeneralForm>({
     resolver: zodResolver(generalSchema),
     defaultValues: {
       workspace_name: '',
       timezone: '',
       brand_logo_url: '',
-      brand_color: '',
     },
   })
+
+  const logoUrl = watch('brand_logo_url')
 
   // Sync form with data when it loads
   useEffect(() => {
@@ -49,11 +49,40 @@ export function GeneralSection() {
         workspace_name: data.workspace_name || '',
         timezone: data.timezone || '',
         brand_logo_url: data.brand_logo_url || '',
-        brand_color: data.brand_color || '',
       })
       setHasChanges(false)
     }
   }, [data, reset])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large (max 5MB)')
+      return
+    }
+
+    try {
+      const result = await uploadMutation.mutateAsync(file)
+      setValue('brand_logo_url', result.brand_logo_url || '')
+      setHasChanges(true)
+    } catch (error: any) {
+      alert(`Failed to upload logo: ${error.message}`)
+    }
+  }
+
+  const handleRemoveLogo = () => {
+    setValue('brand_logo_url', '')
+    setHasChanges(true)
+  }
 
   const onSubmit = async (formData: GeneralForm) => {
     try {
@@ -67,9 +96,6 @@ export function GeneralSection() {
       }
       if (formData.brand_logo_url !== undefined) {
         updates.brand_logo_url = formData.brand_logo_url || null
-      }
-      if (formData.brand_color !== undefined) {
-        updates.brand_color = formData.brand_color || null
       }
 
       await updateMutation.mutateAsync(updates)
@@ -169,38 +195,93 @@ export function GeneralSection() {
           </div>
 
           <div>
-            <Label htmlFor="brand_logo_url">Brand logo URL</Label>
-            <Input
-              id="brand_logo_url"
-              {...register('brand_logo_url')}
-              placeholder="https://example.com/logo.png"
-              className="mt-1.5"
-              onChange={(e) => {
-                register('brand_logo_url').onChange(e)
-                setHasChanges(true)
-              }}
-            />
-            {errors.brand_logo_url && (
-              <p className="mt-1 text-sm text-destructive">{errors.brand_logo_url.message}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="brand_color">Brand color</Label>
-            <Input
-              id="brand_color"
-              {...register('brand_color')}
-              placeholder="#10a37f"
-              className="mt-1.5"
-              onChange={(e) => {
-                register('brand_color').onChange(e)
-                setHasChanges(true)
-              }}
-            />
-            {errors.brand_color && (
-              <p className="mt-1 text-sm text-destructive">{errors.brand_color.message}</p>
-            )}
-            <p className="mt-1 text-xs text-muted-foreground">Hex color format: #RRGGBB</p>
+            <Label htmlFor="logo">Logo</Label>
+            <div className="mt-1.5 space-y-3">
+              {logoUrl ? (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={logoUrl}
+                    alt="Workspace logo"
+                    className="h-16 w-16 rounded-full object-cover border"
+                  />
+                  <div className="flex-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadMutation.isPending}
+                    >
+                      {uploadMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Change Logo
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveLogo}
+                      className="ml-2"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadMutation.isPending}
+                  >
+                    {uploadMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Logo
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Input
+                id="brand_logo_url"
+                {...register('brand_logo_url')}
+                placeholder="Or enter logo URL"
+                className="mt-2"
+                onChange={(e) => {
+                  register('brand_logo_url').onChange(e)
+                  setHasChanges(true)
+                }}
+              />
+              {errors.brand_logo_url && (
+                <p className="mt-1 text-sm text-destructive">{errors.brand_logo_url.message}</p>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">
+                Upload an image file or enter a URL. Max 5MB.
+              </p>
+            </div>
           </div>
 
           {hasChanges && (
@@ -235,4 +316,3 @@ export function GeneralSection() {
     </Card>
   )
 }
-

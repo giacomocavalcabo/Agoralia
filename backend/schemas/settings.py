@@ -10,24 +10,6 @@ class WorkspaceGeneralUpdate(BaseModel):
     workspace_name: Optional[str] = Field(None, max_length=128)
     timezone: Optional[str] = Field(None, max_length=64)
     brand_logo_url: Optional[str] = None
-    brand_color: Optional[str] = Field(None, max_length=16)
-    
-    @field_validator("brand_color")
-    @classmethod
-    def validate_hex_color(cls, v: Optional[str]) -> Optional[str]:
-        """Validate hex color format #RRGGBB"""
-        if v is None:
-            return None
-        v = v.strip()
-        if not v.startswith("#"):
-            raise ValueError("brand_color must start with #")
-        if len(v) != 7:
-            raise ValueError("brand_color must be #RRGGBB format")
-        try:
-            int(v[1:], 16)
-        except ValueError:
-            raise ValueError("brand_color must be valid hex color")
-        return v.upper()
 
 
 class WorkspaceGeneralResponse(BaseModel):
@@ -35,7 +17,6 @@ class WorkspaceGeneralResponse(BaseModel):
     workspace_name: Optional[str] = None
     timezone: Optional[str] = None
     brand_logo_url: Optional[str] = None
-    brand_color: Optional[str] = None
 
 
 class WorkspaceIntegrationsResponse(BaseModel):
@@ -80,5 +61,5 @@ class EffectiveSettings(BaseModel):
     time_format: str
     theme: str
     workspace_name: Optional[str] = None
-    brand_color: Optional[str] = None
+    brand_logo_url: Optional[str] = None
 

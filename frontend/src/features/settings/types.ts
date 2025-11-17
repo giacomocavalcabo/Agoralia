@@ -4,14 +4,12 @@ export interface WorkspaceGeneral {
   workspace_name: string | null
   timezone: string | null
   brand_logo_url: string | null
-  brand_color: string | null
 }
 
 export interface WorkspaceGeneralUpdate {
   workspace_name?: string
   timezone?: string
   brand_logo_url?: string
-  brand_color?: string
 }
 
 export interface WorkspaceIntegrations {
@@ -47,6 +45,6 @@ export interface EffectiveSettings {
   time_format: string
   theme: string
   workspace_name: string | null
-  brand_color: string | null
+  brand_logo_url: string | null
 }
 

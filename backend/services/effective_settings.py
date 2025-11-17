@@ -50,6 +50,14 @@ def get_effective_settings(user_id: int, tenant_id: int) -> EffectiveSettings:
     # Resolve theme
     theme = user_prefs.theme or "system"
     
+    # Generate presigned URL if logo is in R2
+    logo_url = workspace.brand_logo_url
+    if logo_url and logo_url.startswith("workspace-logos/"):
+        from utils.r2_client import r2_presign_get
+        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+        if presigned:
+            logo_url = presigned
+    
     return EffectiveSettings(
         timezone=timezone,
         locale=locale,
@@ -57,6 +65,6 @@ def get_effective_settings(user_id: int, tenant_id: int) -> EffectiveSettings:
         time_format=time_format,
         theme=theme,
         workspace_name=workspace.workspace_name,
-        brand_color=workspace.brand_color,
+        brand_logo_url=logo_url,
     )
 

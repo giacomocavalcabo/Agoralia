@@ -24,6 +24,18 @@ export async function updateWorkspaceGeneral(
   return data
 }
 
+export async function uploadWorkspaceLogo(file: File): Promise<WorkspaceGeneral> {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  const { data } = await api.post<WorkspaceGeneral>('/settings/workspace/general/logo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  return data
+}
+
 export async function getWorkspaceIntegrations(): Promise<WorkspaceIntegrations> {
   const { data } = await api.get<WorkspaceIntegrations>('/settings/workspace/integrations')
   return data
@@ -56,4 +68,3 @@ export async function getEffectiveSettings(): Promise<EffectiveSettings> {
   const { data } = await api.get<EffectiveSettings>('/settings/effective')
   return data
 }
-

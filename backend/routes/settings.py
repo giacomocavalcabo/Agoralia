@@ -2,13 +2,16 @@
 import os
 import json
 from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from config.database import engine
 from models.settings import AppSettings, AppMeta
 from services.settings import get_settings, get_meta
+from utils.auth import extract_tenant_id, _decode_token
+from services.effective_settings import get_effective_settings
+from schemas.settings import EffectiveSettings
 
 router = APIRouter()
 
@@ -268,4 +271,28 @@ async def put_settings_compliance(body: ComplianceUpdate) -> Dict[str, Any]:
             s.legal_defaults_json = json.dumps(body.country_rules or {})
         session.commit()
     return await get_settings_compliance()
+
+
+@router.get("/effective", response_model=EffectiveSettings)
+async def get_effective_settings_endpoint(request: Request) -> EffectiveSettings:
+    """Get effective settings (workspace + user preferences resolved)"""
+    auth = request.headers.get("Authorization") or ""
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    token = auth[7:]
+    try:
+        payload = _decode_token(token)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user_id = payload.get("sub")
+    tenant_id = payload.get("tenant_id")
+    
+    if not user_id or not tenant_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    
+    return get_effective_settings(int(user_id), int(tenant_id))
 

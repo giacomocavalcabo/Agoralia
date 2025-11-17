@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getWorkspaceGeneral,
   updateWorkspaceGeneral,
+  uploadWorkspaceLogo,
   getWorkspaceIntegrations,
   updateWorkspaceIntegrations,
   getUserPreferencesUI,
@@ -30,6 +31,18 @@ export function useUpdateWorkspaceGeneral() {
     mutationFn: updateWorkspaceGeneral,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
+      queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
+    },
+  })
+}
+
+export function useUploadWorkspaceLogo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: uploadWorkspaceLogo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
+      queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
     },
   })
 }
@@ -79,4 +92,3 @@ export function useEffectiveSettings() {
     queryFn: getEffectiveSettings,
   })
 }
-
