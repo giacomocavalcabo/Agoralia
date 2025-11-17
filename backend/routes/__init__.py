@@ -44,6 +44,12 @@ from .compliance import router as compliance_router
 # Include compliance router
 api_router.include_router(compliance_router, prefix="/compliance", tags=["compliance"])
 
+# Import admin tools router (development only)
+from .admin_tools import router as admin_tools_router
+
+# Include admin tools router
+api_router.include_router(admin_tools_router, prefix="/admin-tools", tags=["admin-tools"])
+
 # Note: Migration endpoint removed - migrations now run automatically on startup
 # If needed temporarily, uncomment:
 # from .migrations import router as migrations_router
