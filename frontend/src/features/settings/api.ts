@@ -3,10 +3,22 @@ import { api } from '@/shared/api/client'
 import type {
   WorkspaceGeneral,
   WorkspaceGeneralUpdate,
+  WorkspaceTelephony,
+  WorkspaceTelephonyUpdate,
+  WorkspaceBudget,
+  WorkspaceBudgetUpdate,
+  WorkspaceCompliance,
+  WorkspaceComplianceUpdate,
+  WorkspaceQuietHours,
+  WorkspaceQuietHoursUpdate,
   WorkspaceIntegrations,
   WorkspaceIntegrationsUpdate,
   UserPreferencesUI,
   UserPreferencesUIUpdate,
+  UserPreferencesNotifications,
+  UserPreferencesNotificationsUpdate,
+  UserPreferencesDashboard,
+  UserPreferencesDashboardUpdate,
   EffectiveSettings,
 } from './types'
 
@@ -36,6 +48,54 @@ export async function uploadWorkspaceLogo(file: File): Promise<WorkspaceGeneral>
   return data
 }
 
+export async function getWorkspaceTelephony(): Promise<WorkspaceTelephony> {
+  const { data } = await api.get<WorkspaceTelephony>('/settings/workspace/telephony')
+  return data
+}
+
+export async function updateWorkspaceTelephony(
+  updates: WorkspaceTelephonyUpdate
+): Promise<WorkspaceTelephony> {
+  const { data } = await api.patch<WorkspaceTelephony>('/settings/workspace/telephony', updates)
+  return data
+}
+
+export async function getWorkspaceBudget(): Promise<WorkspaceBudget> {
+  const { data } = await api.get<WorkspaceBudget>('/settings/workspace/budget')
+  return data
+}
+
+export async function updateWorkspaceBudget(
+  updates: WorkspaceBudgetUpdate
+): Promise<WorkspaceBudget> {
+  const { data } = await api.patch<WorkspaceBudget>('/settings/workspace/budget', updates)
+  return data
+}
+
+export async function getWorkspaceCompliance(): Promise<WorkspaceCompliance> {
+  const { data } = await api.get<WorkspaceCompliance>('/settings/workspace/compliance')
+  return data
+}
+
+export async function updateWorkspaceCompliance(
+  updates: WorkspaceComplianceUpdate
+): Promise<WorkspaceCompliance> {
+  const { data } = await api.patch<WorkspaceCompliance>('/settings/workspace/compliance', updates)
+  return data
+}
+
+export async function getWorkspaceQuietHours(): Promise<WorkspaceQuietHours> {
+  const { data } = await api.get<WorkspaceQuietHours>('/settings/workspace/quiet-hours')
+  return data
+}
+
+export async function updateWorkspaceQuietHours(
+  updates: WorkspaceQuietHoursUpdate
+): Promise<WorkspaceQuietHours> {
+  const { data } = await api.patch<WorkspaceQuietHours>('/settings/workspace/quiet-hours', updates)
+  return data
+}
+
 export async function getWorkspaceIntegrations(): Promise<WorkspaceIntegrations> {
   const { data } = await api.get<WorkspaceIntegrations>('/settings/workspace/integrations')
   return data
@@ -59,6 +119,30 @@ export async function updateUserPreferencesUI(
   updates: UserPreferencesUIUpdate
 ): Promise<UserPreferencesUI> {
   const { data } = await api.patch<UserPreferencesUI>('/settings/preferences/ui', updates)
+  return data
+}
+
+export async function getUserPreferencesNotifications(): Promise<UserPreferencesNotifications> {
+  const { data } = await api.get<UserPreferencesNotifications>('/settings/preferences/notifications')
+  return data
+}
+
+export async function updateUserPreferencesNotifications(
+  updates: UserPreferencesNotificationsUpdate
+): Promise<UserPreferencesNotifications> {
+  const { data } = await api.patch<UserPreferencesNotifications>('/settings/preferences/notifications', updates)
+  return data
+}
+
+export async function getUserPreferencesDashboard(): Promise<UserPreferencesDashboard> {
+  const { data } = await api.get<UserPreferencesDashboard>('/settings/preferences/dashboard')
+  return data
+}
+
+export async function updateUserPreferencesDashboard(
+  updates: UserPreferencesDashboardUpdate
+): Promise<UserPreferencesDashboard> {
+  const { data } = await api.patch<UserPreferencesDashboard>('/settings/preferences/dashboard', updates)
   return data
 }
 

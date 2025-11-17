@@ -13,6 +13,14 @@ from services.workspace_settings import (
 from schemas.settings import (
     WorkspaceGeneralUpdate,
     WorkspaceGeneralResponse,
+    WorkspaceTelephonyUpdate,
+    WorkspaceTelephonyResponse,
+    WorkspaceBudgetUpdate,
+    WorkspaceBudgetResponse,
+    WorkspaceComplianceUpdate,
+    WorkspaceComplianceResponse,
+    WorkspaceQuietHoursUpdate,
+    WorkspaceQuietHoursResponse,
     WorkspaceIntegrationsResponse,
     WorkspaceIntegrationsUpdate,
 )
@@ -55,6 +63,8 @@ def require_admin(request: Request) -> tuple[int, int]:
     
     return int(user_id), int(tenant_id)
 
+
+# General
 
 @router.get("/general", response_model=WorkspaceGeneralResponse)
 async def get_workspace_general(
@@ -159,6 +169,216 @@ async def upload_workspace_logo(
     )
 
 
+# Telephony
+
+@router.get("/telephony", response_model=WorkspaceTelephonyResponse)
+async def get_workspace_telephony(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceTelephonyResponse:
+    """Get telephony workspace settings (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    settings = get_workspace_settings(tenant_id)
+    
+    # Convert default_agent_id from string to int if it's a numeric string
+    default_agent_id = None
+    if settings.default_agent_id:
+        try:
+            default_agent_id = int(settings.default_agent_id)
+        except ValueError:
+            pass  # Keep as None if not numeric
+    
+    return WorkspaceTelephonyResponse(
+        default_agent_id=default_agent_id,
+        default_from_number=settings.default_from_number,
+        default_spacing_ms=settings.default_spacing_ms,
+    )
+
+
+@router.patch("/telephony", response_model=WorkspaceTelephonyResponse)
+async def update_workspace_telephony(
+    body: WorkspaceTelephonyUpdate,
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceTelephonyResponse:
+    """Update telephony workspace settings (admin only, partial update)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    updates = body.model_dump(exclude_none=True)
+    
+    # Convert default_agent_id from int to string for storage
+    if "default_agent_id" in updates and updates["default_agent_id"] is not None:
+        updates["default_agent_id"] = str(updates["default_agent_id"])
+    
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    # Convert back to int for response
+    default_agent_id = None
+    if settings.default_agent_id:
+        try:
+            default_agent_id = int(settings.default_agent_id)
+        except ValueError:
+            pass
+    
+    return WorkspaceTelephonyResponse(
+        default_agent_id=default_agent_id,
+        default_from_number=settings.default_from_number,
+        default_spacing_ms=settings.default_spacing_ms,
+    )
+
+
+# Budget
+
+@router.get("/budget", response_model=WorkspaceBudgetResponse)
+async def get_workspace_budget(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceBudgetResponse:
+    """Get budget workspace settings (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    settings = get_workspace_settings(tenant_id)
+    
+    return WorkspaceBudgetResponse(
+        budget_monthly_cents=settings.budget_monthly_cents,
+        budget_warn_percent=settings.budget_warn_percent,
+        budget_stop_enabled=bool(settings.budget_stop_enabled),
+    )
+
+
+@router.patch("/budget", response_model=WorkspaceBudgetResponse)
+async def update_workspace_budget(
+    body: WorkspaceBudgetUpdate,
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceBudgetResponse:
+    """Update budget workspace settings (admin only, partial update)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    updates = body.model_dump(exclude_none=True)
+    
+    # Convert bool to int for storage
+    if "budget_stop_enabled" in updates:
+        updates["budget_stop_enabled"] = 1 if updates["budget_stop_enabled"] else 0
+    
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    return WorkspaceBudgetResponse(
+        budget_monthly_cents=settings.budget_monthly_cents,
+        budget_warn_percent=settings.budget_warn_percent,
+        budget_stop_enabled=bool(settings.budget_stop_enabled),
+    )
+
+
+# Compliance
+
+@router.get("/compliance", response_model=WorkspaceComplianceResponse)
+async def get_workspace_compliance(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceComplianceResponse:
+    """Get compliance workspace settings (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    settings = get_workspace_settings(tenant_id)
+    
+    return WorkspaceComplianceResponse(
+        require_legal_review=bool(settings.require_legal_review),
+        override_country_rules_enabled=bool(settings.override_country_rules_enabled),
+    )
+
+
+@router.patch("/compliance", response_model=WorkspaceComplianceResponse)
+async def update_workspace_compliance(
+    body: WorkspaceComplianceUpdate,
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceComplianceResponse:
+    """Update compliance workspace settings (admin only, partial update)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    updates = body.model_dump(exclude_none=True)
+    
+    # Convert bool to int for storage
+    if "require_legal_review" in updates:
+        updates["require_legal_review"] = 1 if updates["require_legal_review"] else 0
+    if "override_country_rules_enabled" in updates:
+        updates["override_country_rules_enabled"] = 1 if updates["override_country_rules_enabled"] else 0
+    
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    return WorkspaceComplianceResponse(
+        require_legal_review=bool(settings.require_legal_review),
+        override_country_rules_enabled=bool(settings.override_country_rules_enabled),
+    )
+
+
+# Quiet Hours
+
+@router.get("/quiet-hours", response_model=WorkspaceQuietHoursResponse)
+async def get_workspace_quiet_hours(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceQuietHoursResponse:
+    """Get quiet hours workspace settings (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    settings = get_workspace_settings(tenant_id)
+    
+    return WorkspaceQuietHoursResponse(
+        quiet_hours_enabled=bool(settings.quiet_hours_enabled),
+        quiet_hours_weekdays=settings.quiet_hours_weekdays,
+        quiet_hours_saturday=settings.quiet_hours_saturday,
+        quiet_hours_sunday=settings.quiet_hours_sunday,
+        quiet_hours_timezone=settings.quiet_hours_timezone,
+    )
+
+
+@router.patch("/quiet-hours", response_model=WorkspaceQuietHoursResponse)
+async def update_workspace_quiet_hours(
+    body: WorkspaceQuietHoursUpdate,
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceQuietHoursResponse:
+    """Update quiet hours workspace settings (admin only, partial update)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    updates = body.model_dump(exclude_none=True)
+    
+    # Convert bool to int for storage
+    if "quiet_hours_enabled" in updates:
+        updates["quiet_hours_enabled"] = 1 if updates["quiet_hours_enabled"] else 0
+    
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    return WorkspaceQuietHoursResponse(
+        quiet_hours_enabled=bool(settings.quiet_hours_enabled),
+        quiet_hours_weekdays=settings.quiet_hours_weekdays,
+        quiet_hours_saturday=settings.quiet_hours_saturday,
+        quiet_hours_sunday=settings.quiet_hours_sunday,
+        quiet_hours_timezone=settings.quiet_hours_timezone,
+    )
+
+
+# Integrations
+
 @router.get("/integrations", response_model=WorkspaceIntegrationsResponse)
 async def get_workspace_integrations(
     request: Request,
@@ -199,4 +419,3 @@ async def update_workspace_integrations(
         retell_api_key_set=get_retell_api_key_set(tenant_id),
         retell_webhook_secret_set=get_retell_webhook_secret_set(tenant_id),
     )
-

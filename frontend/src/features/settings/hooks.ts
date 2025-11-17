@@ -4,16 +4,34 @@ import {
   getWorkspaceGeneral,
   updateWorkspaceGeneral,
   uploadWorkspaceLogo,
+  getWorkspaceTelephony,
+  updateWorkspaceTelephony,
+  getWorkspaceBudget,
+  updateWorkspaceBudget,
+  getWorkspaceCompliance,
+  updateWorkspaceCompliance,
+  getWorkspaceQuietHours,
+  updateWorkspaceQuietHours,
   getWorkspaceIntegrations,
   updateWorkspaceIntegrations,
   getUserPreferencesUI,
   updateUserPreferencesUI,
+  getUserPreferencesNotifications,
+  updateUserPreferencesNotifications,
+  getUserPreferencesDashboard,
+  updateUserPreferencesDashboard,
   getEffectiveSettings,
 } from './api'
 import type {
   WorkspaceGeneralUpdate,
+  WorkspaceTelephonyUpdate,
+  WorkspaceBudgetUpdate,
+  WorkspaceComplianceUpdate,
+  WorkspaceQuietHoursUpdate,
   WorkspaceIntegrationsUpdate,
   UserPreferencesUIUpdate,
+  UserPreferencesNotificationsUpdate,
+  UserPreferencesDashboardUpdate,
 } from './types'
 
 // Workspace Settings
@@ -43,6 +61,74 @@ export function useUploadWorkspaceLogo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
       queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
+    },
+  })
+}
+
+export function useWorkspaceTelephony() {
+  return useQuery({
+    queryKey: ['settings', 'workspace', 'telephony'],
+    queryFn: getWorkspaceTelephony,
+  })
+}
+
+export function useUpdateWorkspaceTelephony() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateWorkspaceTelephony,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'telephony'] })
+    },
+  })
+}
+
+export function useWorkspaceBudget() {
+  return useQuery({
+    queryKey: ['settings', 'workspace', 'budget'],
+    queryFn: getWorkspaceBudget,
+  })
+}
+
+export function useUpdateWorkspaceBudget() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateWorkspaceBudget,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'budget'] })
+    },
+  })
+}
+
+export function useWorkspaceCompliance() {
+  return useQuery({
+    queryKey: ['settings', 'workspace', 'compliance'],
+    queryFn: getWorkspaceCompliance,
+  })
+}
+
+export function useUpdateWorkspaceCompliance() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateWorkspaceCompliance,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'compliance'] })
+    },
+  })
+}
+
+export function useWorkspaceQuietHours() {
+  return useQuery({
+    queryKey: ['settings', 'workspace', 'quiet-hours'],
+    queryFn: getWorkspaceQuietHours,
+  })
+}
+
+export function useUpdateWorkspaceQuietHours() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateWorkspaceQuietHours,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'quiet-hours'] })
     },
   })
 }
@@ -80,6 +166,40 @@ export function useUpdateUserPreferencesUI() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'ui'] })
       queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
+    },
+  })
+}
+
+export function useUserPreferencesNotifications() {
+  return useQuery({
+    queryKey: ['settings', 'preferences', 'notifications'],
+    queryFn: getUserPreferencesNotifications,
+  })
+}
+
+export function useUpdateUserPreferencesNotifications() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateUserPreferencesNotifications,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'notifications'] })
+    },
+  })
+}
+
+export function useUserPreferencesDashboard() {
+  return useQuery({
+    queryKey: ['settings', 'preferences', 'dashboard'],
+    queryFn: getUserPreferencesDashboard,
+  })
+}
+
+export function useUpdateUserPreferencesDashboard() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateUserPreferencesDashboard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'dashboard'] })
     },
   })
 }
