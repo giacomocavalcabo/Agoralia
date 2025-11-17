@@ -9,7 +9,6 @@ import { useAuth } from '@/features/auth/hooks'
 export function SettingsPage() {
   const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState('general')
-  const queryClient = useQueryClient()
   const { data: authData, refetch: refetchAuth } = useAuth()
   
   // Force refresh auth status when entering Settings page
