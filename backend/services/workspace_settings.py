@@ -1,7 +1,8 @@
 """Workspace settings service functions (race-safe)"""
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
+from sqlalchemy import inspect, text
 from config.database import engine
 from models.workspace_settings import WorkspaceSettings
 from utils.encryption import encrypt_value, decrypt_value
