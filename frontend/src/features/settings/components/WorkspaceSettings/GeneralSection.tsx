@@ -401,7 +401,7 @@ export function GeneralSection() {
                 Cancel
               </Button>
             )}
-            <Button type="submit" disabled={updateMutation.isPending || (!hasChanges && !currentLogoUrl && !externalLogoUrl)}>
+            <Button type="submit" disabled={updateMutation.isPending || !hasChanges}>
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
