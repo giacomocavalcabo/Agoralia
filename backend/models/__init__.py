@@ -7,6 +7,8 @@ from .users import User
 from .webhooks import WebhookEvent, WebhookDLQ
 from .crm import CRMConnection, CRMMappings
 from .settings import AppSettings, AppMeta
+from .workspace_settings import WorkspaceSettings
+from .user_preferences import UserPreferences
 from .agents import Agent, KnowledgeBase, KnowledgeSection, PhoneNumber, TenantAgent
 from .campaigns import Campaign, Lead
 from .compliance import CostEvent, DNCEntry, Consent, CountryRule
@@ -33,6 +35,8 @@ __all__ = [
     "CRMMappings",
     "AppSettings",
     "AppMeta",
+    "WorkspaceSettings",
+    "UserPreferences",
     "Agent",
     "KnowledgeBase",
     "KnowledgeSection",

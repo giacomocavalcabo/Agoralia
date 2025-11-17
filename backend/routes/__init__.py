@@ -8,6 +8,7 @@ from .templates import router as templates_router
 from .metrics import router as metrics_router
 from .auth import router as auth_router
 from .settings import router as settings_router
+from .workspace_settings import router as workspace_settings_router
 from .agents import router as agents_router
 from .calls import router as calls_router
 
@@ -21,6 +22,7 @@ api_router.include_router(templates_router, tags=["templates"])
 api_router.include_router(metrics_router, prefix="/metrics", tags=["metrics"])
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(settings_router, prefix="/settings", tags=["settings"])
+api_router.include_router(workspace_settings_router, prefix="/settings/workspace", tags=["settings"])
 api_router.include_router(agents_router, tags=["agents"])
 api_router.include_router(calls_router, prefix="/calls", tags=["calls"])
 
