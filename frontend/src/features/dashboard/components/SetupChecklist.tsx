@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
-import { CheckCircle2, AlertCircle } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Phone, BookOpen, Bot, Users, ArrowRight } from 'lucide-react'
 
 interface SetupItem {
   id: string
@@ -20,10 +20,10 @@ interface SetupChecklistProps {
 }
 
 const iconMap = {
-  number: '📞',
-  knowledge: '📚',
-  agent: '🤖',
-  leads: '👥',
+  number: Phone,
+  knowledge: BookOpen,
+  agent: Bot,
+  leads: Users,
 }
 
 export function SetupChecklist({
@@ -34,87 +34,80 @@ export function SetupChecklist({
 }: SetupChecklistProps) {
   const isComplete = totalCompleted === totalItems
 
+  if (isComplete) {
+    return null
+  }
+
   return (
-    <Card
-      className={
-        isComplete
-          ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
-          : 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950'
-      }
-    >
-      <CardHeader>
-        <CardTitle
-          className={
-            isComplete ? 'text-green-800 dark:text-green-200' : 'text-amber-800 dark:text-amber-200'
-          }
-        >
-          {isComplete ? (
-            <>
-              <CheckCircle2 className="mr-2 inline h-5 w-5" />
-              Sistema pronto per chiamare
-            </>
-          ) : (
-            <>
-              <AlertCircle className="mr-2 inline h-5 w-5" />
-              Setup incompleto
-            </>
-          )}
-        </CardTitle>
+    <Card className="border-border">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">Get started</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Complete these steps to launch your first campaign
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {totalCompleted} of {totalItems} completed
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {!isComplete && (
-          <p className="text-sm text-amber-700 dark:text-amber-300">
-            Per lanciare la prima campagna:
-          </p>
-        )}
-        <div className="space-y-3">
-          {items.map((item) => (
+      <CardContent className="space-y-3">
+        {items.map((item) => {
+          const Icon = iconMap[item.type]
+          return (
             <div
               key={item.id}
-              className="flex items-center justify-between rounded-md border bg-background p-3"
+              className={`flex items-center justify-between rounded-lg border p-4 transition-colors ${
+                item.completed
+                  ? 'border-border bg-muted/30'
+                  : 'border-border bg-background hover:bg-muted/50'
+              }`}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{iconMap[item.type]}</span>
-                <div>
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-sm text-muted-foreground">{item.description}</div>
+              <div className="flex items-start gap-4">
+                <div
+                  className={`mt-0.5 rounded-md p-2 ${
+                    item.completed
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sm">{item.label}</h3>
+                    {item.completed && (
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{item.description}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                {item.completed ? (
-                  <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Completato
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
-                    <AlertCircle className="h-4 w-4" />
-                    Incompleto
-                  </span>
-                )}
-                {!item.completed && item.onAction && (
-                  <Button variant="secondary" size="sm" onClick={item.onAction}>
-                    {item.actionLabel || 'Completa ora'}
-                  </Button>
-                )}
-              </div>
+              {!item.completed && item.onAction && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={item.onAction}
+                  className="ml-4"
+                >
+                  Set up
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
-          ))}
-        </div>
-        {!isComplete && (
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
-              Progress: {totalCompleted}/{totalItems} completati
-            </p>
-            {onStartSetup && (
-              <Button onClick={onStartSetup} size="lg">
-                Inizia Setup
-              </Button>
-            )}
+          )
+        })}
+        {onStartSetup && (
+          <div className="pt-2">
+            <Button onClick={onStartSetup} className="w-full" size="lg">
+              Complete setup
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         )}
       </CardContent>
     </Card>
   )
 }
-

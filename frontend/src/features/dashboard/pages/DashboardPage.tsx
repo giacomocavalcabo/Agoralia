@@ -7,6 +7,8 @@ import { useDashboardKPIs, useLiveCalls } from '../hooks'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/shared/api/client'
 import { useWebSocket } from '@/shared/hooks/useWebSocket'
+import { Button } from '@/shared/ui/button'
+import { CheckCircle2, Phone } from 'lucide-react'
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -68,24 +70,24 @@ export function DashboardPage() {
     {
       id: 'number',
       type: 'number' as const,
-      label: 'Numero telefonico',
-      description: 'Serve almeno un numero attivo per chiamare i tuoi clienti',
+      label: 'Phone number',
+      description: 'Add a verified phone number to make outbound calls',
       completed: hasNumbers,
       onAction: () => navigate('/numbers'),
     },
     {
       id: 'knowledge',
       type: 'knowledge' as const,
-      label: 'Knowledge Base',
-      description: 'La KB fornisce informazioni al tuo agent durante le chiamate',
+      label: 'Knowledge base',
+      description: 'Provide context and information for your AI agent',
       completed: hasKnowledge,
       onAction: () => navigate('/knowledge'),
     },
     {
       id: 'agent',
       type: 'agent' as const,
-      label: 'Agent',
-      description: "L'agent è la voce AI che farà le chiamate per te",
+      label: 'AI agent',
+      description: 'Configure your voice AI agent for calls',
       completed: hasAgent,
       onAction: () => navigate('/agents'),
     },
@@ -93,7 +95,7 @@ export function DashboardPage() {
       id: 'leads',
       type: 'leads' as const,
       label: 'Leads',
-      description: 'I leads sono i contatti che riceveranno le chiamate',
+      description: 'Import contacts who will receive calls',
       completed: hasLeads,
       onAction: () => navigate('/leads'),
     },
@@ -103,19 +105,20 @@ export function DashboardPage() {
   const isSetupComplete = totalCompleted === 4
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        subtitle="Overview delle tue campagne e chiamate"
-        primaryAction={
-          isSetupComplete
-            ? {
-                label: 'Crea Campagna',
-                onClick: () => navigate('/campaigns/new'),
-              }
-            : undefined
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Overview of your campaigns and calls
+          </p>
+        </div>
+        {isSetupComplete && (
+          <Button onClick={() => navigate('/campaigns/new')} size="lg">
+            Create campaign
+          </Button>
+        )}
+      </div>
 
       {!isSetupComplete && (
         <SetupChecklist
@@ -127,29 +130,37 @@ export function DashboardPage() {
       )}
 
       {isSetupComplete && (
-        <div className="rounded-lg border bg-green-50 p-4 text-green-800 dark:bg-green-950 dark:text-green-200">
-          ✅ Sistema pronto per chiamare
-        </div>
+        <Card className="border-border">
+          <CardContent className="flex items-center gap-3 py-4">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium">System ready</p>
+              <p className="text-xs text-muted-foreground">
+                All setup steps completed. You can now create campaigns.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          label="Chiamate attive"
+          label="Active calls"
           value={kpis?.active_calls ?? 0}
           loading={kpisLoading}
         />
         <KPICard
-          label="Costo oggi"
+          label="Cost today"
           value={`€${((kpis?.cost_today ?? 0) / 100).toFixed(2)}`}
           loading={kpisLoading}
         />
         <KPICard
-          label="Chiamate totali"
+          label="Total calls"
           value={kpis?.total_calls ?? 0}
           loading={kpisLoading}
         />
         <KPICard
-          label="Chiamate riuscite"
+          label="Successful calls"
           value={kpis?.calls_successful ?? 0}
           loading={kpisLoading}
         />
@@ -157,31 +168,47 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Chiamate live</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold">Live calls</CardTitle>
+            {liveCalls && liveCalls.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {liveCalls.length} active
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {callsLoading ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">Caricamento...</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              Loading...
+            </div>
           ) : liveCalls && liveCalls.length > 0 ? (
             <div className="space-y-2">
               {liveCalls.map((call) => (
                 <div
                   key={call.id}
-                  className="flex items-center justify-between rounded-md border p-3 cursor-pointer hover:bg-accent transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50 cursor-pointer"
                   onClick={() => navigate(`/calls/${call.id}`)}
                 >
-                  <div>
-                    <div className="font-medium">{call.to || call.to_number}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Da: {call.from || call.from_number} • {call.status}
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-primary/10 p-1.5">
+                      <Phone className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">
+                        {call.to || call.to_number}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {call.from || call.from_number} • {call.status}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-4 text-center text-sm text-muted-foreground">
-              Nessuna chiamata attiva
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">No active calls</p>
             </div>
           )}
         </CardContent>
@@ -189,4 +216,3 @@ export function DashboardPage() {
     </div>
   )
 }
-
