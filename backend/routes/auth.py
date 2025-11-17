@@ -34,12 +34,25 @@ async def auth_register(body: AuthRegister):
             if existing:
                 raise HTTPException(status_code=400, detail="email exists")
             salt, h = _hash_password(body.password)
+            
+            # Check if admin_secret is provided
             is_admin = 1 if (body.admin_secret and body.admin_secret == os.getenv("ADMIN_SIGNUP_SECRET")) else 0
+            
             user = User(tenant_id=0, email=body.email.lower(), name=body.name, password_salt=salt, password_hash=h, is_admin=is_admin)
             session.add(user)
             session.commit()
             user.tenant_id = user.id
             session.commit()
+            
+            # If no admin_secret was provided, check if this is the only user in the workspace
+            # If so, make them admin automatically
+            if is_admin == 0:
+                user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+                if user_count == 1:
+                    user.is_admin = 1
+                    session.commit()
+                    is_admin = 1
+            
             token = _encode_token({
                 "sub": user.id,
                 "tenant_id": user.tenant_id,
@@ -64,6 +77,13 @@ async def auth_login(body: AuthLogin):
             user = session.query(User).filter(User.email == body.email.lower()).one_or_none()
             if not user or not _verify_password(body.password, user.password_salt, user.password_hash):
                 raise HTTPException(status_code=401, detail="invalid credentials")
+            
+            # Check if user should be admin (if they're the only one in workspace)
+            user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+            if user_count == 1 and user.is_admin == 0:
+                user.is_admin = 1
+                session.commit()
+            
             token = _encode_token({
                 "sub": user.id,
                 "tenant_id": user.tenant_id,
@@ -159,11 +179,24 @@ async def auth_google_callback(body: dict):
         user = session.query(User).filter(User.email == email).one_or_none()
         if not user:
             salt, h = _hash_password(os.urandom(16).hex())
-            user = User(tenant_id=0, email=email, name=name, password_salt=salt, password_hash=h)
+            user = User(tenant_id=0, email=email, name=name, password_salt=salt, password_hash=h, is_admin=0)
             session.add(user)
             session.commit()
             user.tenant_id = user.id
             session.commit()
+            
+            # If this is the only user in the workspace, make them admin automatically
+            user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+            if user_count == 1:
+                user.is_admin = 1
+                session.commit()
+        else:
+            # On login, also check if user should be admin (if they're the only one in workspace)
+            user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+            if user_count == 1 and user.is_admin == 0:
+                user.is_admin = 1
+                session.commit()
+        
         token = _encode_token({
             "sub": user.id,
             "tenant_id": user.tenant_id,
@@ -188,10 +221,18 @@ async def auth_me(request: Request):
         is_admin = bool(payload.get("is_admin") or False)
         with Session(engine) as session:
             user = session.query(User).filter(User.id == user_id).one_or_none()
+            if user:
+                # Check if user should be admin (if they're the only one in workspace)
+                user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+                if user_count == 1 and user.is_admin == 0:
+                    user.is_admin = 1
+                    session.commit()
+                    is_admin = True
+            
             return {
                 "user_id": user_id,
                 "tenant_id": tenant_id,
-                "is_admin": is_admin,
+                "is_admin": bool(user.is_admin) if user else is_admin,
                 "email": user.email if user else None,
                 "name": user.name if user else None,
             }

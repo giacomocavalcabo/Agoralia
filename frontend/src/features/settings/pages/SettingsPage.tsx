@@ -4,13 +4,15 @@ import { SettingsLayout } from '../components/SettingsLayout'
 import { GeneralSection } from '../components/WorkspaceSettings/GeneralSection'
 import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/features/auth/hooks'
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState('general')
+  const { data: authData } = useAuth()
   
-  // Check if user is admin (from localStorage for now, can be improved with context)
-  const isAdmin = localStorage.getItem('is_admin') === 'true'
+  // Check if user is admin (from auth hook, fallback to localStorage)
+  const isAdmin = authData?.is_admin ?? (localStorage.getItem('is_admin') === '1' || localStorage.getItem('is_admin') === 'true')
 
   // Warn on unsaved changes
   useEffect(() => {
