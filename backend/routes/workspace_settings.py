@@ -685,21 +685,33 @@ async def get_workspace_notifications(
     try:
         settings = get_workspace_settings(tenant_id)
         
-        # Use getattr with defaults to handle None values
-        # If field is None or doesn't exist, default to True (enabled)
-        # But if field is 0 (explicitly disabled), return False
+        # Read values directly from settings object
+        # Values are stored as integers: 0 = False, 1 = True, None = default to True
         def get_bool_value(value, default=1):
             if value is None:
                 return bool(default)
+            # value is int: 0 or 1
             return bool(value)
         
-        return WorkspaceNotificationsResponse(
-            email_notifications_enabled=get_bool_value(getattr(settings, 'email_notifications_enabled', None), 1),
-            email_campaign_started=get_bool_value(getattr(settings, 'email_campaign_started', None), 1),
-            email_campaign_paused=get_bool_value(getattr(settings, 'email_campaign_paused', None), 1),
-            email_budget_warning=get_bool_value(getattr(settings, 'email_budget_warning', None), 1),
-            email_compliance_alert=get_bool_value(getattr(settings, 'email_compliance_alert', None), 1),
+        # Get raw values for debugging
+        raw_values = {
+            'email_notifications_enabled': getattr(settings, 'email_notifications_enabled', None),
+            'email_campaign_started': getattr(settings, 'email_campaign_started', None),
+            'email_campaign_paused': getattr(settings, 'email_campaign_paused', None),
+            'email_budget_warning': getattr(settings, 'email_budget_warning', None),
+            'email_compliance_alert': getattr(settings, 'email_compliance_alert', None),
+        }
+        print(f"[DEBUG] Reading notifications for tenant {tenant_id}, raw values: {raw_values}", flush=True)
+        
+        response = WorkspaceNotificationsResponse(
+            email_notifications_enabled=get_bool_value(raw_values['email_notifications_enabled'], 1),
+            email_campaign_started=get_bool_value(raw_values['email_campaign_started'], 1),
+            email_campaign_paused=get_bool_value(raw_values['email_campaign_paused'], 1),
+            email_budget_warning=get_bool_value(raw_values['email_budget_warning'], 1),
+            email_compliance_alert=get_bool_value(raw_values['email_compliance_alert'], 1),
         )
+        print(f"[DEBUG] Returning response: {response.model_dump()}", flush=True)
+        return response
     except Exception as e:
         import traceback
         error_detail = f"Error loading notification settings: {str(e)}\n{traceback.format_exc()}"
@@ -727,13 +739,17 @@ async def update_workspace_notifications(
     for key in boolean_fields:
         if key in updates:
             # Ensure it's converted to int (0 or 1)
-            updates[key] = 1 if bool(updates[key]) else 0
+            # bool(False) = False, bool(True) = True
+            # False -> 0, True -> 1
+            updates[key] = 1 if updates[key] else 0
     
     # Debug: log what we're sending
-    import logging
-    logging.debug(f"Updating notifications for tenant {tenant_id}: {updates}")
+    print(f"[DEBUG] Updating notifications for tenant {tenant_id}: {updates}", flush=True)
     
     settings = update_workspace_settings(tenant_id, updates)
+    
+    # Debug: log what we got back
+    print(f"[DEBUG] After update, settings values: email_notifications_enabled={settings.email_notifications_enabled}, email_campaign_started={settings.email_campaign_started}", flush=True)
     
     return WorkspaceNotificationsResponse(
         email_notifications_enabled=bool(settings.email_notifications_enabled),

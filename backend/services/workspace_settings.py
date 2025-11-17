@@ -444,13 +444,19 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             setattr(settings, key, None)
         else:
             setattr(settings, key, value)
+            # Debug log for notification fields
+            if key in ['email_notifications_enabled', 'email_campaign_started', 'email_campaign_paused', 
+                       'email_budget_warning', 'email_compliance_alert']:
+                print(f"[DEBUG] Setting {key} = {value} (type: {type(value)})", flush=True)
     
     try:
         session.commit()
+        print(f"[DEBUG] Committed changes for tenant {tenant_id}", flush=True)
         # Only refresh if notification columns exist, otherwise refresh will fail
         if has_notification_columns:
             try:
                 session.refresh(settings)
+                print(f"[DEBUG] Refreshed settings, email_notifications_enabled={settings.email_notifications_enabled}", flush=True)
             except (ProgrammingError, InternalError):
                 # If refresh fails, re-read using safe method
                 session.rollback()
