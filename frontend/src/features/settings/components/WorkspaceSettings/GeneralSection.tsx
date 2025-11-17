@@ -85,7 +85,12 @@ export function GeneralSection() {
       const logoUrl = data.brand_logo_url || ''
       const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
       // Only compare with permanent external URLs, not presigned URLs
-      const isPresigned = logoUrl.includes('r2.cloudflarestorage.com') || logoUrl.includes('X-Amz-Signature')
+      // Presigned URLs have X-Amz-Signature in the query string or contain r2.cloudflarestorage.com
+      const isPresigned = isExternal && (
+        logoUrl.includes('r2.cloudflarestorage.com') || 
+        logoUrl.includes('X-Amz-Signature') ||
+        logoUrl.includes('X-Amz-Algorithm')
+      )
       const expectedExternalUrl = (isExternal && !isPresigned) ? logoUrl : ''
       
       const hasChangesNow = 
@@ -265,8 +270,7 @@ export function GeneralSection() {
             <Label htmlFor="logo">Logo</Label>
             <div className="mt-1.5 space-y-3">
               {/* Show current logo (uploaded or external) */}
-              {/* Only show logo preview if we have a logo (even if presigned) */}
-              {(currentLogoUrl && !currentLogoUrl.startsWith('workspace-logos/')) || (currentLogoUrl && currentLogoUrl.startsWith('workspace-logos/') && !externalLogoUrl) ? (
+              {currentLogoUrl ? (
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
