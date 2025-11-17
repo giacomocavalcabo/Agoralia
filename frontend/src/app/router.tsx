@@ -9,6 +9,8 @@ import { NumbersPage } from '@/features/numbers/pages/NumbersPage'
 import { KnowledgePage } from '@/features/knowledge/pages/KnowledgePage'
 import { LeadsPage } from '@/features/leads/pages/LeadsPage'
 import { CampaignsPage } from '@/features/campaigns/pages/CampaignsPage'
+import { CampaignNewPage } from '@/features/campaigns/pages/CampaignNewPage'
+import { CampaignDetailPage } from '@/features/campaigns/pages/CampaignDetailPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('auth_token')
@@ -40,10 +42,14 @@ export const router = createBrowserRouter([
       { path: 'numbers', element: <NumbersPage /> },
       { path: 'knowledge', element: <KnowledgePage /> },
       { path: 'leads', element: <LeadsPage /> },
-      { path: 'campaigns', element: <CampaignsPage /> },
-      // TODO: Add more routes
-      // { path: 'campaigns/new', element: <CampaignNewPage /> },
-      // { path: 'campaigns/:id', element: <CampaignDetailPage /> },
+      {
+        path: 'campaigns',
+        children: [
+          { index: true, element: <CampaignsPage /> },
+          { path: 'new', element: <CampaignNewPage /> },
+          { path: ':id', element: <CampaignDetailPage /> },
+        ],
+      },
       // { path: 'calls', element: <CallsPage /> },
       // { path: 'compliance', element: <CompliancePage /> },
     ],
