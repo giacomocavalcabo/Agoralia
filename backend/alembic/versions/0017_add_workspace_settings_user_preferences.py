@@ -148,7 +148,9 @@ def upgrade() -> None:
                 sa.text("SELECT * FROM app_meta ORDER BY id ASC LIMIT 1")
             ).first()
             
-            # Insert into workspace_settings
+            # Insert into workspace_settings (include created_at and updated_at)
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
             conn.execute(
                 sa.text("""
                     INSERT INTO workspace_settings (
@@ -160,7 +162,8 @@ def upgrade() -> None:
                         require_legal_review, override_country_rules_enabled,
                         default_lang, supported_langs_json, prefer_detect_language,
                         kb_version_outbound, kb_version_inbound,
-                        workspace_name, timezone, brand_logo_url, brand_color
+                        workspace_name, timezone, brand_logo_url, brand_color,
+                        created_at, updated_at
                     ) VALUES (
                         :tid,
                         :agent_id, :from_number, :spacing_ms,
@@ -170,7 +173,8 @@ def upgrade() -> None:
                         :legal_review, 0,
                         :lang, :supported_langs, :prefer_detect,
                         :kb_out, :kb_in,
-                        :ws_name, :tz, :logo_url, :brand_color
+                        :ws_name, :tz, :logo_url, :brand_color,
+                        :created_at, :updated_at
                     )
                 """),
                 {
@@ -196,6 +200,8 @@ def upgrade() -> None:
                     "tz": old_meta.timezone if old_meta else None,
                     "logo_url": old_meta.brand_logo_url if old_meta else None,
                     "brand_color": old_meta.brand_color if old_meta else None,
+                    "created_at": now,
+                    "updated_at": now,
                 }
             )
         
