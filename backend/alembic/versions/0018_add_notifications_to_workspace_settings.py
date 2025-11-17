@@ -38,28 +38,34 @@ def upgrade() -> None:
     print(f"[MIGRATION 0018] Existing columns: {existing_columns}", file=sys.stderr, flush=True)
     
     # Add notification fields using direct SQL (more reliable)
+    # Use batch_alter_table to ensure transaction is committed properly
     columns_to_add = [
-        ('email_notifications_enabled', 'INTEGER NOT NULL DEFAULT 1'),
-        ('email_campaign_started', 'INTEGER NOT NULL DEFAULT 1'),
-        ('email_campaign_paused', 'INTEGER NOT NULL DEFAULT 1'),
-        ('email_budget_warning', 'INTEGER NOT NULL DEFAULT 1'),
-        ('email_compliance_alert', 'INTEGER NOT NULL DEFAULT 1'),
+        ('email_notifications_enabled', sa.Integer(), 1),
+        ('email_campaign_started', sa.Integer(), 1),
+        ('email_campaign_paused', sa.Integer(), 1),
+        ('email_budget_warning', sa.Integer(), 1),
+        ('email_compliance_alert', sa.Integer(), 1),
     ]
     
     columns_added = []
-    for col_name, col_def in columns_to_add:
-        if col_name not in existing_columns:
-            print(f"[MIGRATION 0018] Adding {col_name} column using SQL", file=sys.stderr, flush=True)
-            try:
-                # Use op.execute with raw SQL for reliability
-                op.execute(text(f"ALTER TABLE workspace_settings ADD COLUMN {col_name} {col_def}"))
-                columns_added.append(col_name)
-                print(f"[MIGRATION 0018] Successfully added {col_name}", file=sys.stderr, flush=True)
-            except Exception as e:
-                print(f"⚠ [MIGRATION 0018] Error adding {col_name}: {e}", file=sys.stderr, flush=True)
-                # If column already exists (race condition), that's OK
-                if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
-                    raise
+    with op.batch_alter_table('workspace_settings', schema=None) as batch_op:
+        for col_name, col_type, default_val in columns_to_add:
+            if col_name not in existing_columns:
+                print(f"[MIGRATION 0018] Adding {col_name} column using batch_alter_table", file=sys.stderr, flush=True)
+                try:
+                    # Use batch_alter_table.add_column for proper transaction handling
+                    batch_op.add_column(
+                        sa.Column(col_name, col_type, nullable=False, server_default=sa.text(str(default_val)))
+                    )
+                    columns_added.append(col_name)
+                    print(f"[MIGRATION 0018] Successfully added {col_name}", file=sys.stderr, flush=True)
+                except Exception as e:
+                    print(f"⚠ [MIGRATION 0018] Error adding {col_name}: {e}", file=sys.stderr, flush=True)
+                    import traceback
+                    print(f"[MIGRATION 0018] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
+                    # If column already exists (race condition), that's OK
+                    if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
+                        raise
     
     print(f"[MIGRATION 0018] Added {len(columns_added)} columns: {columns_added}", file=sys.stderr, flush=True)
     
