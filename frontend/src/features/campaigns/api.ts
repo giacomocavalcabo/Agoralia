@@ -75,8 +75,8 @@ export async function fetchCampaign(id: number): Promise<Campaign> {
   return data
 }
 
-export async function createCampaign(payload: CampaignCreate): Promise<Campaign> {
-  const { data } = await api.post<Campaign>('/campaigns', payload)
+export async function createCampaign(payload: CampaignCreate): Promise<{ ok: boolean; id: number; name: string; status: string; agent_id: string | null; from_number_id: number | null; created_at: string }> {
+  const { data } = await api.post('/campaigns', payload)
   return data
 }
 
