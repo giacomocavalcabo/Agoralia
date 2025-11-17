@@ -452,13 +452,29 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
     try:
         session.commit()
         print(f"[DEBUG] Committed changes for tenant {tenant_id}", flush=True)
-        # Only refresh if notification columns exist, otherwise refresh will fail
+        
+        # After commit, re-read from database to get actual saved values
+        # Don't use refresh() as it might use cached values or apply defaults
+        # Instead, explicitly query the database
         if has_notification_columns:
             try:
-                session.refresh(settings)
-                print(f"[DEBUG] Refreshed settings, email_notifications_enabled={settings.email_notifications_enabled}", flush=True)
-            except (ProgrammingError, InternalError):
-                # If refresh fails, re-read using safe method
+                # Re-query to get fresh values from database
+                fresh_settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
+                if fresh_settings:
+                    print(f"[DEBUG] Re-queried settings after commit: email_notifications_enabled={fresh_settings.email_notifications_enabled}, email_campaign_started={fresh_settings.email_campaign_started}", flush=True)
+                    # Copy notification values to returned object
+                    settings.email_notifications_enabled = fresh_settings.email_notifications_enabled
+                    settings.email_campaign_started = fresh_settings.email_campaign_started
+                    settings.email_campaign_paused = fresh_settings.email_campaign_paused
+                    settings.email_budget_warning = fresh_settings.email_budget_warning
+                    settings.email_compliance_alert = fresh_settings.email_compliance_alert
+                else:
+                    # Fallback to refresh
+                    session.refresh(settings)
+                    print(f"[DEBUG] Refreshed settings (fallback), email_notifications_enabled={settings.email_notifications_enabled}", flush=True)
+            except (ProgrammingError, InternalError) as e:
+                # If query fails, re-read using safe method
+                print(f"[DEBUG] Query failed, using safe re-read: {e}", flush=True)
                 session.rollback()
                 settings = get_workspace_settings(tenant_id, session)
         else:
