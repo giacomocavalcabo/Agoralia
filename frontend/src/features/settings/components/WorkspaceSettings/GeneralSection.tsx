@@ -203,11 +203,18 @@ export function GeneralSection() {
                     src={
                       logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
                         ? logoUrl
-                        : `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
-                            logoUrl.startsWith('/') 
+                        : (() => {
+                            // For static files, always use the full API URL, not the proxy
+                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'
+                            // If VITE_API_BASE_URL is a relative path like /api, use the full URL instead
+                            const fullApiUrl = apiBaseUrl.startsWith('http://') || apiBaseUrl.startsWith('https://')
+                              ? apiBaseUrl
+                              : 'https://api.agoralia.app'
+                            const path = logoUrl.startsWith('/') 
                               ? logoUrl 
                               : `/${logoUrl}`
-                          }`
+                            return `${fullApiUrl}${path}`
+                          })()
                     }
                     alt="Workspace logo"
                     className="h-16 w-16 rounded-full object-cover border"
