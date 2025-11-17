@@ -48,24 +48,26 @@ def upgrade() -> None:
     ]
     
     columns_added = []
-    with op.batch_alter_table('workspace_settings', schema=None) as batch_op:
-        for col_name, col_type, default_val in columns_to_add:
-            if col_name not in existing_columns:
-                print(f"[MIGRATION 0018] Adding {col_name} column using batch_alter_table", file=sys.stderr, flush=True)
-                try:
-                    # Use batch_alter_table.add_column for proper transaction handling
-                    batch_op.add_column(
-                        sa.Column(col_name, col_type, nullable=False, server_default=sa.text(str(default_val)))
-                    )
-                    columns_added.append(col_name)
-                    print(f"[MIGRATION 0018] Successfully added {col_name}", file=sys.stderr, flush=True)
-                except Exception as e:
-                    print(f"⚠ [MIGRATION 0018] Error adding {col_name}: {e}", file=sys.stderr, flush=True)
-                    import traceback
-                    print(f"[MIGRATION 0018] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
-                    # If column already exists (race condition), that's OK
-                    if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
-                        raise
+    # Use direct SQL ALTER TABLE instead of batch_alter_table for more reliable commits
+    for col_name, col_type, default_val in columns_to_add:
+        if col_name not in existing_columns:
+            print(f"[MIGRATION 0018] Adding {col_name} column using direct SQL ALTER TABLE", file=sys.stderr, flush=True)
+            try:
+                # Use direct SQL ALTER TABLE for more reliable commits
+                conn.execute(text(f"""
+                    ALTER TABLE workspace_settings 
+                    ADD COLUMN {col_name} INTEGER NOT NULL DEFAULT {default_val}
+                """))
+                conn.commit()  # Explicit commit
+                columns_added.append(col_name)
+                print(f"[MIGRATION 0018] Successfully added {col_name}", file=sys.stderr, flush=True)
+            except Exception as e:
+                print(f"⚠ [MIGRATION 0018] Error adding {col_name}: {e}", file=sys.stderr, flush=True)
+                import traceback
+                print(f"[MIGRATION 0018] Traceback: {traceback.format_exc()}", file=sys.stderr, flush=True)
+                # If column already exists (race condition), that's OK
+                if 'already exists' not in str(e).lower() and 'duplicate' not in str(e).lower():
+                    raise
     
     print(f"[MIGRATION 0018] Added {len(columns_added)} columns: {columns_added}", file=sys.stderr, flush=True)
     
