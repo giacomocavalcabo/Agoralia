@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SettingsLayout } from '../components/SettingsLayout'
 import { GeneralSection } from '../components/WorkspaceSettings/GeneralSection'
+import { TelephonySection } from '../components/WorkspaceSettings/TelephonySection'
+import { BudgetSection } from '../components/WorkspaceSettings/BudgetSection'
+import { ComplianceSection } from '../components/WorkspaceSettings/ComplianceSection'
+import { QuietHoursSection } from '../components/WorkspaceSettings/QuietHoursSection'
+import { IntegrationsSection } from '../components/WorkspaceSettings/IntegrationsSection'
 import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks'
@@ -31,18 +36,38 @@ export function SettingsPage() {
     }
   }, [authData?.is_admin])
 
-  // Warn on unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // This is a simple check - in production, track unsaved changes per section
-      e.preventDefault()
-      e.returnValue = ''
+  const renderSection = () => {
+    if (!isAdmin && ['general', 'telephony', 'budget', 'compliance', 'quiet-hours', 'integrations'].includes(activeSection)) {
+      return (
+        <div className="py-12 text-center text-sm text-muted-foreground">
+          You need admin access to view workspace settings.
+        </div>
+      )
     }
 
-    // Only warn if there are actual unsaved changes (simplified for now)
-    // window.addEventListener('beforeunload', handleBeforeUnload)
-    // return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [])
+    switch (activeSection) {
+      case 'general':
+        return <GeneralSection />
+      case 'telephony':
+        return <TelephonySection />
+      case 'budget':
+        return <BudgetSection />
+      case 'compliance':
+        return <ComplianceSection />
+      case 'quiet-hours':
+        return <QuietHoursSection />
+      case 'integrations':
+        return <IntegrationsSection />
+      case 'ui':
+        return <div>UI Preferences (coming soon)</div>
+      case 'notifications':
+        return <div>Notifications (coming soon)</div>
+      case 'dashboard':
+        return <div>Dashboard (coming soon)</div>
+      default:
+        return <div>Section not found</div>
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -65,17 +90,8 @@ export function SettingsPage() {
         onSectionChange={setActiveSection}
         isAdmin={isAdmin}
       >
-        {activeSection === 'general' && isAdmin && <GeneralSection />}
-        {activeSection === 'general' && !isAdmin && (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            You need admin access to view workspace settings.
-          </div>
-        )}
-        {activeSection === 'ui' && <div>UI Preferences (coming soon)</div>}
-        {activeSection === 'notifications' && <div>Notifications (coming soon)</div>}
-        {activeSection === 'dashboard' && <div>Dashboard (coming soon)</div>}
+        {renderSection()}
       </SettingsLayout>
     </div>
   )
 }
-
