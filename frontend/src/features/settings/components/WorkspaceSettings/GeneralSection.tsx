@@ -103,14 +103,19 @@ export function GeneralSection() {
     }
   }
 
-  const handleRemoveLogo = () => {
-    setValue('brand_logo_url', '')
-    setHasChanges(true)
+  const handleRemoveLogo = async () => {
+    try {
+      await deleteMutation.mutateAsync()
+      setValue('brand_logo_url', '', { shouldValidate: false })
+      setHasChanges(false)
+    } catch (error: any) {
+      alert(`Failed to remove logo: ${error.message}`)
+    }
   }
 
   const onSubmit = async (formData: GeneralForm) => {
     try {
-      // Remove empty strings, convert to null
+      // Simple updates - logo is handled separately via upload/delete endpoints
       const updates: Record<string, string | null> = {}
       if (formData.workspace_name !== undefined) {
         updates.workspace_name = formData.workspace_name || null
@@ -118,31 +123,34 @@ export function GeneralSection() {
       if (formData.timezone !== undefined) {
         updates.timezone = formData.timezone || null
       }
-      // For brand_logo_url, if it's a full URL (from R2), save as-is
-      // If it's a relative path like /uploads/..., extract just the relative part
-      // The backend expects workspace-logos/{tenant_id}/logo.{ext} format
+      // If brand_logo_url is empty string, delete the logo
       if (formData.brand_logo_url !== undefined) {
-        let logoValue = formData.brand_logo_url || null
-        if (logoValue) {
-          // If it's a full URL, extract the path part if it contains workspace-logos
+        if (formData.brand_logo_url === '' || formData.brand_logo_url === null) {
+          // Empty = delete logo
+          updates.brand_logo_url = null
+        } else {
+          // Extract relative path if needed
+          let logoValue = formData.brand_logo_url
           if (logoValue.includes('workspace-logos/')) {
             const match = logoValue.match(/workspace-logos\/[^/]+\/[^/]+$/)
             if (match) {
-              logoValue = match[0] // Extract just workspace-logos/{tenant_id}/logo.{ext}
+              logoValue = match[0]
             } else if (logoValue.startsWith('/uploads/')) {
-              // Remove /uploads/ prefix to get workspace-logos/...
               logoValue = logoValue.replace(/^\/uploads\//, '')
             }
-          } else if (logoValue.startsWith('http://') || logoValue.startsWith('https://')) {
-            // Full URL from R2 or external source - save as-is
-            // Backend will handle it
+          } else if (logoValue.startsWith('/uploads/')) {
+            logoValue = logoValue.replace(/^\/uploads\//, '')
+          }
+          // Only update if it's a valid workspace-logos path or external URL
+          if (logoValue.startsWith('workspace-logos/') || 
+              logoValue.startsWith('http://') || 
+              logoValue.startsWith('https://')) {
+            updates.brand_logo_url = logoValue
           }
         }
-        updates.brand_logo_url = logoValue
       }
 
       await updateMutation.mutateAsync(updates)
-      reset(formData)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)
@@ -290,10 +298,20 @@ export function GeneralSection() {
                       variant="ghost"
                       size="sm"
                       onClick={handleRemoveLogo}
+                      disabled={deleteMutation.isPending}
                       className="ml-2"
                     >
-                      <X className="mr-2 h-4 w-4" />
-                      Remove
+                      {deleteMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Removing...
+                        </>
+                      ) : (
+                        <>
+                          <X className="mr-2 h-4 w-4" />
+                          Remove
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
