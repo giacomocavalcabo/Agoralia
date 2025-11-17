@@ -1,8 +1,5 @@
 """Workspace settings endpoints"""
 from fastapi import APIRouter, Request, HTTPException, Depends
-from sqlalchemy.orm import Session
-from config.database import engine
-from models.users import User
 from utils.auth import extract_tenant_id, _decode_token
 from services.workspace_settings import (
     get_workspace_settings,
