@@ -313,7 +313,11 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
                 # Use parameterized query to prevent SQL injection
                 param_name = f"val_{key}"  # Use unique param name
                 set_clauses.append(f"{key} = :{param_name}")
-                params[param_name] = value
+                # Convert value to string if needed (for Text fields like brand_logo_url)
+                if isinstance(value, str):
+                    params[param_name] = value
+                else:
+                    params[param_name] = str(value) if value is not None else None
         
         if set_clauses:
             try:
