@@ -1,7 +1,7 @@
 """Workspace settings service functions (race-safe)"""
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, ProgrammingError
+from sqlalchemy.exc import IntegrityError, ProgrammingError, InternalError
 from sqlalchemy import inspect, text
 from config.database import engine
 from models.workspace_settings import WorkspaceSettings
@@ -28,18 +28,81 @@ def get_workspace_settings(tenant_id: int, session: Optional[Session] = None) ->
 
 def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettings:
     """Internal helper: get or create settings (race-safe)"""
-    # Check if notification columns exist
+    # Check if notification columns exist BEFORE trying ORM query
     inspector = inspect(session.bind)
-    table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')] if 'workspace_settings' in inspector.get_table_names() else []
+    table_columns = []
+    if 'workspace_settings' in inspector.get_table_names():
+        try:
+            table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
+        except Exception:
+            pass  # If inspect fails, we'll try ORM query anyway
+    
     has_notification_columns = 'email_notifications_enabled' in table_columns
     
+    # If notification columns don't exist, use raw SQL directly
+    if not has_notification_columns:
+        result = session.execute(
+            text("""
+                SELECT id, tenant_id, default_agent_id, default_from_number, default_spacing_ms,
+                       budget_monthly_cents, budget_warn_percent, budget_stop_enabled,
+                       quiet_hours_enabled, quiet_hours_weekdays, quiet_hours_saturday,
+                       quiet_hours_sunday, quiet_hours_timezone,
+                       require_legal_review, override_country_rules_enabled,
+                       default_lang, supported_langs_json, prefer_detect_language,
+                       kb_version_outbound, kb_version_inbound,
+                       workspace_name, timezone, brand_logo_url, brand_color,
+                       retell_api_key_encrypted, retell_webhook_secret_encrypted,
+                       created_at, updated_at
+                FROM workspace_settings
+                WHERE tenant_id = :tid
+                LIMIT 1
+            """),
+            {"tid": tenant_id}
+        ).first()
+        
+        if result:
+            # Create a minimal WorkspaceSettings object with available fields
+            settings = WorkspaceSettings()
+            settings.id = result[0]
+            settings.tenant_id = result[1]
+            settings.default_agent_id = result[2]
+            settings.default_from_number = result[3]
+            settings.default_spacing_ms = result[4] or 1000
+            settings.budget_monthly_cents = result[5]
+            settings.budget_warn_percent = result[6] or 80
+            settings.budget_stop_enabled = result[7] or 1
+            settings.quiet_hours_enabled = result[8] or 0
+            settings.quiet_hours_weekdays = result[9]
+            settings.quiet_hours_saturday = result[10]
+            settings.quiet_hours_sunday = result[11]
+            settings.quiet_hours_timezone = result[12]
+            settings.require_legal_review = result[13] or 1
+            settings.override_country_rules_enabled = result[14] or 0
+            settings.default_lang = result[15]
+            settings.supported_langs_json = result[16]
+            settings.prefer_detect_language = result[17] or 0
+            settings.kb_version_outbound = result[18] or 0
+            settings.kb_version_inbound = result[19] or 0
+            settings.workspace_name = result[20]
+            settings.timezone = result[21]
+            settings.brand_logo_url = result[22]
+            settings.brand_color = result[23]
+            settings.retell_api_key_encrypted = result[24]
+            settings.retell_webhook_secret_encrypted = result[25]
+            settings.created_at = result[26]
+            settings.updated_at = result[27]
+            # Notification fields will be None (handled by getattr in routes)
+            return settings
+    
+    # Try ORM query (notification columns exist or we couldn't check)
     try:
         settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
         if settings:
             return settings
-    except ProgrammingError as e:
-        # Column doesn't exist yet - use raw SQL to query only existing columns
-        if 'email_notifications_enabled' in str(e) or 'does not exist' in str(e):
+    except (ProgrammingError, InternalError) as e:
+        # Column doesn't exist yet or transaction aborted - rollback and use raw SQL
+        session.rollback()
+        if 'email_notifications_enabled' in str(e) or 'does not exist' in str(e) or 'transaction is aborted' in str(e):
             # Query without notification columns
             result = session.execute(
                 text("""
@@ -106,11 +169,19 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
     except IntegrityError:
         # Race condition: someone else created it first
         session.rollback()
-        # Re-read
-        try:
-            settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
-        except ProgrammingError:
-            # If query fails due to missing columns, use raw SQL
+        # Re-read - check if notification columns exist first
+        inspector = inspect(session.bind)
+        table_columns = []
+        if 'workspace_settings' in inspector.get_table_names():
+            try:
+                table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
+            except Exception:
+                pass
+        
+        has_notification_columns = 'email_notifications_enabled' in table_columns
+        
+        if not has_notification_columns:
+            # Use raw SQL
             result = session.execute(
                 text("SELECT id, tenant_id FROM workspace_settings WHERE tenant_id = :tid LIMIT 1"),
                 {"tid": tenant_id}
@@ -121,6 +192,23 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
                 settings.tenant_id = result[1]
             else:
                 raise RuntimeError(f"Failed to get or create workspace settings for tenant {tenant_id}")
+        else:
+            # Try ORM query
+            try:
+                settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
+            except (ProgrammingError, InternalError):
+                # If query fails, rollback and use raw SQL
+                session.rollback()
+                result = session.execute(
+                    text("SELECT id, tenant_id FROM workspace_settings WHERE tenant_id = :tid LIMIT 1"),
+                    {"tid": tenant_id}
+                ).first()
+                if result:
+                    settings = WorkspaceSettings()
+                    settings.id = result[0]
+                    settings.tenant_id = result[1]
+                else:
+                    raise RuntimeError(f"Failed to get or create workspace settings for tenant {tenant_id}")
         
         if not settings:
             raise RuntimeError(f"Failed to get or create workspace settings for tenant {tenant_id}")
