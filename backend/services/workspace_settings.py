@@ -320,16 +320,31 @@ def update_workspace_settings(
 
 def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) -> WorkspaceSettings:
     """Internal helper: update settings"""
-    # Check if notification columns exist
-    inspector = inspect(session.bind)
-    table_columns = []
-    if 'workspace_settings' in inspector.get_table_names():
-        try:
-            table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
-        except Exception:
-            pass
-    
-    has_notification_columns = 'email_notifications_enabled' in table_columns
+    # Check if notification columns exist - use direct SQL query for reliability
+    has_notification_columns = False
+    try:
+        result = session.execute(
+            text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'workspace_settings' 
+                AND column_name = 'email_notifications_enabled'
+            """)
+        ).first()
+        has_notification_columns = result is not None
+        print(f"[DEBUG] _update_settings: Direct SQL check - has_notification_columns={has_notification_columns}", flush=True)
+    except Exception as e:
+        print(f"[DEBUG] _update_settings: Error checking columns with SQL: {e}", flush=True)
+        # Fallback to inspect
+        inspector = inspect(session.bind)
+        table_columns = []
+        if 'workspace_settings' in inspector.get_table_names():
+            try:
+                table_columns = [col['name'] for col in inspector.get_columns('workspace_settings')]
+                has_notification_columns = 'email_notifications_enabled' in table_columns
+                print(f"[DEBUG] _update_settings: Fallback inspect - has_notification_columns={has_notification_columns}, columns={table_columns}", flush=True)
+            except Exception:
+                pass
     
     settings = get_workspace_settings(tenant_id, session)
     
