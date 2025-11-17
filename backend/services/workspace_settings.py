@@ -285,25 +285,50 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
     # If object is not in session (created manually with raw SQL), use raw SQL UPDATE
     if not is_in_session:
         # Use raw SQL UPDATE
+        # Validate column names to prevent SQL injection
+        valid_columns = {
+            'default_agent_id', 'default_from_number', 'default_spacing_ms',
+            'budget_monthly_cents', 'budget_warn_percent', 'budget_stop_enabled',
+            'quiet_hours_enabled', 'quiet_hours_weekdays', 'quiet_hours_saturday',
+            'quiet_hours_sunday', 'quiet_hours_timezone',
+            'require_legal_review', 'override_country_rules_enabled',
+            'default_lang', 'supported_langs_json', 'prefer_detect_language',
+            'kb_version_outbound', 'kb_version_inbound',
+            'workspace_name', 'timezone', 'brand_logo_url', 'brand_color',
+            'retell_api_key_encrypted', 'retell_webhook_secret_encrypted',
+        }
+        
         set_clauses = []
         params = {"tid": tenant_id}
         
         for key, value in updates_to_apply.items():
-            set_clauses.append(f"{key} = :{key}")
-            params[key] = value
+            # Only update valid columns
+            if key not in valid_columns:
+                continue
+            # Use parameterized query to prevent SQL injection
+            param_name = f"val_{key}"  # Use unique param name
+            set_clauses.append(f"{key} = :{param_name}")
+            params[param_name] = value
         
         if set_clauses:
-            session.execute(
-                text(f"""
-                    UPDATE workspace_settings
-                    SET {', '.join(set_clauses)}, updated_at = now()
-                    WHERE tenant_id = :tid
-                """),
-                params
-            )
-            session.commit()
-            # Re-read using safe method
-            return get_workspace_settings(tenant_id, session)
+            try:
+                session.execute(
+                    text(f"""
+                        UPDATE workspace_settings
+                        SET {', '.join(set_clauses)}, updated_at = now()
+                        WHERE tenant_id = :tid
+                    """),
+                    params
+                )
+                session.commit()
+                # Re-read using safe method
+                return get_workspace_settings(tenant_id, session)
+            except Exception as e:
+                session.rollback()
+                import traceback
+                error_detail = f"Error in raw SQL UPDATE: {str(e)}\n{traceback.format_exc()}"
+                print(f"[ERROR] {error_detail}", flush=True)
+                raise
         else:
             # No updates to apply
             return settings
