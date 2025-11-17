@@ -111,23 +111,29 @@ async def update_workspace_general(
     if not tenant_id:
         raise HTTPException(status_code=401, detail="Tenant ID required")
     
-    # Convert Pydantic model to dict, excluding None values
-    updates = body.model_dump(exclude_none=True)
-    
-    settings = update_workspace_settings(tenant_id, updates)
-    
-    # Generate presigned URL if logo is in R2
-    logo_url = settings.brand_logo_url
-    if logo_url and logo_url.startswith("workspace-logos/"):
-        presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
-        if presigned:
-            logo_url = presigned
-    
-    return WorkspaceGeneralResponse(
-        workspace_name=settings.workspace_name,
-        timezone=settings.timezone,
-        brand_logo_url=logo_url,
-    )
+    try:
+        # Convert Pydantic model to dict, excluding None values
+        updates = body.model_dump(exclude_none=True)
+        
+        settings = update_workspace_settings(tenant_id, updates)
+        
+        # Generate presigned URL if logo is in R2
+        logo_url = settings.brand_logo_url
+        if logo_url and logo_url.startswith("workspace-logos/"):
+            presigned = r2_presign_get(logo_url, expires_seconds=3600 * 24)  # 24h
+            if presigned:
+                logo_url = presigned
+        
+        return WorkspaceGeneralResponse(
+            workspace_name=settings.workspace_name,
+            timezone=settings.timezone,
+            brand_logo_url=logo_url,
+        )
+    except Exception as e:
+        import traceback
+        error_detail = f"Error updating general settings: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Error updating general settings: {str(e)}")
 
 
 @router.post("/general/logo", response_model=WorkspaceGeneralResponse)
