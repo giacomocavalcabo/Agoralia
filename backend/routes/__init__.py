@@ -50,11 +50,8 @@ from .admin_tools import router as admin_tools_router
 # Include admin tools router
 api_router.include_router(admin_tools_router, prefix="/admin-tools", tags=["admin-tools"])
 
-# Import user preferences router
-from .user_preferences import router as user_preferences_router
-
-# Include user preferences router
-api_router.include_router(user_preferences_router, prefix="/settings/preferences", tags=["settings"])
+# Note: user_preferences router removed - all user preferences were eliminated
+# except notifications which were moved to workspace settings
 
 # Note: Migration endpoint removed - migrations now run automatically on startup
 # If needed temporarily, uncomment:
