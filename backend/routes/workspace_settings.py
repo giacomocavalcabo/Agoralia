@@ -687,12 +687,18 @@ async def get_workspace_notifications(
         
         # Use getattr with defaults to handle None values
         # If field is None or doesn't exist, default to True (enabled)
+        # But if field is 0 (explicitly disabled), return False
+        def get_bool_value(value, default=1):
+            if value is None:
+                return bool(default)
+            return bool(value)
+        
         return WorkspaceNotificationsResponse(
-            email_notifications_enabled=bool(getattr(settings, 'email_notifications_enabled', 1) or 1),
-            email_campaign_started=bool(getattr(settings, 'email_campaign_started', 1) or 1),
-            email_campaign_paused=bool(getattr(settings, 'email_campaign_paused', 1) or 1),
-            email_budget_warning=bool(getattr(settings, 'email_budget_warning', 1) or 1),
-            email_compliance_alert=bool(getattr(settings, 'email_compliance_alert', 1) or 1),
+            email_notifications_enabled=get_bool_value(getattr(settings, 'email_notifications_enabled', None), 1),
+            email_campaign_started=get_bool_value(getattr(settings, 'email_campaign_started', None), 1),
+            email_campaign_paused=get_bool_value(getattr(settings, 'email_campaign_paused', None), 1),
+            email_budget_warning=get_bool_value(getattr(settings, 'email_budget_warning', None), 1),
+            email_compliance_alert=get_bool_value(getattr(settings, 'email_compliance_alert', None), 1),
         )
     except Exception as e:
         import traceback

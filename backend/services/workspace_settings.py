@@ -150,7 +150,7 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
             settings.brand_color = result[23]
             settings.retell_api_key_encrypted = result[24]
             settings.retell_webhook_secret_encrypted = result[25]
-            # Notification fields (with defaults if NULL)
+            # Notification fields (preserve actual values, only default if NULL)
             settings.email_notifications_enabled = result[26] if result[26] is not None else 1
             settings.email_campaign_started = result[27] if result[27] is not None else 1
             settings.email_campaign_paused = result[28] if result[28] is not None else 1
@@ -164,17 +164,19 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
     try:
         settings = session.query(WorkspaceSettings).filter_by(tenant_id=tenant_id).first()
         if settings:
-            # Ensure notification fields have defaults if None
+            # Ensure notification fields have defaults ONLY if None (not if 0)
             if has_notification_columns:
-                if getattr(settings, 'email_notifications_enabled', None) is None:
+                # Only set default if the attribute doesn't exist or is explicitly None
+                # Don't override 0 (disabled) values
+                if not hasattr(settings, 'email_notifications_enabled') or getattr(settings, 'email_notifications_enabled', None) is None:
                     settings.email_notifications_enabled = 1
-                if getattr(settings, 'email_campaign_started', None) is None:
+                if not hasattr(settings, 'email_campaign_started') or getattr(settings, 'email_campaign_started', None) is None:
                     settings.email_campaign_started = 1
-                if getattr(settings, 'email_campaign_paused', None) is None:
+                if not hasattr(settings, 'email_campaign_paused') or getattr(settings, 'email_campaign_paused', None) is None:
                     settings.email_campaign_paused = 1
-                if getattr(settings, 'email_budget_warning', None) is None:
+                if not hasattr(settings, 'email_budget_warning') or getattr(settings, 'email_budget_warning', None) is None:
                     settings.email_budget_warning = 1
-                if getattr(settings, 'email_compliance_alert', None) is None:
+                if not hasattr(settings, 'email_compliance_alert') or getattr(settings, 'email_compliance_alert', None) is None:
                     settings.email_compliance_alert = 1
             return settings
     except (ProgrammingError, InternalError) as e:
