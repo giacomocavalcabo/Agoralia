@@ -59,10 +59,8 @@ async def log_requests(request: Request, call_next):
         logger.info("%s %s %s %dms", method, path, f"tenant={tenant}", dur_ms)
     return response
 
-# Include all API routes
-app.include_router(api_router)
-
-# Serve static files (logos, etc.)
+# Serve static files (logos, etc.) BEFORE API routes
+# This ensures static files are checked before API routes
 uploads_dir = BACKEND_DIR / "uploads"
 uploads_dir.mkdir(exist_ok=True)
 print(f"[INFO] Static files directory: {uploads_dir}", flush=True)
@@ -71,4 +69,7 @@ try:
     print(f"[INFO] Static files mounted at /uploads", flush=True)
 except Exception as e:
     print(f"[WARNING] Failed to mount static files: {e}", flush=True)
+
+# Include all API routes (after static files mount)
+app.include_router(api_router)
 

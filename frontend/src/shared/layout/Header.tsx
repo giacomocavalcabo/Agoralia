@@ -26,12 +26,19 @@ export function Header() {
           <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-background overflow-hidden">
             <img
               src={
-                effectiveSettings.brand_logo_url.startsWith('/uploads/')
-                  ? `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${effectiveSettings.brand_logo_url}`
+                effectiveSettings.brand_logo_url.startsWith('/uploads/') || effectiveSettings.brand_logo_url.startsWith('workspace-logos/')
+                  ? `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
+                      effectiveSettings.brand_logo_url.startsWith('/uploads/') 
+                        ? effectiveSettings.brand_logo_url 
+                        : `/uploads/${effectiveSettings.brand_logo_url}`
+                    }`
                   : effectiveSettings.brand_logo_url
               }
               alt="Workspace logo"
               className="h-full w-full object-cover"
+              onError={(e) => {
+                console.error('Failed to load logo:', effectiveSettings.brand_logo_url, e)
+              }}
             />
           </div>
         )}

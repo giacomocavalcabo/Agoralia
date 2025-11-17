@@ -201,12 +201,19 @@ export function GeneralSection() {
                 <div className="flex items-center gap-3">
                   <img
                     src={
-                      logoUrl.startsWith('/uploads/')
-                        ? `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${logoUrl}`
+                      logoUrl.startsWith('/uploads/') || logoUrl.startsWith('workspace-logos/')
+                        ? `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
+                            logoUrl.startsWith('/uploads/') 
+                              ? logoUrl 
+                              : `/uploads/${logoUrl}`
+                          }`
                         : logoUrl
                     }
                     alt="Workspace logo"
                     className="h-16 w-16 rounded-full object-cover border"
+                    onError={(e) => {
+                      console.error('Failed to load logo:', logoUrl, e)
+                    }}
                   />
                   <div className="flex-1">
                     <Button
