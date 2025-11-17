@@ -311,16 +311,19 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
             # Only update valid columns
             if key not in valid_columns:
                 continue
-            # Skip None values (they should be handled explicitly if needed)
+            # Use parameterized query to prevent SQL injection
+            param_name = f"val_{key}"  # Use unique param name
             if value is None:
                 # For None values, explicitly set to NULL
                 set_clauses.append(f"{key} = NULL")
             else:
-                # Use parameterized query to prevent SQL injection
-                param_name = f"val_{key}"  # Use unique param name
                 set_clauses.append(f"{key} = :{param_name}")
-                # Convert value to string if needed (for Text fields like brand_logo_url)
+                # Convert value to appropriate type
                 if isinstance(value, str):
+                    params[param_name] = value
+                elif isinstance(value, bool):
+                    params[param_name] = 1 if value else 0
+                elif isinstance(value, (int, float)):
                     params[param_name] = value
                 else:
                     params[param_name] = str(value) if value is not None else None

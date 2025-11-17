@@ -192,35 +192,56 @@ async def upload_workspace_logo(
         # Determine content type
         content_type = file.content_type or "image/png"
         
-        # Save file to disk (simple solution that works for all tenants)
+        # Save file - try R2 first, fallback to disk
         import os
         from pathlib import Path
-        
-        # Use same path as main.py for consistency
-        backend_dir = Path(__file__).resolve().parent.parent
-        uploads_dir = backend_dir / "uploads" / "workspace-logos"
-        uploads_dir.mkdir(parents=True, exist_ok=True)
         
         # Determine file extension
         file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
         filename = f"logo.{file_ext}"
-        file_path = uploads_dir / str(tenant_id) / filename
+        r2_key = f"workspace-logos/{tenant_id}/{filename}"
         
-        # Create tenant-specific directory
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        # Try R2 first (persistent storage)
+        r2_configured = bool(
+            os.getenv("R2_ACCESS_KEY_ID") and 
+            os.getenv("R2_SECRET_ACCESS_KEY") and 
+            os.getenv("R2_ACCOUNT_ID") and 
+            os.getenv("R2_BUCKET")
+        )
         
-        # Save file to disk
-        try:
-            with open(file_path, "wb") as f:
-                f.write(file_data)
-        except Exception as e:
-            import traceback
-            error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"
-            print(f"[ERROR] {error_detail}", flush=True)
-            raise HTTPException(status_code=500, detail=f"Failed to save logo: {str(e)}")
+        logo_url_to_save = None
         
-        # Save relative path in database (will be served as static file)
-        logo_url_to_save = f"workspace-logos/{tenant_id}/{filename}"
+        if r2_configured:
+            # Upload to R2 (persistent)
+            uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+            if uploaded:
+                logo_url_to_save = r2_key
+            else:
+                # R2 upload failed, fallback to disk
+                pass
+        
+        # Fallback to disk if R2 not configured or upload failed
+        if not logo_url_to_save:
+            # Use same path as main.py for consistency
+            backend_dir = Path(__file__).resolve().parent.parent
+            uploads_dir = backend_dir / "uploads" / "workspace-logos"
+            uploads_dir.mkdir(parents=True, exist_ok=True)
+            
+            file_path = uploads_dir / str(tenant_id) / filename
+            
+            # Create tenant-specific directory
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Save file to disk
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(file_data)
+                logo_url_to_save = r2_key  # Use same format for consistency
+            except Exception as e:
+                import traceback
+                error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"
+                print(f"[ERROR] {error_detail}", flush=True)
+                raise HTTPException(status_code=500, detail=f"Failed to save logo: {str(e)}")
         
         # Update settings with logo URL
         updates = {"brand_logo_url": logo_url_to_save}
