@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
       // Interceptor per gestire errori
       api.interceptors.response.use(
         (response) => response,
-        async (error: AxiosError<{ detail?: string }>) => {
+        (error: AxiosError<{ detail?: string }>) => {
           if (error.response?.status === 401) {
             // Token scaduto o invalido → logout
             localStorage.removeItem('auth_token')
@@ -27,19 +27,8 @@ api.interceptors.request.use((config) => {
             window.location.href = '/login'
           } else if (error.response?.status === 403 && error.config?.url?.includes('/settings/workspace')) {
             // 403 su workspace settings → potrebbe essere che lo stato admin è cambiato
-            // Prova a refreshare lo stato auth
-            try {
-              const { getMe } = await import('@/features/auth/api')
-              const userData = await getMe()
-              if (userData.is_admin) {
-                // L'utente è admin ma il token non lo riflette → forzare refresh pagina
-                // Il token verrà aggiornato al prossimo login
-                console.warn('User is admin but token is outdated. Please refresh the page or logout/login.')
-                // Non facciamo auto-refresh per non essere invasivi, ma logghiamo
-              }
-            } catch (e) {
-              // Ignora errori nel refresh
-            }
+            // Log per debugging (il componente gestirà il messaggio all'utente)
+            console.warn('403 on workspace settings - admin status may have changed. User should refresh page or logout/login.')
           }
           return Promise.reject(error)
         }
