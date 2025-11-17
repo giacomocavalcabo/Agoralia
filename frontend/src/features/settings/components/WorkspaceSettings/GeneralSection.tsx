@@ -60,13 +60,17 @@ export function GeneralSection() {
   useEffect(() => {
     if (data) {
       // Extract external URL if logo is an external URL, otherwise leave empty
+      // Don't show presigned URLs (they include r2.cloudflarestorage.com) - those are temporary
       const logoUrl = data.brand_logo_url || ''
       const isExternal = logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
+      // Only show permanent external URLs, not presigned URLs (which are temporary)
+      const isPresigned = logoUrl.includes('r2.cloudflarestorage.com') || logoUrl.includes('X-Amz-Signature')
+      const shouldShowExternalUrl = isExternal && !isPresigned
       
       reset({
         workspace_name: data.workspace_name || '',
         timezone: data.timezone || '',
-        external_logo_url: isExternal ? logoUrl : '',
+        external_logo_url: shouldShowExternalUrl ? logoUrl : '',
       })
       setHasChanges(false)
     }
