@@ -213,8 +213,6 @@ async def upload_workspace_logo(
         try:
             with open(file_path, "wb") as f:
                 f.write(file_data)
-            print(f"[DEBUG] Logo saved to disk: {file_path}", flush=True)
-            print(f"[DEBUG] Logo will be served at: /uploads/workspace-logos/{tenant_id}/{filename}", flush=True)
         except Exception as e:
             import traceback
             error_detail = f"Failed to save logo to disk: {str(e)}\n{traceback.format_exc()}"
@@ -225,11 +223,9 @@ async def upload_workspace_logo(
         logo_url_to_save = f"workspace-logos/{tenant_id}/{filename}"
         
         # Update settings with logo URL
-        print(f"[DEBUG] Updating settings with brand_logo_url: {logo_url_to_save}", flush=True)
         updates = {"brand_logo_url": logo_url_to_save}
         try:
             settings = update_workspace_settings(tenant_id, updates)
-            print(f"[DEBUG] Settings updated successfully", flush=True)
         except Exception as e:
             import traceback
             error_detail = f"Error updating settings with logo URL: {str(e)}\n{traceback.format_exc()}"

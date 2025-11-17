@@ -261,14 +261,7 @@ export function GeneralSection() {
                     alt="Workspace logo"
                     className="h-16 w-16 rounded-full object-cover border"
                     onError={(e) => {
-                      console.error('Failed to load logo:', logoUrl, 'Full URL:', 
-                        logoUrl.startsWith('http://') || logoUrl.startsWith('https://')
-                          ? logoUrl
-                          : `${import.meta.env.VITE_API_BASE_URL || 'https://api.agoralia.app'}${
-                              logoUrl.startsWith('/') 
-                                ? logoUrl 
-                                : `/${logoUrl}`
-                            }`, e)
+                      // Silently handle image load errors
                     }}
                   />
                   <div className="flex-1">

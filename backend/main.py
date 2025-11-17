@@ -63,12 +63,11 @@ async def log_requests(request: Request, call_next):
 # This ensures static files are checked before API routes
 uploads_dir = BACKEND_DIR / "uploads"
 uploads_dir.mkdir(exist_ok=True)
-print(f"[INFO] Static files directory: {uploads_dir}", flush=True)
 try:
     app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
-    print(f"[INFO] Static files mounted at /uploads", flush=True)
 except Exception as e:
-    print(f"[WARNING] Failed to mount static files: {e}", flush=True)
+    import logging
+    logging.warning(f"Failed to mount static files: {e}")
 
 # Include all API routes (after static files mount)
 app.include_router(api_router)

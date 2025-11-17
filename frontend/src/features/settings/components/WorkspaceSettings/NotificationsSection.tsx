@@ -77,13 +77,25 @@ export function NotificationsSection() {
 
   const onSubmit = async (formData: NotificationsForm) => {
     try {
-      await updateMutation.mutateAsync({
-        email_notifications_enabled: formData.email_notifications_enabled,
-        email_campaign_started: formData.email_campaign_started,
-        email_campaign_paused: formData.email_campaign_paused,
-        email_budget_warning: formData.email_budget_warning,
-        email_compliance_alert: formData.email_compliance_alert,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, boolean> = {}
+      if (formData.email_notifications_enabled !== undefined) {
+        updates.email_notifications_enabled = formData.email_notifications_enabled
+      }
+      if (formData.email_campaign_started !== undefined) {
+        updates.email_campaign_started = formData.email_campaign_started
+      }
+      if (formData.email_campaign_paused !== undefined) {
+        updates.email_campaign_paused = formData.email_campaign_paused
+      }
+      if (formData.email_budget_warning !== undefined) {
+        updates.email_budget_warning = formData.email_budget_warning
+      }
+      if (formData.email_compliance_alert !== undefined) {
+        updates.email_compliance_alert = formData.email_compliance_alert
+      }
+      
+      await updateMutation.mutateAsync(updates)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)
