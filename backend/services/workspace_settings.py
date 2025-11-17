@@ -279,6 +279,10 @@ def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) 
         if value is not None:
             setattr(settings, key, value)
     
+    # Ensure settings object is in session (if it was created manually, merge it)
+    if settings not in session:
+        settings = session.merge(settings)
+    
     try:
         session.commit()
         # Only refresh if notification columns exist, otherwise refresh will fail
