@@ -56,6 +56,13 @@ class WorkspaceSettings(Base):
     retell_api_key_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Encrypted at rest
     retell_webhook_secret_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Encrypted at rest
     
+    # Notifications
+    email_notifications_enabled: Mapped[int] = mapped_column(Integer, default=1)  # 1=true, 0=false
+    email_campaign_started: Mapped[int] = mapped_column(Integer, default=1)
+    email_campaign_paused: Mapped[int] = mapped_column(Integer, default=1)
+    email_budget_warning: Mapped[int] = mapped_column(Integer, default=1)
+    email_compliance_alert: Mapped[int] = mapped_column(Integer, default=1)
+    
     # Metadata
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(

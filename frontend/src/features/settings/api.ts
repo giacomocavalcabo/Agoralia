@@ -3,6 +3,8 @@ import { api } from '@/shared/api/client'
 import type {
   WorkspaceGeneral,
   WorkspaceGeneralUpdate,
+  WorkspaceNotifications,
+  WorkspaceNotificationsUpdate,
   WorkspaceTelephony,
   WorkspaceTelephonyUpdate,
   WorkspaceBudget,
@@ -13,12 +15,6 @@ import type {
   WorkspaceQuietHoursUpdate,
   WorkspaceIntegrations,
   WorkspaceIntegrationsUpdate,
-  UserPreferencesUI,
-  UserPreferencesUIUpdate,
-  UserPreferencesNotifications,
-  UserPreferencesNotificationsUpdate,
-  UserPreferencesDashboard,
-  UserPreferencesDashboardUpdate,
   EffectiveSettings,
 } from './types'
 
@@ -45,6 +41,18 @@ export async function uploadWorkspaceLogo(file: File): Promise<WorkspaceGeneral>
       'Content-Type': 'multipart/form-data',
     },
   })
+  return data
+}
+
+export async function getWorkspaceNotifications(): Promise<WorkspaceNotifications> {
+  const { data } = await api.get<WorkspaceNotifications>('/settings/workspace/notifications')
+  return data
+}
+
+export async function updateWorkspaceNotifications(
+  updates: WorkspaceNotificationsUpdate
+): Promise<WorkspaceNotifications> {
+  const { data } = await api.patch<WorkspaceNotifications>('/settings/workspace/notifications', updates)
   return data
 }
 
@@ -105,44 +113,6 @@ export async function updateWorkspaceIntegrations(
   updates: WorkspaceIntegrationsUpdate
 ): Promise<WorkspaceIntegrations> {
   const { data } = await api.patch<WorkspaceIntegrations>('/settings/workspace/integrations', updates)
-  return data
-}
-
-// User Preferences
-
-export async function getUserPreferencesUI(): Promise<UserPreferencesUI> {
-  const { data } = await api.get<UserPreferencesUI>('/settings/preferences/ui')
-  return data
-}
-
-export async function updateUserPreferencesUI(
-  updates: UserPreferencesUIUpdate
-): Promise<UserPreferencesUI> {
-  const { data } = await api.patch<UserPreferencesUI>('/settings/preferences/ui', updates)
-  return data
-}
-
-export async function getUserPreferencesNotifications(): Promise<UserPreferencesNotifications> {
-  const { data } = await api.get<UserPreferencesNotifications>('/settings/preferences/notifications')
-  return data
-}
-
-export async function updateUserPreferencesNotifications(
-  updates: UserPreferencesNotificationsUpdate
-): Promise<UserPreferencesNotifications> {
-  const { data } = await api.patch<UserPreferencesNotifications>('/settings/preferences/notifications', updates)
-  return data
-}
-
-export async function getUserPreferencesDashboard(): Promise<UserPreferencesDashboard> {
-  const { data } = await api.get<UserPreferencesDashboard>('/settings/preferences/dashboard')
-  return data
-}
-
-export async function updateUserPreferencesDashboard(
-  updates: UserPreferencesDashboardUpdate
-): Promise<UserPreferencesDashboard> {
-  const { data } = await api.patch<UserPreferencesDashboard>('/settings/preferences/dashboard', updates)
   return data
 }
 

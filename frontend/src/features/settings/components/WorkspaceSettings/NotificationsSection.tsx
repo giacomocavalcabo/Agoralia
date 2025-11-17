@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import { Switch } from '@/shared/ui/switch'
-import { useUserPreferencesNotifications, useUpdateUserPreferencesNotifications } from '../../hooks'
+import { useWorkspaceNotifications, useUpdateWorkspaceNotifications } from '../../hooks'
 import { Loader2, Save } from 'lucide-react'
 
 const notificationsSchema = z.object({
@@ -19,8 +19,8 @@ const notificationsSchema = z.object({
 type NotificationsForm = z.infer<typeof notificationsSchema>
 
 export function NotificationsSection() {
-  const { data, isLoading, error } = useUserPreferencesNotifications()
-  const updateMutation = useUpdateUserPreferencesNotifications()
+  const { data, isLoading, error } = useWorkspaceNotifications()
+  const updateMutation = useUpdateWorkspaceNotifications()
   const [hasChanges, setHasChanges] = useState(false)
 
   const {
@@ -119,7 +119,7 @@ export function NotificationsSection() {
       <CardHeader>
         <CardTitle>Notifications</CardTitle>
         <CardDescription>
-          Configure email notification preferences for your account.
+          Configure email notification preferences for your workspace.
         </CardDescription>
       </CardHeader>
       <CardContent>

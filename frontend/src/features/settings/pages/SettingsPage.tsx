@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SettingsLayout } from '../components/SettingsLayout'
 import { GeneralSection } from '../components/WorkspaceSettings/GeneralSection'
+import { NotificationsSection } from '../components/WorkspaceSettings/NotificationsSection'
 import { TelephonySection } from '../components/WorkspaceSettings/TelephonySection'
 import { BudgetSection } from '../components/WorkspaceSettings/BudgetSection'
 import { ComplianceSection } from '../components/WorkspaceSettings/ComplianceSection'
 import { QuietHoursSection } from '../components/WorkspaceSettings/QuietHoursSection'
 import { IntegrationsSection } from '../components/WorkspaceSettings/IntegrationsSection'
-import { UISection } from '../components/UserPreferences/UISection'
-import { NotificationsSection } from '../components/UserPreferences/NotificationsSection'
-import { DashboardSection } from '../components/UserPreferences/DashboardSection'
 import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks'
@@ -40,7 +38,7 @@ export function SettingsPage() {
   }, [authData?.is_admin])
 
   const renderSection = () => {
-    if (!isAdmin && ['general', 'telephony', 'budget', 'compliance', 'quiet-hours', 'integrations'].includes(activeSection)) {
+    if (!isAdmin && ['general', 'notifications', 'telephony', 'budget', 'compliance', 'quiet-hours', 'integrations'].includes(activeSection)) {
       return (
         <div className="py-12 text-center text-sm text-muted-foreground">
           You need admin access to view workspace settings.
@@ -51,6 +49,8 @@ export function SettingsPage() {
     switch (activeSection) {
       case 'general':
         return <GeneralSection />
+      case 'notifications':
+        return <NotificationsSection />
       case 'telephony':
         return <TelephonySection />
       case 'budget':
@@ -61,12 +61,6 @@ export function SettingsPage() {
         return <QuietHoursSection />
       case 'integrations':
         return <IntegrationsSection />
-      case 'ui':
-        return <UISection />
-      case 'notifications':
-        return <NotificationsSection />
-      case 'dashboard':
-        return <DashboardSection />
       default:
         return <div>Section not found</div>
     }

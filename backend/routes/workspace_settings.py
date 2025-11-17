@@ -23,6 +23,8 @@ from schemas.settings import (
     WorkspaceQuietHoursResponse,
     WorkspaceIntegrationsResponse,
     WorkspaceIntegrationsUpdate,
+    WorkspaceNotificationsUpdate,
+    WorkspaceNotificationsResponse,
 )
 
 router = APIRouter()
@@ -418,4 +420,57 @@ async def update_workspace_integrations(
     return WorkspaceIntegrationsResponse(
         retell_api_key_set=get_retell_api_key_set(tenant_id),
         retell_webhook_secret_set=get_retell_webhook_secret_set(tenant_id),
+    )
+
+
+# Notifications
+
+@router.get("/notifications", response_model=WorkspaceNotificationsResponse)
+async def get_workspace_notifications(
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceNotificationsResponse:
+    """Get notification settings (admin only)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    settings = get_workspace_settings(tenant_id)
+    
+    return WorkspaceNotificationsResponse(
+        email_notifications_enabled=bool(settings.email_notifications_enabled),
+        email_campaign_started=bool(settings.email_campaign_started),
+        email_campaign_paused=bool(settings.email_campaign_paused),
+        email_budget_warning=bool(settings.email_budget_warning),
+        email_compliance_alert=bool(settings.email_compliance_alert),
+    )
+
+
+@router.patch("/notifications", response_model=WorkspaceNotificationsResponse)
+async def update_workspace_notifications(
+    body: WorkspaceNotificationsUpdate,
+    request: Request,
+    _: tuple[int, int] = Depends(require_admin)
+) -> WorkspaceNotificationsResponse:
+    """Update notification settings (admin only, partial update)"""
+    tenant_id = extract_tenant_id(request)
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant ID required")
+    
+    updates = body.model_dump(exclude_none=True)
+    
+    # Convert bool to int for storage
+    for key in ["email_notifications_enabled", "email_campaign_started", "email_campaign_paused", 
+                "email_budget_warning", "email_compliance_alert"]:
+        if key in updates:
+            updates[key] = 1 if updates[key] else 0
+    
+    settings = update_workspace_settings(tenant_id, updates)
+    
+    return WorkspaceNotificationsResponse(
+        email_notifications_enabled=bool(settings.email_notifications_enabled),
+        email_campaign_started=bool(settings.email_campaign_started),
+        email_campaign_paused=bool(settings.email_campaign_paused),
+        email_budget_warning=bool(settings.email_budget_warning),
+        email_compliance_alert=bool(settings.email_compliance_alert),
     )

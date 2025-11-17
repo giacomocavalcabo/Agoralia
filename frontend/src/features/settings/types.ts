@@ -14,6 +14,22 @@ export interface WorkspaceGeneralUpdate {
   brand_logo_url?: string
 }
 
+export interface WorkspaceNotifications {
+  email_notifications_enabled: boolean
+  email_campaign_started: boolean
+  email_campaign_paused: boolean
+  email_budget_warning: boolean
+  email_compliance_alert: boolean
+}
+
+export interface WorkspaceNotificationsUpdate {
+  email_notifications_enabled?: boolean
+  email_campaign_started?: boolean
+  email_campaign_paused?: boolean
+  email_budget_warning?: boolean
+  email_compliance_alert?: boolean
+}
+
 export interface WorkspaceTelephony {
   default_agent_id: number | null
   default_from_number: string | null
@@ -72,50 +88,6 @@ export interface WorkspaceIntegrations {
 export interface WorkspaceIntegrationsUpdate {
   retell_api_key?: string | null
   retell_webhook_secret?: string | null
-}
-
-// User Preferences
-
-export interface UserPreferencesUI {
-  theme: 'light' | 'dark' | 'system'
-  ui_locale: string | null
-  date_format: string | null
-  time_format: string | null
-  timezone: string | null
-}
-
-export interface UserPreferencesUIUpdate {
-  theme?: 'light' | 'dark' | 'system'
-  ui_locale?: string | null
-  date_format?: string | null
-  time_format?: string | null
-  timezone?: string | null
-}
-
-export interface UserPreferencesNotifications {
-  email_notifications_enabled: boolean
-  email_campaign_started: boolean
-  email_campaign_paused: boolean
-  email_budget_warning: boolean
-  email_compliance_alert: boolean
-}
-
-export interface UserPreferencesNotificationsUpdate {
-  email_notifications_enabled?: boolean
-  email_campaign_started?: boolean
-  email_campaign_paused?: boolean
-  email_budget_warning?: boolean
-  email_compliance_alert?: boolean
-}
-
-export interface UserPreferencesDashboard {
-  default_view: string | null
-  table_page_size: number
-}
-
-export interface UserPreferencesDashboardUpdate {
-  default_view?: string | null
-  table_page_size?: number
 }
 
 // Effective Settings

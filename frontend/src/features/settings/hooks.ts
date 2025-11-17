@@ -4,6 +4,8 @@ import {
   getWorkspaceGeneral,
   updateWorkspaceGeneral,
   uploadWorkspaceLogo,
+  getWorkspaceNotifications,
+  updateWorkspaceNotifications,
   getWorkspaceTelephony,
   updateWorkspaceTelephony,
   getWorkspaceBudget,
@@ -14,24 +16,16 @@ import {
   updateWorkspaceQuietHours,
   getWorkspaceIntegrations,
   updateWorkspaceIntegrations,
-  getUserPreferencesUI,
-  updateUserPreferencesUI,
-  getUserPreferencesNotifications,
-  updateUserPreferencesNotifications,
-  getUserPreferencesDashboard,
-  updateUserPreferencesDashboard,
   getEffectiveSettings,
 } from './api'
 import type {
   WorkspaceGeneralUpdate,
+  WorkspaceNotificationsUpdate,
   WorkspaceTelephonyUpdate,
   WorkspaceBudgetUpdate,
   WorkspaceComplianceUpdate,
   WorkspaceQuietHoursUpdate,
   WorkspaceIntegrationsUpdate,
-  UserPreferencesUIUpdate,
-  UserPreferencesNotificationsUpdate,
-  UserPreferencesDashboardUpdate,
 } from './types'
 
 // Workspace Settings
@@ -61,6 +55,23 @@ export function useUploadWorkspaceLogo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'general'] })
       queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
+    },
+  })
+}
+
+export function useWorkspaceNotifications() {
+  return useQuery({
+    queryKey: ['settings', 'workspace', 'notifications'],
+    queryFn: getWorkspaceNotifications,
+  })
+}
+
+export function useUpdateWorkspaceNotifications() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateWorkspaceNotifications,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'notifications'] })
     },
   })
 }
@@ -146,60 +157,6 @@ export function useUpdateWorkspaceIntegrations() {
     mutationFn: updateWorkspaceIntegrations,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'workspace', 'integrations'] })
-    },
-  })
-}
-
-// User Preferences
-
-export function useUserPreferencesUI() {
-  return useQuery({
-    queryKey: ['settings', 'preferences', 'ui'],
-    queryFn: getUserPreferencesUI,
-  })
-}
-
-export function useUpdateUserPreferencesUI() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: updateUserPreferencesUI,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'ui'] })
-      queryClient.invalidateQueries({ queryKey: ['settings', 'effective'] })
-    },
-  })
-}
-
-export function useUserPreferencesNotifications() {
-  return useQuery({
-    queryKey: ['settings', 'preferences', 'notifications'],
-    queryFn: getUserPreferencesNotifications,
-  })
-}
-
-export function useUpdateUserPreferencesNotifications() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: updateUserPreferencesNotifications,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'notifications'] })
-    },
-  })
-}
-
-export function useUserPreferencesDashboard() {
-  return useQuery({
-    queryKey: ['settings', 'preferences', 'dashboard'],
-    queryFn: getUserPreferencesDashboard,
-  })
-}
-
-export function useUpdateUserPreferencesDashboard() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: updateUserPreferencesDashboard,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings', 'preferences', 'dashboard'] })
     },
   })
 }

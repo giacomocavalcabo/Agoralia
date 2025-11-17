@@ -19,6 +19,24 @@ class WorkspaceGeneralResponse(BaseModel):
     brand_logo_url: Optional[str] = None
 
 
+class WorkspaceNotificationsUpdate(BaseModel):
+    """Update notification settings"""
+    email_notifications_enabled: Optional[bool] = None
+    email_campaign_started: Optional[bool] = None
+    email_campaign_paused: Optional[bool] = None
+    email_budget_warning: Optional[bool] = None
+    email_compliance_alert: Optional[bool] = None
+
+
+class WorkspaceNotificationsResponse(BaseModel):
+    """Response for notification settings"""
+    email_notifications_enabled: bool
+    email_campaign_started: bool
+    email_campaign_paused: bool
+    email_budget_warning: bool
+    email_compliance_alert: bool
+
+
 class WorkspaceTelephonyUpdate(BaseModel):
     """Update telephony settings"""
     default_agent_id: Optional[int] = None
@@ -89,54 +107,7 @@ class WorkspaceIntegrationsUpdate(BaseModel):
     retell_webhook_secret: Optional[str] = None  # Will be encrypted
 
 
-# User Preferences Schemas
-
-class UserPreferencesUIUpdate(BaseModel):
-    """Update UI preferences"""
-    theme: Optional[str] = Field(None, pattern="^(light|dark|system)$")
-    ui_locale: Optional[str] = Field(None, max_length=16)
-    date_format: Optional[str] = Field(None, pattern="^(DD/MM/YYYY|MM/DD/YYYY|YYYY-MM-DD)$")
-    time_format: Optional[str] = Field(None, pattern="^(24h|12h)$")
-    timezone: Optional[str] = Field(None, max_length=64)
-
-
-class UserPreferencesUIResponse(BaseModel):
-    """Response for UI preferences"""
-    theme: str
-    ui_locale: Optional[str] = None
-    date_format: Optional[str] = None
-    time_format: Optional[str] = None
-    timezone: Optional[str] = None
-
-
-class UserPreferencesNotificationsUpdate(BaseModel):
-    """Update notification preferences"""
-    email_notifications_enabled: Optional[bool] = None
-    email_campaign_started: Optional[bool] = None
-    email_campaign_paused: Optional[bool] = None
-    email_budget_warning: Optional[bool] = None
-    email_compliance_alert: Optional[bool] = None
-
-
-class UserPreferencesNotificationsResponse(BaseModel):
-    """Response for notification preferences"""
-    email_notifications_enabled: bool
-    email_campaign_started: bool
-    email_campaign_paused: bool
-    email_budget_warning: bool
-    email_compliance_alert: bool
-
-
-class UserPreferencesDashboardUpdate(BaseModel):
-    """Update dashboard preferences"""
-    default_view: Optional[str] = Field(None, pattern="^(campaigns|calls|dashboard)$")
-    table_page_size: Optional[int] = Field(None, ge=10, le=200)
-
-
-class UserPreferencesDashboardResponse(BaseModel):
-    """Response for dashboard preferences"""
-    default_view: Optional[str] = None
-    table_page_size: int
+# User Preferences Schemas (deprecated - notifications moved to workspace)
 
 
 # Effective Settings (resolved workspace + user)
