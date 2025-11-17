@@ -207,13 +207,27 @@ def run_migrations():
             command.upgrade(alembic_cfg, "head")
             print("✓ Database migrations applied successfully", file=sys.stderr)
             
-            # Verify final revision
-            with engine.connect() as conn:
-                if "alembic_version" in inspector.get_table_names():
+            # Verify final revision - use a fresh connection to see committed changes
+            # Close and recreate engine connection to ensure we see latest schema
+            engine.dispose(close=True)
+            fresh_engine = create_engine(database_url, echo=False, future=True, pool_pre_ping=True)
+            with fresh_engine.connect() as conn:
+                fresh_inspector = inspect(fresh_engine)
+                if "alembic_version" in fresh_inspector.get_table_names():
                     result = conn.execute(text("SELECT version_num FROM alembic_version ORDER BY version_num DESC LIMIT 1"))
                     row = result.fetchone()
                     final_rev = row[0] if row else None
                     print(f"Final database revision: {final_rev}", file=sys.stderr)
+                    
+                    # Also verify columns exist in workspace_settings
+                    if "workspace_settings" in fresh_inspector.get_table_names():
+                        ws_columns = [col['name'] for col in fresh_inspector.get_columns('workspace_settings')]
+                        has_notif_cols = 'email_notifications_enabled' in ws_columns
+                        print(f"Final workspace_settings columns check: has_notification_columns={has_notif_cols}, total_columns={len(ws_columns)}", file=sys.stderr)
+                        if has_notif_cols:
+                            print(f"✓ Notification columns verified in workspace_settings", file=sys.stderr)
+                        else:
+                            print(f"⚠ Notification columns NOT found in workspace_settings after migration!", file=sys.stderr)
         except Exception as migration_error:
             # Check if it's a duplicate table error - this means migrations were already applied
             error_str = str(migration_error)
