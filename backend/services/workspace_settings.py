@@ -234,8 +234,8 @@ def update_workspace_settings(
     if session:
         return _update_settings(tenant_id, updates, session)
     
-    with Session(engine) as session:
-        return _update_settings(tenant_id, updates, session)
+    with Session(engine) as s:
+        return _update_settings(tenant_id, updates, s)
 
 
 def _update_settings(tenant_id: int, updates: Dict[str, Any], session: Session) -> WorkspaceSettings:
