@@ -82,13 +82,24 @@ export function QuietHoursSection() {
 
   const onSubmit = async (formData: QuietHoursForm) => {
     try {
-      await updateMutation.mutateAsync({
-        quiet_hours_enabled: formData.quiet_hours_enabled,
-        quiet_hours_weekdays: formData.quiet_hours_weekdays ?? null,
-        quiet_hours_saturday: formData.quiet_hours_saturday ?? null,
-        quiet_hours_sunday: formData.quiet_hours_sunday ?? null,
-        quiet_hours_timezone: formData.quiet_hours_timezone ?? null,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, any> = {}
+      if (formData.quiet_hours_enabled !== undefined) {
+        updates.quiet_hours_enabled = formData.quiet_hours_enabled
+      }
+      if (formData.quiet_hours_weekdays !== undefined) {
+        updates.quiet_hours_weekdays = formData.quiet_hours_weekdays ?? null
+      }
+      if (formData.quiet_hours_saturday !== undefined) {
+        updates.quiet_hours_saturday = formData.quiet_hours_saturday ?? null
+      }
+      if (formData.quiet_hours_sunday !== undefined) {
+        updates.quiet_hours_sunday = formData.quiet_hours_sunday ?? null
+      }
+      if (formData.quiet_hours_timezone !== undefined) {
+        updates.quiet_hours_timezone = formData.quiet_hours_timezone ?? null
+      }
+      await updateMutation.mutateAsync(updates)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)

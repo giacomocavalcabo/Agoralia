@@ -75,11 +75,18 @@ export function TelephonySection() {
 
   const onSubmit = async (formData: TelephonyForm) => {
     try {
-      await updateMutation.mutateAsync({
-        default_agent_id: formData.default_agent_id ?? null,
-        default_from_number: formData.default_from_number ?? null,
-        default_spacing_ms: formData.default_spacing_ms,
-      })
+      // Only include defined values (exclude undefined)
+      const updates: Record<string, any> = {}
+      if (formData.default_agent_id !== undefined) {
+        updates.default_agent_id = formData.default_agent_id ?? null
+      }
+      if (formData.default_from_number !== undefined) {
+        updates.default_from_number = formData.default_from_number ?? null
+      }
+      if (formData.default_spacing_ms !== undefined) {
+        updates.default_spacing_ms = formData.default_spacing_ms
+      }
+      await updateMutation.mutateAsync(updates)
       setHasChanges(false)
     } catch (error: any) {
       alert(`Failed to save: ${error.message}`)
