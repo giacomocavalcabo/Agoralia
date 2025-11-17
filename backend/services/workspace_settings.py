@@ -56,7 +56,7 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
                 FROM workspace_settings
                 WHERE tenant_id = :tid
                 LIMIT 1
-            """),
+"""),
             {"tid": tenant_id}
         ).first()
         
@@ -91,7 +91,73 @@ def _get_or_create_settings(tenant_id: int, session: Session) -> WorkspaceSettin
             settings.retell_webhook_secret_encrypted = result[25]
             settings.created_at = result[26]
             settings.updated_at = result[27]
-            # Notification fields will be None (handled by getattr in routes)
+            # Notification fields will be None (use defaults in routes)
+            settings.email_notifications_enabled = None
+            settings.email_campaign_started = None
+            settings.email_campaign_paused = None
+            settings.email_budget_warning = None
+            settings.email_compliance_alert = None
+            return settings
+    else:
+        # Notification columns exist - include them in query
+        result = session.execute(
+            text("""
+                SELECT id, tenant_id, default_agent_id, default_from_number, default_spacing_ms,
+                       budget_monthly_cents, budget_warn_percent, budget_stop_enabled,
+                       quiet_hours_enabled, quiet_hours_weekdays, quiet_hours_saturday,
+                       quiet_hours_sunday, quiet_hours_timezone,
+                       require_legal_review, override_country_rules_enabled,
+                       default_lang, supported_langs_json, prefer_detect_language,
+                       kb_version_outbound, kb_version_inbound,
+                       workspace_name, timezone, brand_logo_url, brand_color,
+                       retell_api_key_encrypted, retell_webhook_secret_encrypted,
+                       email_notifications_enabled, email_campaign_started,
+                       email_campaign_paused, email_budget_warning, email_compliance_alert,
+                       created_at, updated_at
+                FROM workspace_settings
+                WHERE tenant_id = :tid
+                LIMIT 1
+"""),
+            {"tid": tenant_id}
+        ).first()
+        
+        if result:
+            # Create WorkspaceSettings object with all fields including notifications
+            settings = WorkspaceSettings()
+            settings.id = result[0]
+            settings.tenant_id = result[1]
+            settings.default_agent_id = result[2]
+            settings.default_from_number = result[3]
+            settings.default_spacing_ms = result[4] or 1000
+            settings.budget_monthly_cents = result[5]
+            settings.budget_warn_percent = result[6] or 80
+            settings.budget_stop_enabled = result[7] or 1
+            settings.quiet_hours_enabled = result[8] or 0
+            settings.quiet_hours_weekdays = result[9]
+            settings.quiet_hours_saturday = result[10]
+            settings.quiet_hours_sunday = result[11]
+            settings.quiet_hours_timezone = result[12]
+            settings.require_legal_review = result[13] or 1
+            settings.override_country_rules_enabled = result[14] or 0
+            settings.default_lang = result[15]
+            settings.supported_langs_json = result[16]
+            settings.prefer_detect_language = result[17] or 0
+            settings.kb_version_outbound = result[18] or 0
+            settings.kb_version_inbound = result[19] or 0
+            settings.workspace_name = result[20]
+            settings.timezone = result[21]
+            settings.brand_logo_url = result[22]
+            settings.brand_color = result[23]
+            settings.retell_api_key_encrypted = result[24]
+            settings.retell_webhook_secret_encrypted = result[25]
+            # Notification fields (with defaults if NULL)
+            settings.email_notifications_enabled = result[26] if result[26] is not None else 1
+            settings.email_campaign_started = result[27] if result[27] is not None else 1
+            settings.email_campaign_paused = result[28] if result[28] is not None else 1
+            settings.email_budget_warning = result[29] if result[29] is not None else 1
+            settings.email_compliance_alert = result[30] if result[30] is not None else 1
+            settings.created_at = result[31]
+            settings.updated_at = result[32]
             return settings
     
     # Try ORM query (notification columns exist or we couldn't check)

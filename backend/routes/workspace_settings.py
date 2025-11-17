@@ -677,24 +677,15 @@ async def get_workspace_notifications(
     try:
         settings = get_workspace_settings(tenant_id)
         
-        # Try to access notification fields - if they don't exist, use defaults
-        try:
-            return WorkspaceNotificationsResponse(
-                email_notifications_enabled=bool(settings.email_notifications_enabled),
-                email_campaign_started=bool(settings.email_campaign_started),
-                email_campaign_paused=bool(settings.email_campaign_paused),
-                email_budget_warning=bool(settings.email_budget_warning),
-                email_compliance_alert=bool(settings.email_compliance_alert),
-            )
-        except (AttributeError, KeyError):
-            # Fields don't exist yet (migration not run) - return defaults
-            return WorkspaceNotificationsResponse(
-                email_notifications_enabled=True,
-                email_campaign_started=True,
-                email_campaign_paused=True,
-                email_budget_warning=True,
-                email_compliance_alert=True,
-            )
+        # Use getattr with defaults to handle None values
+        # If field is None or doesn't exist, default to True (enabled)
+        return WorkspaceNotificationsResponse(
+            email_notifications_enabled=bool(getattr(settings, 'email_notifications_enabled', 1) or 1),
+            email_campaign_started=bool(getattr(settings, 'email_campaign_started', 1) or 1),
+            email_campaign_paused=bool(getattr(settings, 'email_campaign_paused', 1) or 1),
+            email_budget_warning=bool(getattr(settings, 'email_budget_warning', 1) or 1),
+            email_compliance_alert=bool(getattr(settings, 'email_compliance_alert', 1) or 1),
+        )
     except Exception as e:
         import traceback
         error_detail = f"Error loading notification settings: {str(e)}\n{traceback.format_exc()}"
