@@ -164,13 +164,33 @@ async def upload_workspace_logo(
         file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
         r2_key = f"workspace-logos/{tenant_id}/logo.{file_ext}"
         
+        print(f"[DEBUG] Uploading logo to R2: key={r2_key}, size={len(file_data)}, content_type={content_type}", flush=True)
         uploaded = r2_put_bytes(r2_key, file_data, content_type=content_type)
+        print(f"[DEBUG] R2 upload result: {uploaded}", flush=True)
         if not uploaded:
-            raise HTTPException(status_code=500, detail="Failed to upload logo to R2")
+            # Check if R2 is configured
+            import os
+            r2_configured = bool(
+                os.getenv("R2_ACCESS_KEY_ID") and 
+                os.getenv("R2_SECRET_ACCESS_KEY") and 
+                os.getenv("R2_ACCOUNT_ID") and 
+                os.getenv("R2_BUCKET")
+            )
+            if not r2_configured:
+                raise HTTPException(status_code=500, detail="R2 storage is not configured. Please set R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, and R2_BUCKET environment variables.")
+            raise HTTPException(status_code=500, detail="Failed to upload logo to R2 storage")
         
         # Update settings with R2 key (not full URL)
+        print(f"[DEBUG] Updating settings with brand_logo_url: {r2_key}", flush=True)
         updates = {"brand_logo_url": r2_key}
-        settings = update_workspace_settings(tenant_id, updates)
+        try:
+            settings = update_workspace_settings(tenant_id, updates)
+            print(f"[DEBUG] Settings updated successfully", flush=True)
+        except Exception as e:
+            import traceback
+            error_detail = f"Error updating settings with logo URL: {str(e)}\n{traceback.format_exc()}"
+            print(f"[ERROR] {error_detail}", flush=True)
+            raise HTTPException(status_code=500, detail=f"Error updating settings: {str(e)}")
         
         # Generate presigned URL for response
         logo_url = r2_presign_get(r2_key, expires_seconds=3600 * 24 * 365)  # 1 year
