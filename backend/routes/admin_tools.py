@@ -15,9 +15,15 @@ async def make_admin_by_tenant(request: Request, tenant_id: int):
     Make all users in a tenant admin (development only)
     WARNING: This should be removed or secured in production!
     """
-    # Simple check: only allow if ADMIN_TOOLS_ENABLED env var is set
-    if not os.getenv("ADMIN_TOOLS_ENABLED"):
-        raise HTTPException(status_code=403, detail="Admin tools disabled")
+    # Allow if ADMIN_TOOLS_ENABLED is set OR if ADMIN_SECRET is provided in request
+    admin_secret = request.headers.get("X-Admin-Secret") or request.query_params.get("admin_secret")
+    expected_secret = os.getenv("ADMIN_SECRET") or os.getenv("ADMIN_TOOLS_ENABLED")
+    
+    if not admin_secret and not os.getenv("ADMIN_TOOLS_ENABLED"):
+        raise HTTPException(status_code=403, detail="Admin tools disabled. Set ADMIN_TOOLS_ENABLED or provide X-Admin-Secret header")
+    
+    if admin_secret and expected_secret and admin_secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
     
     # Verify caller is authenticated (optional additional check)
     try:
