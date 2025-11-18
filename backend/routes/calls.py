@@ -2023,10 +2023,39 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     """
     tenant_id = extract_tenant_id(request)
     
+    # Build request body for RetellAI import-phone-number API
     retell_body: Dict[str, Any] = {
         "phone_number": body.phone_number,
+        "termination_uri": body.termination_uri,
     }
     
+    # Optional SIP trunking fields
+    if body.sip_trunk_user_name:
+        retell_body["sip_trunk_user_name"] = body.sip_trunk_user_name
+    
+    if body.sip_trunk_password:
+        retell_body["sip_trunk_password"] = body.sip_trunk_password
+    
+    # Optional agent binding
+    if body.inbound_agent_id:
+        retell_body["inbound_agent_id"] = body.inbound_agent_id
+    
+    if body.outbound_agent_id:
+        retell_body["outbound_agent_id"] = body.outbound_agent_id
+    
+    if body.inbound_agent_version is not None:
+        retell_body["inbound_agent_version"] = body.inbound_agent_version
+    
+    if body.outbound_agent_version is not None:
+        retell_body["outbound_agent_version"] = body.outbound_agent_version
+    
+    if body.nickname:
+        retell_body["nickname"] = body.nickname
+    
+    if body.inbound_webhook_url:
+        retell_body["inbound_webhook_url"] = body.inbound_webhook_url
+    
+    # Legacy fields (for backward compatibility)
     if body.provider:
         retell_body["provider"] = body.provider
     
@@ -2036,14 +2065,39 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     if body.sip_uri:
         retell_body["sip_uri"] = body.sip_uri
     
-    if body.inbound_agent_id:
-        retell_body["inbound_agent_id"] = body.inbound_agent_id
-    
     try:
         data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
+        
+        # Save phone number to our database (same logic as purchase)
+        imported_number = data.get("phone_number") or body.phone_number
+        if imported_number:
+            with Session(engine) as session:
+                from models.agents import PhoneNumber
+                from utils.helpers import country_iso_from_e164
+                
+                # Check if number already exists
+                existing = session.query(PhoneNumber).filter(
+                    PhoneNumber.e164 == imported_number
+                ).first()
+                
+                if not existing:
+                    new_number = PhoneNumber(
+                        e164=imported_number,
+                        type="retell",
+                        verified=1,
+                        tenant_id=tenant_id,
+                        country=country_iso_from_e164(imported_number),
+                    )
+                    session.add(new_number)
+                    session.commit()
+                elif existing.tenant_id != tenant_id:
+                    # Update tenant_id if different (number already exists but for different tenant)
+                    existing.tenant_id = tenant_id
+                    session.commit()
+        
         return {
             "success": True,
-            "phone_number": data.get("phone_number") or body.phone_number,
+            "phone_number": imported_number,
             "response": data,
         }
     except HTTPException as e:
