@@ -2164,7 +2164,11 @@ async def test_phone_number_setup(request: Request, body: TestPhoneNumberSetupRe
     try:
         if body.purchase_phone:
             # Purchase a new number via Retell
+            # For US numbers, we need area_code (or phone_number in E.164)
+            # Let's use a default area code for testing (415 = San Francisco)
             purchase_request = PhoneNumberPurchase(
+                area_code=415,  # San Francisco area code for testing
+                country_code="US",
                 number_provider=body.number_provider,
                 inbound_agent_id=body.agent_id,
                 outbound_agent_id=body.agent_id,
