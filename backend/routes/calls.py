@@ -2120,6 +2120,116 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
         raise HTTPException(status_code=500, detail=f"Error importing phone number: {str(e)}")
 
 
+class TestPhoneNumberSetupRequest(BaseModel):
+    """Request body for testing phone number setup and making a test call"""
+    phone_number: Optional[str] = Field(None, description="E.164 format number to import (if importing)")
+    termination_uri: Optional[str] = Field(None, description="Termination URI for imported number (required if importing)")
+    sip_trunk_user_name: Optional[str] = Field(None, description="SIP Trunk User Name (optional)")
+    sip_trunk_password: Optional[str] = Field(None, description="SIP Trunk Password (optional)")
+    purchase_phone: Optional[bool] = Field(False, description="Purchase a new number via Retell instead of importing")
+    number_provider: str = Field("twilio", description="Provider for purchase: twilio or telnyx")
+    test_call_to: str = Field(..., description="E.164 format number to call for test (e.g., +393408994869)")
+    agent_id: Optional[str] = Field(None, description="Retell agent ID for calls")
+    nickname: Optional[str] = Field(None, description="Nickname for the number")
+
+
+@router.post("/retell/phone-numbers/test-setup")
+async def test_phone_number_setup(request: Request, body: TestPhoneNumberSetupRequest):
+    """Test phone number setup: import/create number and make a test call
+    
+    This endpoint helps test the complete flow:
+    1. Import an existing number OR purchase a new number via Retell
+    2. Make a test call to verify everything works
+    
+    Args:
+        phone_number: E.164 format number to import (if importing existing number)
+        termination_uri: Termination URI for imported number (required if importing)
+        purchase_phone: If True, purchase a new number via Retell (instead of importing)
+        number_provider: Provider for purchase (twilio or telnyx)
+        test_call_to: E.164 format number to call for test
+        agent_id: Retell agent ID for calls
+        nickname: Nickname for the number
+    
+    Returns:
+        Setup results and test call results
+    """
+    tenant_id = extract_tenant_id(request)
+    results = {
+        "setup": None,
+        "test_call": None,
+        "errors": [],
+    }
+    
+    # Step 1: Import or purchase phone number
+    try:
+        if body.purchase_phone:
+            # Purchase a new number via Retell
+            purchase_request = PhoneNumberPurchase(
+                number_provider=body.number_provider,
+                inbound_agent_id=body.agent_id,
+                outbound_agent_id=body.agent_id,
+                nickname=body.nickname or "Test Number",
+            )
+            purchase_result = await purchase_phone_number(request, purchase_request)
+            results["setup"] = purchase_result
+            if not purchase_result.get("success"):
+                results["errors"].append(f"Failed to purchase number: {purchase_result.get('error')}")
+                return results
+            phone_number = purchase_result.get("response", {}).get("phone_number")
+        else:
+            # Import existing number
+            if not body.phone_number or not body.termination_uri:
+                results["errors"].append("phone_number and termination_uri are required for import")
+                return results
+            
+            import_request = ImportPhoneNumberRequest(
+                phone_number=body.phone_number,
+                termination_uri=body.termination_uri,
+                sip_trunk_user_name=body.sip_trunk_user_name,
+                sip_trunk_password=body.sip_trunk_password,
+                inbound_agent_id=body.agent_id,
+                outbound_agent_id=body.agent_id,
+                nickname=body.nickname or "Test Number",
+            )
+            import_result = await retell_import_phone_number(request, import_request)
+            results["setup"] = import_result
+            if not import_result.get("success"):
+                results["errors"].append(f"Failed to import number: {import_result}")
+                return results
+            phone_number = import_result.get("phone_number")
+        
+        if not phone_number:
+            results["errors"].append("No phone number returned from setup")
+            return results
+        
+        # Step 2: Make test call
+        try:
+            # Normalize test_call_to to E.164 if needed
+            test_to = body.test_call_to
+            if not test_to.startswith("+"):
+                # Assume Italian number if no country code
+                test_to = "+39" + test_to.lstrip("0")
+            
+            call_request = OutboundCallRequest(
+                to=test_to,
+                from_number=phone_number,
+                agent_id=body.agent_id,
+            )
+            call_result = await create_outbound_call(request, call_request)
+            results["test_call"] = call_result
+        except Exception as e:
+            results["errors"].append(f"Test call failed: {str(e)}")
+            import traceback
+            results["test_call_error"] = traceback.format_exc()
+    
+    except Exception as e:
+        results["errors"].append(f"Setup failed: {str(e)}")
+        import traceback
+        results["setup_error"] = traceback.format_exc()
+    
+    return results
+
+
 # ============================================================================
 # Call Management Endpoints
 # ============================================================================
