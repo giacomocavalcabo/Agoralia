@@ -1989,14 +1989,24 @@ async def retell_register_phone_call(request: Request, body: RegisterPhoneCallRe
 
 
 class ImportPhoneNumberRequest(BaseModel):
-    """Request body for importing a phone number (Custom Telephony)"""
-    phone_number: str = Field(..., description="E.164 format number to import")
-    # Additional fields may be needed based on provider (Twilio/Telnyx)
-    # These are optional and provider-specific
-    provider: Optional[str] = Field(None, description="Provider name: twilio, telnyx, vonage, etc.")
-    provider_account_id: Optional[str] = Field(None, description="Provider account ID (if needed)")
-    sip_uri: Optional[str] = Field(None, description="SIP URI for the number (if needed)")
+    """Request body for importing a phone number via SIP Trunking (Custom Telephony)
+    
+    Matches RetellAI UI form fields for connecting numbers via SIP trunking.
+    """
+    phone_number: str = Field(..., description="E.164 format number to import (e.g., +390289744903)")
+    termination_uri: str = Field(..., description="Termination URI (NOT Retell SIP server URI) - where calls should be routed")
+    sip_trunk_user_name: Optional[str] = Field(None, description="SIP Trunk User Name (optional)")
+    sip_trunk_password: Optional[str] = Field(None, description="SIP Trunk Password (optional)")
+    nickname: Optional[str] = Field(None, description="Nickname for the number (optional, for reference only)")
     inbound_agent_id: Optional[str] = Field(None, description="Retell agent ID for inbound calls")
+    outbound_agent_id: Optional[str] = Field(None, description="Retell agent ID for outbound calls")
+    inbound_agent_version: Optional[int] = Field(None, description="Version of inbound agent")
+    outbound_agent_version: Optional[int] = Field(None, description="Version of outbound agent")
+    inbound_webhook_url: Optional[str] = Field(None, description="Webhook URL for inbound calls")
+    # Legacy fields (kept for backward compatibility)
+    provider: Optional[str] = Field(None, description="Provider name: twilio, telnyx, vonage, etc. (deprecated, use termination_uri instead)")
+    provider_account_id: Optional[str] = Field(None, description="Provider account ID (deprecated)")
+    sip_uri: Optional[str] = Field(None, description="SIP URI (deprecated, use termination_uri instead)")
 
 
 @router.post("/retell/phone-numbers/import")
