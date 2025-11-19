@@ -3,9 +3,11 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { Textarea } from '@/shared/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog'
 import { useAgents, useCreateAgentFull, useDeleteAgent, useTestAgentCall } from '../hooks'
-import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2 } from 'lucide-react'
+import { useKnowledgeBases } from '@/features/knowledge/hooks'
+import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -108,13 +110,22 @@ const LLM_MODELS = [
   { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
 ]
 
-// Agent creation schema with essential fields
+// Agent creation schema with step-based fields
 const agentSchema = z.object({
+  // Step 1: Base configuration
   agent_name: z.string().min(1, 'Agent name is required'),
   voice_id: z.string().min(1, 'Voice ID is required'),
   language: z.string().default('en-US'),
-  // Response engine - simplified, will create retell-llm
   model: z.string().default('gpt-4o-mini'),
+  
+  // Step 2: Character configuration
+  role: z.enum(['inbound', 'outbound', 'both']).default('both'),
+  mission: z.string().min(1, 'Mission is required'),
+  custom_prompt: z.string().optional(),
+  
+  // Step 3: Knowledge Base
+  knowledge_base_ids: z.array(z.number()).default([]),
+  
   // Optional advanced fields
   voice_model: z.string().optional(),
   voice_speed: z.number().min(0.5).max(2).optional(),
@@ -122,8 +133,6 @@ const agentSchema = z.object({
   responsiveness: z.number().min(0).max(1).optional(),
   interruption_sensitivity: z.number().min(0).max(1).optional(),
   webhook_url: z.string().url().optional().or(z.literal('')),
-  connect_to_general_kb: z.boolean().default(true),
-  save_to_agoralia: z.boolean().default(true),
 })
 
 type AgentFormInputs = z.infer<typeof agentSchema>
@@ -140,7 +149,9 @@ export function AgentsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [testCallModalOpen, setTestCallModalOpen] = useState(false)
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [currentStep, setCurrentStep] = useState(1)
   const { data: agents, isLoading, error } = useAgents()
+  const { data: kbs } = useKnowledgeBases()
   const createMutation = useCreateAgentFull()
   const deleteMutation = useDeleteAgent()
   const testCallMutation = useTestAgentCall()
@@ -151,8 +162,10 @@ export function AgentsPage() {
       language: 'en-US',
       model: 'gpt-4o-mini',
       voice_id: '11labs-Adrian',
-      connect_to_general_kb: true,
-      save_to_agoralia: true,
+      role: 'both',
+      mission: '',
+      custom_prompt: '',
+      knowledge_base_ids: [],
     },
   })
 
@@ -160,19 +173,80 @@ export function AgentsPage() {
     resolver: zodResolver(testCallSchema),
   })
 
+  // Build custom prompt from role, mission, and custom prompt
+  const buildCustomPrompt = (data: AgentFormInputs): string => {
+    // Determine language for prompt based on agent language
+    const isItalian = data.language?.startsWith('it')
+    
+    let roleDescription = ''
+    if (isItalian) {
+      roleDescription = 
+        data.role === 'inbound' ? 'Principalmente ricevi chiamate in arrivo. ' :
+        data.role === 'outbound' ? 'Principalmente fai chiamate in uscita. ' :
+        'Gestisci sia chiamate in arrivo che in uscita. '
+    } else {
+      roleDescription = 
+        data.role === 'inbound' ? 'You primarily receive inbound calls. ' :
+        data.role === 'outbound' ? 'You primarily make outbound calls. ' :
+        'You handle both inbound and outbound calls. '
+    }
+    
+    const missionText = data.mission || ''
+    const customLabel = isItalian ? '\n\nIstruzioni aggiuntive:\n' : '\n\nAdditional Instructions:\n'
+    const customText = data.custom_prompt ? `${customLabel}${data.custom_prompt}` : ''
+    
+    return `${roleDescription}${missionText}${customText}`.trim()
+  }
+
   const onSubmit = async (data: AgentFormInputs) => {
     try {
-      // Create Retell LLM (response engine) - no begin_message
+      // Build custom prompt
+      const customPrompt = buildCustomPrompt(data)
+      
+      // Get knowledge base IDs (general KB is always included, plus selected ones)
+      const kbIds: string[] = []
+      
+      // Add general KB (always connected)
+      if (kbs) {
+        const generalKb = kbs.find(kb => kb.scope === 'general')
+        if (generalKb?.retell_kb_id) {
+          kbIds.push(generalKb.retell_kb_id)
+        }
+      }
+      
+      // Add selected KBs
+      if (data.knowledge_base_ids && kbs) {
+        for (const kbId of data.knowledge_base_ids) {
+          const kb = kbs.find(k => k.id === kbId)
+          if (kb?.retell_kb_id && !kbIds.includes(kb.retell_kb_id)) {
+            kbIds.push(kb.retell_kb_id)
+          }
+        }
+      }
+      
+      // Create Retell LLM (response engine) with custom prompt
+      const responseEngine: any = {
+        type: 'retell-llm' as const,
+        model: data.model,
+      }
+      
+      // Add prompt as begin_message or instruction
+      if (customPrompt) {
+        responseEngine.begin_message = customPrompt
+      }
+      
+      // Add knowledge bases if any
+      if (kbIds.length > 0) {
+        responseEngine.knowledge_base_ids = kbIds
+      }
+      
       const payload = {
-        response_engine: {
-          type: 'retell-llm' as const,
-          model: data.model,
-        },
+        response_engine,
         agent_name: data.agent_name,
         voice_id: data.voice_id,
         language: data.language,
-        connect_to_general_kb: data.connect_to_general_kb,
-        save_to_agoralia: data.save_to_agoralia,
+        connect_to_general_kb: true, // Always true
+        save_to_agoralia: true, // Always true
         ...(data.voice_model && { voice_model: data.voice_model }),
         ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
         ...(data.voice_temperature !== undefined && { voice_temperature: data.voice_temperature }),
@@ -185,11 +259,43 @@ export function AgentsPage() {
       if (result.success) {
         agentForm.reset()
         setCreateModalOpen(false)
+        setCurrentStep(1)
       } else {
         alert(`Failed to create agent: ${JSON.stringify(result)}`)
       }
     } catch (error: any) {
       alert(`Failed to create agent: ${error.message}`)
+    }
+  }
+  
+  const handleNextStep = async () => {
+    const step1Fields: (keyof AgentFormInputs)[] = ['agent_name', 'voice_id', 'language', 'model']
+    const step2Fields: (keyof AgentFormInputs)[] = ['role', 'mission']
+    
+    let fieldsToValidate: (keyof AgentFormInputs)[] = []
+    if (currentStep === 1) {
+      fieldsToValidate = step1Fields
+    } else if (currentStep === 2) {
+      fieldsToValidate = step2Fields
+    }
+    
+    const isValid = await agentForm.trigger(fieldsToValidate as any)
+    if (isValid && currentStep < 3) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+  
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+  
+  const handleModalClose = (open: boolean) => {
+    setCreateModalOpen(open)
+    if (!open) {
+      setCurrentStep(1)
+      agentForm.reset()
     }
   }
 
@@ -327,128 +433,271 @@ export function AgentsPage() {
         </div>
       )}
 
-      {/* Create Agent Modal */}
-      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+      {/* Create Agent Modal - Multi-step */}
+      <Dialog open={createModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Agent</DialogTitle>
+            <DialogTitle>Create Agent - Step {currentStep} of 3</DialogTitle>
             <DialogDescription>
-              Create a new AI voice agent with RetellAI. The agent will be connected to your general knowledge base.
+              {currentStep === 1 && 'Configure basic agent settings'}
+              {currentStep === 2 && 'Define agent character and mission'}
+              {currentStep === 3 && 'Select knowledge bases (general KB is always included)'}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={agentForm.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="agent_name">Agent Name *</Label>
-              <Input
-                id="agent_name"
-                {...agentForm.register('agent_name')}
-                error={agentForm.formState.errors.agent_name?.message}
-                placeholder="My Assistant"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="voice_id">Voice ID *</Label>
-              <select
-                id="voice_id"
-                {...agentForm.register('voice_id')}
-                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {VOICE_IDS.map((voice) => (
-                  <option key={voice.value} value={voice.value}>
-                    {voice.label}
-                  </option>
-                ))}
-              </select>
-              {agentForm.formState.errors.voice_id && (
-                <p className="mt-1 text-sm text-destructive">
-                  {agentForm.formState.errors.voice_id.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="language">Language</Label>
-              <select
-                id="language"
-                {...agentForm.register('language')}
-                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </option>
-                ))}
-              </select>
-              {agentForm.formState.errors.language && (
-                <p className="mt-1 text-sm text-destructive">
-                  {agentForm.formState.errors.language.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="model">LLM Model</Label>
-              <select
-                id="model"
-                {...agentForm.register('model')}
-                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {LLM_MODELS.map((model) => (
-                  <option key={model.value} value={model.value}>
-                    {model.label}
-                  </option>
-                ))}
-              </select>
-              {agentForm.formState.errors.model && (
-                <p className="mt-1 text-sm text-destructive">
-                  {agentForm.formState.errors.model.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="connect_to_general_kb"
-                {...agentForm.register('connect_to_general_kb')}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="connect_to_general_kb" className="font-normal">
-                Connect to general knowledge base
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="save_to_agoralia"
-                {...agentForm.register('save_to_agoralia')}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="save_to_agoralia" className="font-normal">
-                Save to Agoralia database
-              </Label>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create Agent'
+          
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 my-4">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex items-center">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    step === currentStep
+                      ? 'bg-primary text-primary-foreground'
+                      : step < currentStep
+                      ? 'bg-primary/50 text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {step}
+                </div>
+                {step < 3 && (
+                  <div
+                    className={`w-12 h-1 mx-1 ${
+                      step < currentStep ? 'bg-primary' : 'bg-muted'
+                    }`}
+                  />
                 )}
-              </Button>
+              </div>
+            ))}
+          </div>
+          
+          <form onSubmit={agentForm.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+            {/* Step 1: Base Configuration */}
+            {currentStep === 1 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="agent_name">Agent Name *</Label>
+                  <Input
+                    id="agent_name"
+                    {...agentForm.register('agent_name')}
+                    error={agentForm.formState.errors.agent_name?.message}
+                    placeholder="My Assistant"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="voice_id">Voice ID *</Label>
+                  <select
+                    id="voice_id"
+                    {...agentForm.register('voice_id')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {VOICE_IDS.map((voice) => (
+                      <option key={voice.value} value={voice.value}>
+                        {voice.label}
+                      </option>
+                    ))}
+                  </select>
+                  {agentForm.formState.errors.voice_id && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.voice_id.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="language">Language</Label>
+                  <select
+                    id="language"
+                    {...agentForm.register('language')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {LANGUAGES.map((lang) => (
+                      <option key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </option>
+                    ))}
+                  </select>
+                  {agentForm.formState.errors.language && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.language.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="model">LLM Model</Label>
+                  <select
+                    id="model"
+                    {...agentForm.register('model')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {LLM_MODELS.map((model) => (
+                      <option key={model.value} value={model.value}>
+                        {model.label}
+                      </option>
+                    ))}
+                  </select>
+                  {agentForm.formState.errors.model && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.model.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Character Configuration */}
+            {currentStep === 2 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="role">Primary Role *</Label>
+                  <select
+                    id="role"
+                    {...agentForm.register('role')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="inbound">Inbound (receives calls)</option>
+                    <option value="outbound">Outbound (makes calls)</option>
+                    <option value="both">Both (inbound and outbound)</option>
+                  </select>
+                  {agentForm.formState.errors.role && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.role.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="mission">Mission / Objective *</Label>
+                  <Textarea
+                    id="mission"
+                    {...agentForm.register('mission')}
+                    placeholder="Describe what this agent should do. For example: 'Qualify leads according to BANT criteria. Be friendly and professional.'"
+                    className="min-h-[100px]"
+                  />
+                  {agentForm.formState.errors.mission && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.mission.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This will be used to build the agent's prompt and guide its behavior.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="custom_prompt">Additional Instructions (Optional)</Label>
+                  <Textarea
+                    id="custom_prompt"
+                    {...agentForm.register('custom_prompt')}
+                    placeholder="Add any specific instructions, tone, or constraints for the agent..."
+                    className="min-h-[100px]"
+                  />
+                  {agentForm.formState.errors.custom_prompt && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.custom_prompt.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    These instructions will be appended to the agent's prompt.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Knowledge Base Configuration */}
+            {currentStep === 3 && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>General Knowledge Base</strong> is always connected automatically.
+                    You can select additional knowledge bases below.
+                  </p>
+                </div>
+                
+                {kbs && kbs.length > 0 ? (
+                  <div>
+                    <Label>Additional Knowledge Bases</Label>
+                    <div className="mt-2 space-y-2 max-h-[300px] overflow-y-auto">
+                      {kbs
+                        .filter((kb) => kb.scope !== 'general')
+                        .map((kb) => (
+                          <div key={kb.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`kb-${kb.id}`}
+                              checked={agentForm.watch('knowledge_base_ids')?.includes(kb.id) || false}
+                              onChange={(e) => {
+                                const currentIds = agentForm.getValues('knowledge_base_ids') || []
+                                if (e.target.checked) {
+                                  agentForm.setValue('knowledge_base_ids', [...currentIds, kb.id])
+                                } else {
+                                  agentForm.setValue(
+                                    'knowledge_base_ids',
+                                    currentIds.filter((id) => id !== kb.id)
+                                  )
+                                }
+                              }}
+                              className="rounded border-gray-300"
+                            />
+                            <Label htmlFor={`kb-${kb.id}`} className="font-normal cursor-pointer">
+                              KB #{kb.id} {kb.lang && `(${kb.lang})`} {kb.scope && `[${kb.scope}]`}
+                              {kb.retell_kb_id && ' ✓ Synced'}
+                            </Label>
+                          </div>
+                        ))}
+                    </div>
+                    {kbs.filter((kb) => kb.scope !== 'general').length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        No additional knowledge bases available. The general KB will be used.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No knowledge bases available. The general KB will be used.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            <div className="flex justify-between space-x-2 pt-4 border-t">
+              <div>
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" onClick={handlePrevStep}>
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Previous
+                  </Button>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleModalClose(false)}
+                >
+                  Cancel
+                </Button>
+                {currentStep < 3 ? (
+                  <Button type="button" onClick={handleNextStep}>
+                    Next
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Agent'
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </DialogContent>
