@@ -2,6 +2,126 @@
 
 Questa guida descrive tutte le informazioni che puoi inviare a RetellAI per personalizzare completamente i tuoi agenti vocali.
 
+## 📝 Guida alla Creazione di Prompt Efficaci
+
+### Struttura Consigliata per i Prompt
+
+Per creare prompt efficaci per gli agenti RetellAI, è fondamentale strutturare il prompt in sezioni distinte. Questa organizzazione migliora la comprensione dell'agente e facilita la manutenzione.
+
+#### Sezioni Standard
+
+1. **Identità**: Definisci chi è l'agente e il suo ruolo
+2. **Stile e Linee Guida**: Specifica il tono, la concisione e l'empatia desiderati
+3. **Istruzioni per le Risposte**: Indica come formattare le risposte (es. pronuncia date/numeri)
+4. **Istruzioni per le Attività**: Elenca i passaggi specifici che l'agente deve seguire
+5. **Gestione delle Obiezioni**: Prepara risposte per situazioni comuni
+
+#### Esempio di Prompt Strutturato
+
+```
+## Identità
+Sei un assistente AI amichevole per [Nome Azienda].
+Il tuo ruolo è [scopo specifico].
+Hai esperienza in [domini rilevanti].
+
+## Stile e Linee Guida
+Sii conciso: mantieni le risposte sotto le 2 frasi, a meno che non spieghi argomenti complessi.
+Sii conversazionale: usa un linguaggio naturale, contrazioni e riconosci ciò che dice l'interlocutore.
+Sii empatico: mostra comprensione per la situazione dell'interlocutore.
+
+## Istruzioni per le Risposte
+Restituisci le date in forma parlata: dì "quindici gennaio" invece di "15/01".
+Fai una domanda alla volta: evita di sovraccaricare l'interlocutore con domande multiple.
+Conferma la comprensione: parafrasa le informazioni importanti all'interlocutore.
+
+## Istruzioni per le Attività
+1. Saluta l'utente.
+2. Chiedi il nome dell'utente.
+3. Determina il tipo di richiesta:
+   - Se l'utente ha bisogno di un rimborso: passa allo stato di rimborso
+   - Se l'utente ha bisogno di informazioni: chiedi il numero dell'ordine
+   - Se l'utente vuole modificare l'ordine: passa allo stato di modifica
+
+## Gestione delle Obiezioni
+Se l'interlocutore dice di non essere interessato: "Capisco. C'è qualcosa di specifico che posso aiutarti?"
+Se l'interlocutore è frustrato: "Sento la tua frustrazione, lascia che ti aiuti a risolvere questo problema."
+```
+
+### Best Practices
+
+1. **Struttura Sezionale**: Organizza il prompt in sezioni chiare per facilitare la comprensione
+2. **Istruzioni a Passaggi**: Definisci i passaggi che l'agente deve seguire in modo sequenziale
+3. **Concisione**: Mantieni le risposte brevi e al punto (2 frasi max per argomenti semplici)
+4. **Conversazionale**: Usa linguaggio naturale, contrazioni e riconoscimenti
+5. **Empatia**: Mostra comprensione per la situazione dell'interlocutore
+6. **Formattazione Numeri/Date**: Istruisci l'agente su come pronunciare date e numeri
+7. **Una Domanda alla Volta**: Evita di sovraccaricare con domande multiple
+8. **Conferma Comprensione**: Parafrasa le informazioni importanti
+
+### Istruzioni per l'Uso degli Strumenti
+
+Se l'agente deve utilizzare strumenti o funzioni, fornisci istruzioni chiare:
+
+```
+## Istruzioni per l'Uso degli Strumenti
+
+1. Raccogli informazioni iniziali sul problema del cliente.
+
+2. Determina il tipo di richiesta:
+   - Se il cliente menziona "rimborso" o "restituzione":
+     → Chiama immediatamente la funzione `trasferisci_a_supporto`
+   - Se il cliente necessita dello stato dell'ordine:
+     → Chiama la funzione `controlla_stato_ordine` con `order_id`
+   - Se il cliente vuole modificare l'ordine:
+     → Prima chiama `controlla_stato_ordine`
+     → Poi passa allo stato `modifica_ordine`
+
+3. Dopo aver recuperato le informazioni:
+   - Riassumi sempre ciò che hai trovato
+   - Chiedi se hanno bisogno di ulteriore aiuto
+```
+
+### Prompt per Inbound vs Outbound
+
+#### Inbound (Ricezione Chiamate)
+```
+## Identità
+Sei un assistente di supporto clienti per [Azienda].
+Ricevi chiamate in arrivo e aiuti i clienti con le loro richieste.
+
+## Istruzioni per le Attività
+1. Saluta cordialmente il cliente.
+2. Ascolta attentamente la richiesta.
+3. Raccogli informazioni necessarie (nome, numero ordine, ecc.).
+4. Fornisci assistenza o trasferisci a un agente umano se necessario.
+```
+
+#### Outbound (Chiamate in Uscita)
+```
+## Identità
+Sei un agente di vendita/prodotti per [Azienda].
+Chiami potenziali clienti per presentare prodotti/servizi.
+
+## Istruzioni per le Attività
+1. Presentati e spiega il motivo della chiamata.
+2. Raccogli informazioni sul cliente (BANT: Budget, Authority, Need, Timeline).
+3. Presenta il prodotto/servizio in modo chiaro e convincente.
+4. Gestisci obiezioni con calma e professionalità.
+5. Chiudi con una call-to-action chiara.
+```
+
+### Agenti Multi-Prompt
+
+Per conversazioni complesse, considera l'uso di agenti multi-prompt con stati distinti:
+- Ogni stato ha il proprio prompt focalizzato
+- Comportamento più prevedibile
+- Debugging semplificato
+- Controllo migliore degli strumenti disponibili
+
+---
+
+## 🎯 Personalizzazione Tecnica
+
 ## Endpoint Principale
 
 **POST `/calls/retell/agents/create`**

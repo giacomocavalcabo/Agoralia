@@ -174,28 +174,91 @@ export function AgentsPage() {
   })
 
   // Build custom prompt from role, mission, and custom prompt
+  // Follows RetellAI best practices: structured sections for better understanding
   const buildCustomPrompt = (data: AgentFormInputs): string => {
     // Determine language for prompt based on agent language
     const isItalian = data.language?.startsWith('it')
     
-    let roleDescription = ''
+    // Build structured prompt following RetellAI best practices
+    let prompt = ''
+    
+    // ## Identità (Identity)
     if (isItalian) {
-      roleDescription = 
-        data.role === 'inbound' ? 'Principalmente ricevi chiamate in arrivo. ' :
-        data.role === 'outbound' ? 'Principalmente fai chiamate in uscita. ' :
-        'Gestisci sia chiamate in arrivo che in uscita. '
+      prompt += '## Identità\n'
+      prompt += `Sei un assistente AI professionale per Agoralia.\n`
+      
+      if (data.role === 'inbound') {
+        prompt += 'Il tuo ruolo principale è ricevere e gestire chiamate in arrivo.\n'
+      } else if (data.role === 'outbound') {
+        prompt += 'Il tuo ruolo principale è effettuare chiamate in uscita per contattare potenziali clienti.\n'
+      } else {
+        prompt += 'Il tuo ruolo è gestire sia chiamate in arrivo che in uscita.\n'
+      }
     } else {
-      roleDescription = 
-        data.role === 'inbound' ? 'You primarily receive inbound calls. ' :
-        data.role === 'outbound' ? 'You primarily make outbound calls. ' :
-        'You handle both inbound and outbound calls. '
+      prompt += '## Identity\n'
+      prompt += `You are a professional AI assistant for Agoralia.\n`
+      
+      if (data.role === 'inbound') {
+        prompt += 'Your primary role is to receive and handle inbound calls.\n'
+      } else if (data.role === 'outbound') {
+        prompt += 'Your primary role is to make outbound calls to contact potential customers.\n'
+      } else {
+        prompt += 'Your role is to handle both inbound and outbound calls.\n'
+      }
     }
     
-    const missionText = data.mission || ''
-    const customLabel = isItalian ? '\n\nIstruzioni aggiuntive:\n' : '\n\nAdditional Instructions:\n'
-    const customText = data.custom_prompt ? `${customLabel}${data.custom_prompt}` : ''
+    // ## Stile e Linee Guida (Style and Guidelines)
+    if (isItalian) {
+      prompt += '\n## Stile e Linee Guida\n'
+      prompt += 'Sii conciso: mantieni le risposte sotto le 2 frasi, a meno che non stia spiegando argomenti complessi.\n'
+      prompt += 'Sii conversazionale: usa un linguaggio naturale, contrazioni e riconosci ciò che dice l\'interlocutore.\n'
+      prompt += 'Sii empatico: mostra comprensione per la situazione dell\'interlocutore.\n'
+    } else {
+      prompt += '\n## Style and Guidelines\n'
+      prompt += 'Be concise: keep responses under 2 sentences, unless explaining complex topics.\n'
+      prompt += 'Be conversational: use natural language, contractions, and acknowledge what the caller says.\n'
+      prompt += 'Be empathetic: show understanding for the caller\'s situation.\n'
+    }
     
-    return `${roleDescription}${missionText}${customText}`.trim()
+    // ## Istruzioni per le Risposte (Response Guidelines)
+    if (isItalian) {
+      prompt += '\n## Istruzioni per le Risposte\n'
+      prompt += 'Restituisci le date in forma parlata: dì "quindici gennaio" invece di "15/01".\n'
+      prompt += 'Fai una domanda alla volta: evita di sovraccaricare l\'interlocutore con domande multiple.\n'
+      prompt += 'Conferma la comprensione: parafrasa le informazioni importanti all\'interlocutore.\n'
+    } else {
+      prompt += '\n## Response Guidelines\n'
+      prompt += 'Return dates in spoken form: say "fifteenth of January" instead of "01/15".\n'
+      prompt += 'Ask one question at a time: avoid overloading the caller with multiple questions.\n'
+      prompt += 'Confirm understanding: paraphrase important information to the caller.\n'
+    }
+    
+    // ## Istruzioni per le Attività (Activity Instructions / Mission)
+    if (isItalian) {
+      prompt += '\n## Istruzioni per le Attività\n'
+    } else {
+      prompt += '\n## Activity Instructions\n'
+    }
+    
+    if (data.mission) {
+      prompt += data.mission
+      if (!data.mission.endsWith('.') && !data.mission.endsWith('\n')) {
+        prompt += '.'
+      }
+      prompt += '\n'
+    }
+    
+    // ## Istruzioni Aggiuntive (Additional Instructions)
+    if (data.custom_prompt && data.custom_prompt.trim()) {
+      if (isItalian) {
+        prompt += '\n## Istruzioni Aggiuntive\n'
+      } else {
+        prompt += '\n## Additional Instructions\n'
+      }
+      prompt += data.custom_prompt.trim() + '\n'
+    }
+    
+    return prompt.trim()
   }
 
   const onSubmit = async (data: AgentFormInputs) => {
