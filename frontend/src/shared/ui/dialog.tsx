@@ -54,5 +54,10 @@ const DialogTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingEl
 )
 DialogTitle.displayName = "DialogTitle"
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle }
+const DialogDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
+  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+)
+DialogDescription.displayName = "DialogDescription"
+
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription }
 

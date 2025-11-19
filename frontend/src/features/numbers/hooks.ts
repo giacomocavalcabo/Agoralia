@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchNumbers, createNumber, deleteNumber, type NumberCreate } from './api'
+import { 
+  fetchNumbers, 
+  purchasePhoneNumber, 
+  importPhoneNumber, 
+  deletePhoneNumber,
+  type PurchasePhoneNumberRequest,
+  type ImportPhoneNumberRequest
+} from './api'
 
 export function useNumbers() {
   return useQuery({
@@ -8,23 +15,32 @@ export function useNumbers() {
   })
 }
 
-export function useCreateNumber() {
+export function usePurchasePhoneNumber() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (payload: NumberCreate) => createNumber(payload),
+    mutationFn: (payload: PurchasePhoneNumberRequest) => purchasePhoneNumber(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['numbers'] })
     },
   })
 }
 
-export function useDeleteNumber() {
+export function useImportPhoneNumber() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => deleteNumber(id),
+    mutationFn: (payload: ImportPhoneNumberRequest) => importPhoneNumber(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['numbers'] })
     },
   })
 }
 
+export function useDeletePhoneNumber() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (phoneNumber: string) => deletePhoneNumber(phoneNumber),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['numbers'] })
+    },
+  })
+}

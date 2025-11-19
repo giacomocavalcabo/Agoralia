@@ -152,7 +152,7 @@ class DispositionUpdate(BaseModel):
 # ============================================================================
 
 class PhoneNumberPurchase(BaseModel):
-    """Request body for purchasing a phone number"""
+    """Request body for purchasing a phone number (deprecated - use PhoneNumberUnified)"""
     phone_number: Optional[str] = None  # E.164 format (e.g., +14157774444)
     area_code: Optional[int] = None  # 3-digit US area code (e.g., 415)
     country_code: Optional[str] = "US"  # US or CA only (default: US)
@@ -1325,15 +1325,31 @@ async def get_retell_phone_number(phone_number: str):
     
     According to Retell AI docs:
     - GET /get-phone-number/{phone_number} retrieves phone number details
+    
+    For custom telephony numbers, also provides SIP inbound URI for configuring forwarding.
     """
     try:
         # Use path parameter as per official docs
         data = await retell_get_json(f"/get-phone-number/{urllib.parse.quote(phone_number)}")
+        
+        # For custom telephony numbers, add SIP inbound URI if not present
+        if data.get("phone_number_type") == "custom":
+            if "sip_inbound_uri" not in data:
+                # Default format: sip:{phone_number}@sip.retellai.com
+                # Note: Check RetellAI dashboard for actual URI, as it may vary
+                data["sip_inbound_uri"] = f"sip:{phone_number}@sip.retellai.com"
+        
         return data
     except HTTPException as e:
         # Fallback to query param format if path param doesn't work
         try:
             data = await retell_get_json(f"/get-phone-number?phone_number={urllib.parse.quote(phone_number)}")
+            
+            # For custom telephony numbers, add SIP inbound URI if not present
+            if data.get("phone_number_type") == "custom":
+                if "sip_inbound_uri" not in data:
+                    data["sip_inbound_uri"] = f"sip:{phone_number}@sip.retellai.com"
+            
             return data
         except Exception:
             raise e
@@ -2105,9 +2121,25 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
                     existing.tenant_id = tenant_id
                     session.commit()
         
+        # Extract SIP inbound URI if available (for configuring Zadarma forwarding)
+        # RetellAI format for custom telephony: sip:{phone_number}@sip.retellai.com
+        sip_inbound_uri = None
+        if "sip_inbound_uri" in data:
+            sip_inbound_uri = data["sip_inbound_uri"]
+        elif "sip_inbound_trunk_config" in data:
+            inbound_config = data["sip_inbound_trunk_config"]
+            if "sip_uri" in inbound_config:
+                sip_inbound_uri = inbound_config["sip_uri"]
+        else:
+            # Default format for custom telephony numbers: sip:{phone_number}@sip.retellai.com
+            # Note: Check RetellAI dashboard for actual URI, as it may vary
+            sip_inbound_uri = f"sip:{imported_number}@sip.retellai.com"
+        
         return {
             "success": True,
             "phone_number": imported_number,
+            "phone_number_type": data.get("phone_number_type", "custom"),
+            "sip_inbound_uri": sip_inbound_uri,  # For configuring Zadarma inbound forwarding
             "response": data,
         }
     except HTTPException as e:
