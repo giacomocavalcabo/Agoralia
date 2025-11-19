@@ -1131,6 +1131,83 @@ async def retell_get_mcp_tools(agent_id: str, mcp_id: str, version: Optional[int
             raise e
 
 
+# ============================================================================
+# Agent Creation Models
+# ============================================================================
+
+class AgentCreateRequest(BaseModel):
+    """Complete agent creation request with all RetellAI fields"""
+    # Response Engine (required)
+    response_engine: Dict[str, Any] = Field(..., description="Response engine config (retell-llm, conversation-flow, etc.)")
+    
+    # Basic fields
+    agent_name: Optional[str] = Field(None, description="Agent name for reference")
+    voice_id: str = Field(..., description="Voice ID (e.g., '11labs-Adrian')")
+    voice_model: Optional[str] = Field(None, description="Voice model (e.g., 'eleven_turbo_v2')")
+    
+    # Voice settings
+    fallback_voice_ids: Optional[List[str]] = None
+    voice_temperature: Optional[float] = Field(None, ge=0, le=2, description="Voice stability (0-2)")
+    voice_speed: Optional[float] = Field(None, ge=0.5, le=2, description="Voice speed (0.5-2)")
+    volume: Optional[float] = Field(None, ge=0, le=2, description="Volume (0-2)")
+    
+    # Agent behavior
+    responsiveness: Optional[float] = Field(None, ge=0, le=1, description="Responsiveness (0-1)")
+    interruption_sensitivity: Optional[float] = Field(None, ge=0, le=1, description="Interruption sensitivity (0-1)")
+    enable_backchannel: Optional[bool] = None
+    backchannel_frequency: Optional[float] = Field(None, ge=0, le=1)
+    backchannel_words: Optional[List[str]] = None
+    reminder_trigger_ms: Optional[int] = Field(None, gt=0)
+    reminder_max_count: Optional[int] = Field(None, ge=0)
+    
+    # Ambient sound
+    ambient_sound: Optional[str] = None
+    ambient_sound_volume: Optional[float] = Field(None, ge=0, le=2)
+    
+    # Language and webhook
+    language: Optional[str] = Field("en-US", description="Language code")
+    webhook_url: Optional[str] = None
+    webhook_timeout_ms: Optional[int] = Field(10000, description="Webhook timeout in ms")
+    
+    # Transcription and keywords
+    boosted_keywords: Optional[List[str]] = None
+    stt_mode: Optional[str] = Field("fast", description="Speech-to-text mode: fast or accurate")
+    vocab_specialization: Optional[str] = Field("general", description="Vocabulary: general or medical")
+    denoising_mode: Optional[str] = Field("noise-cancellation", description="Denoising mode")
+    
+    # Data storage
+    data_storage_setting: Optional[str] = Field("everything", description="Data storage: everything, everything_except_pii, basic_attributes_only")
+    opt_in_signed_url: Optional[bool] = None
+    
+    # Speech settings
+    pronunciation_dictionary: Optional[List[Dict[str, Any]]] = None
+    normalize_for_speech: Optional[bool] = None
+    
+    # Call settings
+    end_call_after_silence_ms: Optional[int] = Field(600000, ge=10000, description="End call after silence (ms)")
+    max_call_duration_ms: Optional[int] = Field(3600000, ge=60000, le=7200000, description="Max call duration (ms)")
+    begin_message_delay_ms: Optional[int] = Field(None, ge=0, le=5000)
+    ring_duration_ms: Optional[int] = Field(30000, ge=5000, le=90000)
+    
+    # Voicemail
+    voicemail_option: Optional[Dict[str, Any]] = None
+    
+    # Post-call analysis
+    post_call_analysis_data: Optional[List[Dict[str, Any]]] = None
+    post_call_analysis_model: Optional[str] = Field("gpt-4o-mini", description="Model for post-call analysis")
+    
+    # DTMF
+    allow_user_dtmf: Optional[bool] = Field(True, description="Allow DTMF input")
+    user_dtmf_options: Optional[Dict[str, Any]] = None
+    
+    # PII
+    pii_config: Optional[Dict[str, Any]] = None
+    
+    # Save to Agoralia
+    save_to_agoralia: Optional[bool] = Field(True, description="Save agent to Agoralia database")
+    connect_to_general_kb: Optional[bool] = Field(True, description="Connect to general knowledge base")
+
+
 @router.post("/retell/agents")
 async def retell_create_agent(
     request: Request,
@@ -1143,7 +1220,7 @@ async def retell_create_agent(
     enable_recording: Optional[bool] = None,
     metadata: Optional[Dict[str, Any]] = None,
 ):
-    """Create a new Retell AI agent directly
+    """Create a new Retell AI agent directly (legacy endpoint - use /retell/agents/create for full support)
     
     According to Retell AI docs:
     - POST /create-agent creates an agent with Retell LLM as response engine
@@ -1195,6 +1272,265 @@ async def retell_create_agent(
         logger = logging.getLogger(__name__)
         logger.error(f"Error creating Retell agent: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error creating agent: {str(e)}")
+
+
+@router.post("/retell/agents/create")
+async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
+    """Create a new Retell AI agent with full field support
+    
+    Creates an agent in RetellAI with all available configuration options.
+    Optionally saves to Agoralia database and connects to general knowledge base.
+    
+    According to Retell AI docs:
+    - POST /create-agent creates an agent with specified response engine
+    """
+    from utils.auth import extract_tenant_id
+    from services.kb_sync import ensure_kb_synced
+    
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        # If response_engine is retell-llm but doesn't have llm_id, create LLM first
+        response_engine = body.response_engine.copy() if isinstance(body.response_engine, dict) else body.response_engine
+        if isinstance(response_engine, dict) and response_engine.get("type") == "retell-llm" and not response_engine.get("llm_id"):
+            # Create Retell LLM first
+            from utils.retell import retell_post_json
+            
+            llm_body = {
+                "model": response_engine.get("model", "gpt-4o-mini"),
+                "start_speaker": response_engine.get("start_speaker", "agent"),
+            }
+            if response_engine.get("begin_message"):
+                llm_body["begin_message"] = response_engine["begin_message"]
+            
+            try:
+                llm_response = await retell_post_json("/create-retell-llm", llm_body)
+            except HTTPException:
+                # Try v2 endpoint
+                llm_response = await retell_post_json("/v2/create-retell-llm", llm_body)
+            
+            retell_llm_id = llm_response.get("retell_llm_id") or llm_response.get("llm_id") or llm_response.get("id")
+            if not retell_llm_id:
+                raise HTTPException(status_code=500, detail="Failed to get retell_llm_id from response")
+            
+            # Update response_engine with llm_id
+            response_engine["llm_id"] = retell_llm_id
+            # Preserve knowledge_base_ids if already set
+            if "knowledge_base_ids" in response_engine:
+                # Keep existing KB IDs
+                pass
+        
+        # Build agent body for RetellAI
+        agent_body: Dict[str, Any] = {
+            "response_engine": response_engine,
+            "voice_id": body.voice_id,
+        }
+        
+        # Add optional fields only if provided
+        if body.agent_name:
+            agent_body["agent_name"] = body.agent_name
+        if body.voice_model:
+            agent_body["voice_model"] = body.voice_model
+        if body.fallback_voice_ids:
+            agent_body["fallback_voice_ids"] = body.fallback_voice_ids
+        if body.voice_temperature is not None:
+            agent_body["voice_temperature"] = body.voice_temperature
+        if body.voice_speed is not None:
+            agent_body["voice_speed"] = body.voice_speed
+        if body.volume is not None:
+            agent_body["volume"] = body.volume
+        if body.responsiveness is not None:
+            agent_body["responsiveness"] = body.responsiveness
+        if body.interruption_sensitivity is not None:
+            agent_body["interruption_sensitivity"] = body.interruption_sensitivity
+        if body.enable_backchannel is not None:
+            agent_body["enable_backchannel"] = body.enable_backchannel
+        if body.backchannel_frequency is not None:
+            agent_body["backchannel_frequency"] = body.backchannel_frequency
+        if body.backchannel_words:
+            agent_body["backchannel_words"] = body.backchannel_words
+        if body.reminder_trigger_ms is not None:
+            agent_body["reminder_trigger_ms"] = body.reminder_trigger_ms
+        if body.reminder_max_count is not None:
+            agent_body["reminder_max_count"] = body.reminder_max_count
+        if body.ambient_sound:
+            agent_body["ambient_sound"] = body.ambient_sound
+        if body.ambient_sound_volume is not None:
+            agent_body["ambient_sound_volume"] = body.ambient_sound_volume
+        if body.language:
+            agent_body["language"] = body.language
+        if body.webhook_url:
+            agent_body["webhook_url"] = body.webhook_url
+        if body.webhook_timeout_ms is not None:
+            agent_body["webhook_timeout_ms"] = body.webhook_timeout_ms
+        if body.boosted_keywords:
+            agent_body["boosted_keywords"] = body.boosted_keywords
+        if body.stt_mode:
+            agent_body["stt_mode"] = body.stt_mode
+        if body.vocab_specialization:
+            agent_body["vocab_specialization"] = body.vocab_specialization
+        if body.denoising_mode:
+            agent_body["denoising_mode"] = body.denoising_mode
+        if body.data_storage_setting:
+            agent_body["data_storage_setting"] = body.data_storage_setting
+        if body.opt_in_signed_url is not None:
+            agent_body["opt_in_signed_url"] = body.opt_in_signed_url
+        if body.pronunciation_dictionary:
+            agent_body["pronunciation_dictionary"] = body.pronunciation_dictionary
+        if body.normalize_for_speech is not None:
+            agent_body["normalize_for_speech"] = body.normalize_for_speech
+        if body.end_call_after_silence_ms is not None:
+            agent_body["end_call_after_silence_ms"] = body.end_call_after_silence_ms
+        if body.max_call_duration_ms is not None:
+            agent_body["max_call_duration_ms"] = body.max_call_duration_ms
+        if body.begin_message_delay_ms is not None:
+            agent_body["begin_message_delay_ms"] = body.begin_message_delay_ms
+        if body.ring_duration_ms is not None:
+            agent_body["ring_duration_ms"] = body.ring_duration_ms
+        if body.voicemail_option:
+            agent_body["voicemail_option"] = body.voicemail_option
+        if body.post_call_analysis_data:
+            agent_body["post_call_analysis_data"] = body.post_call_analysis_data
+        if body.post_call_analysis_model:
+            agent_body["post_call_analysis_model"] = body.post_call_analysis_model
+        if body.allow_user_dtmf is not None:
+            agent_body["allow_user_dtmf"] = body.allow_user_dtmf
+        if body.user_dtmf_options:
+            agent_body["user_dtmf_options"] = body.user_dtmf_options
+        if body.pii_config:
+            agent_body["pii_config"] = body.pii_config
+        
+        # Connect to general knowledge base if requested
+        if body.connect_to_general_kb and tenant_id:
+            with Session(engine) as session:
+                # Find general knowledge base for tenant
+                general_kb = session.query(KnowledgeBase).filter(
+                    KnowledgeBase.tenant_id == tenant_id,
+                    KnowledgeBase.scope == "general"
+                ).first()
+                
+                if general_kb:
+                    # Ensure KB is synced to RetellAI
+                    try:
+                        retell_kb_id = await ensure_kb_synced(general_kb.id, session, tenant_id)
+                        if retell_kb_id and "response_engine" in agent_body:
+                            # Add KB to response engine if it's retell-llm
+                            if agent_body["response_engine"].get("type") == "retell-llm":
+                                if "knowledge_base_ids" not in agent_body["response_engine"]:
+                                    agent_body["response_engine"]["knowledge_base_ids"] = []
+                                if retell_kb_id not in agent_body["response_engine"]["knowledge_base_ids"]:
+                                    agent_body["response_engine"]["knowledge_base_ids"].append(retell_kb_id)
+                    except Exception as e:
+                        import logging
+                        logging.warning(f"Failed to connect general KB to agent: {e}")
+        
+        # Create agent in RetellAI
+        response = await retell_post_json("/create-agent", agent_body)
+        agent_id = response.get("agent_id")
+        
+        if not agent_id:
+            raise HTTPException(status_code=500, detail="No agent_id in RetellAI response")
+        
+        # Save to Agoralia if requested
+        agoralia_agent_id = None
+        if body.save_to_agoralia and tenant_id:
+            with Session(engine) as session:
+                from models.agents import Agent
+                from services.agents import check_agent_limit
+                from services.enforcement import enforce_subscription_or_raise
+                
+                enforce_subscription_or_raise(session, request)
+                check_agent_limit(session, tenant_id)
+                
+                agoralia_agent = Agent(
+                    name=body.agent_name or f"Agent {agent_id[:8]}",
+                    lang=body.language or "en-US",
+                    voice_id=body.voice_id,
+                    tenant_id=tenant_id,
+                    retell_agent_id=agent_id,
+                )
+                session.add(agoralia_agent)
+                session.commit()
+                session.refresh(agoralia_agent)
+                agoralia_agent_id = agoralia_agent.id
+        
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "agoralia_agent_id": agoralia_agent_id,
+            "response": response,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating Retell agent: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error creating agent: {str(e)}")
+
+
+class AgentTestCallRequest(BaseModel):
+    """Request body for testing an agent with a call"""
+    to_number: str = Field(..., description="Phone number to call (E.164 format)")
+    from_number: Optional[str] = Field(None, description="Caller ID (optional, uses default if not provided)")
+
+
+@router.post("/retell/agents/{agent_id}/test-call")
+async def retell_test_agent_call(
+    request: Request,
+    agent_id: str,
+    body: AgentTestCallRequest,
+):
+    """Make a test call to an agent
+    
+    Creates an outbound call using the specified agent for testing purposes.
+    Uses the default from_number if not provided.
+    """
+    from utils.auth import extract_tenant_id
+    from utils.helpers import _resolve_from_number
+    
+    tenant_id = extract_tenant_id(request)
+    
+    try:
+        # Resolve from_number
+        with Session(engine) as session:
+            from_num = _resolve_from_number(
+                session,
+                from_number=body.from_number,
+                campaign_id=None,
+                lead_id=None,
+                tenant_id=tenant_id,
+            )
+            if not from_num:
+                raise HTTPException(
+                    status_code=400,
+                    detail="from_number mancante: imposta DEFAULT_FROM_NUMBER nelle settings/env o passa un Caller ID valido"
+                )
+        
+        # Build call request
+        call_body = {
+            "from_number": from_num,
+            "to_number": body.to_number,
+            "override_agent_id": agent_id,
+        }
+        
+        # Create call via RetellAI
+        response = await retell_post_json("/v2/create-phone-call", call_body)
+        
+        return {
+            "success": True,
+            "call_id": response.get("call_id"),
+            "response": response,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error making test call: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error making test call: {str(e)}")
 
 
 @router.patch("/retell/agents/{agent_id}")
