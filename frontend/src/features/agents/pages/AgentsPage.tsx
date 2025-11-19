@@ -10,6 +10,104 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 
+// Available voice IDs (common RetellAI voices)
+const VOICE_IDS = [
+  // ElevenLabs voices ($0.10/min)
+  { value: '11labs-Adrian', label: '11labs-Adrian (ElevenLabs)' },
+  { value: '11labs-Antoni', label: '11labs-Antoni (ElevenLabs)' },
+  { value: '11labs-Arnold', label: '11labs-Arnold (ElevenLabs)' },
+  { value: '11labs-Adam', label: '11labs-Adam (ElevenLabs)' },
+  { value: '11labs-Sam', label: '11labs-Sam (ElevenLabs)' },
+  { value: '11labs-George', label: '11labs-George (ElevenLabs)' },
+  { value: '11labs-Domi', label: '11labs-Domi (ElevenLabs)' },
+  { value: '11labs-Bella', label: '11labs-Bella (ElevenLabs)' },
+  { value: '11labs-Rachel', label: '11labs-Rachel (ElevenLabs)' },
+  { value: '11labs-Josh', label: '11labs-Josh (ElevenLabs)' },
+  // OpenAI voices ($0.08/min)
+  { value: 'openai-Alloy', label: 'openai-Alloy (OpenAI)' },
+  { value: 'openai-Echo', label: 'openai-Echo (OpenAI)' },
+  { value: 'openai-Fable', label: 'openai-Fable (OpenAI)' },
+  { value: 'openai-Onyx', label: 'openai-Onyx (OpenAI)' },
+  { value: 'openai-Nova', label: 'openai-Nova (OpenAI)' },
+  { value: 'openai-Shimmer', label: 'openai-Shimmer (OpenAI)' },
+  // Deepgram voices ($0.08/min)
+  { value: 'deepgram-Angus', label: 'deepgram-Angus (Deepgram)' },
+  { value: 'deepgram-Asteria', label: 'deepgram-Asteria (Deepgram)' },
+  { value: 'deepgram-Athena', label: 'deepgram-Athena (Deepgram)' },
+  { value: 'deepgram-Cora', label: 'deepgram-Cora (Deepgram)' },
+  { value: 'deepgram-Demetri', label: 'deepgram-Demetri (Deepgram)' },
+  { value: 'deepgram-Gemma', label: 'deepgram-Gemma (Deepgram)' },
+  { value: 'deepgram-Hera', label: 'deepgram-Hera (Deepgram)' },
+  { value: 'deepgram-Jasper', label: 'deepgram-Jasper (Deepgram)' },
+  { value: 'deepgram-Luna', label: 'deepgram-Luna (Deepgram)' },
+  { value: 'deepgram-Nova', label: 'deepgram-Nova (Deepgram)' },
+  { value: 'deepgram-Orion', label: 'deepgram-Orion (Deepgram)' },
+  { value: 'deepgram-Phoebe', label: 'deepgram-Phoebe (Deepgram)' },
+  { value: 'deepgram-Sage', label: 'deepgram-Sage (Deepgram)' },
+  { value: 'deepgram-Titan', label: 'deepgram-Titan (Deepgram)' },
+  { value: 'deepgram-Vesper', label: 'deepgram-Vesper (Deepgram)' },
+]
+
+// Available languages
+const LANGUAGES = [
+  { value: 'en-US', label: 'English (US)' },
+  { value: 'en-GB', label: 'English (UK)' },
+  { value: 'en-AU', label: 'English (Australia)' },
+  { value: 'en-IN', label: 'English (India)' },
+  { value: 'en-NZ', label: 'English (New Zealand)' },
+  { value: 'it-IT', label: 'Italian' },
+  { value: 'es-ES', label: 'Spanish (Spain)' },
+  { value: 'es-419', label: 'Spanish (Latin America)' },
+  { value: 'fr-FR', label: 'French (France)' },
+  { value: 'fr-CA', label: 'French (Canada)' },
+  { value: 'de-DE', label: 'German' },
+  { value: 'pt-PT', label: 'Portuguese (Portugal)' },
+  { value: 'pt-BR', label: 'Portuguese (Brazil)' },
+  { value: 'ja-JP', label: 'Japanese' },
+  { value: 'zh-CN', label: 'Chinese (Simplified)' },
+  { value: 'ko-KR', label: 'Korean' },
+  { value: 'ru-RU', label: 'Russian' },
+  { value: 'hi-IN', label: 'Hindi' },
+  { value: 'nl-NL', label: 'Dutch (Netherlands)' },
+  { value: 'nl-BE', label: 'Dutch (Belgium)' },
+  { value: 'pl-PL', label: 'Polish' },
+  { value: 'tr-TR', label: 'Turkish' },
+  { value: 'th-TH', label: 'Thai' },
+  { value: 'vi-VN', label: 'Vietnamese' },
+  { value: 'ro-RO', label: 'Romanian' },
+  { value: 'bg-BG', label: 'Bulgarian' },
+  { value: 'ca-ES', label: 'Catalan' },
+  { value: 'da-DK', label: 'Danish' },
+  { value: 'fi-FI', label: 'Finnish' },
+  { value: 'el-GR', label: 'Greek' },
+  { value: 'hu-HU', label: 'Hungarian' },
+  { value: 'id-ID', label: 'Indonesian' },
+  { value: 'no-NO', label: 'Norwegian' },
+  { value: 'sk-SK', label: 'Slovak' },
+  { value: 'sv-SE', label: 'Swedish' },
+  { value: 'multi', label: 'Multilingual (Spanish & English)' },
+]
+
+// Available LLM models
+const LLM_MODELS = [
+  { value: 'gpt-5', label: 'GPT-5' },
+  { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
+  { value: 'gpt-5-nano', label: 'GPT-5 Nano' },
+  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+  { value: 'gpt-4.1', label: 'GPT-4.1' },
+  { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+  { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano' },
+  { value: 'claude-4.5-sonnet', label: 'Claude 4.5 Sonnet' },
+  { value: 'claude-4.0-sonnet', label: 'Claude 4.0 Sonnet' },
+  { value: 'claude-3.7-sonnet', label: 'Claude 3.7 Sonnet' },
+  { value: 'claude-3.5-haiku', label: 'Claude 3.5 Haiku' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+  { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+]
+
 // Agent creation schema with essential fields
 const agentSchema = z.object({
   agent_name: z.string().min(1, 'Agent name is required'),
@@ -17,7 +115,6 @@ const agentSchema = z.object({
   language: z.string().default('en-US'),
   // Response engine - simplified, will create retell-llm
   model: z.string().default('gpt-4o-mini'),
-  begin_message: z.string().optional(),
   // Optional advanced fields
   voice_model: z.string().optional(),
   voice_speed: z.number().min(0.5).max(2).optional(),
@@ -65,13 +162,11 @@ export function AgentsPage() {
 
   const onSubmit = async (data: AgentFormInputs) => {
     try {
-      // First, we need to create a Retell LLM (response engine)
-      // For simplicity, we'll create it inline in the response_engine
+      // Create Retell LLM (response engine) - no begin_message
       const payload = {
         response_engine: {
           type: 'retell-llm' as const,
           model: data.model,
-          begin_message: data.begin_message || `Hello, I'm ${data.agent_name}. How can I help you?`,
         },
         agent_name: data.agent_name,
         voice_id: data.voice_id,
@@ -254,45 +349,62 @@ export function AgentsPage() {
 
             <div>
               <Label htmlFor="voice_id">Voice ID *</Label>
-              <Input
+              <select
                 id="voice_id"
                 {...agentForm.register('voice_id')}
-                error={agentForm.formState.errors.voice_id?.message}
-                placeholder="11labs-Adrian"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Find available voices in the RetellAI dashboard
-              </p>
+                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {VOICE_IDS.map((voice) => (
+                  <option key={voice.value} value={voice.value}>
+                    {voice.label}
+                  </option>
+                ))}
+              </select>
+              {agentForm.formState.errors.voice_id && (
+                <p className="mt-1 text-sm text-destructive">
+                  {agentForm.formState.errors.voice_id.message}
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor="language">Language</Label>
-              <Input
+              <select
                 id="language"
                 {...agentForm.register('language')}
-                error={agentForm.formState.errors.language?.message}
-                placeholder="en-US"
-              />
+                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {LANGUAGES.map((lang) => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+              {agentForm.formState.errors.language && (
+                <p className="mt-1 text-sm text-destructive">
+                  {agentForm.formState.errors.language.message}
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor="model">LLM Model</Label>
-              <Input
+              <select
                 id="model"
                 {...agentForm.register('model')}
-                error={agentForm.formState.errors.model?.message}
-                placeholder="gpt-4o-mini"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="begin_message">Begin Message (Optional)</Label>
-              <Input
-                id="begin_message"
-                {...agentForm.register('begin_message')}
-                error={agentForm.formState.errors.begin_message?.message}
-                placeholder="Hello, how can I help you?"
-              />
+                className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {LLM_MODELS.map((model) => (
+                  <option key={model.value} value={model.value}>
+                    {model.label}
+                  </option>
+                ))}
+              </select>
+              {agentForm.formState.errors.model && (
+                <p className="mt-1 text-sm text-destructive">
+                  {agentForm.formState.errors.model.message}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
