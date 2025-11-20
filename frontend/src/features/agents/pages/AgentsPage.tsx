@@ -163,9 +163,17 @@ const agentSchema = z.object({
   data_storage_setting: z.enum(['everything', 'everything_except_pii', 'basic_attributes_only']).optional(),
   opt_in_signed_url: z.boolean().optional(),
   webhook_url: z.string().optional().refine(
-    (val) => !val || val === '' || z.string().url().safeParse(val).success,
+    (val) => {
+      if (!val || val.trim() === '') return true // Empty is OK
+      try {
+        new URL(val.trim())
+        return true
+      } catch {
+        return false
+      }
+    },
     { message: 'Must be a valid URL if provided' }
-  ).or(z.literal('')),
+  ).or(z.literal('')).or(z.literal(null)),
   webhook_timeout_ms: z.number().min(1000).max(30000).optional(),
   post_call_analysis_model: z.string().optional(),
   knowledge_base_ids: z.array(z.number()).default([]),
