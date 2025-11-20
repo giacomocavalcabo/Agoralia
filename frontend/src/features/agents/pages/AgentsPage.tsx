@@ -6,6 +6,9 @@ import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog'
 import { useAgents, useCreateAgentFull, useDeleteAgent, useTestAgentCall } from '../hooks'
+import { api } from '@/shared/api/client'
+import { useQueryClient } from '@tanstack/react-query'
+import type { Agent } from '../api'
 import { useKnowledgeBases } from '@/features/knowledge/hooks'
 import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -176,14 +179,18 @@ type TestCallFormInputs = z.infer<typeof testCallSchema>
 
 export function AgentsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
   const [testCallModalOpen, setTestCallModalOpen] = useState(false)
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const qc = useQueryClient()
   const { data: agents, isLoading, error } = useAgents()
   const { data: kbs } = useKnowledgeBases()
   const createMutation = useCreateAgentFull()
   const deleteMutation = useDeleteAgent()
   const testCallMutation = useTestAgentCall()
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const agentForm = useForm<AgentFormInputs>({
     resolver: zodResolver(agentSchema),
@@ -412,16 +419,99 @@ export function AgentsPage() {
         custom_prompt: data.custom_prompt,
       }
 
-      const result = await createMutation.mutateAsync(payload)
-      if (result.success) {
-        agentForm.reset()
-        setCreateModalOpen(false)
-        setCurrentStep(1)
+      if (editingAgent) {
+        // Update existing agent
+        setIsUpdating(true)
+        try {
+          // Build update payload (only changed fields, but we send all to be safe)
+          const updatePayload: any = {
+            name: data.agent_name,
+            lang: data.language,
+            voice_id: data.voice_id,
+            response_engine,
+            begin_message: data.welcome_message?.trim() || customPrompt,
+            start_speaker: data.start_speaker || 'agent',
+            begin_message_delay_ms: data.begin_message_delay_ms ?? 0,
+          // Voice Settings
+          ...(data.voice_model && { voice_model: data.voice_model }),
+          ...(data.voice_temperature !== undefined && { voice_temperature: data.voice_temperature }),
+          ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
+          ...(data.volume !== undefined && { volume: data.volume }),
+          ...(data.fallback_voice_ids && data.fallback_voice_ids.length > 0 && { fallback_voice_ids: data.fallback_voice_ids }),
+          // Agent Behavior
+          ...(data.responsiveness !== undefined && { responsiveness: data.responsiveness }),
+          ...(data.interruption_sensitivity !== undefined && { interruption_sensitivity: data.interruption_sensitivity }),
+          ...(data.enable_backchannel !== undefined && { enable_backchannel: data.enable_backchannel }),
+          ...(data.backchannel_frequency !== undefined && { backchannel_frequency: data.backchannel_frequency }),
+          ...(data.backchannel_words && data.backchannel_words.length > 0 && { backchannel_words: data.backchannel_words }),
+          ...(data.reminder_trigger_ms !== undefined && { reminder_trigger_ms: data.reminder_trigger_ms }),
+          ...(data.reminder_max_count !== undefined && { reminder_max_count: data.reminder_max_count }),
+          // Ambient Sound
+          ...(data.ambient_sound && data.ambient_sound !== '' ? { ambient_sound: data.ambient_sound } : { ambient_sound: null }),
+          ...(data.ambient_sound_volume !== undefined && { ambient_sound_volume: data.ambient_sound_volume }),
+          // Transcription & Keywords
+          ...(data.stt_mode && { stt_mode: data.stt_mode }),
+          ...(data.vocab_specialization && { vocab_specialization: data.vocab_specialization }),
+          ...(data.denoising_mode && { denoising_mode: data.denoising_mode }),
+          ...(data.boosted_keywords && data.boosted_keywords.length > 0 ? { boosted_keywords: data.boosted_keywords } : { boosted_keywords: null }),
+          ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
+          // Call Settings
+          ...(data.end_call_after_silence_ms !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_ms }),
+          ...(data.max_call_duration_ms !== undefined && { max_call_duration_ms: data.max_call_duration_ms }),
+          ...(data.ring_duration_ms !== undefined && { ring_duration_ms: data.ring_duration_ms }),
+          ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
+          // Voicemail
+          ...(data.voicemail_detect && data.voicemail_message ? {
+            voicemail_option: {
+              action: {
+                type: 'static_text',
+                text: data.voicemail_message,
+              },
+            },
+          } : { voicemail_option: null }),
+          // Data Storage
+          ...(data.data_storage_setting && { data_storage_setting: data.data_storage_setting }),
+          ...(data.opt_in_signed_url !== undefined && { opt_in_signed_url: data.opt_in_signed_url }),
+          // Webhook
+          ...(data.webhook_url ? { webhook_url: data.webhook_url } : { webhook_url: null }),
+          ...(data.webhook_timeout_ms !== undefined && { webhook_timeout_ms: data.webhook_timeout_ms }),
+          // Post-Call Analysis
+          ...(data.post_call_analysis_model && { post_call_analysis_model: data.post_call_analysis_model }),
+          // Knowledge Base - convert Agoralia KB IDs to Retell KB IDs
+          knowledge_base_ids: kbIds.length > 0 ? kbIds : null,
+          // Additional metadata
+          role: data.role,
+          mission: data.mission,
+          custom_prompt: data.custom_prompt,
+        }
+
+          const result = await api.patch(`/agents/${editingAgent.id}`, updatePayload)
+          if (result.data.ok) {
+            agentForm.reset()
+            setEditModalOpen(false)
+            setEditingAgent(null)
+            setCurrentStep(1)
+            qc.invalidateQueries({ queryKey: ['agents'] })
+            qc.invalidateQueries({ queryKey: ['agents', editingAgent.id] })
+          } else {
+            alert(`Failed to update agent: ${JSON.stringify(result.data)}`)
+          }
+        } finally {
+          setIsUpdating(false)
+        }
       } else {
-        alert(`Failed to create agent: ${JSON.stringify(result)}`)
+        // Create new agent
+        const result = await createMutation.mutateAsync(payload)
+        if (result.success) {
+          agentForm.reset()
+          setCreateModalOpen(false)
+          setCurrentStep(1)
+        } else {
+          alert(`Failed to create agent: ${JSON.stringify(result)}`)
+        }
       }
     } catch (error: any) {
-      alert(`Failed to create agent: ${error.message}`)
+      alert(`Failed to ${editingAgent ? 'update' : 'create'} agent: ${error.message}`)
     }
   }
   
@@ -449,11 +539,21 @@ export function AgentsPage() {
     }
   }
   
-  const handleModalClose = (open: boolean) => {
+  const handleCreateModalClose = (open: boolean) => {
     setCreateModalOpen(open)
     if (!open) {
       setCurrentStep(1)
       agentForm.reset()
+      setEditingAgent(null)
+    }
+  }
+
+  const handleEditModalClose = (open: boolean) => {
+    setEditModalOpen(open)
+    if (!open) {
+      setCurrentStep(1)
+      agentForm.reset()
+      setEditingAgent(null)
     }
   }
 
@@ -480,6 +580,84 @@ export function AgentsPage() {
     } catch (error: any) {
       alert(`Failed to make test call: ${error.message}`)
     }
+  }
+
+  const handleEdit = (agent: Agent) => {
+    setEditingAgent(agent)
+    setEditModalOpen(true)
+    setCurrentStep(1)
+    
+    // Populate form with agent data
+    const responseEngine = agent.response_engine as any
+    const model = responseEngine?.model || 'gpt-4o-mini'
+    const startSpeaker = responseEngine?.start_speaker || agent.start_speaker || 'agent'
+    const beginMessage = responseEngine?.begin_message || agent.begin_message || ''
+    
+    // Extract knowledge base IDs - need to convert Retell KB IDs to Agoralia KB IDs
+    const kbIds: number[] = []
+    if (agent.knowledge_base_ids && kbs) {
+      // Find Agoralia KB IDs from Retell KB IDs
+      for (const retellKbId of agent.knowledge_base_ids) {
+        const kb = kbs.find(k => k.retell_kb_id === retellKbId)
+        if (kb && kb.scope !== 'general') {
+          kbIds.push(kb.id)
+        }
+      }
+    }
+    
+    // Populate form
+    agentForm.reset({
+      agent_name: agent.name || '',
+      voice_id: agent.voice_id || '11labs-Adrian',
+      language: agent.lang || 'en-US',
+      model,
+      role: (agent.role as any) || 'both',
+      mission: agent.mission || '',
+      custom_prompt: agent.custom_prompt || '',
+      welcome_message: beginMessage || '',
+      start_speaker: (startSpeaker as 'agent' | 'user') || 'agent',
+      begin_message_delay_ms: agent.begin_message_delay_ms ?? 0,
+      knowledge_base_ids: kbIds,
+      // Voice Settings
+      voice_model: agent.voice_model || undefined,
+      voice_temperature: agent.voice_temperature ?? undefined,
+      voice_speed: agent.voice_speed ?? undefined,
+      volume: agent.volume ?? undefined,
+      fallback_voice_ids: agent.fallback_voice_ids || undefined,
+      // Agent Behavior
+      responsiveness: agent.responsiveness ?? undefined,
+      interruption_sensitivity: agent.interruption_sensitivity ?? undefined,
+      enable_backchannel: agent.enable_backchannel ?? undefined,
+      backchannel_frequency: agent.backchannel_frequency ?? undefined,
+      backchannel_words: agent.backchannel_words || undefined,
+      reminder_trigger_ms: agent.reminder_trigger_ms ?? undefined,
+      reminder_max_count: agent.reminder_max_count ?? undefined,
+      // Ambient Sound
+      ambient_sound: (agent.ambient_sound as any) || '',
+      ambient_sound_volume: agent.ambient_sound_volume ?? undefined,
+      // Transcription & Keywords
+      stt_mode: (agent.stt_mode as any) || undefined,
+      vocab_specialization: (agent.vocab_specialization as any) || undefined,
+      denoising_mode: (agent.denoising_mode as any) || undefined,
+      boosted_keywords: agent.boosted_keywords || undefined,
+      normalize_for_speech: agent.normalize_for_speech ?? undefined,
+      // Call Settings
+      end_call_after_silence_ms: agent.end_call_after_silence_ms ?? undefined,
+      max_call_duration_ms: agent.max_call_duration_ms ?? undefined,
+      ring_duration_ms: agent.ring_duration_ms ?? undefined,
+      allow_user_dtmf: agent.allow_user_dtmf ?? undefined,
+      // Voicemail
+      voicemail_detect: !!agent.voicemail_option,
+      voicemail_message: (agent.voicemail_option as any)?.action?.text || undefined,
+      // Data Storage
+      data_storage_setting: (agent.data_storage_setting as any) || undefined,
+      opt_in_signed_url: agent.opt_in_signed_url ?? undefined,
+      // Webhook
+      webhook_url: agent.webhook_url || '',
+      webhook_timeout_ms: agent.webhook_timeout_ms ?? undefined,
+      // Post-Call Analysis
+      post_call_analysis_model: agent.post_call_analysis_model || undefined,
+    })
   }
 
   const handleDelete = async (id: number) => {
@@ -548,14 +726,24 @@ export function AgentsPage() {
                     </div>
                     <CardTitle className="text-base font-semibold">{agent.name}</CardTitle>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(agent.id)}
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(agent)}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(agent.id)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
@@ -591,11 +779,16 @@ export function AgentsPage() {
         </div>
       )}
 
-      {/* Create Agent Modal - Multi-step */}
-      <Dialog open={createModalOpen} onOpenChange={handleModalClose}>
+      {/* Agent Modal - Multi-step (for both Create and Edit) */}
+      <Dialog open={createModalOpen || editModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          if (createModalOpen) handleCreateModalClose(false)
+          if (editModalOpen) handleEditModalClose(false)
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Agent - Step {currentStep} of 5</DialogTitle>
+            <DialogTitle>{editingAgent ? 'Edit' : 'Create'} Agent - Step {currentStep} of 5</DialogTitle>
             <DialogDescription>
               {currentStep === 1 && 'Configure basic agent settings (name, voice, language, model)'}
               {currentStep === 2 && 'Define agent character, mission, and welcome message'}
@@ -1282,24 +1475,30 @@ export function AgentsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleModalClose(false)}
+                  onClick={() => {
+                    if (editingAgent) {
+                      handleEditModalClose(false)
+                    } else {
+                      handleCreateModalClose(false)
+                    }
+                  }}
                 >
                   Cancel
                 </Button>
-                {currentStep < 3 ? (
+                {currentStep < 5 ? (
                   <Button type="button" onClick={handleNextStep}>
                     Next
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? (
+                  <Button type="submit" disabled={createMutation.isPending || isUpdating}>
+                    {(createMutation.isPending || isUpdating) ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
+                        {editingAgent ? 'Updating...' : 'Creating...'}
                       </>
                     ) : (
-                      'Create Agent'
+                      editingAgent ? 'Update Agent' : 'Create Agent'
                     )}
                   </Button>
                 )}

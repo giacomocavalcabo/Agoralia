@@ -296,16 +296,90 @@ async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
             a.voice_id = body.voice_id
             retell_updates["voice_id"] = body.voice_id
         
-        # Response Engine fields
+        # Response Engine fields - need to update response_engine if any of its fields change
+        response_engine_needs_update = False
+        current_response_engine = a.response_engine.copy() if isinstance(a.response_engine, dict) and a.response_engine else {}
+        
+        # Ensure we have the existing llm_id if response_engine exists
+        existing_llm_id = current_response_engine.get("llm_id") if isinstance(current_response_engine, dict) else None
+        
         if body.response_engine is not None:
+            # Full response_engine replacement
             a.response_engine = body.response_engine
-        if body.begin_message is not None:
-            a.begin_message = body.begin_message
-        if body.start_speaker is not None:
-            a.start_speaker = body.start_speaker
+            retell_updates["response_engine"] = body.response_engine
+            response_engine_needs_update = True
+        else:
+            # Partial response_engine update - build updated response_engine from current or create new
+            if not current_response_engine:
+                # No existing response_engine, create new structure
+                current_response_engine = {
+                    "type": "retell-llm",
+                }
+                # If we have existing llm_id from agent, try to get it from RetellAI
+                # For now, we'll need to create a new LLM or get the existing one
+                # This is a limitation - we might need to fetch from RetellAI or store llm_id separately
+                if existing_llm_id:
+                    current_response_engine["llm_id"] = existing_llm_id
+            else:
+                # Preserve existing llm_id
+                if "llm_id" in current_response_engine:
+                    existing_llm_id = current_response_engine["llm_id"]
+            
+            # Update begin_message
+            if body.begin_message is not None:
+                a.begin_message = body.begin_message
+                if "type" not in current_response_engine:
+                    current_response_engine["type"] = "retell-llm"
+                current_response_engine["begin_message"] = body.begin_message
+                response_engine_needs_update = True
+            
+            # Update start_speaker
+            if body.start_speaker is not None:
+                a.start_speaker = body.start_speaker
+                if "type" not in current_response_engine:
+                    current_response_engine["type"] = "retell-llm"
+                current_response_engine["start_speaker"] = body.start_speaker
+                response_engine_needs_update = True
+            
+            # If knowledge_base_ids change, update response_engine
+            if body.knowledge_base_ids is not None:
+                a.knowledge_base_ids = body.knowledge_base_ids
+                if "type" not in current_response_engine:
+                    current_response_engine["type"] = "retell-llm"
+                current_response_engine["knowledge_base_ids"] = body.knowledge_base_ids
+                response_engine_needs_update = True
+                
+                # Preserve llm_id when updating knowledge_base_ids
+                if existing_llm_id and "llm_id" not in current_response_engine:
+                    current_response_engine["llm_id"] = existing_llm_id
+        
         if body.begin_message_delay_ms is not None:
             a.begin_message_delay_ms = body.begin_message_delay_ms
             retell_updates["begin_message_delay_ms"] = body.begin_message_delay_ms
+        
+        # If response_engine was updated, include it in retell_updates
+        # NOTE: For update, we need to ensure we have llm_id in response_engine
+        # If response_engine exists but doesn't have llm_id, we might need to fetch it or create it
+        if response_engine_needs_update and current_response_engine:
+            # If we don't have llm_id and need to update response_engine, we might need to create/update LLM first
+            # For now, if llm_id is missing and we're updating begin_message or start_speaker, 
+            # we should update the existing LLM or create a new one
+            if current_response_engine.get("type") == "retell-llm" and not current_response_engine.get("llm_id") and a.retell_agent_id:
+                # Try to get current agent from RetellAI to extract llm_id
+                try:
+                    from utils.retell import retell_get_json
+                    retell_agent = await retell_get_json(f"/get-agent/{a.retell_agent_id}", tenant_id)
+                    if retell_agent and isinstance(retell_agent.get("response_engine"), dict):
+                        existing_llm_id_from_retell = retell_agent["response_engine"].get("llm_id")
+                        if existing_llm_id_from_retell:
+                            current_response_engine["llm_id"] = existing_llm_id_from_retell
+                except Exception as e:
+                    import logging
+                    logging.warning(f"Could not fetch llm_id from RetellAI: {e}")
+                    # Continue anyway - RetellAI might handle it
+                    
+            retell_updates["response_engine"] = current_response_engine
+            a.response_engine = current_response_engine
         
         # Voice Settings
         if body.voice_model is not None:
@@ -430,12 +504,8 @@ async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
             a.pii_config = body.pii_config
             retell_updates["pii_config"] = body.pii_config
         
-        # Knowledge Base
-        if body.knowledge_base_ids is not None:
-            a.knowledge_base_ids = body.knowledge_base_ids
-            # Update response_engine if it exists
-            if a.response_engine and isinstance(a.response_engine, dict):
-                a.response_engine["knowledge_base_ids"] = body.knowledge_base_ids
+        # Knowledge Base (already handled above in response_engine section)
+        # Keeping this for backwards compatibility but it's redundant now
         
         # Additional metadata
         if body.role is not None:
@@ -451,15 +521,43 @@ async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
         
         # Update Retell AI agent if retell_agent_id exists and we have updates
         retell_updated = False
-        if a.retell_agent_id and retell_updates:
+        if a.retell_agent_id and (retell_updates or response_engine_needs_update):
             try:
-                from utils.retell import retell_patch_json
-                # RetellAI uses /update-agent/{agent_id} endpoint
-                await retell_patch_json(f"/update-agent/{a.retell_agent_id}", retell_updates, tenant_id)
+                from utils.retell import retell_patch_json, retell_get_json
+                
+                # If response_engine needs update, we need to handle it carefully
+                # For retell-llm, if begin_message or start_speaker change, we might need to update the LLM first
+                if response_engine_needs_update and current_response_engine:
+                    # If response_engine has llm_id, we might need to update the LLM separately
+                    # But according to RetellAI docs, we can update response_engine directly in the agent
+                    # So we'll include it in retell_updates
+                    if "response_engine" not in retell_updates:
+                        retell_updates["response_engine"] = current_response_engine
+                    
+                    # If begin_message or start_speaker changed and we have llm_id, update LLM too
+                    llm_id = current_response_engine.get("llm_id")
+                    if llm_id and (body.begin_message is not None or body.start_speaker is not None):
+                        # Update Retell LLM directly
+                        try:
+                            llm_update = {}
+                            if body.begin_message is not None:
+                                llm_update["begin_message"] = body.begin_message
+                            if body.start_speaker is not None:
+                                llm_update["start_speaker"] = body.start_speaker
+                            if llm_update:
+                                await retell_patch_json(f"/update-retell-llm/{llm_id}", llm_update, tenant_id)
+                        except Exception as llm_e:
+                            import logging
+                            logging.warning(f"Failed to update Retell LLM {llm_id}: {llm_e}, continuing with agent update")
+                
+                # Update Retell AI agent
+                if retell_updates:
+                    await retell_patch_json(f"/update-agent/{a.retell_agent_id}", retell_updates, tenant_id)
                 retell_updated = True
             except Exception as e:
                 import logging
-                logging.error(f"Failed to update Retell agent {a.retell_agent_id}: {e}")
+                import traceback
+                logging.error(f"Failed to update Retell agent {a.retell_agent_id}: {e}\n{traceback.format_exc()}")
                 # Continue with local update
         
         session.commit()
