@@ -149,7 +149,7 @@ const agentSchema = z.object({
   stt_mode: z.enum(['fast', 'accurate']).optional(),
   vocab_specialization: z.enum(['general', 'medical']).optional(),
   denoising_mode: z.enum(['noise-cancellation', 'noise-and-background-speech-cancellation']).optional(),
-  boosted_keywords: z.array(z.string()).optional(),
+  boosted_keywords: z.array(z.string()).optional().or(z.literal(undefined)).or(z.literal('')),
   normalize_for_speech: z.boolean().optional(),
   // These are stored in seconds in the form, converted to ms on submit
   end_call_after_silence_seconds: z.number().min(10).optional(), // min 10s = 10000ms
@@ -1286,18 +1286,23 @@ export function AgentsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="boosted_keywords">Boosted Keywords (comma-separated)</Label>
+                  <Label htmlFor="boosted_keywords">Boosted Keywords (comma-separated, optional)</Label>
                   <Input
                     id="boosted_keywords"
-                    {...agentForm.register('boosted_keywords')}
+                    type="text"
                     placeholder="Agoralia, RetellAI, Mario Rossi"
-                    onChange={(e) => {
-                      const keywords = e.target.value.split(',').map(k => k.trim()).filter(k => k)
-                      agentForm.setValue('boosted_keywords', keywords)
-                    }}
+                    {...agentForm.register('boosted_keywords', {
+                      setValueAs: (value: string) => {
+                        // Convert string to array, or undefined if empty
+                        if (!value || value.trim() === '') {
+                          return undefined
+                        }
+                        return value.split(',').map(k => k.trim()).filter(k => k.length > 0)
+                      }
+                    })}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Keywords to improve transcription accuracy (e.g., company names, people names)
+                    Keywords to improve transcription accuracy (e.g., company names, people names). Campo opzionale.
                   </p>
                 </div>
 
