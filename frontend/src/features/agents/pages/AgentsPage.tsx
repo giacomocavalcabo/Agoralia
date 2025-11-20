@@ -321,9 +321,11 @@ export function AgentsPage() {
   }
 
   const onSubmit = async (data: AgentFormInputs) => {
+    console.log('[AgentForm] onSubmit called with data:', data)
     try {
       // Build custom prompt
       const customPrompt = buildCustomPrompt(data)
+      console.log('[AgentForm] Custom prompt built:', customPrompt.substring(0, 100) + '...')
       
       // Get knowledge base IDs (general KB is always included, plus selected ones)
       const kbIds: string[] = []
@@ -521,17 +523,27 @@ export function AgentsPage() {
         }
       } else {
         // Create new agent
-        const result = await createMutation.mutateAsync(payload)
-        if (result.success) {
-          agentForm.reset()
-          setCreateModalOpen(false)
-          setCurrentStep(1)
-        } else {
-          alert(`Failed to create agent: ${JSON.stringify(result)}`)
+        console.log('[AgentForm] Creating new agent with payload:', payload)
+        try {
+          const result = await createMutation.mutateAsync(payload)
+          console.log('[AgentForm] Create result:', result)
+          if (result.success) {
+            agentForm.reset()
+            setCreateModalOpen(false)
+            setCurrentStep(1)
+            console.log('[AgentForm] Agent created successfully')
+          } else {
+            console.error('[AgentForm] Create failed:', result)
+            alert(`Failed to create agent: ${JSON.stringify(result)}`)
+          }
+        } catch (createError: any) {
+          console.error('[AgentForm] Create mutation error:', createError)
+          alert(`Failed to create agent: ${createError.message || createError.toString()}`)
         }
       }
     } catch (error: any) {
-      alert(`Failed to ${editingAgent ? 'update' : 'create'} agent: ${error.message}`)
+      console.error('[AgentForm] onSubmit error:', error)
+      alert(`Failed to ${editingAgent ? 'update' : 'create'} agent: ${error.message || error.toString()}`)
     }
   }
   
@@ -847,15 +859,31 @@ export function AgentsPage() {
           <form 
             onSubmit={(e) => {
               e.preventDefault()
-              agentForm.handleSubmit(onSubmit, (errors) => {
-                console.error('Form validation errors:', errors)
-                // Show first error
-                const firstError = Object.keys(errors)[0]
-                if (firstError) {
-                  const errorMessage = errors[firstError as keyof typeof errors]?.message
-                  alert(`Errore di validazione: ${firstError} - ${errorMessage || 'Campo richiesto'}`)
+              e.stopPropagation()
+              console.log('[AgentForm] Form submit event triggered')
+              console.log('[AgentForm] Current step:', currentStep)
+              console.log('[AgentForm] Editing agent:', editingAgent)
+              
+              agentForm.handleSubmit(
+                (data) => {
+                  console.log('[AgentForm] Validation passed, calling onSubmit')
+                  onSubmit(data).catch((err) => {
+                    console.error('[AgentForm] onSubmit promise rejection:', err)
+                    alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
+                  })
+                },
+                (errors) => {
+                  console.error('[AgentForm] Form validation errors:', errors)
+                  // Show first error
+                  const firstError = Object.keys(errors)[0]
+                  if (firstError) {
+                    const errorMessage = errors[firstError as keyof typeof errors]?.message
+                    alert(`Errore di validazione: ${firstError} - ${errorMessage || 'Campo richiesto'}`)
+                  } else {
+                    alert('Errore di validazione: controlla i campi del form')
+                  }
                 }
-              })(e)
+              )(e)
             }} 
             className="space-y-4 mt-4"
           >
