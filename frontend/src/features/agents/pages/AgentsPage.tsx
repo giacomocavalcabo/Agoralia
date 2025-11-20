@@ -387,7 +387,7 @@ export function AgentsPage() {
       
       // Build complete payload with all RetellAI fields
       const payload: any = {
-        response_engine,
+        response_engine: responseEngine, // Use responseEngine variable (camelCase)
         agent_name: data.agent_name,
         voice_id: data.voice_id,
         language: data.language,
