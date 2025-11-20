@@ -162,7 +162,10 @@ const agentSchema = z.object({
   // Step 5: Advanced & Knowledge Base
   data_storage_setting: z.enum(['everything', 'everything_except_pii', 'basic_attributes_only']).optional(),
   opt_in_signed_url: z.boolean().optional(),
-  webhook_url: z.string().url().optional().or(z.literal('')),
+  webhook_url: z.string().optional().refine(
+    (val) => !val || val === '' || z.string().url().safeParse(val).success,
+    { message: 'Must be a valid URL if provided' }
+  ).or(z.literal('')),
   webhook_timeout_ms: z.number().min(1000).max(30000).optional(),
   post_call_analysis_model: z.string().optional(),
   knowledge_base_ids: z.array(z.number()).default([]),
@@ -455,8 +458,8 @@ export function AgentsPage() {
             name: data.agent_name,
             lang: data.language,
             voice_id: data.voice_id,
-            response_engine,
-            begin_message: data.welcome_message?.trim() || customPrompt,
+            response_engine: responseEngine, // Use responseEngine variable defined above
+            begin_message: data.welcome_message?.trim() || beginMessage,
             start_speaker: data.start_speaker || 'agent',
             begin_message_delay_ms: data.begin_message_delay_ms ?? 0,
           // Voice Settings
