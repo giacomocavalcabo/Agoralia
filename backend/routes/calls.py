@@ -1206,6 +1206,11 @@ class AgentCreateRequest(BaseModel):
     # Save to Agoralia
     save_to_agoralia: Optional[bool] = Field(True, description="Save agent to Agoralia database")
     connect_to_general_kb: Optional[bool] = Field(True, description="Connect to general knowledge base")
+    
+    # Additional metadata (for UI)
+    role: Optional[str] = Field(None, description="Agent role: inbound, outbound, or both")
+    mission: Optional[str] = Field(None, description="Agent mission/objective description")
+    custom_prompt: Optional[str] = Field(None, description="Additional custom prompt instructions")
 
 
 @router.post("/retell/agents")
@@ -1435,12 +1440,30 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         agoralia_agent_id = None
         if body.save_to_agoralia and tenant_id:
             with Session(engine) as session:
-                from models.agents import Agent
+                from models.agents import Agent, KnowledgeBase
                 from services.agents import check_agent_limit
                 from services.enforcement import enforce_subscription_or_raise
                 
                 enforce_subscription_or_raise(session, request)
                 check_agent_limit(session, tenant_id)
+                
+                # Extract KB IDs from response_engine if present
+                kb_ids = []
+                if "response_engine" in agent_body and isinstance(agent_body["response_engine"], dict):
+                    kb_ids = agent_body["response_engine"].get("knowledge_base_ids", [])
+                
+                # Extract begin_message and start_speaker from response_engine
+                begin_msg = None
+                start_spkr = None
+                if "response_engine" in agent_body and isinstance(agent_body["response_engine"], dict):
+                    begin_msg = agent_body["response_engine"].get("begin_message")
+                    start_spkr = agent_body["response_engine"].get("start_speaker")
+                
+                # Extract role, mission, custom_prompt from body (if present in AgentCreateRequest)
+                # These are not in AgentCreateRequest yet, but we'll add them
+                role = getattr(body, 'role', None)
+                mission = getattr(body, 'mission', None)
+                custom_prompt = getattr(body, 'custom_prompt', None)
                 
                 agoralia_agent = Agent(
                     name=body.agent_name or f"Agent {agent_id[:8]}",
@@ -1448,6 +1471,62 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                     voice_id=body.voice_id,
                     tenant_id=tenant_id,
                     retell_agent_id=agent_id,
+                    # Response Engine
+                    response_engine=agent_body.get("response_engine"),
+                    begin_message=begin_msg,
+                    start_speaker=start_spkr or "agent",
+                    begin_message_delay_ms=body.begin_message_delay_ms,
+                    # Voice Settings
+                    voice_model=body.voice_model,
+                    fallback_voice_ids=body.fallback_voice_ids,
+                    voice_temperature=body.voice_temperature,
+                    voice_speed=body.voice_speed,
+                    volume=body.volume,
+                    # Agent Behavior
+                    responsiveness=body.responsiveness,
+                    interruption_sensitivity=body.interruption_sensitivity,
+                    enable_backchannel=body.enable_backchannel,
+                    backchannel_frequency=body.backchannel_frequency,
+                    backchannel_words=body.backchannel_words,
+                    reminder_trigger_ms=body.reminder_trigger_ms,
+                    reminder_max_count=body.reminder_max_count,
+                    # Ambient Sound
+                    ambient_sound=body.ambient_sound,
+                    ambient_sound_volume=body.ambient_sound_volume,
+                    # Language & Webhook
+                    webhook_url=body.webhook_url,
+                    webhook_timeout_ms=body.webhook_timeout_ms,
+                    # Transcription & Keywords
+                    boosted_keywords=body.boosted_keywords,
+                    stt_mode=body.stt_mode,
+                    vocab_specialization=body.vocab_specialization,
+                    denoising_mode=body.denoising_mode,
+                    # Data Storage
+                    data_storage_setting=body.data_storage_setting,
+                    opt_in_signed_url=body.opt_in_signed_url,
+                    # Speech Settings
+                    pronunciation_dictionary=body.pronunciation_dictionary,
+                    normalize_for_speech=body.normalize_for_speech,
+                    # Call Settings
+                    end_call_after_silence_ms=body.end_call_after_silence_ms,
+                    max_call_duration_ms=body.max_call_duration_ms,
+                    ring_duration_ms=body.ring_duration_ms,
+                    # Voicemail
+                    voicemail_option=body.voicemail_option,
+                    # Post-Call Analysis
+                    post_call_analysis_data=body.post_call_analysis_data,
+                    post_call_analysis_model=body.post_call_analysis_model,
+                    # DTMF
+                    allow_user_dtmf=body.allow_user_dtmf,
+                    user_dtmf_options=body.user_dtmf_options,
+                    # PII
+                    pii_config=body.pii_config,
+                    # Knowledge Base
+                    knowledge_base_ids=kb_ids if kb_ids else None,
+                    # Additional metadata
+                    role=role,
+                    mission=mission,
+                    custom_prompt=custom_prompt,
                 )
                 session.add(agoralia_agent)
                 session.commit()

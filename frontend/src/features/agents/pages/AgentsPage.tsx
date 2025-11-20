@@ -110,7 +110,7 @@ const LLM_MODELS = [
   { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
 ]
 
-// Agent creation schema with step-based fields
+// Agent creation schema with all RetellAI fields
 const agentSchema = z.object({
   // Step 1: Base configuration
   agent_name: z.string().min(1, 'Agent name is required'),
@@ -118,21 +118,50 @@ const agentSchema = z.object({
   language: z.string().default('en-US'),
   model: z.string().default('gpt-4o-mini'),
   
-  // Step 2: Character configuration
+  // Step 2: Character & Welcome
   role: z.enum(['inbound', 'outbound', 'both']).default('both'),
   mission: z.string().min(1, 'Mission is required'),
   custom_prompt: z.string().optional(),
+  welcome_message: z.string().optional(),
+  start_speaker: z.enum(['agent', 'user']).default('agent'),
+  begin_message_delay_ms: z.number().min(0).max(5000).default(0),
   
-  // Step 3: Knowledge Base
-  knowledge_base_ids: z.array(z.number()).default([]),
-  
-  // Optional advanced fields
+  // Step 3: Voice & Behavior
   voice_model: z.string().optional(),
-  voice_speed: z.number().min(0.5).max(2).optional(),
   voice_temperature: z.number().min(0).max(2).optional(),
+  voice_speed: z.number().min(0.5).max(2).optional(),
+  volume: z.number().min(0).max(2).optional(),
+  fallback_voice_ids: z.array(z.string()).optional(),
   responsiveness: z.number().min(0).max(1).optional(),
   interruption_sensitivity: z.number().min(0).max(1).optional(),
+  enable_backchannel: z.boolean().optional(),
+  backchannel_frequency: z.number().min(0).max(1).optional(),
+  backchannel_words: z.array(z.string()).optional(),
+  reminder_trigger_ms: z.number().min(1).optional(),
+  reminder_max_count: z.number().min(0).optional(),
+  ambient_sound: z.enum(['coffee-shop', 'convention-hall', 'summer-outdoor', 'mountain-outdoor', 'static-noise', 'call-center']).optional().or(z.literal('')),
+  ambient_sound_volume: z.number().min(0).max(2).optional(),
+  
+  // Step 4: Transcription & Call Settings
+  stt_mode: z.enum(['fast', 'accurate']).optional(),
+  vocab_specialization: z.enum(['general', 'medical']).optional(),
+  denoising_mode: z.enum(['noise-cancellation', 'noise-and-background-speech-cancellation']).optional(),
+  boosted_keywords: z.array(z.string()).optional(),
+  normalize_for_speech: z.boolean().optional(),
+  end_call_after_silence_ms: z.number().min(10000).optional(),
+  max_call_duration_ms: z.number().min(60000).max(7200000).optional(),
+  ring_duration_ms: z.number().min(5000).max(90000).optional(),
+  allow_user_dtmf: z.boolean().optional(),
+  voicemail_detect: z.boolean().optional(),
+  voicemail_message: z.string().optional(),
+  
+  // Step 5: Advanced & Knowledge Base
+  data_storage_setting: z.enum(['everything', 'everything_except_pii', 'basic_attributes_only']).optional(),
+  opt_in_signed_url: z.boolean().optional(),
   webhook_url: z.string().url().optional().or(z.literal('')),
+  webhook_timeout_ms: z.number().min(1000).max(30000).optional(),
+  post_call_analysis_model: z.string().optional(),
+  knowledge_base_ids: z.array(z.number()).default([]),
 })
 
 type AgentFormInputs = z.infer<typeof agentSchema>
@@ -165,6 +194,9 @@ export function AgentsPage() {
       role: 'both',
       mission: '',
       custom_prompt: '',
+      welcome_message: '',
+      start_speaker: 'agent',
+      begin_message_delay_ms: 0,
       knowledge_base_ids: [],
     },
   })
@@ -291,10 +323,15 @@ export function AgentsPage() {
       const responseEngine: any = {
         type: 'retell-llm' as const,
         model: data.model,
+        start_speaker: data.start_speaker || 'agent',
       }
       
-      // Add prompt as begin_message or instruction
-      if (customPrompt) {
+      // Add welcome message (begin_message) - this is separate from the structured prompt
+      // If welcome_message is provided, use it; otherwise use the structured prompt
+      if (data.welcome_message && data.welcome_message.trim()) {
+        responseEngine.begin_message = data.welcome_message.trim()
+      } else if (customPrompt) {
+        // Use structured prompt as begin_message if no welcome message provided
         responseEngine.begin_message = customPrompt
       }
       
@@ -303,19 +340,76 @@ export function AgentsPage() {
         responseEngine.knowledge_base_ids = kbIds
       }
       
-      const payload = {
+      // Build complete payload with all RetellAI fields
+      const payload: any = {
         response_engine,
         agent_name: data.agent_name,
         voice_id: data.voice_id,
         language: data.language,
         connect_to_general_kb: true, // Always true
         save_to_agoralia: true, // Always true
+        
+        // Welcome & Speaking
+        begin_message_delay_ms: data.begin_message_delay_ms ?? 0,
+        
+        // Voice Settings
         ...(data.voice_model && { voice_model: data.voice_model }),
-        ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
         ...(data.voice_temperature !== undefined && { voice_temperature: data.voice_temperature }),
+        ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
+        ...(data.volume !== undefined && { volume: data.volume }),
+        ...(data.fallback_voice_ids && data.fallback_voice_ids.length > 0 && { fallback_voice_ids: data.fallback_voice_ids }),
+        
+        // Agent Behavior
         ...(data.responsiveness !== undefined && { responsiveness: data.responsiveness }),
         ...(data.interruption_sensitivity !== undefined && { interruption_sensitivity: data.interruption_sensitivity }),
+        ...(data.enable_backchannel !== undefined && { enable_backchannel: data.enable_backchannel }),
+        ...(data.backchannel_frequency !== undefined && { backchannel_frequency: data.backchannel_frequency }),
+        ...(data.backchannel_words && data.backchannel_words.length > 0 && { backchannel_words: data.backchannel_words }),
+        ...(data.reminder_trigger_ms !== undefined && { reminder_trigger_ms: data.reminder_trigger_ms }),
+        ...(data.reminder_max_count !== undefined && { reminder_max_count: data.reminder_max_count }),
+        
+        // Ambient Sound
+        ...(data.ambient_sound && data.ambient_sound !== '' && { ambient_sound: data.ambient_sound }),
+        ...(data.ambient_sound_volume !== undefined && { ambient_sound_volume: data.ambient_sound_volume }),
+        
+        // Transcription & Keywords
+        ...(data.stt_mode && { stt_mode: data.stt_mode }),
+        ...(data.vocab_specialization && { vocab_specialization: data.vocab_specialization }),
+        ...(data.denoising_mode && { denoising_mode: data.denoising_mode }),
+        ...(data.boosted_keywords && data.boosted_keywords.length > 0 && { boosted_keywords: data.boosted_keywords }),
+        ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
+        
+        // Call Settings
+        ...(data.end_call_after_silence_ms !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_ms }),
+        ...(data.max_call_duration_ms !== undefined && { max_call_duration_ms: data.max_call_duration_ms }),
+        ...(data.ring_duration_ms !== undefined && { ring_duration_ms: data.ring_duration_ms }),
+        ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
+        
+        // Voicemail
+        ...(data.voicemail_detect && data.voicemail_message && {
+          voicemail_option: {
+            action: {
+              type: 'static_text',
+              text: data.voicemail_message,
+            },
+          },
+        }),
+        
+        // Data Storage
+        ...(data.data_storage_setting && { data_storage_setting: data.data_storage_setting }),
+        ...(data.opt_in_signed_url !== undefined && { opt_in_signed_url: data.opt_in_signed_url }),
+        
+        // Webhook
         ...(data.webhook_url && { webhook_url: data.webhook_url }),
+        ...(data.webhook_timeout_ms !== undefined && { webhook_timeout_ms: data.webhook_timeout_ms }),
+        
+        // Post-Call Analysis
+        ...(data.post_call_analysis_model && { post_call_analysis_model: data.post_call_analysis_model }),
+        
+        // Additional metadata (for UI/database)
+        role: data.role,
+        mission: data.mission,
+        custom_prompt: data.custom_prompt,
       }
 
       const result = await createMutation.mutateAsync(payload)
@@ -334,6 +428,7 @@ export function AgentsPage() {
   const handleNextStep = async () => {
     const step1Fields: (keyof AgentFormInputs)[] = ['agent_name', 'voice_id', 'language', 'model']
     const step2Fields: (keyof AgentFormInputs)[] = ['role', 'mission']
+    // Steps 3, 4, 5 don't have required fields - all optional
     
     let fieldsToValidate: (keyof AgentFormInputs)[] = []
     if (currentStep === 1) {
@@ -342,8 +437,8 @@ export function AgentsPage() {
       fieldsToValidate = step2Fields
     }
     
-    const isValid = await agentForm.trigger(fieldsToValidate as any)
-    if (isValid && currentStep < 3) {
+    const isValid = fieldsToValidate.length === 0 || await agentForm.trigger(fieldsToValidate as any)
+    if (isValid && currentStep < 5) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -500,17 +595,19 @@ export function AgentsPage() {
       <Dialog open={createModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Agent - Step {currentStep} of 3</DialogTitle>
+            <DialogTitle>Create Agent - Step {currentStep} of 5</DialogTitle>
             <DialogDescription>
-              {currentStep === 1 && 'Configure basic agent settings'}
-              {currentStep === 2 && 'Define agent character and mission'}
-              {currentStep === 3 && 'Select knowledge bases (general KB is always included)'}
+              {currentStep === 1 && 'Configure basic agent settings (name, voice, language, model)'}
+              {currentStep === 2 && 'Define agent character, mission, and welcome message'}
+              {currentStep === 3 && 'Configure voice settings and agent behavior'}
+              {currentStep === 4 && 'Configure transcription and call settings'}
+              {currentStep === 5 && 'Advanced settings, knowledge base, and webhook'}
             </DialogDescription>
           </DialogHeader>
           
           {/* Step indicator */}
           <div className="flex items-center justify-center gap-2 my-4">
-            {[1, 2, 3].map((step) => (
+            {[1, 2, 3, 4, 5].map((step) => (
               <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -523,7 +620,7 @@ export function AgentsPage() {
                 >
                   {step}
                 </div>
-                {step < 3 && (
+                {step < 5 && (
                   <div
                     className={`w-12 h-1 mx-1 ${
                       step < currentStep ? 'bg-primary' : 'bg-muted'
@@ -666,62 +763,508 @@ export function AgentsPage() {
                     These instructions will be appended to the agent's prompt.
                   </p>
                 </div>
-              </div>
-            )}
 
-            {/* Step 3: Knowledge Base Configuration */}
-            {currentStep === 3 && (
-              <div className="space-y-4">
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="text-sm text-muted-foreground">
-                    <strong>General Knowledge Base</strong> is always connected automatically.
-                    You can select additional knowledge bases below.
-                  </p>
+                <div>
+                  <Label htmlFor="welcome_message">Welcome Message (Optional)</Label>
+                  <Textarea
+                    id="welcome_message"
+                    {...agentForm.register('welcome_message')}
+                    placeholder="First message the agent will say. If empty, the structured prompt will be used."
+                    className="min-h-[80px]"
+                  />
+                  {agentForm.formState.errors.welcome_message && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {agentForm.formState.errors.welcome_message.message}
+                    </p>
+                  )}
                 </div>
-                
-                {kbs && kbs.length > 0 ? (
+
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Additional Knowledge Bases</Label>
-                    <div className="mt-2 space-y-2 max-h-[300px] overflow-y-auto">
-                      {kbs
-                        .filter((kb) => kb.scope !== 'general')
-                        .map((kb) => (
-                          <div key={kb.id} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`kb-${kb.id}`}
-                              checked={agentForm.watch('knowledge_base_ids')?.includes(kb.id) || false}
-                              onChange={(e) => {
-                                const currentIds = agentForm.getValues('knowledge_base_ids') || []
-                                if (e.target.checked) {
-                                  agentForm.setValue('knowledge_base_ids', [...currentIds, kb.id])
-                                } else {
-                                  agentForm.setValue(
-                                    'knowledge_base_ids',
-                                    currentIds.filter((id) => id !== kb.id)
-                                  )
-                                }
-                              }}
-                              className="rounded border-gray-300"
-                            />
-                            <Label htmlFor={`kb-${kb.id}`} className="font-normal cursor-pointer">
-                              KB #{kb.id} {kb.lang && `(${kb.lang})`} {kb.scope && `[${kb.scope}]`}
-                              {kb.retell_kb_id && ' ✓ Synced'}
-                            </Label>
-                          </div>
-                        ))}
-                    </div>
-                    {kbs.filter((kb) => kb.scope !== 'general').length === 0 && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        No additional knowledge bases available. The general KB will be used.
+                    <Label htmlFor="start_speaker">Who Speaks First?</Label>
+                    <select
+                      id="start_speaker"
+                      {...agentForm.register('start_speaker')}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="agent">Agent (AI speaks first)</option>
+                      <option value="user">User (wait for user to speak)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="begin_message_delay_ms">Pause Before Speaking (ms)</Label>
+                    <Input
+                      id="begin_message_delay_ms"
+                      type="number"
+                      min={0}
+                      max={5000}
+                      {...agentForm.register('begin_message_delay_ms', { valueAsNumber: true })}
+                      placeholder="0"
+                    />
+                    {agentForm.formState.errors.begin_message_delay_ms && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {agentForm.formState.errors.begin_message_delay_ms.message}
                       </p>
                     )}
                   </div>
-                ) : (
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Voice & Behavior */}
+            {currentStep === 3 && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted rounded-md mb-4">
                   <p className="text-sm text-muted-foreground">
-                    No knowledge bases available. The general KB will be used.
+                    Configure voice characteristics and agent behavior during conversations.
                   </p>
-                )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="voice_model">Voice Model (Optional)</Label>
+                    <Input
+                      id="voice_model"
+                      {...agentForm.register('voice_model')}
+                      placeholder="eleven_turbo_v2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="voice_temperature">Voice Temperature (0-2)</Label>
+                    <Input
+                      id="voice_temperature"
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      max={2}
+                      {...agentForm.register('voice_temperature', { valueAsNumber: true })}
+                      placeholder="1.0"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="voice_speed">Voice Speed (0.5-2)</Label>
+                    <Input
+                      id="voice_speed"
+                      type="number"
+                      step="0.1"
+                      min={0.5}
+                      max={2}
+                      {...agentForm.register('voice_speed', { valueAsNumber: true })}
+                      placeholder="1.0"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="volume">Volume (0-2)</Label>
+                    <Input
+                      id="volume"
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      max={2}
+                      {...agentForm.register('volume', { valueAsNumber: true })}
+                      placeholder="1.0"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Behavior Settings</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="responsiveness">Responsiveness (0-1)</Label>
+                      <Input
+                        id="responsiveness"
+                        type="number"
+                        step="0.1"
+                        min={0}
+                        max={1}
+                        {...agentForm.register('responsiveness', { valueAsNumber: true })}
+                        placeholder="1.0"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">Higher = faster response</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="interruption_sensitivity">Interruption Sensitivity (0-1)</Label>
+                      <Input
+                        id="interruption_sensitivity"
+                        type="number"
+                        step="0.1"
+                        min={0}
+                        max={1}
+                        {...agentForm.register('interruption_sensitivity', { valueAsNumber: true })}
+                        placeholder="1.0"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">Higher = easier to interrupt</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="enable_backchannel"
+                        {...agentForm.register('enable_backchannel')}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor="enable_backchannel" className="font-normal cursor-pointer">
+                        Enable Backchanneling (use "yeah", "uh-huh" during conversations)
+                      </Label>
+                    </div>
+
+                    {agentForm.watch('enable_backchannel') && (
+                      <div className="ml-6 grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="backchannel_frequency">Backchannel Frequency (0-1)</Label>
+                          <Input
+                            id="backchannel_frequency"
+                            type="number"
+                            step="0.1"
+                            min={0}
+                            max={1}
+                            {...agentForm.register('backchannel_frequency', { valueAsNumber: true })}
+                            placeholder="0.8"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="normalize_for_speech"
+                        {...agentForm.register('normalize_for_speech')}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor="normalize_for_speech" className="font-normal cursor-pointer">
+                        Enable Speech Normalization (convert numbers/dates to spoken form)
+                      </Label>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="ambient_sound">Background Sound (Optional)</Label>
+                      <select
+                        id="ambient_sound"
+                        {...agentForm.register('ambient_sound')}
+                        className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">None</option>
+                        <option value="coffee-shop">Coffee Shop</option>
+                        <option value="convention-hall">Convention Hall</option>
+                        <option value="summer-outdoor">Summer Outdoor</option>
+                        <option value="mountain-outdoor">Mountain Outdoor</option>
+                        <option value="static-noise">Static Noise</option>
+                        <option value="call-center">Call Center</option>
+                      </select>
+                    </div>
+
+                    {agentForm.watch('ambient_sound') && (
+                      <div>
+                        <Label htmlFor="ambient_sound_volume">Ambient Sound Volume (0-2)</Label>
+                        <Input
+                          id="ambient_sound_volume"
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={2}
+                          {...agentForm.register('ambient_sound_volume', { valueAsNumber: true })}
+                          placeholder="1.0"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Transcription & Call Settings */}
+            {currentStep === 4 && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted rounded-md mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Configure transcription accuracy and call behavior settings.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="stt_mode">Transcription Mode</Label>
+                    <select
+                      id="stt_mode"
+                      {...agentForm.register('stt_mode')}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="fast">Fast (optimize for speed)</option>
+                      <option value="accurate">Accurate (optimize for accuracy)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="vocab_specialization">Vocabulary Specialization</Label>
+                    <select
+                      id="vocab_specialization"
+                      {...agentForm.register('vocab_specialization')}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="general">General</option>
+                      <option value="medical">Medical</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="denoising_mode">Denoising Mode</Label>
+                    <select
+                      id="denoising_mode"
+                      {...agentForm.register('denoising_mode')}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="noise-cancellation">Remove noise</option>
+                      <option value="noise-and-background-speech-cancellation">Remove noise + background speech</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="boosted_keywords">Boosted Keywords (comma-separated)</Label>
+                  <Input
+                    id="boosted_keywords"
+                    {...agentForm.register('boosted_keywords')}
+                    placeholder="Agoralia, RetellAI, Mario Rossi"
+                    onChange={(e) => {
+                      const keywords = e.target.value.split(',').map(k => k.trim()).filter(k => k)
+                      agentForm.setValue('boosted_keywords', keywords)
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Keywords to improve transcription accuracy (e.g., company names, people names)
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Call Settings</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="end_call_after_silence_ms">End Call After Silence (ms)</Label>
+                      <Input
+                        id="end_call_after_silence_ms"
+                        type="number"
+                        min={10000}
+                        {...agentForm.register('end_call_after_silence_ms', { valueAsNumber: true })}
+                        placeholder="600000 (10 min)"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="max_call_duration_ms">Max Call Duration (ms)</Label>
+                      <Input
+                        id="max_call_duration_ms"
+                        type="number"
+                        min={60000}
+                        max={7200000}
+                        {...agentForm.register('max_call_duration_ms', { valueAsNumber: true })}
+                        placeholder="3600000 (1 hour)"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ring_duration_ms">Ring Duration (ms)</Label>
+                      <Input
+                        id="ring_duration_ms"
+                        type="number"
+                        min={5000}
+                        max={90000}
+                        {...agentForm.register('ring_duration_ms', { valueAsNumber: true })}
+                        placeholder="30000 (30 sec)"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2 pt-6">
+                      <input
+                        type="checkbox"
+                        id="allow_user_dtmf"
+                        {...agentForm.register('allow_user_dtmf')}
+                        className="rounded border-gray-300"
+                        defaultChecked
+                      />
+                      <Label htmlFor="allow_user_dtmf" className="font-normal cursor-pointer">
+                        Allow User Keypad Input (DTMF)
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Voicemail Detection</h4>
+                  <div className="flex items-center space-x-2 mb-3">
+                    <input
+                      type="checkbox"
+                      id="voicemail_detect"
+                      {...agentForm.register('voicemail_detect')}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="voicemail_detect" className="font-normal cursor-pointer">
+                      Detect voicemail and leave a message
+                    </Label>
+                  </div>
+                  {agentForm.watch('voicemail_detect') && (
+                    <div>
+                      <Label htmlFor="voicemail_message">Voicemail Message</Label>
+                      <Textarea
+                        id="voicemail_message"
+                        {...agentForm.register('voicemail_message')}
+                        placeholder="Please give us a callback tomorrow at 10am."
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Advanced & Knowledge Base */}
+            {currentStep === 5 && (
+              <div className="space-y-6">
+                {/* Knowledge Base Section */}
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Knowledge Base</h4>
+                  <div className="p-3 bg-muted rounded-md mb-3">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>General Knowledge Base</strong> is always connected automatically.
+                      You can select additional knowledge bases below.
+                    </p>
+                  </div>
+                  
+                  {kbs && kbs.length > 0 ? (
+                    <div>
+                      <Label>Additional Knowledge Bases</Label>
+                      <div className="mt-2 space-y-2 max-h-[200px] overflow-y-auto">
+                        {kbs
+                          .filter((kb) => kb.scope !== 'general')
+                          .map((kb) => (
+                            <div key={kb.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`kb-${kb.id}`}
+                                checked={agentForm.watch('knowledge_base_ids')?.includes(kb.id) || false}
+                                onChange={(e) => {
+                                  const currentIds = agentForm.getValues('knowledge_base_ids') || []
+                                  if (e.target.checked) {
+                                    agentForm.setValue('knowledge_base_ids', [...currentIds, kb.id])
+                                  } else {
+                                    agentForm.setValue(
+                                      'knowledge_base_ids',
+                                      currentIds.filter((id) => id !== kb.id)
+                                    )
+                                  }
+                                }}
+                                className="rounded border-gray-300"
+                              />
+                              <Label htmlFor={`kb-${kb.id}`} className="font-normal cursor-pointer">
+                                KB #{kb.id} {kb.lang && `(${kb.lang})`} {kb.scope && `[${kb.scope}]`}
+                                {kb.retell_kb_id && ' ✓ Synced'}
+                              </Label>
+                            </div>
+                          ))}
+                      </div>
+                      {kbs.filter((kb) => kb.scope !== 'general').length === 0 && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          No additional knowledge bases available. The general KB will be used.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No knowledge bases available. The general KB will be used.
+                    </p>
+                  )}
+                </div>
+
+                {/* Webhook Settings */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Webhook Settings</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="webhook_url">Webhook URL (Optional)</Label>
+                      <Input
+                        id="webhook_url"
+                        type="url"
+                        {...agentForm.register('webhook_url')}
+                        placeholder="https://app.agoralia.app/api/webhooks/retell"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        URL to receive call events from RetellAI
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="webhook_timeout_ms">Webhook Timeout (ms)</Label>
+                      <Input
+                        id="webhook_timeout_ms"
+                        type="number"
+                        min={1000}
+                        max={30000}
+                        {...agentForm.register('webhook_timeout_ms', { valueAsNumber: true })}
+                        placeholder="10000"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Storage & Security */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Data Storage & Security</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="data_storage_setting">Data Storage Setting</Label>
+                      <select
+                        id="data_storage_setting"
+                        {...agentForm.register('data_storage_setting')}
+                        className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="everything">Everything (store all data)</option>
+                        <option value="everything_except_pii">Everything except PII</option>
+                        <option value="basic_attributes_only">Basic attributes only</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="opt_in_signed_url"
+                        {...agentForm.register('opt_in_signed_url')}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor="opt_in_signed_url" className="font-normal cursor-pointer">
+                        Opt In Secure URLs (URLs expire after 24 hours)
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Post-Call Analysis */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3">Post-Call Analysis</h4>
+                  <div>
+                    <Label htmlFor="post_call_analysis_model">Analysis Model</Label>
+                    <select
+                      id="post_call_analysis_model"
+                      {...agentForm.register('post_call_analysis_model')}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="gpt-4o-mini">GPT-4o Mini</option>
+                      <option value="gpt-4o">GPT-4o</option>
+                      <option value="gpt-4.1">GPT-4.1</option>
+                      <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+                    </select>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Model used for post-call analysis and data extraction
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 

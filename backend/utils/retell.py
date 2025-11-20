@@ -116,17 +116,32 @@ async def retell_post_json(path: str, body: Dict[str, Any], tenant_id: Optional[
             return {}
 
 
-async def retell_patch_json(path: str, body: Dict[str, Any]) -> Dict[str, Any]:
-    """Make a PATCH request to Retell API"""
+async def retell_patch_json(path: str, body: Dict[str, Any], tenant_id: Optional[int] = None) -> Dict[str, Any]:
+    """Make a PATCH request to Retell API
+    
+    Args:
+        path: API path (e.g., "/update-agent/{agent_id}")
+        body: Request body as dict
+        tenant_id: Optional tenant ID for BYO Retell account support
+    
+    Returns:
+        JSON response from Retell API
+    """
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.patch(
             f"{get_retell_base_url()}{path}",
-            headers=get_retell_headers(),
+            headers=get_retell_headers(tenant_id),
             json=body
         )
         if resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
-        return resp.json()
+        # Handle empty responses
+        if resp.status_code == 204 or not resp.content:
+            return {}
+        try:
+            return resp.json()
+        except Exception:
+            return {}
 
 
 async def retell_delete_json(path: str, tenant_id: Optional[int] = None) -> Dict[str, Any]:

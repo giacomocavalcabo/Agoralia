@@ -2,10 +2,70 @@ import { api } from '@/shared/api/client'
 
 export interface Agent {
   id: number
+  tenant_id: number | null
   name: string
   lang: string | null
   voice_id: string | null
   retell_agent_id: string | null
+  // Response Engine
+  response_engine: any | null
+  begin_message: string | null
+  start_speaker: string | null
+  begin_message_delay_ms: number | null
+  // Voice Settings
+  voice_model: string | null
+  fallback_voice_ids: string[] | null
+  voice_temperature: number | null
+  voice_speed: number | null
+  volume: number | null
+  // Agent Behavior
+  responsiveness: number | null
+  interruption_sensitivity: number | null
+  enable_backchannel: boolean | null
+  backchannel_frequency: number | null
+  backchannel_words: string[] | null
+  reminder_trigger_ms: number | null
+  reminder_max_count: number | null
+  // Ambient Sound
+  ambient_sound: string | null
+  ambient_sound_volume: number | null
+  // Language & Webhook
+  webhook_url: string | null
+  webhook_timeout_ms: number | null
+  // Transcription & Keywords
+  boosted_keywords: string[] | null
+  stt_mode: string | null
+  vocab_specialization: string | null
+  denoising_mode: string | null
+  // Data Storage
+  data_storage_setting: string | null
+  opt_in_signed_url: boolean | null
+  // Speech Settings
+  pronunciation_dictionary: any[] | null
+  normalize_for_speech: boolean | null
+  // Call Settings
+  end_call_after_silence_ms: number | null
+  max_call_duration_ms: number | null
+  ring_duration_ms: number | null
+  // Voicemail
+  voicemail_option: any | null
+  // Post-Call Analysis
+  post_call_analysis_data: any[] | null
+  post_call_analysis_model: string | null
+  // DTMF
+  allow_user_dtmf: boolean | null
+  user_dtmf_options: any | null
+  // PII
+  pii_config: any | null
+  // Knowledge Base
+  knowledge_base_ids: string[] | null
+  // Additional metadata
+  role: string | null
+  mission: string | null
+  custom_prompt: string | null
+  // Timestamps
+  created_at: string | null
+  updated_at: string | null
 }
 
 export interface AgentCreate {
@@ -66,6 +126,10 @@ export interface AgentCreateFull {
   pii_config?: any
   save_to_agoralia?: boolean
   connect_to_general_kb?: boolean
+  // Additional metadata (for UI)
+  role?: string
+  mission?: string
+  custom_prompt?: string
 }
 
 export interface AgentTestCallRequest {

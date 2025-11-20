@@ -20,40 +20,96 @@ router = APIRouter()
 
 @router.get("/agents")
 async def list_agents(request: Request) -> List[Dict[str, Any]]:
-    """List agents"""
+    """List agents with all configuration"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         q = session.query(Agent)
         if tenant_id is not None:
             q = q.filter(Agent.tenant_id == tenant_id)
         rows = q.order_by(Agent.id.desc()).limit(200).all()
-        return [
-            {
-                "id": a.id,
-                "name": a.name,
-                "lang": a.lang,
-                "voice_id": a.voice_id,
-                "retell_agent_id": a.retell_agent_id,
-            }
-            for a in rows
-        ]
+        return [_agent_to_dict(a) for a in rows]
+
+
+def _agent_to_dict(a: Agent) -> Dict[str, Any]:
+    """Convert Agent model to dictionary with all fields"""
+    return {
+        "id": a.id,
+        "tenant_id": a.tenant_id,
+        "name": a.name,
+        "lang": a.lang,
+        "voice_id": a.voice_id,
+        "retell_agent_id": a.retell_agent_id,
+        # Response Engine
+        "response_engine": a.response_engine,
+        "begin_message": a.begin_message,
+        "start_speaker": a.start_speaker,
+        "begin_message_delay_ms": a.begin_message_delay_ms,
+        # Voice Settings
+        "voice_model": a.voice_model,
+        "fallback_voice_ids": a.fallback_voice_ids,
+        "voice_temperature": a.voice_temperature,
+        "voice_speed": a.voice_speed,
+        "volume": a.volume,
+        # Agent Behavior
+        "responsiveness": a.responsiveness,
+        "interruption_sensitivity": a.interruption_sensitivity,
+        "enable_backchannel": a.enable_backchannel,
+        "backchannel_frequency": a.backchannel_frequency,
+        "backchannel_words": a.backchannel_words,
+        "reminder_trigger_ms": a.reminder_trigger_ms,
+        "reminder_max_count": a.reminder_max_count,
+        # Ambient Sound
+        "ambient_sound": a.ambient_sound,
+        "ambient_sound_volume": a.ambient_sound_volume,
+        # Language & Webhook
+        "webhook_url": a.webhook_url,
+        "webhook_timeout_ms": a.webhook_timeout_ms,
+        # Transcription & Keywords
+        "boosted_keywords": a.boosted_keywords,
+        "stt_mode": a.stt_mode,
+        "vocab_specialization": a.vocab_specialization,
+        "denoising_mode": a.denoising_mode,
+        # Data Storage
+        "data_storage_setting": a.data_storage_setting,
+        "opt_in_signed_url": a.opt_in_signed_url,
+        # Speech Settings
+        "pronunciation_dictionary": a.pronunciation_dictionary,
+        "normalize_for_speech": a.normalize_for_speech,
+        # Call Settings
+        "end_call_after_silence_ms": a.end_call_after_silence_ms,
+        "max_call_duration_ms": a.max_call_duration_ms,
+        "ring_duration_ms": a.ring_duration_ms,
+        # Voicemail
+        "voicemail_option": a.voicemail_option,
+        # Post-Call Analysis
+        "post_call_analysis_data": a.post_call_analysis_data,
+        "post_call_analysis_model": a.post_call_analysis_model,
+        # DTMF
+        "allow_user_dtmf": a.allow_user_dtmf,
+        "user_dtmf_options": a.user_dtmf_options,
+        # PII
+        "pii_config": a.pii_config,
+        # Knowledge Base
+        "knowledge_base_ids": a.knowledge_base_ids,
+        # Additional metadata
+        "role": a.role,
+        "mission": a.mission,
+        "custom_prompt": a.custom_prompt,
+        # Timestamps
+        "created_at": a.created_at.isoformat() if a.created_at else None,
+        "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+    }
 
 
 @router.get("/agents/{agent_id}")
 async def get_agent(request: Request, agent_id: int) -> Dict[str, Any]:
-    """Get agent details"""
+    """Get agent details with all configuration"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         a = session.get(Agent, agent_id)
         if not a or (tenant_id is not None and a.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="Agent not found")
-        return {
-            "id": a.id,
-            "name": a.name,
-            "lang": a.lang,
-            "voice_id": a.voice_id,
-            "retell_agent_id": a.retell_agent_id,
-        }
+        return _agent_to_dict(a)
 
 
 class AgentCreate(BaseModel):
@@ -139,47 +195,278 @@ async def create_agent(request: Request, body: AgentCreate):
 
 
 class AgentUpdate(BaseModel):
+    """Update agent with all RetellAI fields"""
+    # Basic fields
     name: Optional[str] = None
     lang: Optional[str] = None
     voice_id: Optional[str] = None
+    
+    # Response Engine (full JSON)
+    response_engine: Optional[Dict[str, Any]] = None
+    begin_message: Optional[str] = None
+    start_speaker: Optional[str] = None
+    begin_message_delay_ms: Optional[int] = None
+    
+    # Voice Settings
+    voice_model: Optional[str] = None
+    fallback_voice_ids: Optional[List[str]] = None
+    voice_temperature: Optional[float] = None
+    voice_speed: Optional[float] = None
+    volume: Optional[float] = None
+    
+    # Agent Behavior
+    responsiveness: Optional[float] = None
+    interruption_sensitivity: Optional[float] = None
+    enable_backchannel: Optional[bool] = None
+    backchannel_frequency: Optional[float] = None
+    backchannel_words: Optional[List[str]] = None
+    reminder_trigger_ms: Optional[int] = None
+    reminder_max_count: Optional[int] = None
+    
+    # Ambient Sound
+    ambient_sound: Optional[str] = None
+    ambient_sound_volume: Optional[float] = None
+    
+    # Language & Webhook
+    webhook_url: Optional[str] = None
+    webhook_timeout_ms: Optional[int] = None
+    
+    # Transcription & Keywords
+    boosted_keywords: Optional[List[str]] = None
+    stt_mode: Optional[str] = None
+    vocab_specialization: Optional[str] = None
+    denoising_mode: Optional[str] = None
+    
+    # Data Storage
+    data_storage_setting: Optional[str] = None
+    opt_in_signed_url: Optional[bool] = None
+    
+    # Speech Settings
+    pronunciation_dictionary: Optional[List[Dict[str, Any]]] = None
+    normalize_for_speech: Optional[bool] = None
+    
+    # Call Settings
+    end_call_after_silence_ms: Optional[int] = None
+    max_call_duration_ms: Optional[int] = None
+    ring_duration_ms: Optional[int] = None
+    
+    # Voicemail
+    voicemail_option: Optional[Dict[str, Any]] = None
+    
+    # Post-Call Analysis
+    post_call_analysis_data: Optional[List[Dict[str, Any]]] = None
+    post_call_analysis_model: Optional[str] = None
+    
+    # DTMF
+    allow_user_dtmf: Optional[bool] = None
+    user_dtmf_options: Optional[Dict[str, Any]] = None
+    
+    # PII
+    pii_config: Optional[Dict[str, Any]] = None
+    
+    # Knowledge Base
+    knowledge_base_ids: Optional[List[str]] = None
+    
+    # Additional metadata
+    role: Optional[str] = None
+    mission: Optional[str] = None
+    custom_prompt: Optional[str] = None
 
 
 @router.patch("/agents/{agent_id}")
 async def update_agent(request: Request, agent_id: int, body: AgentUpdate):
-    """Update agent in Agoralia and corresponding Retell AI agent"""
+    """Update agent in Agoralia and corresponding Retell AI agent with all fields"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         a = session.get(Agent, agent_id)
         if not a or (tenant_id is not None and a.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="Agent not found")
         
-        # Update Retell AI agent if retell_agent_id exists
-        if a.retell_agent_id:
+        # Build update dict for RetellAI
+        retell_updates = {}
+        
+        # Update local agent fields (update all provided fields)
+        if body.name is not None:
+            a.name = body.name
+            retell_updates["agent_name"] = body.name
+        if body.lang is not None:
+            a.lang = body.lang
+            retell_updates["language"] = body.lang
+        if body.voice_id is not None:
+            a.voice_id = body.voice_id
+            retell_updates["voice_id"] = body.voice_id
+        
+        # Response Engine fields
+        if body.response_engine is not None:
+            a.response_engine = body.response_engine
+        if body.begin_message is not None:
+            a.begin_message = body.begin_message
+        if body.start_speaker is not None:
+            a.start_speaker = body.start_speaker
+        if body.begin_message_delay_ms is not None:
+            a.begin_message_delay_ms = body.begin_message_delay_ms
+            retell_updates["begin_message_delay_ms"] = body.begin_message_delay_ms
+        
+        # Voice Settings
+        if body.voice_model is not None:
+            a.voice_model = body.voice_model
+            retell_updates["voice_model"] = body.voice_model
+        if body.fallback_voice_ids is not None:
+            a.fallback_voice_ids = body.fallback_voice_ids
+            retell_updates["fallback_voice_ids"] = body.fallback_voice_ids
+        if body.voice_temperature is not None:
+            a.voice_temperature = body.voice_temperature
+            retell_updates["voice_temperature"] = body.voice_temperature
+        if body.voice_speed is not None:
+            a.voice_speed = body.voice_speed
+            retell_updates["voice_speed"] = body.voice_speed
+        if body.volume is not None:
+            a.volume = body.volume
+            retell_updates["volume"] = body.volume
+        
+        # Agent Behavior
+        if body.responsiveness is not None:
+            a.responsiveness = body.responsiveness
+            retell_updates["responsiveness"] = body.responsiveness
+        if body.interruption_sensitivity is not None:
+            a.interruption_sensitivity = body.interruption_sensitivity
+            retell_updates["interruption_sensitivity"] = body.interruption_sensitivity
+        if body.enable_backchannel is not None:
+            a.enable_backchannel = body.enable_backchannel
+            retell_updates["enable_backchannel"] = body.enable_backchannel
+        if body.backchannel_frequency is not None:
+            a.backchannel_frequency = body.backchannel_frequency
+            retell_updates["backchannel_frequency"] = body.backchannel_frequency
+        if body.backchannel_words is not None:
+            a.backchannel_words = body.backchannel_words
+            retell_updates["backchannel_words"] = body.backchannel_words
+        if body.reminder_trigger_ms is not None:
+            a.reminder_trigger_ms = body.reminder_trigger_ms
+            retell_updates["reminder_trigger_ms"] = body.reminder_trigger_ms
+        if body.reminder_max_count is not None:
+            a.reminder_max_count = body.reminder_max_count
+            retell_updates["reminder_max_count"] = body.reminder_max_count
+        
+        # Ambient Sound
+        if body.ambient_sound is not None:
+            a.ambient_sound = body.ambient_sound
+            retell_updates["ambient_sound"] = body.ambient_sound
+        if body.ambient_sound_volume is not None:
+            a.ambient_sound_volume = body.ambient_sound_volume
+            retell_updates["ambient_sound_volume"] = body.ambient_sound_volume
+        
+        # Language & Webhook
+        if body.webhook_url is not None:
+            a.webhook_url = body.webhook_url
+            retell_updates["webhook_url"] = body.webhook_url
+        if body.webhook_timeout_ms is not None:
+            a.webhook_timeout_ms = body.webhook_timeout_ms
+            retell_updates["webhook_timeout_ms"] = body.webhook_timeout_ms
+        
+        # Transcription & Keywords
+        if body.boosted_keywords is not None:
+            a.boosted_keywords = body.boosted_keywords
+            retell_updates["boosted_keywords"] = body.boosted_keywords
+        if body.stt_mode is not None:
+            a.stt_mode = body.stt_mode
+            retell_updates["stt_mode"] = body.stt_mode
+        if body.vocab_specialization is not None:
+            a.vocab_specialization = body.vocab_specialization
+            retell_updates["vocab_specialization"] = body.vocab_specialization
+        if body.denoising_mode is not None:
+            a.denoising_mode = body.denoising_mode
+            retell_updates["denoising_mode"] = body.denoising_mode
+        
+        # Data Storage
+        if body.data_storage_setting is not None:
+            a.data_storage_setting = body.data_storage_setting
+            retell_updates["data_storage_setting"] = body.data_storage_setting
+        if body.opt_in_signed_url is not None:
+            a.opt_in_signed_url = body.opt_in_signed_url
+            retell_updates["opt_in_signed_url"] = body.opt_in_signed_url
+        
+        # Speech Settings
+        if body.pronunciation_dictionary is not None:
+            a.pronunciation_dictionary = body.pronunciation_dictionary
+            retell_updates["pronunciation_dictionary"] = body.pronunciation_dictionary
+        if body.normalize_for_speech is not None:
+            a.normalize_for_speech = body.normalize_for_speech
+            retell_updates["normalize_for_speech"] = body.normalize_for_speech
+        
+        # Call Settings
+        if body.end_call_after_silence_ms is not None:
+            a.end_call_after_silence_ms = body.end_call_after_silence_ms
+            retell_updates["end_call_after_silence_ms"] = body.end_call_after_silence_ms
+        if body.max_call_duration_ms is not None:
+            a.max_call_duration_ms = body.max_call_duration_ms
+            retell_updates["max_call_duration_ms"] = body.max_call_duration_ms
+        if body.ring_duration_ms is not None:
+            a.ring_duration_ms = body.ring_duration_ms
+            retell_updates["ring_duration_ms"] = body.ring_duration_ms
+        
+        # Voicemail
+        if body.voicemail_option is not None:
+            a.voicemail_option = body.voicemail_option
+            retell_updates["voicemail_option"] = body.voicemail_option
+        
+        # Post-Call Analysis
+        if body.post_call_analysis_data is not None:
+            a.post_call_analysis_data = body.post_call_analysis_data
+            retell_updates["post_call_analysis_data"] = body.post_call_analysis_data
+        if body.post_call_analysis_model is not None:
+            a.post_call_analysis_model = body.post_call_analysis_model
+            retell_updates["post_call_analysis_model"] = body.post_call_analysis_model
+        
+        # DTMF
+        if body.allow_user_dtmf is not None:
+            a.allow_user_dtmf = body.allow_user_dtmf
+            retell_updates["allow_user_dtmf"] = body.allow_user_dtmf
+        if body.user_dtmf_options is not None:
+            a.user_dtmf_options = body.user_dtmf_options
+            retell_updates["user_dtmf_options"] = body.user_dtmf_options
+        
+        # PII
+        if body.pii_config is not None:
+            a.pii_config = body.pii_config
+            retell_updates["pii_config"] = body.pii_config
+        
+        # Knowledge Base
+        if body.knowledge_base_ids is not None:
+            a.knowledge_base_ids = body.knowledge_base_ids
+            # Update response_engine if it exists
+            if a.response_engine and isinstance(a.response_engine, dict):
+                a.response_engine["knowledge_base_ids"] = body.knowledge_base_ids
+        
+        # Additional metadata
+        if body.role is not None:
+            a.role = body.role
+        if body.mission is not None:
+            a.mission = body.mission
+        if body.custom_prompt is not None:
+            a.custom_prompt = body.custom_prompt
+        
+        # Update timestamp
+        from datetime import datetime, timezone
+        a.updated_at = datetime.now(timezone.utc)
+        
+        # Update Retell AI agent if retell_agent_id exists and we have updates
+        retell_updated = False
+        if a.retell_agent_id and retell_updates:
             try:
-                await update_retell_agent(
-                    retell_agent_id=a.retell_agent_id,
-                    name=body.name,
-                    language=body.lang,
-                    voice_id=body.voice_id,
-                )
+                from utils.retell import retell_patch_json
+                # RetellAI uses /update-agent/{agent_id} endpoint
+                await retell_patch_json(f"/update-agent/{a.retell_agent_id}", retell_updates, tenant_id)
+                retell_updated = True
             except Exception as e:
-                # Log error but don't block update in Agoralia
                 import logging
                 logging.error(f"Failed to update Retell agent {a.retell_agent_id}: {e}")
                 # Continue with local update
         
-        # Update local agent
-        if body.name is not None:
-            a.name = body.name
-        if body.lang is not None:
-            a.lang = body.lang
-        if body.voice_id is not None:
-            a.voice_id = body.voice_id
         session.commit()
         
         return {
             "ok": True,
-            "retell_updated": a.retell_agent_id is not None,
+            "retell_updated": retell_updated,
         }
 
 

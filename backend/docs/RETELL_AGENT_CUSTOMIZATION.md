@@ -139,13 +139,30 @@ Il `response_engine` definisce come l'agente genera le risposte. Puoi usare:
     "type": "retell-llm",
     "model": "gpt-4o-mini",  // o "gpt-4o", "gpt-4.1", "claude-4.5-sonnet", etc.
     "begin_message": "Ciao, sono l'assistente virtuale. Come posso aiutarti?",
-    "start_speaker": "agent",  // o "user"
+    "start_speaker": "agent",  // o "user" - chi inizia la conversazione
     "knowledge_base_ids": ["knowledge_base_xxx"],  // Opzionale: KB IDs da RetellAI
     "model_temperature": 0.7,  // 0-2, default 0.7
     "s2s_model": "gpt-4o-mini"  // Speech-to-speech model
-  }
+  },
+  "begin_message_delay_ms": 0  // Pausa prima di parlare (ms, 0-5000)
 }
 ```
+
+#### Campi per il Messaggio di Benvenuto
+
+- **`begin_message`** (nel `response_engine`): Messaggio iniziale che l'agente pronuncia
+  - Se non specificato, può essere generato dal prompt strutturato
+  - Esempio: `"Ciao, sono l'assistente di Agoralia. Come posso aiutarti?"`
+  
+- **`start_speaker`** (nel `response_engine`): Chi inizia la conversazione
+  - `"agent"`: L'AI parla per prima (default) - equivalente a "AI speaks first"
+  - `"user"`: L'utente parla per prima - l'AI aspetta che l'utente inizi
+  
+- **`begin_message_delay_ms`** (a livello agent): Pausa prima che l'agente inizi a parlare
+  - Range: `0-5000` millisecondi (0-5 secondi)
+  - Default: `0` (immediato)
+  - Utile per dare tempo all'utente di rispondere alla chiamata
+  - Esempio: `1000` = 1 secondo di pausa
 
 **Nota**: Se non specifichi `llm_id`, il sistema crea automaticamente un Retell LLM per te.
 
