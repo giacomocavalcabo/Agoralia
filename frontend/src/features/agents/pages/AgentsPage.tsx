@@ -1487,8 +1487,18 @@ export function AgentsPage() {
                       <Label htmlFor="webhook_url">Webhook URL (Optional)</Label>
                       <Input
                         id="webhook_url"
-                        type="url"
-                        {...agentForm.register('webhook_url')}
+                        type="text"
+                        {...agentForm.register('webhook_url', {
+                          validate: (value) => {
+                            if (!value || value.trim() === '') return true // Empty is OK
+                            try {
+                              new URL(value.trim())
+                              return true
+                            } catch {
+                              return 'Inserisci un URL valido (es. https://app.agoralia.app/api/webhooks/retell)'
+                            }
+                          }
+                        })}
                         placeholder="https://app.agoralia.app/api/webhooks/retell"
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
