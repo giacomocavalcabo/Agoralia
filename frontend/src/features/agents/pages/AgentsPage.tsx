@@ -349,25 +349,30 @@ export function AgentsPage() {
       }
       
       // Create Retell LLM (response engine) with custom prompt
+      // Always ensure response_engine has at least type and model
       const responseEngine: any = {
         type: 'retell-llm' as const,
-        model: data.model,
+        model: data.model || 'gpt-4o-mini',
         start_speaker: data.start_speaker || 'agent',
       }
       
       // Add welcome message (begin_message) - this is separate from the structured prompt
       // If welcome_message is provided, use it; otherwise use the structured prompt
-      if (data.welcome_message && data.welcome_message.trim()) {
-        responseEngine.begin_message = data.welcome_message.trim()
-      } else if (customPrompt) {
-        // Use structured prompt as begin_message if no welcome message provided
-        responseEngine.begin_message = customPrompt
+      const beginMessage = (data.welcome_message && data.welcome_message.trim()) 
+        ? data.welcome_message.trim() 
+        : (customPrompt ? customPrompt : 'Hello! How can I help you today?')
+      
+      // Always set begin_message to ensure response_engine is valid
+      if (beginMessage) {
+        responseEngine.begin_message = beginMessage
       }
       
       // Add knowledge bases if any
       if (kbIds.length > 0) {
         responseEngine.knowledge_base_ids = kbIds
       }
+      
+      console.log('[AgentForm] Built responseEngine:', responseEngine)
       
       // Build complete payload with all RetellAI fields
       const payload: any = {

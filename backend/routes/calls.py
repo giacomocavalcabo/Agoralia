@@ -1295,9 +1295,17 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
     tenant_id = extract_tenant_id(request)
     
     try:
+        # Ensure response_engine is defined
+        if not body.response_engine:
+            raise HTTPException(status_code=400, detail="response_engine is required")
+        
         # If response_engine is retell-llm but doesn't have llm_id, create LLM first
         response_engine = body.response_engine.copy() if isinstance(body.response_engine, dict) else body.response_engine
-        if isinstance(response_engine, dict) and response_engine.get("type") == "retell-llm" and not response_engine.get("llm_id"):
+        
+        if not isinstance(response_engine, dict):
+            raise HTTPException(status_code=400, detail="response_engine must be a dictionary")
+        
+        if response_engine.get("type") == "retell-llm" and not response_engine.get("llm_id"):
             # Create Retell LLM first
             from utils.retell import retell_post_json
             
