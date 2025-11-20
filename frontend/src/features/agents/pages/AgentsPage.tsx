@@ -151,9 +151,10 @@ const agentSchema = z.object({
   denoising_mode: z.enum(['noise-cancellation', 'noise-and-background-speech-cancellation']).optional(),
   boosted_keywords: z.array(z.string()).optional(),
   normalize_for_speech: z.boolean().optional(),
-  end_call_after_silence_ms: z.number().min(10000).optional(),
-  max_call_duration_ms: z.number().min(60000).max(7200000).optional(),
-  ring_duration_ms: z.number().min(5000).max(90000).optional(),
+  // These are stored in seconds in the form, converted to ms on submit
+  end_call_after_silence_seconds: z.number().min(10).optional(), // min 10s = 10000ms
+  max_call_duration_seconds: z.number().min(60).max(7200).optional(), // min 60s = 60000ms, max 7200s = 7200000ms
+  ring_duration_seconds: z.number().min(5).max(90).optional(), // min 5s = 5000ms, max 90s = 90000ms
   allow_user_dtmf: z.boolean().optional(),
   voicemail_detect: z.boolean().optional(),
   voicemail_message: z.string().optional(),
@@ -168,6 +169,25 @@ const agentSchema = z.object({
 })
 
 type AgentFormInputs = z.infer<typeof agentSchema>
+
+// Helper function to format duration in seconds to human-readable format
+function formatDuration(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds} secondi`
+  } else if (seconds < 3600) {
+    const minutes = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return secs > 0 ? `${minutes} minuti e ${secs} secondi` : `${minutes} minuti`
+  } else {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    const parts: string[] = [`${hours} ${hours === 1 ? 'ora' : 'ore'}`]
+    if (minutes > 0) parts.push(`${minutes} ${minutes === 1 ? 'minuto' : 'minuti'}`)
+    if (secs > 0) parts.push(`${secs} ${secs === 1 ? 'secondo' : 'secondi'}`)
+    return parts.join(' e ')
+  }
+}
 
 // Test call schema
 const testCallSchema = z.object({
@@ -386,10 +406,10 @@ export function AgentsPage() {
         ...(data.boosted_keywords && data.boosted_keywords.length > 0 && { boosted_keywords: data.boosted_keywords }),
         ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
         
-        // Call Settings
-        ...(data.end_call_after_silence_ms !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_ms }),
-        ...(data.max_call_duration_ms !== undefined && { max_call_duration_ms: data.max_call_duration_ms }),
-        ...(data.ring_duration_ms !== undefined && { ring_duration_ms: data.ring_duration_ms }),
+        // Call Settings - convert seconds to milliseconds
+        ...(data.end_call_after_silence_seconds !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_seconds * 1000 }),
+        ...(data.max_call_duration_seconds !== undefined && { max_call_duration_ms: data.max_call_duration_seconds * 1000 }),
+        ...(data.ring_duration_seconds !== undefined && { ring_duration_ms: data.ring_duration_seconds * 1000 }),
         ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
         
         // Voicemail
@@ -455,10 +475,10 @@ export function AgentsPage() {
           ...(data.denoising_mode && { denoising_mode: data.denoising_mode }),
           ...(data.boosted_keywords && data.boosted_keywords.length > 0 ? { boosted_keywords: data.boosted_keywords } : { boosted_keywords: null }),
           ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
-          // Call Settings
-          ...(data.end_call_after_silence_ms !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_ms }),
-          ...(data.max_call_duration_ms !== undefined && { max_call_duration_ms: data.max_call_duration_ms }),
-          ...(data.ring_duration_ms !== undefined && { ring_duration_ms: data.ring_duration_ms }),
+          // Call Settings - convert seconds to milliseconds
+          ...(data.end_call_after_silence_seconds !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_seconds * 1000 }),
+          ...(data.max_call_duration_seconds !== undefined && { max_call_duration_ms: data.max_call_duration_seconds * 1000 }),
+          ...(data.ring_duration_seconds !== undefined && { ring_duration_ms: data.ring_duration_seconds * 1000 }),
           ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
           // Voicemail
           ...(data.voicemail_detect && data.voicemail_message ? {
@@ -641,10 +661,10 @@ export function AgentsPage() {
       denoising_mode: (agent.denoising_mode as any) || undefined,
       boosted_keywords: agent.boosted_keywords || undefined,
       normalize_for_speech: agent.normalize_for_speech ?? undefined,
-      // Call Settings
-      end_call_after_silence_ms: agent.end_call_after_silence_ms ?? undefined,
-      max_call_duration_ms: agent.max_call_duration_ms ?? undefined,
-      ring_duration_ms: agent.ring_duration_ms ?? undefined,
+      // Call Settings - convert milliseconds to seconds
+      end_call_after_silence_seconds: agent.end_call_after_silence_ms ? Math.floor(agent.end_call_after_silence_ms / 1000) : undefined,
+      max_call_duration_seconds: agent.max_call_duration_ms ? Math.floor(agent.max_call_duration_ms / 1000) : undefined,
+      ring_duration_seconds: agent.ring_duration_ms ? Math.floor(agent.ring_duration_ms / 1000) : undefined,
       allow_user_dtmf: agent.allow_user_dtmf ?? undefined,
       // Voicemail
       voicemail_detect: !!agent.voicemail_option,
@@ -824,7 +844,21 @@ export function AgentsPage() {
             ))}
           </div>
           
-          <form onSubmit={agentForm.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault()
+              agentForm.handleSubmit(onSubmit, (errors) => {
+                console.error('Form validation errors:', errors)
+                // Show first error
+                const firstError = Object.keys(errors)[0]
+                if (firstError) {
+                  const errorMessage = errors[firstError as keyof typeof errors]?.message
+                  alert(`Errore di validazione: ${firstError} - ${errorMessage || 'Campo richiesto'}`)
+                }
+              })(e)
+            }} 
+            className="space-y-4 mt-4"
+          >
             {/* Step 1: Base Configuration */}
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -1243,38 +1277,56 @@ export function AgentsPage() {
                   <h4 className="text-sm font-medium mb-3">Call Settings</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="end_call_after_silence_ms">End Call After Silence (ms)</Label>
+                      <Label htmlFor="end_call_after_silence_seconds">End Call After Silence (seconds)</Label>
                       <Input
-                        id="end_call_after_silence_ms"
+                        id="end_call_after_silence_seconds"
                         type="number"
-                        min={10000}
-                        {...agentForm.register('end_call_after_silence_ms', { valueAsNumber: true })}
-                        placeholder="600000 (10 min)"
+                        min={10}
+                        step={1}
+                        {...agentForm.register('end_call_after_silence_seconds', { valueAsNumber: true })}
+                        placeholder="600 (10 minuti)"
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {agentForm.watch('end_call_after_silence_seconds') 
+                          ? formatDuration(agentForm.watch('end_call_after_silence_seconds') || 0) 
+                          : '600 secondi = 10 minuti'}
+                      </p>
                     </div>
 
                     <div>
-                      <Label htmlFor="max_call_duration_ms">Max Call Duration (ms)</Label>
+                      <Label htmlFor="max_call_duration_seconds">Max Call Duration (seconds)</Label>
                       <Input
-                        id="max_call_duration_ms"
+                        id="max_call_duration_seconds"
                         type="number"
-                        min={60000}
-                        max={7200000}
-                        {...agentForm.register('max_call_duration_ms', { valueAsNumber: true })}
-                        placeholder="3600000 (1 hour)"
+                        min={60}
+                        max={7200}
+                        step={1}
+                        {...agentForm.register('max_call_duration_seconds', { valueAsNumber: true })}
+                        placeholder="3600 (60 minuti)"
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {agentForm.watch('max_call_duration_seconds') 
+                          ? formatDuration(agentForm.watch('max_call_duration_seconds') || 0) 
+                          : '3600 secondi = 60 minuti'}
+                      </p>
                     </div>
 
                     <div>
-                      <Label htmlFor="ring_duration_ms">Ring Duration (ms)</Label>
+                      <Label htmlFor="ring_duration_seconds">Ring Duration (seconds)</Label>
                       <Input
-                        id="ring_duration_ms"
+                        id="ring_duration_seconds"
                         type="number"
-                        min={5000}
-                        max={90000}
-                        {...agentForm.register('ring_duration_ms', { valueAsNumber: true })}
-                        placeholder="30000 (30 sec)"
+                        min={5}
+                        max={90}
+                        step={1}
+                        {...agentForm.register('ring_duration_seconds', { valueAsNumber: true })}
+                        placeholder="30 (30 secondi)"
                       />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {agentForm.watch('ring_duration_seconds') 
+                          ? formatDuration(agentForm.watch('ring_duration_seconds') || 0) 
+                          : '30 secondi'}
+                      </p>
                     </div>
 
                     <div className="flex items-center space-x-2 pt-6">
