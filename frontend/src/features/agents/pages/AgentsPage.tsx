@@ -690,6 +690,8 @@ export function AgentsPage() {
     
     const isValid = fieldsToValidate.length === 0 || await agentForm.trigger(fieldsToValidate as any)
     if (isValid && currentStep < 5) {
+      // Reset submitting flag when moving to next step
+      setIsSubmitting(false)
       setCurrentStep(currentStep + 1)
     }
     
@@ -708,6 +710,7 @@ export function AgentsPage() {
       setCurrentStep(1)
       agentForm.reset()
       setEditingAgent(null)
+      setIsSubmitting(false)
     }
   }
 
@@ -717,6 +720,7 @@ export function AgentsPage() {
       setCurrentStep(1)
       agentForm.reset()
       setEditingAgent(null)
+      setIsSubmitting(false)
     }
   }
 
