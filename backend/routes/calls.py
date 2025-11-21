@@ -1167,7 +1167,7 @@ class AgentCreateRequest(BaseModel):
     # Language and webhook
     language: Optional[str] = Field("en-US", description="Language code")
     webhook_url: Optional[str] = None
-    webhook_timeout_ms: Optional[int] = Field(10000, description="Webhook timeout in ms")
+    webhook_timeout_ms: Optional[int] = Field(None, description="Webhook timeout in ms (1000-30000)")
     
     # Transcription and keywords
     boosted_keywords: Optional[List[str]] = None
