@@ -1496,33 +1496,26 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         response = None
         endpoint = "/create-agent"  # Use the endpoint that works per curl test
         
+        # Try with global API key first (like services/agents.py does)
         try:
-            # Try with global API key first (like services/agents.py does)
-            try:
-                response = await retell_post_json(endpoint, agent_body, None)  # Try global API key with full payload
-                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-            except HTTPException as he_global:
-                if he_global.status_code == 404 and tenant_id is not None:
-                    # If global key fails with 404, try tenant-specific key (BYO account)
-                    print(f"[DEBUG] [retell_create_agent_full] Global key failed, trying tenant-specific key", flush=True)
+            response = await retell_post_json(endpoint, agent_body, None)  # Try global API key with full payload
+            print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+        except HTTPException as he_global:
+            if he_global.status_code == 404 and tenant_id is not None:
+                # If global key fails with 404, try tenant-specific key (BYO account)
+                print(f"[DEBUG] [retell_create_agent_full] Global key failed, trying tenant-specific key", flush=True)
+                try:
                     response = await retell_post_json(endpoint, agent_body, tenant_id)
                     print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-                else:
-                    raise he_global
-            except HTTPException as he:
-                print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he.status_code}: {he.detail}", flush=True)
-                if he.status_code == 404 and endpoint != endpoints_to_try[-1]:
-                    # Try next endpoint if 404 and not last
-                    continue
-                elif he.status_code != 404:
-                    # Non-404 error, raise immediately
-                    raise
-                else:
-                    # Last endpoint failed with 404, raise
+                except HTTPException as he_tenant:
+                    print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he_tenant.status_code}: {he_tenant.detail}", flush=True)
                     raise HTTPException(
                         status_code=404, 
-                        detail=f"Agent creation failed: All endpoints ({', '.join(endpoints_to_try)}) returned 404. Check RetellAI API documentation and API key permissions."
+                        detail=f"Agent creation failed: Endpoint {endpoint} returned 404 with both global and tenant API keys. Check RetellAI API documentation and API key permissions."
                     )
+            else:
+                print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he_global.status_code}: {he_global.detail}", flush=True)
+                raise he_global
         
         if not response:
             raise HTTPException(status_code=500, detail="Failed to create agent: No response from RetellAI")
