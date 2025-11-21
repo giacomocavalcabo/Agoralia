@@ -1291,7 +1291,7 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
     """
     from utils.auth import extract_tenant_id
     from services.kb_sync import ensure_kb_synced
-    from models.knowledge import KnowledgeBase
+    # KnowledgeBase is already imported at top of file from models.agents
     
     tenant_id = extract_tenant_id(request)
     
