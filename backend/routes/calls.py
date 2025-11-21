@@ -1319,10 +1319,14 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                 llm_body["begin_message"] = response_engine["begin_message"]
             
             try:
-                llm_response = await retell_post_json("/create-retell-llm", llm_body)
-            except HTTPException:
-                # Try v2 endpoint
-                llm_response = await retell_post_json("/v2/create-retell-llm", llm_body)
+                llm_response = await retell_post_json("/create-retell-llm", llm_body, tenant_id)
+            except HTTPException as llm_he:
+                if llm_he.status_code == 404:
+                    # Try v2 endpoint
+                    print(f"[DEBUG] [retell_create_agent_full] LLM v1 endpoint failed, trying v2", flush=True)
+                    llm_response = await retell_post_json("/v2/create-retell-llm", llm_body, tenant_id)
+                else:
+                    raise
             
             retell_llm_id = llm_response.get("retell_llm_id") or llm_response.get("llm_id") or llm_response.get("id")
             if not retell_llm_id:
