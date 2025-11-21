@@ -10,7 +10,7 @@ import { api } from '@/shared/api/client'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Agent } from '../api'
 import { useKnowledgeBases } from '@/features/knowledge/hooks'
-import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -224,7 +224,7 @@ export function AgentsPage() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const agentForm = useForm<AgentFormInputs>({
-    resolver: zodResolver(agentSchema),
+    resolver: zodResolver(agentSchema) as any,
     defaultValues: {
       language: 'en-US',
       model: 'gpt-4o-mini',
@@ -436,7 +436,7 @@ export function AgentsPage() {
         }),
         
         // Ambient Sound
-        ...(data.ambient_sound && data.ambient_sound !== '' && { ambient_sound: data.ambient_sound }),
+        ...(data.ambient_sound && typeof data.ambient_sound === 'string' && data.ambient_sound.trim() !== '' && { ambient_sound: data.ambient_sound }),
         ...(data.ambient_sound_volume !== undefined && !isNaN(data.ambient_sound_volume) && isFinite(data.ambient_sound_volume) && { 
           ambient_sound_volume: Math.max(0, Math.min(2, data.ambient_sound_volume)) 
         }),
@@ -549,7 +549,7 @@ export function AgentsPage() {
             reminder_max_count: Math.round(data.reminder_max_count) 
           }),
           // Ambient Sound
-          ...(data.ambient_sound && data.ambient_sound !== '' && { ambient_sound: data.ambient_sound }),
+          ...(data.ambient_sound && typeof data.ambient_sound === 'string' && data.ambient_sound.trim() !== '' && { ambient_sound: data.ambient_sound }),
           ...(data.ambient_sound_volume !== undefined && !isNaN(data.ambient_sound_volume) && isFinite(data.ambient_sound_volume) && { 
             ambient_sound_volume: Math.max(0, Math.min(2, data.ambient_sound_volume)) 
           }),
@@ -863,7 +863,7 @@ export function AgentsPage() {
                       onClick={() => handleEdit(agent)}
                       className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
