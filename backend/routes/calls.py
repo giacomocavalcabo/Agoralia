@@ -1490,11 +1490,14 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
         print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
         
-        # Try different endpoint patterns based on what works for LLM creation
+        # Try different endpoint patterns
+        # Note: LLM uses /create-retell-llm, so agent might use different pattern
         response = None
         endpoints_to_try = [
-            "/create-agent",  # Most likely based on LLM pattern (/create-retell-llm)
-            "/v2/create-agent",  # Alternative
+            "/create-agent",  # Per OpenAPI spec
+            "/agent/create",  # Alternative REST pattern
+            "/v2/create-agent",  # Versioned endpoint
+            "/v2/agent/create",  # Versioned alternative pattern
         ]
         
         for endpoint in endpoints_to_try:
