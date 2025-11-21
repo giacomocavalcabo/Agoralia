@@ -1478,19 +1478,11 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                 ).first()
                 
                 if general_kb:
-                    # Ensure KB is synced to RetellAI
-                    try:
-                        retell_kb_id = await ensure_kb_synced(general_kb.id, session, tenant_id)
-                        if retell_kb_id and "response_engine" in agent_body:
-                            # Add KB to response engine if it's retell-llm
-                            if agent_body["response_engine"].get("type") == "retell-llm":
-                                if "knowledge_base_ids" not in agent_body["response_engine"]:
-                                    agent_body["response_engine"]["knowledge_base_ids"] = []
-                                if retell_kb_id not in agent_body["response_engine"]["knowledge_base_ids"]:
-                                    agent_body["response_engine"]["knowledge_base_ids"].append(retell_kb_id)
-                    except Exception as e:
-                        import logging
-                        logging.warning(f"Failed to connect general KB to agent: {e}")
+                    # Note: Knowledge bases are already handled above when creating the LLM
+                    # They should be added to the LLM during creation (via llm_knowledge_base_ids),
+                    # not to the agent's response_engine (which only contains type, llm_id, and optionally version per OpenAPI spec)
+                    # This section is kept for backward compatibility but does nothing now
+                    pass
         
         # Create agent in RetellAI
         # According to RetellAI docs: POST /create-agent
