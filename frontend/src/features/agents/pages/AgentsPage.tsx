@@ -174,11 +174,7 @@ const agentSchema = z.object({
     },
     { message: 'Must be a valid URL if provided' }
   ).or(z.literal('')).or(z.literal(null)),
-  webhook_timeout_ms: z.union([
-    z.number().min(1000).max(30000),
-    z.nan(),
-    z.undefined(),
-  ]).optional().transform((val) => isNaN(val) ? undefined : val),
+  webhook_timeout_ms: z.number().min(1000).max(30000).optional().or(z.nan().transform(() => undefined)),
   post_call_analysis_model: z.string().optional(),
   knowledge_base_ids: z.array(z.number()).default([]),
 })
