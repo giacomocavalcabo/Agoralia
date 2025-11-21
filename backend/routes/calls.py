@@ -1291,6 +1291,7 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
     """
     from utils.auth import extract_tenant_id
     from services.kb_sync import ensure_kb_synced
+    from models.knowledge import KnowledgeBase
     
     tenant_id = extract_tenant_id(request)
     
@@ -1458,7 +1459,7 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         agoralia_agent_id = None
         if body.save_to_agoralia and tenant_id:
             with Session(engine) as session:
-                from models.agents import Agent, KnowledgeBase
+                from models.agents import Agent
                 from services.agents import check_agent_limit
                 from services.enforcement import enforce_subscription_or_raise
                 
