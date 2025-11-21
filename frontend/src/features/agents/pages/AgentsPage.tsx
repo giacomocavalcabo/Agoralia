@@ -1821,7 +1821,7 @@ export function AgentsPage() {
 
             <div>
               <Label htmlFor="from_number">From Number *</Label>
-              {numbers && numbers.length > 0 ? (
+              {numbers && Array.isArray(numbers) && numbers.length > 0 ? (
                 <>
                   <select
                     id="from_number"
@@ -1832,7 +1832,7 @@ export function AgentsPage() {
                   >
                     <option value="">Select a phone number...</option>
                     {numbers
-                      .filter((num) => num.e164)
+                      .filter((num) => num && num.e164 && typeof num.e164 === 'string')
                       .map((num) => (
                         <option key={num.id} value={num.e164}>
                           {num.e164} {num.type ? `(${num.type})` : ''}
@@ -1844,6 +1844,9 @@ export function AgentsPage() {
                       {testCallForm.formState.errors.from_number.message}
                     </p>
                   )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Select a phone number to use as caller ID for the test call.
+                  </p>
                 </>
               ) : (
                 <div className="space-y-2">
