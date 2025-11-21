@@ -337,20 +337,6 @@ export function AgentsPage() {
 
   const onSubmit = async (data: AgentFormInputs) => {
     console.log('[AgentForm] onSubmit called with data:', data)
-    console.log('[AgentForm] Current step:', currentStep, 'isSubmitting:', isSubmitting, 'editingAgent:', editingAgent)
-    
-    // CRITICAL: Only allow submission if we're on step 5 AND isSubmitting is true
-    // This prevents any automatic submissions when navigating to step 5
-    if (currentStep !== 5) {
-      console.log('[AgentForm] BLOCKED: Not on step 5, current step is', currentStep)
-      return
-    }
-    
-    if (!isSubmitting) {
-      console.log('[AgentForm] BLOCKED: isSubmitting is false - submission must be triggered by explicit button click')
-      return
-    }
-    
     try {
       // Build custom prompt
       const customPrompt = buildCustomPrompt(data)
