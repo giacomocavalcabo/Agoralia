@@ -1491,45 +1491,24 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
         print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
         
-        # Try minimal payload first (only required fields: response_engine and voice_id)
-        # Based on curl test, this works successfully
-        minimal_agent_body = {
-            "response_engine": response_engine,
-            "voice_id": body.voice_id,
-        }
-        if body.agent_name:
-            minimal_agent_body["agent_name"] = body.agent_name
-        
-        print(f"[DEBUG] [retell_create_agent_full] Trying with minimal payload first (only required fields)", flush=True)
+        # Per test results: all fields work during creation, so use full payload
+        print(f"[DEBUG] [retell_create_agent_full] Creating agent with full payload (all fields work per test results)", flush=True)
         response = None
         endpoint = "/create-agent"  # Use the endpoint that works per curl test
         
         try:
-            # Try minimal payload first (like curl test)
-            try:
-                response = await retell_post_json(endpoint, minimal_agent_body, None)  # Try global API key with minimal payload
-                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with minimal payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-            except HTTPException as he_minimal:
-                if he_minimal.status_code == 404 and tenant_id is not None:
-                    # If global key fails with 404, try tenant-specific key (BYO account)
-                    print(f"[DEBUG] [retell_create_agent_full] Minimal payload with global key failed, trying tenant-specific key", flush=True)
-                    response = await retell_post_json(endpoint, minimal_agent_body, tenant_id)
-                    print(f"[DEBUG] [retell_create_agent_full] ✅ Success with minimal payload (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-                else:
-                    raise he_minimal
-        except HTTPException as he:
-            # If minimal payload fails, try full payload as fallback
-            print(f"[DEBUG] [retell_create_agent_full] Minimal payload failed: {he.status_code} - {he.detail}", flush=True)
-            print(f"[DEBUG] [retell_create_agent_full] Trying with full payload as fallback", flush=True)
+            # Try with global API key first (like services/agents.py does)
             try:
                 response = await retell_post_json(endpoint, agent_body, None)  # Try global API key with full payload
                 print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-            except HTTPException as he_full:
-                if he_full.status_code == 404 and tenant_id is not None:
+            except HTTPException as he_global:
+                if he_global.status_code == 404 and tenant_id is not None:
+                    # If global key fails with 404, try tenant-specific key (BYO account)
+                    print(f"[DEBUG] [retell_create_agent_full] Global key failed, trying tenant-specific key", flush=True)
                     response = await retell_post_json(endpoint, agent_body, tenant_id)
                     print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
                 else:
-                    raise he_full
+                    raise he_global
             except HTTPException as he:
                 print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he.status_code}: {he.detail}", flush=True)
                 if he.status_code == 404 and endpoint != endpoints_to_try[-1]:
