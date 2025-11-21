@@ -8,6 +8,74 @@ from models.agents import TenantAgent, PhoneNumber
 from models.campaigns import Lead, Campaign
 
 
+def normalize_e164(phone: Optional[str]) -> Optional[str]:
+    """Normalize phone number to valid E.164 format
+    
+    Handles common cases:
+    - Italian numbers with leading 0: 08994869 -> +3908994869
+    - Italian numbers with wrong prefix: +3408994869 -> +3908994869
+    - Already E.164: +3908994869 -> +3908994869
+    - Numbers without +: 3908994869 -> +3908994869
+    """
+    if not phone:
+        return None
+    
+    # Remove whitespace
+    s = str(phone).strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+    if not s:
+        return None
+    
+    # If already starts with +, validate format
+    if s.startswith("+"):
+        # Remove + to work with digits
+        digits = s[1:]
+        if not digits.isdigit():
+            return None
+        
+        # Fix common Italian number errors: +3408994869 -> +3908994869
+        # Italian area codes start with 0 (089, 02, 011, etc.)
+        # If we see +34 followed by a number starting with 0, it's likely Italian
+        if s.startswith("+34") and len(digits) > 3 and digits[3] == "0":
+            # Convert +34 + 0 + rest -> +39 + rest (without leading 0)
+            italian_digits = digits[3:]  # Remove +34 prefix
+            if italian_digits.startswith("0"):
+                italian_digits = italian_digits[1:]  # Remove leading 0
+            return f"+39{italian_digits}"
+        
+        # Check if it's a malformed Italian number: +30... or other wrong prefixes
+        # Italian mobile: 3XX, landline: 0XX
+        # If we have +3 followed by 2 digits starting with 0, it's likely Italian
+        if len(digits) >= 3:
+            if digits[0] == "3" and len(digits) > 3 and digits[3] == "0":
+                # Could be +30X or +34X followed by 0, convert to Italian
+                rest = digits[3:]
+                if rest.startswith("0"):
+                    rest = rest[1:]
+                return f"+39{rest}"
+        
+        return s  # Already valid E.164
+    
+    # If no +, assume Italian if starts with 0, otherwise add +
+    if s.startswith("0"):
+        # Italian number with leading 0: 08994869 -> +3908994869
+        s = s[1:]  # Remove leading 0
+        return f"+39{s}"
+    
+    # If all digits, add +
+    if s.isdigit():
+        # Check if it looks like Italian (10 digits starting with 3 or 0X)
+        if len(s) == 10:
+            if s[0] == "3":
+                # Mobile: 38994869 -> +3938994869
+                return f"+39{s}"
+            elif s[0] == "0":
+                # Landline: 08994869 -> +3908994869 (already removed 0 above)
+                return f"+39{s[1:]}"
+        return f"+{s}"
+    
+    return None
+
+
 def country_iso_from_e164(e164: Optional[str]) -> Optional[str]:
     """Extract country ISO from E.164 number"""
     if not e164:

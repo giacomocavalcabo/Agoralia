@@ -14,7 +14,7 @@ from models.calls import CallRecord, CallSegment
 from models.agents import KnowledgeSection, KnowledgeBase
 from utils.auth import extract_tenant_id
 from utils.tenant import tenant_session
-from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent, _resolve_from_number
+from utils.helpers import country_iso_from_e164, _resolve_lang, _resolve_agent, _resolve_from_number, normalize_e164
 from utils.retell import (
     get_retell_headers,
     get_retell_base_url,
@@ -1676,10 +1676,26 @@ async def retell_test_agent_call(
                     detail="from_number mancante: imposta DEFAULT_FROM_NUMBER nelle settings/env o passa un Caller ID valido"
                 )
         
+        # Normalize phone numbers to E.164 format
+        normalized_from = normalize_e164(from_num) if from_num else None
+        normalized_to = normalize_e164(body.to_number) if body.to_number else None
+        
+        if not normalized_to:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid phone number format: {body.to_number}. Please provide a valid E.164 format number (e.g., +3908994869)"
+            )
+        
+        if not normalized_from:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid from_number format: {from_num}. Please provide a valid E.164 format number"
+            )
+        
         # Build call request
         call_body = {
-            "from_number": from_num,
-            "to_number": body.to_number,
+            "from_number": normalized_from,
+            "to_number": normalized_to,
             "override_agent_id": agent_id,
         }
         
