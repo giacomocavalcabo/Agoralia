@@ -651,15 +651,20 @@ export function AgentsPage() {
           const result = await createMutation.mutateAsync(payload)
           console.log('[AgentForm] Create result:', result)
           if (result.success) {
+            // Reset everything before closing modal to prevent auto-submission
+            setIsSubmitting(false)
+            setEditingAgent(null)
+            setCurrentStep(1)
             agentForm.reset()
             setCreateModalOpen(false)
-            setCurrentStep(1)
             console.log('[AgentForm] Agent created successfully')
           } else {
+            setIsSubmitting(false)
             console.error('[AgentForm] Create failed:', result)
             alert(`Failed to create agent: ${JSON.stringify(result)}`)
           }
         } catch (createError: any) {
+          setIsSubmitting(false)
           console.error('[AgentForm] Create mutation error:', createError)
           alert(`Failed to create agent: ${createError.message || createError.toString()}`)
         }
@@ -990,14 +995,23 @@ export function AgentsPage() {
             onSubmit={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              
+              const submitButton = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
               console.log('[AgentForm] Form submit event triggered')
               console.log('[AgentForm] Current step:', currentStep)
               console.log('[AgentForm] Editing agent:', editingAgent)
               console.log('[AgentForm] Is submitting:', isSubmitting)
+              console.log('[AgentForm] Submit button:', submitButton?.type, submitButton?.textContent)
               
               // Only submit if we're on the last step (step 5) AND user explicitly clicked Create button
               if (currentStep !== 5) {
                 console.log('[AgentForm] Not on last step, preventing submission')
+                return false
+              }
+              
+              // Check if submit button exists and is of type submit (user clicked Create button)
+              if (!submitButton || submitButton.type !== 'submit') {
+                console.log('[AgentForm] Submit not from submit button, preventing auto-submission')
                 return false
               }
               
@@ -1007,7 +1021,7 @@ export function AgentsPage() {
                 return false
               }
               
-              // Set submitting flag
+              // Set submitting flag immediately
               setIsSubmitting(true)
               
               agentForm.handleSubmit(
@@ -1015,9 +1029,8 @@ export function AgentsPage() {
                   console.log('[AgentForm] Validation passed, calling onSubmit')
                   onSubmit(data).catch((err) => {
                     console.error('[AgentForm] onSubmit promise rejection:', err)
-                    alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
-                  }).finally(() => {
                     setIsSubmitting(false)
+                    alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
                   })
                 },
                 (errors) => {
@@ -1036,6 +1049,20 @@ export function AgentsPage() {
               
               return false
             }} 
+            onKeyDown={(e) => {
+              // Prevent Enter key from submitting the form unless we're on step 5 and clicking Create button
+              if (e.key === 'Enter' && currentStep !== 5) {
+                e.preventDefault()
+                e.stopPropagation()
+                return false
+              }
+              // On step 5, prevent Enter from auto-submitting unless it's from the Create button
+              if (e.key === 'Enter' && currentStep === 5 && isSubmitting) {
+                e.preventDefault()
+                e.stopPropagation()
+                return false
+              }
+            }}
             className="space-y-4 mt-4"
           >
             {/* Step 1: Base Configuration */}
