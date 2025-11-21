@@ -149,7 +149,7 @@ const agentSchema = z.object({
   stt_mode: z.enum(['fast', 'accurate']).optional(),
   vocab_specialization: z.enum(['general', 'medical']).optional(),
   denoising_mode: z.enum(['noise-cancellation', 'noise-and-background-speech-cancellation']).optional(),
-  boosted_keywords: z.array(z.string()).optional().or(z.literal(undefined)).or(z.literal('')),
+  boosted_keywords: z.array(z.string()).optional().or(z.literal(undefined)),
   normalize_for_speech: z.boolean().optional(),
   // These are stored in seconds in the form, converted to ms on submit
   end_call_after_silence_seconds: z.number().min(10).optional(), // min 10s = 10000ms
@@ -398,58 +398,100 @@ export function AgentsPage() {
         begin_message_delay_ms: data.begin_message_delay_ms ?? 0,
         
         // Voice Settings
-        ...(data.voice_model && { voice_model: data.voice_model }),
-        ...(data.voice_temperature !== undefined && { voice_temperature: data.voice_temperature }),
-        ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
-        ...(data.volume !== undefined && { volume: data.volume }),
-        ...(data.fallback_voice_ids && data.fallback_voice_ids.length > 0 && { fallback_voice_ids: data.fallback_voice_ids }),
+        ...(data.voice_model && data.voice_model.trim() !== '' && { voice_model: data.voice_model.trim() }),
+        ...(data.voice_temperature !== undefined && !isNaN(data.voice_temperature) && isFinite(data.voice_temperature) && { 
+          voice_temperature: Math.max(0, Math.min(2, data.voice_temperature)) 
+        }),
+        ...(data.voice_speed !== undefined && !isNaN(data.voice_speed) && isFinite(data.voice_speed) && { 
+          voice_speed: Math.max(0.5, Math.min(2, data.voice_speed)) 
+        }),
+        ...(data.volume !== undefined && !isNaN(data.volume) && isFinite(data.volume) && { 
+          volume: Math.max(0, Math.min(2, data.volume)) 
+        }),
+        ...(Array.isArray(data.fallback_voice_ids) && data.fallback_voice_ids.length > 0 && { 
+          fallback_voice_ids: data.fallback_voice_ids.filter(v => v && typeof v === 'string' && v.trim().length > 0) 
+        }),
         
         // Agent Behavior
-        ...(data.responsiveness !== undefined && { responsiveness: data.responsiveness }),
-        ...(data.interruption_sensitivity !== undefined && { interruption_sensitivity: data.interruption_sensitivity }),
-        ...(data.enable_backchannel !== undefined && { enable_backchannel: data.enable_backchannel }),
-        ...(data.backchannel_frequency !== undefined && { backchannel_frequency: data.backchannel_frequency }),
-        ...(data.backchannel_words && data.backchannel_words.length > 0 && { backchannel_words: data.backchannel_words }),
-        ...(data.reminder_trigger_ms !== undefined && { reminder_trigger_ms: data.reminder_trigger_ms }),
-        ...(data.reminder_max_count !== undefined && { reminder_max_count: data.reminder_max_count }),
+        ...(data.responsiveness !== undefined && !isNaN(data.responsiveness) && isFinite(data.responsiveness) && { 
+          responsiveness: Math.max(0, Math.min(1, data.responsiveness)) 
+        }),
+        ...(data.interruption_sensitivity !== undefined && !isNaN(data.interruption_sensitivity) && isFinite(data.interruption_sensitivity) && { 
+          interruption_sensitivity: Math.max(0, Math.min(1, data.interruption_sensitivity)) 
+        }),
+        ...(data.enable_backchannel !== undefined && typeof data.enable_backchannel === 'boolean' && { 
+          enable_backchannel: data.enable_backchannel 
+        }),
+        ...(data.backchannel_frequency !== undefined && !isNaN(data.backchannel_frequency) && isFinite(data.backchannel_frequency) && { 
+          backchannel_frequency: Math.max(0, Math.min(1, data.backchannel_frequency)) 
+        }),
+        ...(Array.isArray(data.backchannel_words) && data.backchannel_words.length > 0 && { 
+          backchannel_words: data.backchannel_words.filter(w => w && typeof w === 'string' && w.trim().length > 0) 
+        }),
+        ...(data.reminder_trigger_ms !== undefined && !isNaN(data.reminder_trigger_ms) && isFinite(data.reminder_trigger_ms) && data.reminder_trigger_ms > 0 && { 
+          reminder_trigger_ms: Math.round(data.reminder_trigger_ms) 
+        }),
+        ...(data.reminder_max_count !== undefined && !isNaN(data.reminder_max_count) && isFinite(data.reminder_max_count) && data.reminder_max_count >= 0 && { 
+          reminder_max_count: Math.round(data.reminder_max_count) 
+        }),
         
         // Ambient Sound
         ...(data.ambient_sound && data.ambient_sound !== '' && { ambient_sound: data.ambient_sound }),
-        ...(data.ambient_sound_volume !== undefined && { ambient_sound_volume: data.ambient_sound_volume }),
+        ...(data.ambient_sound_volume !== undefined && !isNaN(data.ambient_sound_volume) && isFinite(data.ambient_sound_volume) && { 
+          ambient_sound_volume: Math.max(0, Math.min(2, data.ambient_sound_volume)) 
+        }),
         
         // Transcription & Keywords
         ...(data.stt_mode && { stt_mode: data.stt_mode }),
         ...(data.vocab_specialization && { vocab_specialization: data.vocab_specialization }),
         ...(data.denoising_mode && { denoising_mode: data.denoising_mode }),
-        ...(data.boosted_keywords && data.boosted_keywords.length > 0 && { boosted_keywords: data.boosted_keywords }),
-        ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
+        ...(Array.isArray(data.boosted_keywords) && data.boosted_keywords.length > 0 && { 
+          boosted_keywords: data.boosted_keywords.filter(k => k && typeof k === 'string' && k.trim().length > 0) 
+        }),
+        ...(data.normalize_for_speech !== undefined && typeof data.normalize_for_speech === 'boolean' && { 
+          normalize_for_speech: data.normalize_for_speech 
+        }),
         
-        // Call Settings - convert seconds to milliseconds
-        ...(data.end_call_after_silence_seconds !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_seconds * 1000 }),
-        ...(data.max_call_duration_seconds !== undefined && { max_call_duration_ms: data.max_call_duration_seconds * 1000 }),
-        ...(data.ring_duration_seconds !== undefined && { ring_duration_ms: data.ring_duration_seconds * 1000 }),
-        ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
+        // Call Settings - convert seconds to milliseconds (ensure valid numbers and ranges)
+        ...(data.end_call_after_silence_seconds !== undefined && !isNaN(data.end_call_after_silence_seconds) && isFinite(data.end_call_after_silence_seconds) && data.end_call_after_silence_seconds >= 10 && { 
+          end_call_after_silence_ms: Math.round(data.end_call_after_silence_seconds * 1000) 
+        }),
+        ...(data.max_call_duration_seconds !== undefined && !isNaN(data.max_call_duration_seconds) && isFinite(data.max_call_duration_seconds) && data.max_call_duration_seconds >= 60 && data.max_call_duration_seconds <= 7200 && { 
+          max_call_duration_ms: Math.round(data.max_call_duration_seconds * 1000) 
+        }),
+        ...(data.ring_duration_seconds !== undefined && !isNaN(data.ring_duration_seconds) && isFinite(data.ring_duration_seconds) && data.ring_duration_seconds >= 5 && data.ring_duration_seconds <= 90 && { 
+          ring_duration_ms: Math.round(data.ring_duration_seconds * 1000) 
+        }),
+        ...(data.allow_user_dtmf !== undefined && typeof data.allow_user_dtmf === 'boolean' && { 
+          allow_user_dtmf: data.allow_user_dtmf 
+        }),
         
         // Voicemail
-        ...(data.voicemail_detect && data.voicemail_message && {
+        ...(data.voicemail_detect && data.voicemail_message && data.voicemail_message.trim() !== '' ? {
           voicemail_option: {
             action: {
               type: 'static_text',
-              text: data.voicemail_message,
+              text: data.voicemail_message.trim(),
             },
           },
-        }),
+        } : {}),
         
         // Data Storage
         ...(data.data_storage_setting && { data_storage_setting: data.data_storage_setting }),
-        ...(data.opt_in_signed_url !== undefined && { opt_in_signed_url: data.opt_in_signed_url }),
+        ...(data.opt_in_signed_url !== undefined && typeof data.opt_in_signed_url === 'boolean' && { 
+          opt_in_signed_url: data.opt_in_signed_url 
+        }),
         
-        // Webhook
-        ...(data.webhook_url && { webhook_url: data.webhook_url }),
-        ...(data.webhook_timeout_ms !== undefined && { webhook_timeout_ms: data.webhook_timeout_ms }),
+        // Webhook - only include if not empty
+        ...(data.webhook_url && data.webhook_url.trim() !== '' ? { webhook_url: data.webhook_url.trim() } : {}),
+        ...(data.webhook_timeout_ms !== undefined && !isNaN(data.webhook_timeout_ms) && isFinite(data.webhook_timeout_ms) && data.webhook_timeout_ms >= 1000 && data.webhook_timeout_ms <= 30000 && { 
+          webhook_timeout_ms: Math.round(data.webhook_timeout_ms) 
+        }),
         
         // Post-Call Analysis
-        ...(data.post_call_analysis_model && { post_call_analysis_model: data.post_call_analysis_model }),
+        ...(data.post_call_analysis_model && data.post_call_analysis_model.trim() !== '' && { 
+          post_call_analysis_model: data.post_call_analysis_model.trim() 
+        }),
         
         // Additional metadata (for UI/database)
         role: data.role,
@@ -471,48 +513,88 @@ export function AgentsPage() {
             start_speaker: data.start_speaker || 'agent',
             begin_message_delay_ms: data.begin_message_delay_ms ?? 0,
           // Voice Settings
-          ...(data.voice_model && { voice_model: data.voice_model }),
-          ...(data.voice_temperature !== undefined && { voice_temperature: data.voice_temperature }),
-          ...(data.voice_speed !== undefined && { voice_speed: data.voice_speed }),
-          ...(data.volume !== undefined && { volume: data.volume }),
-          ...(data.fallback_voice_ids && data.fallback_voice_ids.length > 0 && { fallback_voice_ids: data.fallback_voice_ids }),
+          ...(data.voice_model && data.voice_model.trim() !== '' && { voice_model: data.voice_model.trim() }),
+          ...(data.voice_temperature !== undefined && !isNaN(data.voice_temperature) && isFinite(data.voice_temperature) && { 
+            voice_temperature: Math.max(0, Math.min(2, data.voice_temperature)) 
+          }),
+          ...(data.voice_speed !== undefined && !isNaN(data.voice_speed) && isFinite(data.voice_speed) && { 
+            voice_speed: Math.max(0.5, Math.min(2, data.voice_speed)) 
+          }),
+          ...(data.volume !== undefined && !isNaN(data.volume) && isFinite(data.volume) && { 
+            volume: Math.max(0, Math.min(2, data.volume)) 
+          }),
+          ...(Array.isArray(data.fallback_voice_ids) && data.fallback_voice_ids.length > 0 && { 
+            fallback_voice_ids: data.fallback_voice_ids.filter(v => v && v.trim().length > 0) 
+          }),
           // Agent Behavior
-          ...(data.responsiveness !== undefined && { responsiveness: data.responsiveness }),
-          ...(data.interruption_sensitivity !== undefined && { interruption_sensitivity: data.interruption_sensitivity }),
-          ...(data.enable_backchannel !== undefined && { enable_backchannel: data.enable_backchannel }),
-          ...(data.backchannel_frequency !== undefined && { backchannel_frequency: data.backchannel_frequency }),
-          ...(data.backchannel_words && data.backchannel_words.length > 0 && { backchannel_words: data.backchannel_words }),
-          ...(data.reminder_trigger_ms !== undefined && { reminder_trigger_ms: data.reminder_trigger_ms }),
-          ...(data.reminder_max_count !== undefined && { reminder_max_count: data.reminder_max_count }),
+          ...(data.responsiveness !== undefined && !isNaN(data.responsiveness) && isFinite(data.responsiveness) && { 
+            responsiveness: Math.max(0, Math.min(1, data.responsiveness)) 
+          }),
+          ...(data.interruption_sensitivity !== undefined && !isNaN(data.interruption_sensitivity) && isFinite(data.interruption_sensitivity) && { 
+            interruption_sensitivity: Math.max(0, Math.min(1, data.interruption_sensitivity)) 
+          }),
+          ...(data.enable_backchannel !== undefined && typeof data.enable_backchannel === 'boolean' && { 
+            enable_backchannel: data.enable_backchannel 
+          }),
+          ...(data.backchannel_frequency !== undefined && !isNaN(data.backchannel_frequency) && isFinite(data.backchannel_frequency) && { 
+            backchannel_frequency: Math.max(0, Math.min(1, data.backchannel_frequency)) 
+          }),
+          ...(Array.isArray(data.backchannel_words) && data.backchannel_words.length > 0 && { 
+            backchannel_words: data.backchannel_words.filter(w => w && w.trim().length > 0) 
+          }),
+          ...(data.reminder_trigger_ms !== undefined && !isNaN(data.reminder_trigger_ms) && isFinite(data.reminder_trigger_ms) && data.reminder_trigger_ms > 0 && { 
+            reminder_trigger_ms: Math.round(data.reminder_trigger_ms) 
+          }),
+          ...(data.reminder_max_count !== undefined && !isNaN(data.reminder_max_count) && isFinite(data.reminder_max_count) && data.reminder_max_count >= 0 && { 
+            reminder_max_count: Math.round(data.reminder_max_count) 
+          }),
           // Ambient Sound
-          ...(data.ambient_sound && data.ambient_sound !== '' ? { ambient_sound: data.ambient_sound } : { ambient_sound: null }),
-          ...(data.ambient_sound_volume !== undefined && { ambient_sound_volume: data.ambient_sound_volume }),
+          ...(data.ambient_sound && data.ambient_sound !== '' && { ambient_sound: data.ambient_sound }),
+          ...(data.ambient_sound_volume !== undefined && !isNaN(data.ambient_sound_volume) && isFinite(data.ambient_sound_volume) && { 
+            ambient_sound_volume: Math.max(0, Math.min(2, data.ambient_sound_volume)) 
+          }),
           // Transcription & Keywords
           ...(data.stt_mode && { stt_mode: data.stt_mode }),
           ...(data.vocab_specialization && { vocab_specialization: data.vocab_specialization }),
           ...(data.denoising_mode && { denoising_mode: data.denoising_mode }),
-          ...(data.boosted_keywords && data.boosted_keywords.length > 0 ? { boosted_keywords: data.boosted_keywords } : { boosted_keywords: null }),
-          ...(data.normalize_for_speech !== undefined && { normalize_for_speech: data.normalize_for_speech }),
-          // Call Settings - convert seconds to milliseconds
-          ...(data.end_call_after_silence_seconds !== undefined && { end_call_after_silence_ms: data.end_call_after_silence_seconds * 1000 }),
-          ...(data.max_call_duration_seconds !== undefined && { max_call_duration_ms: data.max_call_duration_seconds * 1000 }),
-          ...(data.ring_duration_seconds !== undefined && { ring_duration_ms: data.ring_duration_seconds * 1000 }),
-          ...(data.allow_user_dtmf !== undefined && { allow_user_dtmf: data.allow_user_dtmf }),
+          ...(Array.isArray(data.boosted_keywords) && data.boosted_keywords.length > 0 && { 
+            boosted_keywords: data.boosted_keywords.filter(k => k && typeof k === 'string' && k.trim().length > 0) 
+          }),
+          ...(data.normalize_for_speech !== undefined && typeof data.normalize_for_speech === 'boolean' && { 
+            normalize_for_speech: data.normalize_for_speech 
+          }),
+          // Call Settings - convert seconds to milliseconds (ensure valid numbers)
+          ...(data.end_call_after_silence_seconds !== undefined && !isNaN(data.end_call_after_silence_seconds) && isFinite(data.end_call_after_silence_seconds) && data.end_call_after_silence_seconds >= 10 && { 
+            end_call_after_silence_ms: Math.round(data.end_call_after_silence_seconds * 1000) 
+          }),
+          ...(data.max_call_duration_seconds !== undefined && !isNaN(data.max_call_duration_seconds) && isFinite(data.max_call_duration_seconds) && data.max_call_duration_seconds >= 60 && data.max_call_duration_seconds <= 7200 && { 
+            max_call_duration_ms: Math.round(data.max_call_duration_seconds * 1000) 
+          }),
+          ...(data.ring_duration_seconds !== undefined && !isNaN(data.ring_duration_seconds) && isFinite(data.ring_duration_seconds) && data.ring_duration_seconds >= 5 && data.ring_duration_seconds <= 90 && { 
+            ring_duration_ms: Math.round(data.ring_duration_seconds * 1000) 
+          }),
+          ...(data.allow_user_dtmf !== undefined && typeof data.allow_user_dtmf === 'boolean' && { 
+            allow_user_dtmf: data.allow_user_dtmf 
+          }),
           // Voicemail
-          ...(data.voicemail_detect && data.voicemail_message ? {
+          ...(data.voicemail_detect && data.voicemail_message && data.voicemail_message.trim() !== '' ? {
             voicemail_option: {
               action: {
                 type: 'static_text',
-                text: data.voicemail_message,
+                text: data.voicemail_message.trim(),
               },
             },
-          } : { voicemail_option: null }),
+          } : {}),
           // Data Storage
           ...(data.data_storage_setting && { data_storage_setting: data.data_storage_setting }),
-          ...(data.opt_in_signed_url !== undefined && { opt_in_signed_url: data.opt_in_signed_url }),
-          // Webhook
-          ...(data.webhook_url ? { webhook_url: data.webhook_url } : { webhook_url: null }),
-          ...(data.webhook_timeout_ms !== undefined && { webhook_timeout_ms: data.webhook_timeout_ms }),
+          ...(data.opt_in_signed_url !== undefined && typeof data.opt_in_signed_url === 'boolean' && { 
+            opt_in_signed_url: data.opt_in_signed_url 
+          }),
+          // Webhook - only include if not empty
+          ...(data.webhook_url && data.webhook_url.trim() !== '' ? { webhook_url: data.webhook_url.trim() } : {}),
+          ...(data.webhook_timeout_ms !== undefined && !isNaN(data.webhook_timeout_ms) && isFinite(data.webhook_timeout_ms) && data.webhook_timeout_ms >= 1000 && data.webhook_timeout_ms <= 30000 && { 
+            webhook_timeout_ms: Math.round(data.webhook_timeout_ms) 
+          }),
           // Post-Call Analysis
           ...(data.post_call_analysis_model && { post_call_analysis_model: data.post_call_analysis_model }),
           // Knowledge Base - convert Agoralia KB IDs to Retell KB IDs
