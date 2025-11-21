@@ -216,6 +216,7 @@ export function AgentsPage() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const qc = useQueryClient()
   const { data: agents, isLoading, error } = useAgents()
   const { data: kbs } = useKnowledgeBases()
@@ -669,7 +670,13 @@ export function AgentsPage() {
     }
   }
   
-  const handleNextStep = async () => {
+  const handleNextStep = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent form submission
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
     const step1Fields: (keyof AgentFormInputs)[] = ['agent_name', 'voice_id', 'language', 'model']
     const step2Fields: (keyof AgentFormInputs)[] = ['role', 'mission']
     // Steps 3, 4, 5 don't have required fields - all optional
@@ -685,6 +692,8 @@ export function AgentsPage() {
     if (isValid && currentStep < 5) {
       setCurrentStep(currentStep + 1)
     }
+    
+    return false
   }
   
   const handlePrevStep = () => {
@@ -980,12 +989,22 @@ export function AgentsPage() {
               console.log('[AgentForm] Form submit event triggered')
               console.log('[AgentForm] Current step:', currentStep)
               console.log('[AgentForm] Editing agent:', editingAgent)
+              console.log('[AgentForm] Is submitting:', isSubmitting)
               
-              // Only submit if we're on the last step (step 5)
+              // Only submit if we're on the last step (step 5) AND user explicitly clicked Create button
               if (currentStep !== 5) {
                 console.log('[AgentForm] Not on last step, preventing submission')
-                return
+                return false
               }
+              
+              // Check if we're already submitting (prevent double submission)
+              if (isSubmitting) {
+                console.log('[AgentForm] Already submitting, preventing double submission')
+                return false
+              }
+              
+              // Set submitting flag
+              setIsSubmitting(true)
               
               agentForm.handleSubmit(
                 (data) => {
@@ -993,10 +1012,13 @@ export function AgentsPage() {
                   onSubmit(data).catch((err) => {
                     console.error('[AgentForm] onSubmit promise rejection:', err)
                     alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
+                  }).finally(() => {
+                    setIsSubmitting(false)
                   })
                 },
                 (errors) => {
                   console.error('[AgentForm] Form validation errors:', errors)
+                  setIsSubmitting(false)
                   // Show first error
                   const firstError = Object.keys(errors)[0]
                   if (firstError) {
@@ -1006,7 +1028,9 @@ export function AgentsPage() {
                     alert('Errore di validazione: controlla i campi del form')
                   }
                 }
-              )(e)
+              )()
+              
+              return false
             }} 
             className="space-y-4 mt-4"
           >
