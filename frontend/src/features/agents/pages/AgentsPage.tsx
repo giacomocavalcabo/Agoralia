@@ -205,7 +205,7 @@ function formatDuration(seconds: number): string {
 // Test call schema
 const testCallSchema = z.object({
   to_number: z.string().min(1, 'Phone number is required'),
-  from_number: z.string().optional(),
+  from_number: z.string().min(1, 'From number is required'),
 })
 
 type TestCallFormInputs = z.infer<typeof testCallSchema>
@@ -747,11 +747,14 @@ export function AgentsPage() {
     if (!selectedAgentId) return
     
     try {
+      // Ensure from_number is not empty string
+      const fromNumber = data.from_number && data.from_number.trim() ? data.from_number.trim() : undefined
+      
       const result = await testCallMutation.mutateAsync({
         agentId: selectedAgentId,
         payload: {
-          to_number: data.to_number,
-          from_number: data.from_number || undefined,
+          to_number: data.to_number.trim(),
+          from_number: fromNumber,
         },
       })
       
@@ -1817,34 +1820,45 @@ export function AgentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="from_number">From Number (Optional)</Label>
+              <Label htmlFor="from_number">From Number *</Label>
               {numbers && numbers.length > 0 ? (
-                <select
-                  id="from_number"
-                  {...testCallForm.register('from_number')}
-                  className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Use default number</option>
-                  {numbers
-                    .filter((num) => num.e164 && num.verified !== false)
-                    .map((num) => (
-                      <option key={num.id} value={num.e164}>
-                        {num.e164} {num.type ? `(${num.type})` : ''}
-                      </option>
-                    ))}
-                </select>
+                <>
+                  <select
+                    id="from_number"
+                    {...testCallForm.register('from_number', {
+                      required: 'Please select a phone number to use for the call'
+                    })}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select a phone number...</option>
+                    {numbers
+                      .filter((num) => num.e164)
+                      .map((num) => (
+                        <option key={num.id} value={num.e164}>
+                          {num.e164} {num.type ? `(${num.type})` : ''}
+                        </option>
+                      ))}
+                  </select>
+                  {testCallForm.formState.errors.from_number && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {testCallForm.formState.errors.from_number.message}
+                    </p>
+                  )}
+                </>
               ) : (
-                <Input
-                  id="from_number"
-                  {...testCallForm.register('from_number')}
-                  error={testCallForm.formState.errors.from_number?.message}
-                  placeholder="Leave empty to use default"
-                />
-              )}
-              {testCallForm.formState.errors.from_number && (
-                <p className="mt-1 text-sm text-destructive">
-                  {testCallForm.formState.errors.from_number.message}
-                </p>
+                <div className="space-y-2">
+                  <Input
+                    id="from_number"
+                    {...testCallForm.register('from_number', {
+                      required: 'Please enter a phone number (E.164 format)'
+                    })}
+                    error={testCallForm.formState.errors.from_number?.message}
+                    placeholder="+393491234567"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    No phone numbers available. Please enter a phone number in E.164 format.
+                  </p>
+                </div>
               )}
             </div>
 
