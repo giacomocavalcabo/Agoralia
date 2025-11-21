@@ -1438,7 +1438,17 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                         logging.warning(f"Failed to connect general KB to agent: {e}")
         
         # Create agent in RetellAI
-        response = await retell_post_json("/create-agent", agent_body)
+        print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
+        try:
+            response = await retell_post_json("/create-agent", agent_body)
+            print(f"[DEBUG] [retell_create_agent_full] RetellAI response: {json.dumps(response, indent=2, default=str)}", flush=True)
+        except HTTPException as he:
+            print(f"[DEBUG] [retell_create_agent_full] RetellAI HTTPException: {he.status_code} - {he.detail}", flush=True)
+            raise
+        except Exception as retell_error:
+            print(f"[DEBUG] [retell_create_agent_full] RetellAI Exception: {retell_error}", flush=True)
+            raise
+        
         agent_id = response.get("agent_id")
         
         if not agent_id:

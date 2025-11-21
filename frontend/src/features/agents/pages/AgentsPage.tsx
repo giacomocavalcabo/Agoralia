@@ -174,7 +174,11 @@ const agentSchema = z.object({
     },
     { message: 'Must be a valid URL if provided' }
   ).or(z.literal('')).or(z.literal(null)),
-  webhook_timeout_ms: z.number().min(1000).max(30000).optional(),
+  webhook_timeout_ms: z.union([
+    z.number().min(1000).max(30000),
+    z.nan(),
+    z.undefined(),
+  ]).optional().transform((val) => isNaN(val) ? undefined : val),
   post_call_analysis_model: z.string().optional(),
   knowledge_base_ids: z.array(z.number()).default([]),
 })
@@ -1594,7 +1598,14 @@ export function AgentsPage() {
                         type="number"
                         min={1000}
                         max={30000}
-                        {...agentForm.register('webhook_timeout_ms', { valueAsNumber: true })}
+                        {...agentForm.register('webhook_timeout_ms', { 
+                          valueAsNumber: true,
+                          setValueAs: (v) => {
+                            if (v === '' || v === null || v === undefined) return undefined
+                            const num = Number(v)
+                            return isNaN(num) ? undefined : num
+                          }
+                        })}
                         placeholder="10000"
                       />
                     </div>
