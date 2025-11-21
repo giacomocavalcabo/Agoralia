@@ -1504,7 +1504,19 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
             full_url = f"{get_retell_base_url()}{endpoint}"
             print(f"[DEBUG] [retell_create_agent_full] Trying endpoint: {full_url}", flush=True)
             try:
-                response = await retell_post_json(endpoint, agent_body, tenant_id)
+                # Try without tenant_id first (use global API key, like services/agents.py does)
+                # If that fails, try with tenant_id for BYO account support
+                try:
+                    response = await retell_post_json(endpoint, agent_body, None)  # Try global API key first
+                    print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint} (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+                except HTTPException as he_global:
+                    if he_global.status_code == 404 and tenant_id is not None:
+                        # If global key fails with 404, try tenant-specific key (BYO account)
+                        print(f"[DEBUG] [retell_create_agent_full] Global key failed, trying tenant-specific key", flush=True)
+                        response = await retell_post_json(endpoint, agent_body, tenant_id)
+                        print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint} (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+                    else:
+                        raise he_global
                 print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint}: {json.dumps(response, indent=2, default=str)}", flush=True)
                 break  # Success, exit loop
             except HTTPException as he:
