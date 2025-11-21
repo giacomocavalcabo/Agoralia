@@ -1725,9 +1725,16 @@ export function AgentsPage() {
                     type="button"
                     disabled={createMutation.isPending || isUpdating || isSubmitting}
                     onClick={async (e) => {
+                      // CRITICAL: Prevent any default behavior
                       e.preventDefault()
                       e.stopPropagation()
-                      console.log('[AgentForm] Create/Update button clicked explicitly')
+                      e.stopImmediatePropagation()
+                      
+                      console.log('[AgentForm] Create/Update button clicked explicitly', {
+                        currentStep,
+                        isSubmitting,
+                        editingAgent: !!editingAgent
+                      })
                       
                       // Only allow submission if we're on step 5
                       if (currentStep !== 5) {
@@ -1741,7 +1748,7 @@ export function AgentsPage() {
                         return
                       }
                       
-                      // Set submitting flag
+                      // Set submitting flag BEFORE doing anything else
                       setIsSubmitting(true)
                       
                       // Use form's handleSubmit to validate and submit
