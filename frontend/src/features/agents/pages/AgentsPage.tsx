@@ -680,10 +680,15 @@ export function AgentsPage() {
   }
   
   const handleNextStep = async (e?: React.MouseEvent<HTMLButtonElement>) => {
-    // Prevent form submission
+    // CRITICAL: Prevent ANY form submission behavior
     if (e) {
       e.preventDefault()
       e.stopPropagation()
+    }
+    
+    // Don't proceed if already submitting
+    if (isSubmitting) {
+      return false
     }
     
     const step1Fields: (keyof AgentFormInputs)[] = ['agent_name', 'voice_id', 'language', 'model']
@@ -699,9 +704,12 @@ export function AgentsPage() {
     
     const isValid = fieldsToValidate.length === 0 || await agentForm.trigger(fieldsToValidate as any)
     if (isValid && currentStep < 5) {
-      // Reset submitting flag when moving to next step
-      setIsSubmitting(false)
-      setCurrentStep(currentStep + 1)
+      // CRITICAL: Use setTimeout to defer step change and prevent any automatic submission
+      // This ensures that any event handlers or form behaviors are fully processed first
+      setTimeout(() => {
+        setIsSubmitting(false)
+        setCurrentStep(currentStep + 1)
+      }, 0)
     }
     
     return false
