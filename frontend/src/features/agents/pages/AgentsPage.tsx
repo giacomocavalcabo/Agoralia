@@ -993,73 +993,21 @@ export function AgentsPage() {
           
           <form 
             onSubmit={(e) => {
+              // ALWAYS prevent form submission - we only submit via explicit button click
               e.preventDefault()
               e.stopPropagation()
-              
-              const submitButton = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
-              console.log('[AgentForm] Form submit event triggered')
-              console.log('[AgentForm] Current step:', currentStep)
-              console.log('[AgentForm] Editing agent:', editingAgent)
-              console.log('[AgentForm] Is submitting:', isSubmitting)
-              console.log('[AgentForm] Submit button:', submitButton?.type, submitButton?.textContent)
-              
-              // Only submit if we're on the last step (step 5) AND user explicitly clicked Create button
-              if (currentStep !== 5) {
-                console.log('[AgentForm] Not on last step, preventing submission')
-                return false
-              }
-              
-              // Check if submit button exists and is of type submit (user clicked Create button)
-              if (!submitButton || submitButton.type !== 'submit') {
-                console.log('[AgentForm] Submit not from submit button, preventing auto-submission')
-                return false
-              }
-              
-              // Check if we're already submitting (prevent double submission)
-              if (isSubmitting) {
-                console.log('[AgentForm] Already submitting, preventing double submission')
-                return false
-              }
-              
-              // Set submitting flag immediately
-              setIsSubmitting(true)
-              
-              agentForm.handleSubmit(
-                (data) => {
-                  console.log('[AgentForm] Validation passed, calling onSubmit')
-                  onSubmit(data).catch((err) => {
-                    console.error('[AgentForm] onSubmit promise rejection:', err)
-                    setIsSubmitting(false)
-                    alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
-                  })
-                },
-                (errors) => {
-                  console.error('[AgentForm] Form validation errors:', errors)
-                  setIsSubmitting(false)
-                  // Show first error
-                  const firstError = Object.keys(errors)[0]
-                  if (firstError) {
-                    const errorMessage = errors[firstError as keyof typeof errors]?.message
-                    alert(`Errore di validazione: ${firstError} - ${errorMessage || 'Campo richiesto'}`)
-                  } else {
-                    alert('Errore di validazione: controlla i campi del form')
-                  }
-                }
-              )()
-              
+              console.log('[AgentForm] Form submit event PREVENTED - only explicit button clicks allowed')
               return false
             }} 
             onKeyDown={(e) => {
-              // Prevent Enter key from submitting the form unless we're on step 5 and clicking Create button
-              if (e.key === 'Enter' && currentStep !== 5) {
+              // ALWAYS prevent Enter key from submitting the form
+              if (e.key === 'Enter') {
                 e.preventDefault()
                 e.stopPropagation()
-                return false
-              }
-              // On step 5, prevent Enter from auto-submitting unless it's from the Create button
-              if (e.key === 'Enter' && currentStep === 5 && isSubmitting) {
-                e.preventDefault()
-                e.stopPropagation()
+                // If on step 5 and pressing Enter, do nothing (user must click button)
+                if (currentStep === 5) {
+                  console.log('[AgentForm] Enter key pressed on step 5 - ignoring (must click Create button)')
+                }
                 return false
               }
             }}
@@ -1771,8 +1719,55 @@ export function AgentsPage() {
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={createMutation.isPending || isUpdating}>
-                    {(createMutation.isPending || isUpdating) ? (
+                  <Button 
+                    type="button"
+                    disabled={createMutation.isPending || isUpdating || isSubmitting}
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('[AgentForm] Create/Update button clicked explicitly')
+                      
+                      // Only allow submission if we're on step 5
+                      if (currentStep !== 5) {
+                        console.log('[AgentForm] Not on step 5, ignoring click')
+                        return
+                      }
+                      
+                      // Check if we're already submitting
+                      if (isSubmitting) {
+                        console.log('[AgentForm] Already submitting, ignoring click')
+                        return
+                      }
+                      
+                      // Set submitting flag
+                      setIsSubmitting(true)
+                      
+                      // Use form's handleSubmit to validate and submit
+                      agentForm.handleSubmit(
+                        (data) => {
+                          console.log('[AgentForm] Validation passed, calling onSubmit')
+                          onSubmit(data).catch((err) => {
+                            console.error('[AgentForm] onSubmit promise rejection:', err)
+                            setIsSubmitting(false)
+                            alert(`Errore durante la creazione/aggiornamento: ${err.message || err.toString()}`)
+                          })
+                        },
+                        (errors) => {
+                          console.error('[AgentForm] Form validation errors:', errors)
+                          setIsSubmitting(false)
+                          // Show first error
+                          const firstError = Object.keys(errors)[0]
+                          if (firstError) {
+                            const errorMessage = errors[firstError as keyof typeof errors]?.message
+                            alert(`Errore di validazione: ${firstError} - ${errorMessage || 'Campo richiesto'}`)
+                          } else {
+                            alert('Errore di validazione: controlla i campi del form')
+                          }
+                        }
+                      )()
+                    }}
+                  >
+                    {(createMutation.isPending || isUpdating || isSubmitting) ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {editingAgent ? 'Updating...' : 'Creating...'}
