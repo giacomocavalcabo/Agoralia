@@ -1389,6 +1389,7 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
             response_engine = cleaned_response_engine
         
         # Build agent body for RetellAI (per OpenAPI spec)
+        # Start with minimal required fields first (response_engine and voice_id)
         agent_body: Dict[str, Any] = {
             "response_engine": response_engine,
             "voice_id": body.voice_id,
