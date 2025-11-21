@@ -991,27 +991,17 @@ export function AgentsPage() {
             ))}
           </div>
           
-          <form 
-            onSubmit={(e) => {
-              // ALWAYS prevent form submission - we only submit via explicit button click
-              e.preventDefault()
-              e.stopPropagation()
-              console.log('[AgentForm] Form submit event PREVENTED - only explicit button clicks allowed')
-              return false
-            }} 
+          <div 
+            className="space-y-4 mt-4"
             onKeyDown={(e) => {
-              // ALWAYS prevent Enter key from submitting the form
-              if (e.key === 'Enter') {
+              // ALWAYS prevent Enter key from submitting - no form submission allowed
+              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault()
                 e.stopPropagation()
-                // If on step 5 and pressing Enter, do nothing (user must click button)
-                if (currentStep === 5) {
-                  console.log('[AgentForm] Enter key pressed on step 5 - ignoring (must click Create button)')
-                }
+                console.log('[AgentForm] Enter key pressed - preventing default behavior')
                 return false
               }
             }}
-            className="space-y-4 mt-4"
           >
             {/* Step 1: Base Configuration */}
             {currentStep === 1 && (
@@ -1779,7 +1769,7 @@ export function AgentsPage() {
                 )}
               </div>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
 
