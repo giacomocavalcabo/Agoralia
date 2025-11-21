@@ -1311,7 +1311,25 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         llm_model = response_engine.get("model", "gpt-4o-mini")
         llm_start_speaker = response_engine.get("start_speaker", "agent")
         llm_begin_message = response_engine.get("begin_message")
-        llm_knowledge_base_ids = response_engine.get("knowledge_base_ids", [])
+        llm_knowledge_base_ids = response_engine.get("knowledge_base_ids", []) or []
+        
+        # Connect to general knowledge base if requested (add KB IDs to LLM creation)
+        if body.connect_to_general_kb and tenant_id:
+            with Session(engine) as session:
+                general_kb = session.query(KnowledgeBase).filter(
+                    KnowledgeBase.tenant_id == tenant_id,
+                    KnowledgeBase.scope == "general"
+                ).first()
+                
+                if general_kb:
+                    try:
+                        retell_kb_id = await ensure_kb_synced(general_kb.id, session, tenant_id)
+                        if retell_kb_id and retell_kb_id not in llm_knowledge_base_ids:
+                            llm_knowledge_base_ids.append(retell_kb_id)
+                            print(f"[DEBUG] [retell_create_agent_full] Added general KB to LLM: {retell_kb_id}", flush=True)
+                    except Exception as e:
+                        import logging
+                        logging.warning(f"Failed to connect general KB to LLM: {e}")
         
         if response_engine.get("type") == "retell-llm" and not response_engine.get("llm_id"):
             # Create Retell LLM first with LLM-specific fields
@@ -1326,8 +1344,10 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
             if llm_knowledge_base_ids:
                 llm_body["knowledge_base_ids"] = llm_knowledge_base_ids
             
+            print(f"[DEBUG] [retell_create_agent_full] Creating LLM with body: {json.dumps(llm_body, indent=2, default=str)}", flush=True)
             try:
                 llm_response = await retell_post_json("/create-retell-llm", llm_body, tenant_id)
+                print(f"[DEBUG] [retell_create_agent_full] LLM created successfully: {json.dumps(llm_response, indent=2, default=str)}", flush=True)
             except HTTPException as llm_he:
                 if llm_he.status_code == 404:
                     # Try v2 endpoint
