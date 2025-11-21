@@ -1444,13 +1444,17 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                         logging.warning(f"Failed to connect general KB to agent: {e}")
         
         # Create agent in RetellAI
-        # According to RetellAI docs: POST /create-agent (but may need /v2/create-agent)
+        # According to RetellAI docs: POST /create-agent
+        # Note: LLM creation uses /create-retell-llm (no /v2 prefix), so trying that pattern first
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
         print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
         
-        # Try /v2/create-agent first (per web search results), then fallback to /create-agent
+        # Try different endpoint patterns based on what works for LLM creation
         response = None
-        endpoints_to_try = ["/v2/create-agent", "/create-agent"]
+        endpoints_to_try = [
+            "/create-agent",  # Most likely based on LLM pattern (/create-retell-llm)
+            "/v2/create-agent",  # Alternative
+        ]
         
         for endpoint in endpoints_to_try:
             full_url = f"{get_retell_base_url()}{endpoint}"
