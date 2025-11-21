@@ -1445,12 +1445,24 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         
         # Create agent in RetellAI
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
+        print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
+        print(f"[DEBUG] [retell_create_agent_full] Full URL: {get_retell_base_url()}/create-agent", flush=True)
         try:
-            response = await retell_post_json("/create-agent", agent_body)
+            response = await retell_post_json("/create-agent", agent_body, tenant_id)
             print(f"[DEBUG] [retell_create_agent_full] RetellAI response: {json.dumps(response, indent=2, default=str)}", flush=True)
         except HTTPException as he:
             print(f"[DEBUG] [retell_create_agent_full] RetellAI HTTPException: {he.status_code} - {he.detail}", flush=True)
-            raise
+            # Try alternative endpoint if 404
+            if he.status_code == 404:
+                print(f"[DEBUG] [retell_create_agent_full] Trying alternative endpoint /v2/create-agent", flush=True)
+                try:
+                    response = await retell_post_json("/v2/create-agent", agent_body, tenant_id)
+                    print(f"[DEBUG] [retell_create_agent_full] RetellAI v2 response: {json.dumps(response, indent=2, default=str)}", flush=True)
+                except HTTPException as he2:
+                    print(f"[DEBUG] [retell_create_agent_full] RetellAI v2 also failed: {he2.status_code} - {he2.detail}", flush=True)
+                    raise he2
+            else:
+                raise
         except Exception as retell_error:
             print(f"[DEBUG] [retell_create_agent_full] RetellAI Exception: {retell_error}", flush=True)
             raise
