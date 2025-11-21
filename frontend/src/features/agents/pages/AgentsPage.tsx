@@ -10,6 +10,7 @@ import { api } from '@/shared/api/client'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Agent } from '../api'
 import { useKnowledgeBases } from '@/features/knowledge/hooks'
+import { useEffectiveSettings } from '@/features/settings/hooks'
 import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -218,6 +219,7 @@ export function AgentsPage() {
   const qc = useQueryClient()
   const { data: agents, isLoading, error } = useAgents()
   const { data: kbs } = useKnowledgeBases()
+  const { data: effectiveSettings } = useEffectiveSettings()
   const createMutation = useCreateAgentFull()
   const deleteMutation = useDeleteAgent()
   const testCallMutation = useTestAgentCall()
@@ -248,6 +250,7 @@ export function AgentsPage() {
   const buildCustomPrompt = (data: AgentFormInputs): string => {
     // Determine language for prompt based on agent language
     const isItalian = data.language?.startsWith('it')
+    const companyName = effectiveSettings?.workspace_name || 'the company'
     
     // Build structured prompt following RetellAI best practices
     let prompt = ''
@@ -255,7 +258,7 @@ export function AgentsPage() {
     // ## Identità (Identity)
     if (isItalian) {
       prompt += '## Identità\n'
-      prompt += `Sei un assistente AI professionale per Agoralia.\n`
+      prompt += `Sei un assistente AI professionale per ${companyName}.\n`
       
       if (data.role === 'inbound') {
         prompt += 'Il tuo ruolo principale è ricevere e gestire chiamate in arrivo.\n'
@@ -266,7 +269,7 @@ export function AgentsPage() {
       }
     } else {
       prompt += '## Identity\n'
-      prompt += `You are a professional AI assistant for Agoralia.\n`
+      prompt += `You are a professional AI assistant for ${companyName}.\n`
       
       if (data.role === 'inbound') {
         prompt += 'Your primary role is to receive and handle inbound calls.\n'
@@ -367,11 +370,32 @@ export function AgentsPage() {
         start_speaker: data.start_speaker || 'agent',
       }
       
-      // Add welcome message (begin_message) - this is separate from the structured prompt
-      // If welcome_message is provided, use it; otherwise use the structured prompt
-      const beginMessage = (data.welcome_message && data.welcome_message.trim()) 
+      // For RetellAI, begin_message serves both as system prompt and first verbal message
+      // The structured prompt (customPrompt) goes into begin_message as the system context
+      // If welcome_message is provided, it becomes the actual first verbal message
+      // Otherwise, we use a simple default greeting
+      
+      // Determine language for default greeting
+      const isItalian = data.language?.startsWith('it')
+      
+      // Use the structured prompt as the system context
+      let beginMessage = customPrompt || ''
+      
+      // Add welcome message at the end if provided (this becomes the actual first verbal message)
+      const welcomeMessage = (data.welcome_message && data.welcome_message.trim()) 
         ? data.welcome_message.trim() 
-        : (customPrompt ? customPrompt : 'Hello! How can I help you today?')
+        : (isItalian ? 'Ciao! Come posso aiutarti oggi?' : 'Hello! How can I help you today?')
+      
+      // Combine: structured prompt (system) + welcome message (first verbal)
+      // RetellAI uses begin_message as both system prompt and first message
+      // Format: [System Prompt with structured sections]\n\n[First Verbal Message]
+      if (beginMessage) {
+        // If we have a structured prompt, add the welcome message after it
+        beginMessage = `${beginMessage}\n\n${welcomeMessage}`
+      } else {
+        // If no structured prompt, just use the welcome message
+        beginMessage = welcomeMessage
+      }
       
       // Always set begin_message to ensure response_engine is valid
       if (beginMessage) {
@@ -885,11 +909,6 @@ export function AgentsPage() {
                   <Mic className="h-3.5 w-3.5" />
                   <span>{agent.voice_id || 'N/A'}</span>
                 </div>
-                {agent.retell_agent_id && (
-                  <div className="pt-1 text-xs text-muted-foreground">
-                    Retell ID: {agent.retell_agent_id.substring(0, 12)}...
-                  </div>
-                )}
                 <div className="pt-2 flex gap-2">
                   {agent.retell_agent_id && (
                     <Button
@@ -961,6 +980,12 @@ export function AgentsPage() {
               console.log('[AgentForm] Form submit event triggered')
               console.log('[AgentForm] Current step:', currentStep)
               console.log('[AgentForm] Editing agent:', editingAgent)
+              
+              // Only submit if we're on the last step (step 5)
+              if (currentStep !== 5) {
+                console.log('[AgentForm] Not on last step, preventing submission')
+                return
+              }
               
               agentForm.handleSubmit(
                 (data) => {
