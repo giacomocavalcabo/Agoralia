@@ -1360,14 +1360,18 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
             if not retell_llm_id:
                 raise HTTPException(status_code=500, detail="Failed to get retell_llm_id from response")
             
-            # Update response_engine with llm_id (clean version per RetellAI API spec)
+            # Save original version before cleaning
+            original_version = response_engine.get("version")
+            
+            # Create clean response_engine per RetellAI API spec
+            # response_engine should only contain: type, llm_id, and optionally version
             response_engine = {
                 "type": "retell-llm",
                 "llm_id": retell_llm_id,
             }
-            # Add version if present
-            if "version" in response_engine:
-                response_engine["version"] = response_engine.get("version")
+            # Add version if present in original
+            if original_version is not None:
+                response_engine["version"] = original_version
         else:
             # Clean response_engine - only include fields per RetellAI API spec
             # response_engine should only have: type, llm_id (or conversation_flow_id, or llm_websocket_url), and optionally version
