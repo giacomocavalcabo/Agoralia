@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { Agent } from '../api'
 import { useKnowledgeBases } from '@/features/knowledge/hooks'
 import { useEffectiveSettings } from '@/features/settings/hooks'
+import { useNumbers } from '@/features/numbers/hooks'
 import { Plus, Trash2, Bot, Globe, Mic, Phone, Loader2, ChevronRight, ChevronLeft, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -221,6 +222,7 @@ export function AgentsPage() {
   const { data: agents, isLoading, error } = useAgents()
   const { data: kbs } = useKnowledgeBases()
   const { data: effectiveSettings } = useEffectiveSettings()
+  const { data: numbers } = useNumbers()
   const createMutation = useCreateAgentFull()
   const deleteMutation = useDeleteAgent()
   const testCallMutation = useTestAgentCall()
@@ -1816,12 +1818,34 @@ export function AgentsPage() {
 
             <div>
               <Label htmlFor="from_number">From Number (Optional)</Label>
-              <Input
-                id="from_number"
-                {...testCallForm.register('from_number')}
-                error={testCallForm.formState.errors.from_number?.message}
-                placeholder="Leave empty to use default"
-              />
+              {numbers && numbers.length > 0 ? (
+                <select
+                  id="from_number"
+                  {...testCallForm.register('from_number')}
+                  className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Use default number</option>
+                  {numbers
+                    .filter((num) => num.e164 && num.verified !== false)
+                    .map((num) => (
+                      <option key={num.id} value={num.e164}>
+                        {num.e164} {num.type ? `(${num.type})` : ''}
+                      </option>
+                    ))}
+                </select>
+              ) : (
+                <Input
+                  id="from_number"
+                  {...testCallForm.register('from_number')}
+                  error={testCallForm.formState.errors.from_number?.message}
+                  placeholder="Leave empty to use default"
+                />
+              )}
+              {testCallForm.formState.errors.from_number && (
+                <p className="mt-1 text-sm text-destructive">
+                  {testCallForm.formState.errors.from_number.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
