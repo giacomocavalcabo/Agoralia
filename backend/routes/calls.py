@@ -1444,28 +1444,38 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
                         logging.warning(f"Failed to connect general KB to agent: {e}")
         
         # Create agent in RetellAI
+        # According to RetellAI docs: POST /create-agent (but may need /v2/create-agent)
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
         print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
-        print(f"[DEBUG] [retell_create_agent_full] Full URL: {get_retell_base_url()}/create-agent", flush=True)
-        try:
-            response = await retell_post_json("/create-agent", agent_body, tenant_id)
-            print(f"[DEBUG] [retell_create_agent_full] RetellAI response: {json.dumps(response, indent=2, default=str)}", flush=True)
-        except HTTPException as he:
-            print(f"[DEBUG] [retell_create_agent_full] RetellAI HTTPException: {he.status_code} - {he.detail}", flush=True)
-            # Try alternative endpoint if 404
-            if he.status_code == 404:
-                print(f"[DEBUG] [retell_create_agent_full] Trying alternative endpoint /v2/create-agent", flush=True)
-                try:
-                    response = await retell_post_json("/v2/create-agent", agent_body, tenant_id)
-                    print(f"[DEBUG] [retell_create_agent_full] RetellAI v2 response: {json.dumps(response, indent=2, default=str)}", flush=True)
-                except HTTPException as he2:
-                    print(f"[DEBUG] [retell_create_agent_full] RetellAI v2 also failed: {he2.status_code} - {he2.detail}", flush=True)
-                    raise he2
-            else:
-                raise
-        except Exception as retell_error:
-            print(f"[DEBUG] [retell_create_agent_full] RetellAI Exception: {retell_error}", flush=True)
-            raise
+        
+        # Try /v2/create-agent first (per web search results), then fallback to /create-agent
+        response = None
+        endpoints_to_try = ["/v2/create-agent", "/create-agent"]
+        
+        for endpoint in endpoints_to_try:
+            full_url = f"{get_retell_base_url()}{endpoint}"
+            print(f"[DEBUG] [retell_create_agent_full] Trying endpoint: {full_url}", flush=True)
+            try:
+                response = await retell_post_json(endpoint, agent_body, tenant_id)
+                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint}: {json.dumps(response, indent=2, default=str)}", flush=True)
+                break  # Success, exit loop
+            except HTTPException as he:
+                print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he.status_code}: {he.detail}", flush=True)
+                if he.status_code == 404 and endpoint != endpoints_to_try[-1]:
+                    # Try next endpoint if 404 and not last
+                    continue
+                elif he.status_code != 404:
+                    # Non-404 error, raise immediately
+                    raise
+                else:
+                    # Last endpoint failed with 404, raise
+                    raise HTTPException(
+                        status_code=404, 
+                        detail=f"Agent creation failed: All endpoints ({', '.join(endpoints_to_try)}) returned 404. Check RetellAI API documentation and API key permissions."
+                    )
+        
+        if not response:
+            raise HTTPException(status_code=500, detail="Failed to create agent: No response from RetellAI")
         
         agent_id = response.get("agent_id")
         
