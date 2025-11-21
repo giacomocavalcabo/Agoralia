@@ -1307,16 +1307,24 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         if not isinstance(response_engine, dict):
             raise HTTPException(status_code=400, detail="response_engine must be a dictionary")
         
+        # Extract fields that belong to LLM (not to response_engine for agent creation)
+        llm_model = response_engine.get("model", "gpt-4o-mini")
+        llm_start_speaker = response_engine.get("start_speaker", "agent")
+        llm_begin_message = response_engine.get("begin_message")
+        llm_knowledge_base_ids = response_engine.get("knowledge_base_ids", [])
+        
         if response_engine.get("type") == "retell-llm" and not response_engine.get("llm_id"):
-            # Create Retell LLM first
+            # Create Retell LLM first with LLM-specific fields
             from utils.retell import retell_post_json
             
             llm_body = {
-                "model": response_engine.get("model", "gpt-4o-mini"),
-                "start_speaker": response_engine.get("start_speaker", "agent"),
+                "model": llm_model,
+                "start_speaker": llm_start_speaker,
             }
-            if response_engine.get("begin_message"):
-                llm_body["begin_message"] = response_engine["begin_message"]
+            if llm_begin_message:
+                llm_body["begin_message"] = llm_begin_message
+            if llm_knowledge_base_ids:
+                llm_body["knowledge_base_ids"] = llm_knowledge_base_ids
             
             try:
                 llm_response = await retell_post_json("/create-retell-llm", llm_body, tenant_id)
@@ -1332,14 +1340,31 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
             if not retell_llm_id:
                 raise HTTPException(status_code=500, detail="Failed to get retell_llm_id from response")
             
-            # Update response_engine with llm_id
-            response_engine["llm_id"] = retell_llm_id
-            # Preserve knowledge_base_ids if already set
-            if "knowledge_base_ids" in response_engine:
-                # Keep existing KB IDs
-                pass
+            # Update response_engine with llm_id (clean version per RetellAI API spec)
+            response_engine = {
+                "type": "retell-llm",
+                "llm_id": retell_llm_id,
+            }
+            # Add version if present
+            if "version" in response_engine:
+                response_engine["version"] = response_engine.get("version")
+        else:
+            # Clean response_engine - only include fields per RetellAI API spec
+            # response_engine should only have: type, llm_id (or conversation_flow_id, or llm_websocket_url), and optionally version
+            cleaned_response_engine = {
+                "type": response_engine.get("type"),
+            }
+            if "llm_id" in response_engine:
+                cleaned_response_engine["llm_id"] = response_engine["llm_id"]
+            if "conversation_flow_id" in response_engine:
+                cleaned_response_engine["conversation_flow_id"] = response_engine["conversation_flow_id"]
+            if "llm_websocket_url" in response_engine:
+                cleaned_response_engine["llm_websocket_url"] = response_engine["llm_websocket_url"]
+            if "version" in response_engine:
+                cleaned_response_engine["version"] = response_engine["version"]
+            response_engine = cleaned_response_engine
         
-        # Build agent body for RetellAI
+        # Build agent body for RetellAI (per OpenAPI spec)
         agent_body: Dict[str, Any] = {
             "response_engine": response_engine,
             "voice_id": body.voice_id,
