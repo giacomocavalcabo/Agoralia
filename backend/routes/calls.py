@@ -1491,35 +1491,45 @@ async def retell_create_agent_full(request: Request, body: AgentCreateRequest):
         print(f"[DEBUG] [retell_create_agent_full] Creating agent with body: {json.dumps(agent_body, indent=2, default=str)}", flush=True)
         print(f"[DEBUG] [retell_create_agent_full] RetellAI base URL: {get_retell_base_url()}", flush=True)
         
-        # Try different endpoint patterns
-        # Note: LLM uses /create-retell-llm, so agent might use different pattern
-        response = None
-        endpoints_to_try = [
-            "/create-agent",  # Per OpenAPI spec
-            "/agent/create",  # Alternative REST pattern
-            "/v2/create-agent",  # Versioned endpoint
-            "/v2/agent/create",  # Versioned alternative pattern
-        ]
+        # Try minimal payload first (only required fields: response_engine and voice_id)
+        # Based on curl test, this works successfully
+        minimal_agent_body = {
+            "response_engine": response_engine,
+            "voice_id": body.voice_id,
+        }
+        if body.agent_name:
+            minimal_agent_body["agent_name"] = body.agent_name
         
-        for endpoint in endpoints_to_try:
-            full_url = f"{get_retell_base_url()}{endpoint}"
-            print(f"[DEBUG] [retell_create_agent_full] Trying endpoint: {full_url}", flush=True)
+        print(f"[DEBUG] [retell_create_agent_full] Trying with minimal payload first (only required fields)", flush=True)
+        response = None
+        endpoint = "/create-agent"  # Use the endpoint that works per curl test
+        
+        try:
+            # Try minimal payload first (like curl test)
             try:
-                # Try without tenant_id first (use global API key, like services/agents.py does)
-                # If that fails, try with tenant_id for BYO account support
-                try:
-                    response = await retell_post_json(endpoint, agent_body, None)  # Try global API key first
-                    print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint} (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-                except HTTPException as he_global:
-                    if he_global.status_code == 404 and tenant_id is not None:
-                        # If global key fails with 404, try tenant-specific key (BYO account)
-                        print(f"[DEBUG] [retell_create_agent_full] Global key failed, trying tenant-specific key", flush=True)
-                        response = await retell_post_json(endpoint, agent_body, tenant_id)
-                        print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint} (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
-                    else:
-                        raise he_global
-                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with {endpoint}: {json.dumps(response, indent=2, default=str)}", flush=True)
-                break  # Success, exit loop
+                response = await retell_post_json(endpoint, minimal_agent_body, None)  # Try global API key with minimal payload
+                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with minimal payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+            except HTTPException as he_minimal:
+                if he_minimal.status_code == 404 and tenant_id is not None:
+                    # If global key fails with 404, try tenant-specific key (BYO account)
+                    print(f"[DEBUG] [retell_create_agent_full] Minimal payload with global key failed, trying tenant-specific key", flush=True)
+                    response = await retell_post_json(endpoint, minimal_agent_body, tenant_id)
+                    print(f"[DEBUG] [retell_create_agent_full] ✅ Success with minimal payload (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+                else:
+                    raise he_minimal
+        except HTTPException as he:
+            # If minimal payload fails, try full payload as fallback
+            print(f"[DEBUG] [retell_create_agent_full] Minimal payload failed: {he.status_code} - {he.detail}", flush=True)
+            print(f"[DEBUG] [retell_create_agent_full] Trying with full payload as fallback", flush=True)
+            try:
+                response = await retell_post_json(endpoint, agent_body, None)  # Try global API key with full payload
+                print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (global API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+            except HTTPException as he_full:
+                if he_full.status_code == 404 and tenant_id is not None:
+                    response = await retell_post_json(endpoint, agent_body, tenant_id)
+                    print(f"[DEBUG] [retell_create_agent_full] ✅ Success with full payload (tenant API key): {json.dumps(response, indent=2, default=str)}", flush=True)
+                else:
+                    raise he_full
             except HTTPException as he:
                 print(f"[DEBUG] [retell_create_agent_full] ❌ {endpoint} returned {he.status_code}: {he.detail}", flush=True)
                 if he.status_code == 404 and endpoint != endpoints_to_try[-1]:
