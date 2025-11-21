@@ -1728,7 +1728,9 @@ export function AgentsPage() {
                       // CRITICAL: Prevent any default behavior
                       e.preventDefault()
                       e.stopPropagation()
-                      e.stopImmediatePropagation()
+                      if (e.nativeEvent && 'stopImmediatePropagation' in e.nativeEvent) {
+                        e.nativeEvent.stopImmediatePropagation()
+                      }
                       
                       console.log('[AgentForm] Create/Update button clicked explicitly', {
                         currentStep,
