@@ -98,14 +98,33 @@ async def retell_post_json(path: str, body: Dict[str, Any], tenant_id: Optional[
     Returns:
         JSON response from Retell API (or empty dict for 204 No Content)
     """
+    base_url = get_retell_base_url()
+    full_url = f"{base_url}{path}"
+    headers = get_retell_headers(tenant_id)
+    
+    # Log request details for debugging
+    print(f"[DEBUG] [retell_post_json] POST {full_url}", flush=True)
+    print(f"[DEBUG] [retell_post_json] Headers: {dict(headers)}", flush=True)
+    print(f"[DEBUG] [retell_post_json] Body keys: {list(body.keys()) if isinstance(body, dict) else 'N/A'}", flush=True)
+    
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(
-            f"{get_retell_base_url()}{path}",
-            headers=get_retell_headers(tenant_id),
+            full_url,
+            headers=headers,
             json=body
         )
+        print(f"[DEBUG] [retell_post_json] Response status: {resp.status_code}", flush=True)
         if resp.status_code >= 400:
-            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+            error_detail = resp.text
+            try:
+                error_json = resp.json()
+                if isinstance(error_json, dict):
+                    error_msg = error_json.get("message") or error_json.get("error") or error_json.get("detail") or resp.text
+                    error_detail = error_msg
+            except Exception:
+                pass
+            print(f"[DEBUG] [retell_post_json] Error {resp.status_code}: {error_detail[:500]}", flush=True)
+            raise HTTPException(status_code=resp.status_code, detail=error_detail)
         # Handle empty responses (204 No Content or 200 with empty body)
         if resp.status_code == 204 or not resp.content:
             return {}
