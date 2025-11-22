@@ -1,6 +1,7 @@
 """Retell AI API client utilities"""
 import os
 import json
+import io
 import httpx
 from typing import Dict, Any, Optional
 from fastapi import HTTPException
@@ -235,13 +236,30 @@ async def retell_post_multipart(
     
     # Process file fields (if any)
     # RetellAI expects files as an array in knowledge_base_files field
-    # httpx expects: files={"knowledge_base_files": [(filename, content, content_type), ...]}
+    # httpx expects file-like objects, not raw bytes
+    # For arrays, we need to convert bytes to BytesIO objects
     if files:
-        # If files is a dict with "knowledge_base_files" as a list of tuples, use it directly
+        # If files is a dict with "knowledge_base_files" as a list of tuples, convert bytes to BytesIO
         if isinstance(files, dict) and "knowledge_base_files" in files:
-            # Check if it's already in the right format (list of tuples)
-            if isinstance(files["knowledge_base_files"], list):
-                form_files["knowledge_base_files"] = files["knowledge_base_files"]
+            file_list = files["knowledge_base_files"]
+            if isinstance(file_list, list):
+                # Convert each tuple (filename, bytes, content_type) to (filename, BytesIO, content_type)
+                converted_files = []
+                for item in file_list:
+                    if isinstance(item, tuple) and len(item) >= 2:
+                        filename = item[0]
+                        content = item[1]
+                        content_type = item[2] if len(item) > 2 else "application/octet-stream"
+                        # Convert bytes to BytesIO if it's bytes
+                        if isinstance(content, bytes):
+                            file_obj = io.BytesIO(content)
+                            converted_files.append((filename, file_obj, content_type))
+                        else:
+                            # Already a file-like object, use as-is
+                            converted_files.append(item)
+                    else:
+                        converted_files.append(item)
+                form_files["knowledge_base_files"] = converted_files
             else:
                 form_files.update(files)
         else:
@@ -253,6 +271,21 @@ async def retell_post_multipart(
         logger = logging.getLogger(__name__)
         
         # Extract file info without content for logging
+        # Handle both bytes and BytesIO objects
+        def get_file_size(content):
+            """Get size of file content, handling both bytes and BytesIO"""
+            if isinstance(content, bytes):
+                return len(content)
+            elif hasattr(content, 'getbuffer'):  # BytesIO
+                return content.getbuffer().nbytes
+            elif hasattr(content, 'seek') and hasattr(content, 'tell'):  # file-like object
+                pos = content.tell()
+                content.seek(0, io.SEEK_END)
+                size = content.tell()
+                content.seek(pos)
+                return size
+            return 0
+        
         file_info = {}
         if form_files:
             for field_name, file_data in form_files.items():
@@ -260,7 +293,7 @@ async def retell_post_multipart(
                     file_info[field_name] = [
                         {
                             "filename": item[0] if isinstance(item, tuple) and len(item) > 0 else "unknown",
-                            "size": len(item[1]) if isinstance(item, tuple) and len(item) > 1 else 0,
+                            "size": get_file_size(item[1]) if isinstance(item, tuple) and len(item) > 1 else 0,
                             "content_type": item[2] if isinstance(item, tuple) and len(item) > 2 else "unknown"
                         }
                         for item in file_data
@@ -268,7 +301,7 @@ async def retell_post_multipart(
                 elif isinstance(file_data, tuple) and len(file_data) > 0:
                     file_info[field_name] = {
                         "filename": file_data[0],
-                        "size": len(file_data[1]) if len(file_data) > 1 else 0,
+                        "size": get_file_size(file_data[1]) if len(file_data) > 1 else 0,
                         "content_type": file_data[2] if len(file_data) > 2 else "unknown"
                     }
         
