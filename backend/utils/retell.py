@@ -261,16 +261,15 @@ async def retell_post_multipart(
                         else:
                             # Unknown type, try to wrap it
                             file_obj = content
-                        # httpx format for arrays: ("field_name", (filename, file_obj))
-                        # content_type is optional and can be passed separately if needed
-                        # Try format without content_type first
-                        converted_files.append(("knowledge_base_files", (filename, file_obj)))
+                        # httpx format: ("field_name", (filename, file_obj, content_type))
+                        # For arrays, httpx expects a list of tuples: [("field_name", (filename, file_obj, content_type)), ...]
+                        converted_files.append(("knowledge_base_files", (filename, file_obj, content_type)))
                     else:
                         # Invalid format, skip
                         continue
-                # For arrays, httpx requires passing multiple files with the same field name
+                # For arrays, httpx requires a list of tuples at the top level
                 # Format: [("field_name", (filename, file_obj, content_type)), ("field_name", (filename2, file_obj2, content_type2)), ...]
-                # This is the format we already have in converted_files
+                # This is what we have in converted_files
                 form_files = converted_files if converted_files else None
             else:
                 form_files.update(files)
@@ -341,31 +340,21 @@ async def retell_post_multipart(
         print(f"[DEBUG] [retell_post_multipart] Files: {file_info}", flush=True)
         
         # httpx.post() accepts files as either:
-        # - Dict: {"field_name": (filename, content, content_type)}
+        # - Dict: {"field_name": (filename, content, content_type)} for single file
         # - List: [("field_name", (filename, content, content_type)), ...] for arrays
-        # We need to handle both cases
-        post_kwargs = {
-            "headers": headers,
-        }
+        # When using files=list, we should combine with data into a single multipart request
+        # httpx will handle combining files and data automatically
         
-        if form_files:
-            if isinstance(form_files, list):
-                # Array of files: pass directly as list
-                post_kwargs["files"] = form_files
-            elif isinstance(form_files, dict):
-                # Single file or dict: pass as dict
-                post_kwargs["files"] = form_files
-        else:
-            post_kwargs["files"] = None
-            
-        if form_data_dict:
-            post_kwargs["data"] = form_data_dict
-        else:
-            post_kwargs["data"] = None
+        # For array of files, combine files list with data dict
+        # httpx will merge them into multipart/form-data correctly
+        files_param = form_files if form_files else None
+        data_param = form_data_dict if form_data_dict else None
         
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
-            **post_kwargs
+            headers=headers,
+            files=files_param,
+            data=data_param
         )
         
         logger.info(f"[retell_post_multipart] Response status: {resp.status_code}, body: {resp.text[:500]}")
