@@ -237,16 +237,15 @@ async def retell_post_multipart(
     # Process file fields (if any)
     # RetellAI expects files as an array in knowledge_base_files field
     # httpx expects file-like objects, not raw bytes
-    # For arrays, httpx requires a list of tuples at the top level, not a dict with a list
+    # httpx supports array of files by passing a list of tuples at the top level
     # Format: [("field_name", (filename, content, content_type)), ("field_name", (filename2, content2, content_type2)), ...]
     if files:
         # If files is a dict with "knowledge_base_files" as a list of tuples, convert to httpx format
         if isinstance(files, dict) and "knowledge_base_files" in files:
             file_list = files["knowledge_base_files"]
-            if isinstance(file_list, list):
+            if isinstance(file_list, list) and len(file_list) > 0:
                 # Convert each tuple (filename, bytes, content_type) to httpx format
-                # For multipart arrays, httpx expects list of tuples: [("field_name", (filename, content, content_type)), ...]
-                # Each file gets the same field name to create an array
+                # httpx for arrays: list of (field_name, (filename, file_obj, content_type)) tuples
                 converted_files = []
                 for item in file_list:
                     if isinstance(item, tuple) and len(item) >= 2:
@@ -256,21 +255,19 @@ async def retell_post_multipart(
                         # Convert bytes to BytesIO if it's bytes
                         if isinstance(content, bytes):
                             file_obj = io.BytesIO(content)
-                            # httpx format for arrays: each file as a separate tuple with the same field name
-                            # Format: ("field_name", (filename, file_obj, content_type))
-                            converted_files.append(("knowledge_base_files", (filename, file_obj, content_type)))
+                        elif hasattr(content, 'read'):
+                            # Already a file-like object
+                            file_obj = content
                         else:
-                            # Already a file-like object, ensure it's in the right format
-                            if isinstance(content, tuple):
-                                # Item is already (filename, content, content_type)
-                                converted_files.append(("knowledge_base_files", content))
-                            else:
-                                # Item is just the content, need to wrap it
-                                converted_files.append(("knowledge_base_files", (filename, content, content_type)))
+                            # Unknown type, try to wrap it
+                            file_obj = content
+                        # httpx format: ("field_name", (filename, file_obj, content_type))
+                        converted_files.append(("knowledge_base_files", (filename, file_obj, content_type)))
                     else:
-                        converted_files.append(("knowledge_base_files", item))
-                # For arrays, httpx expects a list, not a dict
-                form_files = converted_files
+                        # Invalid format, skip
+                        continue
+                # For arrays, httpx expects a list of tuples at the top level
+                form_files = converted_files if converted_files else None
             else:
                 form_files.update(files)
         else:
