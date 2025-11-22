@@ -1978,33 +1978,83 @@ async def update_retell_phone_number(
 
 
 @router.delete("/retell/phone-numbers/{phone_number}")
-async def delete_retell_phone_number(phone_number: str):
-    """Delete a phone number from Retell AI
+async def delete_retell_phone_number(request: Request, phone_number: str):
+    """Delete a phone number from Retell AI and local database
     
     According to Retell AI docs:
     - DELETE /delete-phone-number/{phone_number} deletes a phone number
     - Returns 204 No Content on success
+    - Returns 404 if number doesn't exist on RetellAI
+    - Returns 422 if number doesn't exist under the API key
+    
+    This endpoint:
+    1. Tries to delete from RetellAI
+    2. If successful OR if number doesn't exist (404/422), deletes from local database
+    3. This ensures the number is removed from both systems
     """
+    tenant_id = extract_tenant_id(request)
+    retell_deleted = False
+    retell_error = None
+    
+    # Step 1: Try to delete from RetellAI
     try:
         # Use path parameter as per official docs
-        data = await retell_delete_json(f"/delete-phone-number/{urllib.parse.quote(phone_number)}")
+        data = await retell_delete_json(f"/delete-phone-number/{urllib.parse.quote(phone_number)}", tenant_id=tenant_id)
+        retell_deleted = True
+    except HTTPException as e:
+        # Check if it's a 404 (not found) or 422 (not found under API key)
+        # In these cases, the number doesn't exist on RetellAI, so we should still delete from local DB
+        if e.status_code in [404, 422]:
+            retell_error = f"Number not found on RetellAI (status {e.status_code}), will delete from local database"
+        else:
+            # For other errors, try fallback format first
+            try:
+                path = f"/delete-phone-number?phone_number={urllib.parse.quote(phone_number)}"
+                data = await retell_delete_json(path, tenant_id=tenant_id)
+                retell_deleted = True
+            except HTTPException as e2:
+                if e2.status_code in [404, 422]:
+                    retell_error = f"Number not found on RetellAI (status {e2.status_code}), will delete from local database"
+                else:
+                    # For other errors, raise the exception
+                    raise e2
+    
+    # Step 2: Delete from local database (even if RetellAI returned 404/422)
+    with Session(engine) as session:
+        from models.agents import PhoneNumber
+        
+        # Find number by e164
+        number = session.query(PhoneNumber).filter(
+            PhoneNumber.e164 == phone_number
+        ).first()
+        
+        if number:
+            # Check tenant ownership
+            if tenant_id is not None and number.tenant_id != tenant_id:
+                raise HTTPException(status_code=403, detail="Number belongs to a different tenant")
+            
+            session.delete(number)
+            session.commit()
+            local_deleted = True
+        else:
+            local_deleted = False
+    
+    # Return success if either RetellAI deletion succeeded OR local deletion succeeded
+    # This handles the case where number was already deleted from RetellAI but still in local DB
+    if retell_deleted or local_deleted:
         return {
             "success": True,
             "message": "Phone number deleted successfully",
-            "response": data,
+            "retell_deleted": retell_deleted,
+            "local_deleted": local_deleted,
+            "retell_error": retell_error,
         }
-    except HTTPException as e:
-        # Fallback to query param format if path param doesn't work
-        try:
-            path = f"/delete-phone-number?phone_number={urllib.parse.quote(phone_number)}"
-            data = await retell_delete_json(path)
-            return {
-                "success": True,
-                "message": "Phone number deleted successfully",
-                "response": data,
-            }
-        except Exception:
-            raise e
+    else:
+        # Number doesn't exist in either system
+        raise HTTPException(
+            status_code=404,
+            detail=f"Phone number {phone_number} not found in RetellAI or local database"
+        )
 
 
 @router.post("/retell/backfill")
