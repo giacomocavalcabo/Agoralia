@@ -162,6 +162,7 @@ export function NumbersPage() {
       if (data.sip_trunk_password) payload.sip_trunk_password = data.sip_trunk_password
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
+      if (data.outbound_transport) payload.outbound_transport = data.outbound_transport
       if (data.nickname) payload.nickname = data.nickname
       if (data.inbound_webhook_url) payload.inbound_webhook_url = data.inbound_webhook_url
 
