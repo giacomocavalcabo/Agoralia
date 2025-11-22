@@ -335,14 +335,14 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
                     if phone_cost_cents and phone_cost_cents > 0:
                         from models.compliance import CostEvent
                         from datetime import datetime, timezone
-                        cost_event = CostEvent(
+                        phone_cost_event = CostEvent(
                             call_id=None,  # Not associated with a call
                             component="telephony",  # Phone number monthly cost
                             amount=phone_cost_cents,  # Monthly cost in cents
                             currency="USD",
                             ts=datetime.now(timezone.utc),
                         )
-                        session.add(cost_event)
+                        session.add(phone_cost_event)
                     
                     session.commit()
                 elif existing.tenant_id != tenant_id:
