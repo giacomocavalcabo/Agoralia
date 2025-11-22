@@ -266,7 +266,9 @@ async def retell_post_multipart(
                     else:
                         # Invalid format, skip
                         continue
-                # For arrays, httpx expects a list of tuples at the top level
+                # For arrays, httpx requires passing multiple files with the same field name
+                # Format: [("field_name", (filename, file_obj, content_type)), ("field_name", (filename2, file_obj2, content_type2)), ...]
+                # This is the format we already have in converted_files
                 form_files = converted_files if converted_files else None
             else:
                 form_files.update(files)
