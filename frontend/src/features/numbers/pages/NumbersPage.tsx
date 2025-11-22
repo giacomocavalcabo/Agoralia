@@ -167,11 +167,8 @@ export function NumbersPage() {
       // Backward compatibility with old field names
       if (data.sip_trunk_user_name && !data.sip_trunk_auth_username) payload.sip_trunk_auth_username = data.sip_trunk_user_name
       if (data.sip_trunk_password && !data.sip_trunk_auth_password) payload.sip_trunk_auth_password = data.sip_trunk_password
-      // Note: outbound_transport is not in OpenAPI docs but may be needed by RetellAI UI
-      // Include it as optional field in case RetellAI accepts it
-      if (data.outbound_transport && data.outbound_transport !== 'TCP') {
-        payload.outbound_transport = data.outbound_transport
-      }
+      // Note: outbound_transport is NOT in RetellAI OpenAPI documentation
+      // Do not send it - only send documented fields
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
       if (data.nickname) payload.nickname = data.nickname
