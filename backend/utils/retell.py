@@ -237,13 +237,16 @@ async def retell_post_multipart(
     # Process file fields (if any)
     # RetellAI expects files as an array in knowledge_base_files field
     # httpx expects file-like objects, not raw bytes
-    # For arrays, we need to convert bytes to BytesIO objects
+    # For arrays, httpx requires a list of tuples at the top level, not a dict with a list
+    # Format: [("field_name", (filename, content, content_type)), ("field_name", (filename2, content2, content_type2)), ...]
     if files:
-        # If files is a dict with "knowledge_base_files" as a list of tuples, convert bytes to BytesIO
+        # If files is a dict with "knowledge_base_files" as a list of tuples, convert to httpx format
         if isinstance(files, dict) and "knowledge_base_files" in files:
             file_list = files["knowledge_base_files"]
             if isinstance(file_list, list):
-                # Convert each tuple (filename, bytes, content_type) to (filename, BytesIO, content_type)
+                # Convert each tuple (filename, bytes, content_type) to httpx format
+                # For multipart arrays, httpx expects list of tuples: [("field_name", (filename, content, content_type)), ...]
+                # Each file gets the same field name to create an array
                 converted_files = []
                 for item in file_list:
                     if isinstance(item, tuple) and len(item) >= 2:
@@ -253,17 +256,27 @@ async def retell_post_multipart(
                         # Convert bytes to BytesIO if it's bytes
                         if isinstance(content, bytes):
                             file_obj = io.BytesIO(content)
-                            converted_files.append((filename, file_obj, content_type))
+                            # httpx format for arrays: each file as a separate tuple with the same field name
+                            # Format: ("field_name", (filename, file_obj, content_type))
+                            converted_files.append(("knowledge_base_files", (filename, file_obj, content_type)))
                         else:
-                            # Already a file-like object, use as-is
-                            converted_files.append(item)
+                            # Already a file-like object, ensure it's in the right format
+                            if isinstance(content, tuple):
+                                # Item is already (filename, content, content_type)
+                                converted_files.append(("knowledge_base_files", content))
+                            else:
+                                # Item is just the content, need to wrap it
+                                converted_files.append(("knowledge_base_files", (filename, content, content_type)))
                     else:
-                        converted_files.append(item)
-                form_files["knowledge_base_files"] = converted_files
+                        converted_files.append(("knowledge_base_files", item))
+                # For arrays, httpx expects a list, not a dict
+                form_files = converted_files
             else:
                 form_files.update(files)
         else:
             form_files.update(files)
+    else:
+        form_files = None
     
     async with httpx.AsyncClient(timeout=120) as client:  # Longer timeout for file uploads (2 minutes)
         # Log what we're sending for debugging (without file content)
@@ -288,33 +301,70 @@ async def retell_post_multipart(
         
         file_info = {}
         if form_files:
-            for field_name, file_data in form_files.items():
-                if isinstance(file_data, list):
-                    file_info[field_name] = [
-                        {
-                            "filename": item[0] if isinstance(item, tuple) and len(item) > 0 else "unknown",
-                            "size": get_file_size(item[1]) if isinstance(item, tuple) and len(item) > 1 else 0,
-                            "content_type": item[2] if isinstance(item, tuple) and len(item) > 2 else "unknown"
+            # form_files can be either a dict (single file) or a list (array of files)
+            if isinstance(form_files, list):
+                # Array format: [("field_name", (filename, content, content_type)), ...]
+                file_info_list = []
+                for field_name, file_data in form_files:
+                    if isinstance(file_data, tuple) and len(file_data) >= 2:
+                        file_info_list.append({
+                            "filename": file_data[0],
+                            "size": get_file_size(file_data[1]) if len(file_data) > 1 else 0,
+                            "content_type": file_data[2] if len(file_data) > 2 else "unknown"
+                        })
+                # Group by field name for display
+                if file_info_list:
+                    file_info["knowledge_base_files"] = file_info_list
+            elif isinstance(form_files, dict):
+                # Dict format: {"field_name": file_data or [file_data, ...]}
+                for field_name, file_data in form_files.items():
+                    if isinstance(file_data, list):
+                        file_info[field_name] = [
+                            {
+                                "filename": item[0] if isinstance(item, tuple) and len(item) > 0 else "unknown",
+                                "size": get_file_size(item[1]) if isinstance(item, tuple) and len(item) > 1 else 0,
+                                "content_type": item[2] if isinstance(item, tuple) and len(item) > 2 else "unknown"
+                            }
+                            for item in file_data
+                        ]
+                    elif isinstance(file_data, tuple) and len(file_data) > 0:
+                        file_info[field_name] = {
+                            "filename": file_data[0],
+                            "size": get_file_size(file_data[1]) if len(file_data) > 1 else 0,
+                            "content_type": file_data[2] if len(file_data) > 2 else "unknown"
                         }
-                        for item in file_data
-                    ]
-                elif isinstance(file_data, tuple) and len(file_data) > 0:
-                    file_info[field_name] = {
-                        "filename": file_data[0],
-                        "size": get_file_size(file_data[1]) if len(file_data) > 1 else 0,
-                        "content_type": file_data[2] if len(file_data) > 2 else "unknown"
-                    }
         
         logger.info(f"[retell_post_multipart] Sending to {path}, data: {form_data_dict}, files: {file_info}")
         print(f"[DEBUG] [retell_post_multipart] Sending to {path}", flush=True)
         print(f"[DEBUG] [retell_post_multipart] Data: {form_data_dict}", flush=True)
         print(f"[DEBUG] [retell_post_multipart] Files: {file_info}", flush=True)
         
+        # httpx.post() accepts files as either:
+        # - Dict: {"field_name": (filename, content, content_type)}
+        # - List: [("field_name", (filename, content, content_type)), ...] for arrays
+        # We need to handle both cases
+        post_kwargs = {
+            "headers": headers,
+        }
+        
+        if form_files:
+            if isinstance(form_files, list):
+                # Array of files: pass directly as list
+                post_kwargs["files"] = form_files
+            elif isinstance(form_files, dict):
+                # Single file or dict: pass as dict
+                post_kwargs["files"] = form_files
+        else:
+            post_kwargs["files"] = None
+            
+        if form_data_dict:
+            post_kwargs["data"] = form_data_dict
+        else:
+            post_kwargs["data"] = None
+        
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
-            headers=headers,
-            files=form_files if form_files else None,
-            data=form_data_dict if form_data_dict else None
+            **post_kwargs
         )
         
         logger.info(f"[retell_post_multipart] Response status: {resp.status_code}, body: {resp.text[:500]}")
