@@ -737,7 +737,7 @@ export function NumbersPage() {
                       .filter((agent) => agent.retell_agent_id)
                       .map((agent) => (
                         <option key={agent.id} value={agent.retell_agent_id || ''}>
-                          {agent.name} ({agent.retell_agent_id})
+                          {agent.name}
                         </option>
                       ))}
                   </select>
@@ -762,7 +762,7 @@ export function NumbersPage() {
                       .filter((agent) => agent.retell_agent_id)
                       .map((agent) => (
                         <option key={agent.id} value={agent.retell_agent_id || ''}>
-                          {agent.name} ({agent.retell_agent_id})
+                          {agent.name}
                         </option>
                       ))}
                   </select>
