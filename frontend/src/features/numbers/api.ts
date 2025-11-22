@@ -26,16 +26,19 @@ export interface PurchasePhoneNumberRequest {
 // Import phone number via SIP (Custom Telephony)
 export interface ImportPhoneNumberRequest {
   phone_number: string  // E.164 format (required)
-  termination_uri: string  // e.g., "pbx.zadarma.com"
-  outbound_transport?: string  // TCP, UDP, or TLS (defaults to TCP)
-  sip_trunk_user_name?: string
-  sip_trunk_password?: string
+  termination_uri: string  // e.g., "pbx.zadarma.com" (required)
+  sip_trunk_auth_username?: string  // SIP trunk authentication username
+  sip_trunk_auth_password?: string  // SIP trunk authentication password
   inbound_agent_id?: string
   outbound_agent_id?: string
   inbound_agent_version?: number
   outbound_agent_version?: number
   nickname?: string
   inbound_webhook_url?: string
+  // Legacy field names (for backward compatibility)
+  sip_trunk_user_name?: string  // DEPRECATED: Use sip_trunk_auth_username
+  sip_trunk_password?: string  // DEPRECATED: Use sip_trunk_auth_password
+  outbound_transport?: string  // DEPRECATED: Not supported by RetellAI
 }
 
 export interface PhoneNumberResponse {

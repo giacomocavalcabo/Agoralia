@@ -31,13 +31,16 @@ const purchaseSchema = z.object({
 const importSchema = z.object({
   phone_number: z.string().min(1, 'Phone number is required'),
   termination_uri: z.string().min(1, 'Termination URI is required'),
-  outbound_transport: z.enum(['TCP', 'UDP', 'TLS']).optional().default('TCP'),
-  sip_trunk_user_name: z.string().optional(),
-  sip_trunk_password: z.string().optional(),
+  sip_trunk_auth_username: z.string().optional(),
+  sip_trunk_auth_password: z.string().optional(),
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
   outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
   nickname: z.string().optional(),
   inbound_webhook_url: z.string().url().optional().or(z.literal('')),
+  // Legacy fields (for backward compatibility)
+  sip_trunk_user_name: z.string().optional(),
+  sip_trunk_password: z.string().optional(),
+  outbound_transport: z.string().optional(),
 })
 
 type PurchaseFormInputs = z.infer<typeof purchaseSchema>
@@ -158,11 +161,14 @@ export function NumbersPage() {
         phone_number: data.phone_number,
         termination_uri: data.termination_uri,
       }
-      if (data.sip_trunk_user_name) payload.sip_trunk_user_name = data.sip_trunk_user_name
-      if (data.sip_trunk_password) payload.sip_trunk_password = data.sip_trunk_password
+      // Use correct field names as per RetellAI OpenAPI documentation
+      if (data.sip_trunk_auth_username) payload.sip_trunk_auth_username = data.sip_trunk_auth_username
+      if (data.sip_trunk_auth_password) payload.sip_trunk_auth_password = data.sip_trunk_auth_password
+      // Backward compatibility with old field names
+      if (data.sip_trunk_user_name && !data.sip_trunk_auth_username) payload.sip_trunk_auth_username = data.sip_trunk_user_name
+      if (data.sip_trunk_password && !data.sip_trunk_auth_password) payload.sip_trunk_auth_password = data.sip_trunk_password
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
-      if (data.outbound_transport) payload.outbound_transport = data.outbound_transport
       if (data.nickname) payload.nickname = data.nickname
       if (data.inbound_webhook_url) payload.inbound_webhook_url = data.inbound_webhook_url
 
@@ -499,40 +505,31 @@ export function NumbersPage() {
                   />
                   <p className="text-xs text-muted-foreground mt-1">e.g., pbx.zadarma.com</p>
                 </div>
-                <div>
-                  <Label htmlFor="import_outbound_transport">Outbound Transport *</Label>
-                  <select
-                    id="import_outbound_transport"
-                    {...importForm.register('outbound_transport', { required: false })}
-                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    defaultValue="TCP"
-                  >
-                    <option value="TCP">TCP</option>
-                    <option value="UDP">UDP</option>
-                    <option value="TLS">TLS</option>
-                  </select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Transport protocol for outbound calls. Default is TCP.
-                  </p>
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="import_sip_trunk_user_name">SIP Trunk User Name</Label>
+                    <Label htmlFor="import_sip_trunk_auth_username">SIP Trunk Auth Username</Label>
                     <Input
-                      id="import_sip_trunk_user_name"
-                      {...importForm.register('sip_trunk_user_name')}
-                      placeholder="927458"
+                      id="import_sip_trunk_auth_username"
+                      {...importForm.register('sip_trunk_auth_username')}
+                      placeholder="username"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Username for SIP trunk authentication (optional)
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="import_sip_trunk_password">SIP Trunk Password</Label>
+                    <Label htmlFor="import_sip_trunk_auth_password">SIP Trunk Auth Password</Label>
                     <Input
-                      id="import_sip_trunk_password"
+                      id="import_sip_trunk_auth_password"
                       type="password"
-                      {...importForm.register('sip_trunk_password')}
+                      {...importForm.register('sip_trunk_auth_password')}
+                      placeholder="password"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Password for SIP trunk authentication (optional)
+                    </p>
                   </div>
                 </div>
                 {(!agents || agents.filter((agent) => agent.retell_agent_id).length === 0) ? (

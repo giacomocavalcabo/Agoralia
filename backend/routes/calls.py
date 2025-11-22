@@ -2603,13 +2603,17 @@ async def retell_register_phone_call(request: Request, body: RegisterPhoneCallRe
 class ImportPhoneNumberRequest(BaseModel):
     """Request body for importing a phone number via SIP Trunking (Custom Telephony)
     
-    Matches RetellAI UI form fields for connecting numbers via SIP trunking.
+    Matches RetellAI OpenAPI documentation for /import-phone-number endpoint.
+    Required fields: phone_number, termination_uri
     """
     phone_number: str = Field(..., description="E.164 format number to import (e.g., +390289744903)")
-    termination_uri: str = Field(..., description="Termination URI (NOT Retell SIP server URI) - where calls should be routed")
-    outbound_transport: Optional[str] = Field("TCP", description="Outbound transport protocol (TCP or UDP), defaults to TCP - required for outbound calls to work")
-    sip_trunk_user_name: Optional[str] = Field(None, description="SIP Trunk User Name (optional)")
-    sip_trunk_password: Optional[str] = Field(None, description="SIP Trunk Password (optional)")
+    termination_uri: str = Field(..., description="Termination URI to uniquely identify your elastic SIP trunk (e.g., pbx.zadarma.com)")
+    sip_trunk_auth_username: Optional[str] = Field(None, description="The username used for authentication for the SIP trunk")
+    sip_trunk_auth_password: Optional[str] = Field(None, description="The password used for authentication for the SIP trunk")
+    # Legacy field names (for backward compatibility)
+    sip_trunk_user_name: Optional[str] = Field(None, description="DEPRECATED: Use sip_trunk_auth_username instead")
+    sip_trunk_password: Optional[str] = Field(None, description="DEPRECATED: Use sip_trunk_auth_password instead")
+    outbound_transport: Optional[str] = Field(None, description="DEPRECATED: Not supported by RetellAI /import-phone-number endpoint")
     nickname: Optional[str] = Field(None, description="Nickname for the number (optional, for reference only)")
     inbound_agent_id: Optional[str] = Field(None, description="Retell agent ID for inbound calls")
     outbound_agent_id: Optional[str] = Field(None, description="Retell agent ID for outbound calls")
@@ -2646,20 +2650,26 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     """
     tenant_id = extract_tenant_id(request)
     
-    # Build request body for RetellAI import-phone-number API
-    # According to RetellAI docs, required fields are: phone_number, termination_uri, outbound_transport
+    # Build request body for RetellAI /import-phone-number API
+    # According to RetellAI OpenAPI docs, required fields are: phone_number, termination_uri
+    # Use sip_trunk_auth_username and sip_trunk_auth_password (not sip_trunk_user_name/password)
     retell_body: Dict[str, Any] = {
         "phone_number": body.phone_number,
         "termination_uri": body.termination_uri,
-        "outbound_transport": body.outbound_transport or "TCP",  # Required for outbound calls
     }
     
-    # Optional SIP trunking fields
-    if body.sip_trunk_user_name:
-        retell_body["sip_trunk_user_name"] = body.sip_trunk_user_name
+    # Optional SIP trunking authentication fields (use new field names first, fallback to legacy)
+    if body.sip_trunk_auth_username:
+        retell_body["sip_trunk_auth_username"] = body.sip_trunk_auth_username
+    elif body.sip_trunk_user_name:
+        # Backward compatibility
+        retell_body["sip_trunk_auth_username"] = body.sip_trunk_user_name
     
-    if body.sip_trunk_password:
-        retell_body["sip_trunk_password"] = body.sip_trunk_password
+    if body.sip_trunk_auth_password:
+        retell_body["sip_trunk_auth_password"] = body.sip_trunk_auth_password
+    elif body.sip_trunk_password:
+        # Backward compatibility
+        retell_body["sip_trunk_auth_password"] = body.sip_trunk_password
     
     # Optional agent binding
     if body.inbound_agent_id:
@@ -2697,21 +2707,8 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     print(f"[DEBUG] [retell_import_phone_number] Request body: {json.dumps(retell_body)}", flush=True)
     
     try:
-        # Try using /create-phone-number with SIP parameters (as per RetellAI UI)
-        # This endpoint supports existing numbers when phone_number is provided
-        # If this doesn't work, we can fall back to /import-phone-number
-        try:
-            data = await retell_post_json("/create-phone-number", retell_body, tenant_id=tenant_id)
-            logger.info(f"[retell_import_phone_number] Successfully used /create-phone-number endpoint")
-            print(f"[DEBUG] [retell_import_phone_number] Successfully used /create-phone-number endpoint", flush=True)
-        except HTTPException as e:
-            if e.status_code in [400, 404]:
-                # If /create-phone-number doesn't work for imports, try /import-phone-number
-                logger.warning(f"[retell_import_phone_number] /create-phone-number failed ({e.status_code}), trying /import-phone-number")
-                print(f"[DEBUG] [retell_import_phone_number] /create-phone-number failed, trying /import-phone-number", flush=True)
-                data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
-            else:
-                raise e
+        # Use /import-phone-number endpoint as per RetellAI OpenAPI documentation
+        data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
         logger.info(f"[retell_import_phone_number] RetellAI response: {json.dumps(data)}")
         print(f"[DEBUG] [retell_import_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
         
