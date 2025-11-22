@@ -1,12 +1,15 @@
 """Agent, Knowledge Base, and Phone Number endpoints"""
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone, timedelta
+import json
+import urllib.parse
 
 from config.database import engine
 from models.agents import Agent, KnowledgeBase, KnowledgeSection, PhoneNumber
-from utils.auth import extract_tenant_id
+from utils.auth import extract_tenant_id, extract_user_id
 from utils.helpers import country_iso_from_e164
 from services.agents import check_agent_limit, create_retell_agent, update_retell_agent, delete_retell_agent
 from services.enforcement import enforce_subscription_or_raise
@@ -602,71 +605,239 @@ async def delete_agent(request: Request, agent_id: int):
 # Knowledge Bases CRUD
 # ============================================================================
 
+def _kb_to_dict(k: KnowledgeBase) -> Dict[str, Any]:
+    """Convert KnowledgeBase model to dictionary with all fields"""
+    return {
+        "id": k.id,
+        "tenant_id": k.tenant_id,
+        "name": k.name,
+        "lang": k.lang,
+        "scope": k.scope,
+        "retell_kb_id": k.retell_kb_id,
+        "status": k.status,
+        "knowledge_base_sources": k.knowledge_base_sources,
+        "enable_auto_refresh": k.enable_auto_refresh,
+        "last_refreshed_timestamp": k.last_refreshed_timestamp,
+        "created_by_user_id": k.created_by_user_id,
+        "created_by_user_name": k.created_by_user_name,
+        "created_at": k.created_at.isoformat() if k.created_at else None,
+        "updated_at": k.updated_at.isoformat() if k.updated_at else None,
+        "synced": k.retell_kb_id is not None,
+    }
+
+
 @router.get("/kbs")
 async def list_kbs(request: Request) -> List[Dict[str, Any]]:
-    """List knowledge bases"""
+    """List knowledge bases for the current tenant"""
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         q = session.query(KnowledgeBase)
         if tenant_id is not None:
             q = q.filter(KnowledgeBase.tenant_id == tenant_id)
         rows = q.order_by(KnowledgeBase.id.desc()).limit(200).all()
-        return [
-            {
-                "id": k.id,
-                "lang": k.lang,
-                "scope": k.scope,
-                "retell_kb_id": k.retell_kb_id,
-                "synced": k.retell_kb_id is not None
-            }
-            for k in rows
-        ]
+        return [_kb_to_dict(k) for k in rows]
 
 
 class KbCreate(BaseModel):
-    lang: Optional[str] = None
-    scope: Optional[str] = None
+    """Request body for creating a knowledge base in Agoralia and RetellAI"""
+    name: str = Field(..., max_length=40, description="Name of the knowledge base (max 40 chars, required)")
+    lang: Optional[str] = Field(None, description="Language code (e.g., 'it-IT', 'en-US')")
+    scope: Optional[str] = Field(None, description="Scope: 'general' for workspace-wide KB, or specific scope")
+    
+    # RetellAI fields
+    knowledge_base_texts: Optional[List[Dict[str, str]]] = Field(None, description="Array of {title, text} objects to add to KB")
+    knowledge_base_urls: Optional[List[str]] = Field(None, description="Array of URLs to scrape and add to KB")
+    enable_auto_refresh: Optional[bool] = Field(None, description="Enable auto-refresh for URLs every 12 hours")
 
 
 @router.post("/kbs")
 async def create_kb(request: Request, body: KbCreate):
-    """Create knowledge base
+    """Create knowledge base in Agoralia and RetellAI
     
-    Note: KB is created in Agoralia only. Lazy sync to Retell happens when KB is first used in a call.
-    Use POST /kbs/{kb_id}/sync to sync immediately.
+    Creates a knowledge base in both systems:
+    1. Creates KB in RetellAI with provided texts/URLs
+    2. Saves KB metadata in Agoralia database
+    3. Links them via retell_kb_id
+    
+    Note: File uploads are not yet supported via this endpoint.
+    Use POST /kbs/{kb_id}/sources/files for file uploads.
     """
     tenant_id = extract_tenant_id(request)
-    with Session(engine) as session:
-        k = KnowledgeBase(lang=body.lang, scope=body.scope, tenant_id=tenant_id)
-        session.add(k)
-        session.commit()
-        kb_id = k.id
-    return {"ok": True, "id": kb_id}
+    
+    # Prepare form data for RetellAI API (multipart/form-data)
+    from utils.retell import retell_post_multipart
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    form_data: Dict[str, Any] = {
+        "knowledge_base_name": body.name,
+    }
+    
+    # Add texts if provided
+    if body.knowledge_base_texts:
+        form_data["knowledge_base_texts"] = json.dumps(body.knowledge_base_texts)
+    
+    # Add URLs if provided
+    if body.knowledge_base_urls:
+        form_data["knowledge_base_urls"] = json.dumps(body.knowledge_base_urls)
+    
+    # Add auto-refresh if provided
+    if body.enable_auto_refresh is not None:
+        form_data["enable_auto_refresh"] = "true" if body.enable_auto_refresh else "false"
+    
+    try:
+        # Create KB in RetellAI first
+        logger.info(f"[create_kb] Creating KB in RetellAI: {body.name}")
+        print(f"[DEBUG] [create_kb] Creating KB in RetellAI: {body.name}", flush=True)
+        
+        retell_data = await retell_post_multipart(
+            "/create-knowledge-base",
+            data=form_data,
+            tenant_id=tenant_id
+        )
+        
+        retell_kb_id = retell_data.get("knowledge_base_id")
+        retell_status = retell_data.get("status", "in_progress")
+        retell_sources = retell_data.get("knowledge_base_sources", [])
+        retell_auto_refresh = retell_data.get("enable_auto_refresh", False)
+        retell_last_refresh = retell_data.get("last_refreshed_timestamp")
+        
+        logger.info(f"[create_kb] RetellAI KB created: {retell_kb_id}, status: {retell_status}")
+        print(f"[DEBUG] [create_kb] RetellAI KB created: {retell_kb_id}, status: {retell_status}", flush=True)
+        
+        # Get user info for tracking who created this KB
+        user_id = extract_user_id(request)
+        user_name = None
+        if user_id:
+            with Session(engine) as session:
+                from models.users import User
+                user = session.query(User).filter(User.id == user_id).first()
+                if user:
+                    # Build full name from first_name and last_name
+                    parts = [p for p in [user.first_name, user.last_name] if p]
+                    user_name = ' '.join(parts) if parts else None
+        
+        # Save KB in Agoralia database
+        with Session(engine) as session:
+            kb = KnowledgeBase(
+                tenant_id=tenant_id,
+                name=body.name,
+                lang=body.lang,
+                scope=body.scope or "general",
+                retell_kb_id=retell_kb_id,
+                status=retell_status,
+                knowledge_base_sources=retell_sources,
+                enable_auto_refresh=retell_auto_refresh,
+                last_refreshed_timestamp=retell_last_refresh,
+                created_by_user_id=user_id,
+                created_by_user_name=user_name,
+            )
+            session.add(kb)
+            session.commit()
+            kb_id = kb.id
+        
+        logger.info(f"[create_kb] Agoralia KB created: {kb_id}, linked to RetellAI: {retell_kb_id}")
+        print(f"[DEBUG] [create_kb] Agoralia KB created: {kb_id}, linked to RetellAI: {retell_kb_id}", flush=True)
+        
+        return {
+            "ok": True,
+            "id": kb_id,
+            "retell_kb_id": retell_kb_id,
+            "status": retell_status,
+            "name": body.name,
+        }
+    except HTTPException as e:
+        logger.error(f"[create_kb] HTTPException: {e.status_code} - {e.detail}")
+        raise e
+    except Exception as e:
+        import traceback
+        logger.error(f"[create_kb] Error creating KB: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error creating knowledge base: {str(e)}")
 
 
 class KbUpdate(BaseModel):
+    """Request body for updating a knowledge base"""
+    name: Optional[str] = Field(None, max_length=40, description="Name of the knowledge base (max 40 chars)")
     lang: Optional[str] = None
     scope: Optional[str] = None
+    enable_auto_refresh: Optional[bool] = None
 
 
 @router.patch("/kbs/{kb_id}")
 async def update_kb(request: Request, kb_id: int, body: KbUpdate):
-    """Update knowledge base
+    """Update knowledge base in Agoralia
     
-    Note: Updates Agoralia KB only. If KB is synced to Retell (has retell_kb_id),
-    use POST /kbs/{kb_id}/sync to update Retell KB after modifying sections.
+    Updates KB metadata in Agoralia. If KB is synced to RetellAI (has retell_kb_id),
+    some fields (like name) may need to be updated in RetellAI as well.
+    
+    Note: To update KB sources (texts, URLs, files), use:
+    - POST /kbs/{kb_id}/sources to add sources
+    - DELETE /kbs/{kb_id}/sources/{source_id} to remove sources
     """
     tenant_id = extract_tenant_id(request)
     with Session(engine) as session:
         k = session.get(KnowledgeBase, kb_id)
         if not k or (tenant_id is not None and k.tenant_id != tenant_id):
             raise HTTPException(status_code=404, detail="KB not found")
+        
+        updated = False
+        
+        if body.name is not None:
+            k.name = body.name
+            updated = True
+        
         if body.lang is not None:
             k.lang = body.lang
+            updated = True
+        
         if body.scope is not None:
             k.scope = body.scope
-        session.commit()
+            updated = True
+        
+        if body.enable_auto_refresh is not None:
+            k.enable_auto_refresh = body.enable_auto_refresh
+            updated = True
+        
+        if updated:
+            k.updated_at = datetime.now(timezone.utc)
+            session.commit()
+    
     return {"ok": True}
+
+
+@router.get("/kbs/{kb_id}")
+async def get_kb(request: Request, kb_id: int) -> Dict[str, Any]:
+    """Get knowledge base details by ID
+    
+    Also refreshes KB status and sources from RetellAI if synced.
+    """
+    tenant_id = extract_tenant_id(request)
+    with Session(engine) as session:
+        k = session.get(KnowledgeBase, kb_id)
+        if not k or (tenant_id is not None and k.tenant_id != tenant_id):
+            raise HTTPException(status_code=404, detail="KB not found")
+        
+        # Refresh KB data from RetellAI if synced
+        if k.retell_kb_id:
+            try:
+                from utils.retell import retell_get_json
+                retell_data = await retell_get_json(f"/get-knowledge-base/{urllib.parse.quote(k.retell_kb_id)}", tenant_id=tenant_id)
+                
+                # Update local KB with RetellAI data
+                k.status = retell_data.get("status", k.status)
+                k.knowledge_base_sources = retell_data.get("knowledge_base_sources", k.knowledge_base_sources)
+                k.enable_auto_refresh = retell_data.get("enable_auto_refresh", k.enable_auto_refresh)
+                k.last_refreshed_timestamp = retell_data.get("last_refreshed_timestamp", k.last_refreshed_timestamp)
+                k.updated_at = datetime.now(timezone.utc)
+                session.commit()
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"[get_kb] Could not refresh KB from RetellAI: {e}")
+                # Continue with local data
+        
+        return _kb_to_dict(k)
 
 
 @router.delete("/kbs/{kb_id}")
@@ -780,6 +951,58 @@ async def list_numbers(request: Request) -> List[Dict[str, Any]]:
             q = q.filter(PhoneNumber.tenant_id == tenant_id)
         rows = q.order_by(PhoneNumber.id.desc()).limit(200).all()
         return [{"id": n.id, "e164": n.e164, "type": n.type, "verified": bool(n.verified), "country": n.country} for n in rows]
+
+
+@router.get("/numbers/renewal-alerts")
+async def get_renewal_alerts(request: Request) -> List[Dict[str, Any]]:
+    """Get phone number renewal alerts for dashboard
+    
+    Returns phone numbers that are due for renewal within 5 days.
+    Shows alerts at -5, -4, -3, -2, -1 days before renewal.
+    """
+    tenant_id = extract_tenant_id(request)
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    
+    alerts: List[Dict[str, Any]] = []
+    
+    with Session(engine) as session:
+        q = session.query(PhoneNumber).filter(
+            PhoneNumber.type == "retell",
+            PhoneNumber.verified == 1,
+            PhoneNumber.purchased_at.isnot(None),
+        )
+        if tenant_id is not None:
+            q = q.filter(PhoneNumber.tenant_id == tenant_id)
+        
+        phone_numbers = q.all()
+        
+        for phone_number in phone_numbers:
+            if not phone_number.purchased_at:
+                continue
+            
+            # Calculate days until renewal
+            renewal_date = phone_number.purchased_at + timedelta(days=30)
+            days_until_renewal = (renewal_date.date() - today).days
+            
+            # Only include alerts for -5 to 0 days
+            if 0 <= days_until_renewal <= 5:
+                monthly_cost_cents = phone_number.monthly_cost_cents or 200
+                alerts.append({
+                    "phone_number": phone_number.e164,
+                    "phone_number_id": phone_number.id,
+                    "days_until_renewal": days_until_renewal,
+                    "renewal_date": renewal_date.date().isoformat(),
+                    "monthly_cost_cents": monthly_cost_cents,
+                    "monthly_cost_usd": monthly_cost_cents / 100.0,
+                    "purchased_at": phone_number.purchased_at.isoformat() if phone_number.purchased_at else None,
+                    "next_renewal_at": phone_number.next_renewal_at.isoformat() if phone_number.next_renewal_at else None,
+                })
+        
+        # Sort by days_until_renewal (most urgent first)
+        alerts.sort(key=lambda x: x["days_until_renewal"])
+        
+        return alerts
 
 
 class NumberCreate(BaseModel):

@@ -322,12 +322,20 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
                     else:
                         internal_type = "retell"
                     
+                    # Calculate next renewal date (30 days from now)
+                    from datetime import timedelta
+                    now = datetime.now(timezone.utc)
+                    next_renewal = now + timedelta(days=30)
+                    
                     new_number = PhoneNumber(
                         e164=data["phone_number"],
                         type=internal_type,
                         verified=1,
                         tenant_id=tenant_id,
                         country=country_iso_from_e164(data["phone_number"]),
+                        purchased_at=now,  # Track purchase date for monthly renewal
+                        monthly_cost_cents=phone_cost_cents or 200,  # Store monthly cost ($2 or $5)
+                        next_renewal_at=next_renewal,  # Next renewal date (30 days from purchase)
                     )
                     session.add(new_number)
                     
@@ -2069,30 +2077,39 @@ async def list_retell_phone_numbers():
             raise e
 
 
+class UpdatePhoneNumberRequest(BaseModel):
+    """Request body for updating phone number configuration in RetellAI
+    
+    Matches RetellAI OpenAPI spec for PATCH /update-phone-number/{phone_number}
+    """
+    inbound_agent_id: Optional[str] = Field(None, description="Agent ID for inbound calls (null to disable inbound)")
+    outbound_agent_id: Optional[str] = Field(None, description="Agent ID for outbound calls (null to disable outbound)")
+    inbound_agent_version: Optional[int] = Field(None, description="Version of inbound agent (defaults to latest)")
+    outbound_agent_version: Optional[int] = Field(None, description="Version of outbound agent (defaults to latest)")
+    nickname: Optional[str] = Field(None, description="Nickname of the number (for your reference only)")
+    inbound_webhook_url: Optional[str] = Field(None, description="Webhook URL for inbound calls")
+
+
 @router.patch("/retell/phone-numbers/{phone_number}")
 async def update_retell_phone_number(
     request: Request,
     phone_number: str,
-    inbound_agent_id: Optional[str] = None,
-    outbound_agent_id: Optional[str] = None,
-    inbound_agent_version: Optional[int] = None,
-    outbound_agent_version: Optional[int] = None,
-    nickname: Optional[str] = None,
-    inbound_webhook_url: Optional[str] = None,
+    body: UpdatePhoneNumberRequest,
 ):
     """Update phone number configuration in Retell AI (bind agents)
     
     According to Retell AI docs:
     - PATCH /update-phone-number/{phone_number} updates phone number
     
+    Supports updating:
+    - Agent bindings (inbound/outbound)
+    - Agent versions
+    - Nickname
+    - Inbound webhook URL
+    
     Args:
         phone_number: E.164 format number (e.g., +14158735112)
-        inbound_agent_id: Agent ID for inbound calls (null to disable inbound)
-        outbound_agent_id: Agent ID for outbound calls (null to disable outbound)
-        inbound_agent_version: Version of inbound agent
-        outbound_agent_version: Version of outbound agent
-        nickname: Optional nickname
-        inbound_webhook_url: Optional webhook URL for inbound calls
+        body: UpdatePhoneNumberRequest with fields to update
     """
     tenant_id = extract_tenant_id(request)
     
@@ -2107,51 +2124,48 @@ async def update_retell_phone_number(
                 raise HTTPException(status_code=403, detail="Phone number belongs to a different tenant")
     
     try:
+        # Build request body for RetellAI
+        retell_body: Dict[str, Any] = {}
+        
+        # Only include fields that are explicitly provided (not None)
+        # This allows setting fields to null by passing null explicitly
+        if body.inbound_agent_id is not None:
+            retell_body["inbound_agent_id"] = body.inbound_agent_id if body.inbound_agent_id else None
+        if body.outbound_agent_id is not None:
+            retell_body["outbound_agent_id"] = body.outbound_agent_id if body.outbound_agent_id else None
+        if body.inbound_agent_version is not None:
+            retell_body["inbound_agent_version"] = body.inbound_agent_version
+        if body.outbound_agent_version is not None:
+            retell_body["outbound_agent_version"] = body.outbound_agent_version
+        if body.nickname is not None:
+            # Allow empty strings to be set as None (to clear nickname in RetellAI)
+            retell_body["nickname"] = body.nickname.strip() if body.nickname and body.nickname.strip() else None
+        if body.inbound_webhook_url is not None:
+            retell_body["inbound_webhook_url"] = body.inbound_webhook_url if body.inbound_webhook_url else None
+        
+        # Log request for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[update_retell_phone_number] Updating {phone_number} with: {json.dumps(retell_body)}")
+        print(f"[DEBUG] [update_retell_phone_number] Request body: {json.dumps(retell_body)}", flush=True)
+        
         # Use path parameter as per official docs
-        body: Dict[str, Any] = {}
+        data = await retell_patch_json(f"/update-phone-number/{urllib.parse.quote(phone_number)}", retell_body, tenant_id=tenant_id)
         
-        if inbound_agent_id is not None:
-            body["inbound_agent_id"] = inbound_agent_id
-        if outbound_agent_id is not None:
-            body["outbound_agent_id"] = outbound_agent_id
-        if inbound_agent_version is not None:
-            body["inbound_agent_version"] = inbound_agent_version
-        if outbound_agent_version is not None:
-            body["outbound_agent_version"] = outbound_agent_version
-        if nickname is not None:
-            body["nickname"] = nickname
-        if inbound_webhook_url is not None:
-            body["inbound_webhook_url"] = inbound_webhook_url
+        logger.info(f"[update_retell_phone_number] RetellAI response: {json.dumps(data)}")
+        print(f"[DEBUG] [update_retell_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
         
-        data = await retell_patch_json(f"/update-phone-number/{urllib.parse.quote(phone_number)}", body, tenant_id=tenant_id)
         return {
             "success": True,
             "response": data,
         }
     except HTTPException as e:
-        # Fallback to query param format if path param doesn't work
-        try:
-            body = {"phone_number": phone_number}
-            if inbound_agent_id is not None:
-                body["inbound_agent_id"] = inbound_agent_id
-            if outbound_agent_id is not None:
-                body["outbound_agent_id"] = outbound_agent_id
-            if inbound_agent_version is not None:
-                body["inbound_agent_version"] = inbound_agent_version
-            if outbound_agent_version is not None:
-                body["outbound_agent_version"] = outbound_agent_version
-            if nickname is not None:
-                body["nickname"] = nickname
-            if inbound_webhook_url is not None:
-                body["inbound_webhook_url"] = inbound_webhook_url
-            
-            data = await retell_patch_json("/update-phone-number", body, tenant_id=tenant_id)
-            return {
-                "success": True,
-                "response": data,
-            }
-        except Exception:
-            raise e
+        raise e
+    except Exception as e:
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.error(f"[update_retell_phone_number] Error updating phone number: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error updating phone number: {str(e)}")
 
 
 @router.delete("/retell/phone-numbers/{phone_number}")
@@ -2768,8 +2782,8 @@ class ImportPhoneNumberRequest(BaseModel):
     Matches RetellAI OpenAPI documentation for /import-phone-number endpoint.
     Required fields: phone_number, termination_uri
     """
-    phone_number: str = Field(..., description="E.164 format number to import (e.g., +390289744903)")
-    termination_uri: str = Field(..., description="Termination URI to uniquely identify your elastic SIP trunk (e.g., pbx.zadarma.com)")
+    phone_number: str = Field(..., description="E.164 format number to import (e.g., +14155551234)")
+    termination_uri: str = Field(..., description="Termination URI to uniquely identify your elastic SIP trunk (e.g., sip.example.com or pbx.yourprovider.com)")
     sip_trunk_auth_username: Optional[str] = Field(None, description="The username used for authentication for the SIP trunk")
     sip_trunk_auth_password: Optional[str] = Field(None, description="The password used for authentication for the SIP trunk")
     # Legacy field names (for backward compatibility)
@@ -2918,7 +2932,7 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
                         existing.type = "custom"
                     session.commit()
         
-        # Extract SIP inbound URI if available (for configuring Zadarma forwarding)
+        # Extract SIP inbound URI if available (for configuring SIP provider forwarding)
         # RetellAI format for custom telephony: sip:{phone_number}@sip.retellai.com
         sip_inbound_uri = None
         if "sip_inbound_uri" in data:
@@ -2936,7 +2950,7 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
             "success": True,
             "phone_number": imported_number,
             "phone_number_type": data.get("phone_number_type", "custom"),
-            "sip_inbound_uri": sip_inbound_uri,  # For configuring Zadarma inbound forwarding
+            "sip_inbound_uri": sip_inbound_uri,  # For configuring SIP provider inbound forwarding
             "response": data,
         }
     except HTTPException as e:

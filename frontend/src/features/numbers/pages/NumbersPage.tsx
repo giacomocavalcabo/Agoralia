@@ -175,7 +175,7 @@ export function NumbersPage() {
         importForm.reset()
         setCreateModalOpen(false)
         if (result.sip_inbound_uri) {
-          alert(`Number imported successfully!\n\nSIP Inbound URI for Zadarma:\n${result.sip_inbound_uri}`)
+          alert(`Number imported successfully!\n\nSIP Inbound URI:\n${result.sip_inbound_uri}\n\nConfigure your SIP provider to route inbound calls to this URI.`)
         }
       } else {
         alert(`Failed to import number: ${JSON.stringify(result.error)}`)
@@ -512,7 +512,7 @@ export function NumbersPage() {
                   <Input
                     id="import_phone_number"
                     {...importForm.register('phone_number')}
-                    placeholder="+390289744903"
+                    placeholder="+14155551234"
                     className="mt-1.5"
                     required
                   />
@@ -522,11 +522,11 @@ export function NumbersPage() {
                   <Input
                     id="import_termination_uri"
                     {...importForm.register('termination_uri')}
-                    placeholder="pbx.zadarma.com"
+                    placeholder="sip.example.com"
                     className="mt-1.5"
                     required
                   />
-                  <p className="text-xs text-muted-foreground mt-1">e.g., pbx.zadarma.com</p>
+                  <p className="text-xs text-muted-foreground mt-1">e.g., sip.example.com or pbx.yourprovider.com</p>
                 </div>
                 <div>
                   <Label htmlFor="import_outbound_transport">Outbound Transport</Label>
@@ -640,9 +640,10 @@ export function NumbersPage() {
                   <Input
                     id="import_nickname"
                     {...importForm.register('nickname')}
-                    placeholder="Zadarma Milan"
+                    placeholder="Office Main Line"
                     className="mt-1.5"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">A friendly name for this number (e.g., "Office Main Line", "Sales Department")</p>
                 </div>
                 <div>
                   <Label htmlFor="import_inbound_webhook_url">Inbound Webhook URL</Label>
@@ -697,7 +698,7 @@ export function NumbersPage() {
                 <Input
                   id="edit_nickname"
                   {...editForm.register('nickname')}
-                  placeholder="e.g., Zadarma Milan"
+                  placeholder="e.g., Office Main Line"
                   className="mt-1.5"
                 />
               </div>

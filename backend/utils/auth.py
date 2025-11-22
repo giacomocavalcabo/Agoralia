@@ -58,6 +58,22 @@ def extract_tenant_id(request: Optional[Request]) -> Optional[int]:
         return None
 
 
+def extract_user_id(request: Optional[Request]) -> Optional[int]:
+    """Extract user ID from request Bearer token"""
+    try:
+        if request is not None:
+            auth = request.headers.get("Authorization") or ""
+            if auth.startswith("Bearer "):
+                token = auth[7:]
+                payload = _decode_token(token)
+                user_id = payload.get("sub")
+                if user_id is not None:
+                    return int(user_id)
+    except Exception:
+        pass
+    return None
+
+
 def _hash_password(password: str, salt: Optional[bytes] = None) -> Tuple[str, str]:
     """Hash password with PBKDF2"""
     salt_bytes = salt or os.urandom(16)

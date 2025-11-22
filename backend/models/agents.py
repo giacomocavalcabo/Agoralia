@@ -107,9 +107,27 @@ class KnowledgeBase(Base):
     __tablename__ = "kbs"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     tenant_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
+    # Basic metadata
+    name: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)  # Knowledge base name (max 40 chars per RetellAI)
     lang: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
-    scope: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    scope: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # "general" | "agent-specific" | etc.
+    
+    # RetellAI integration
     retell_kb_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)  # Retell AI KB ID (knowledge_base_xxx)
+    status: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # "in_progress" | "complete" | "error" (from RetellAI)
+    
+    # Knowledge base sources (stored as JSON)
+    # Sources can be: texts (array of {title, text}), urls (array of strings), files (array of file info)
+    knowledge_base_sources: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # Array of source objects from RetellAI
+    
+    # Auto-refresh settings
+    enable_auto_refresh: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)  # Auto-refresh URLs every 12h
+    last_refreshed_timestamp: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Milliseconds since epoch
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class KnowledgeSection(Base):
@@ -130,4 +148,13 @@ class PhoneNumber(Base):
     type: Mapped[str] = mapped_column(String(16), default="retell")
     verified: Mapped[int] = mapped_column(Integer, default=0)
     country: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    
+    # Monthly renewal tracking
+    purchased_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Date when number was purchased (or last renewed)
+    monthly_cost_cents: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Monthly cost in cents ($2 = 200, $5 = 500)
+    next_renewal_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Next renewal date (purchased_at + 30 days)
+    
+    # Metadata
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

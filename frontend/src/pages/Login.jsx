@@ -11,7 +11,8 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState('login')
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [adminSecret, setAdminSecret] = useState('')
   const [loading, setLoading] = useState(false)
   const redirectGoogle = `${window.location.origin}/google-login/callback`
@@ -21,7 +22,7 @@ export default function Login() {
     setLoading(true)
     try {
       const path = mode === 'login' ? endpoints.auth.login : endpoints.auth.register
-      const body = mode === 'login' ? { email, password } : { email, password, name, admin_secret: adminSecret }
+      const body = mode === 'login' ? { email, password } : { email, password, first_name: firstName, last_name: lastName, admin_secret: adminSecret }
       
       const res = await apiFetch(path, { method: 'POST', body })
       
@@ -73,7 +74,8 @@ export default function Login() {
           }}>Login con Google</Button>
           {mode === 'register' && (
             <>
-              <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
               <Input placeholder="Admin signup secret (optional)" value={adminSecret} onChange={(e) => setAdminSecret(e.target.value)} />
             </>
           )}

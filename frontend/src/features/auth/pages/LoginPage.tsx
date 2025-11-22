@@ -14,7 +14,8 @@ const loginSchema = z.object({
 })
 
 const registerSchema = loginSchema.extend({
-  name: z.string().optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   admin_secret: z.string().optional(),
 })
 
@@ -116,13 +117,23 @@ export function LoginPage() {
           ) : (
             <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
               <div>
-                <label htmlFor="reg-name" className="mb-1 block text-sm font-medium">
+                <label htmlFor="reg-first-name" className="mb-1 block text-sm font-medium">
                   Nome (opzionale)
                 </label>
                 <Input
-                  id="reg-name"
-                  {...registerForm.register('name')}
-                  placeholder="Mario Rossi"
+                  id="reg-first-name"
+                  {...registerForm.register('first_name')}
+                  placeholder="Mario"
+                />
+              </div>
+              <div>
+                <label htmlFor="reg-last-name" className="mb-1 block text-sm font-medium">
+                  Cognome (opzionale)
+                </label>
+                <Input
+                  id="reg-last-name"
+                  {...registerForm.register('last_name')}
+                  placeholder="Rossi"
                 />
               </div>
               <div>

@@ -26,7 +26,7 @@ export interface PurchasePhoneNumberRequest {
 // Import phone number via SIP (Custom Telephony)
 export interface ImportPhoneNumberRequest {
   phone_number: string  // E.164 format (required)
-  termination_uri: string  // e.g., "pbx.zadarma.com" (required)
+  termination_uri: string  // e.g., "sip.example.com" or "pbx.yourprovider.com" (required)
   sip_trunk_auth_username?: string  // SIP trunk authentication username
   sip_trunk_auth_password?: string  // SIP trunk authentication password
   inbound_agent_id?: string

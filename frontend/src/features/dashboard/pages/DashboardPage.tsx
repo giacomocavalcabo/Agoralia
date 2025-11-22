@@ -3,7 +3,8 @@ import { PageHeader } from '@/shared/layout/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { SetupChecklist } from '../components/SetupChecklist'
 import { KPICard } from '../components/KPICard'
-import { useDashboardKPIs, useLiveCalls } from '../hooks'
+import { RenewalAlerts } from '../components/RenewalAlerts'
+import { useDashboardKPIs, useLiveCalls, useRenewalAlerts } from '../hooks'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/shared/api/client'
 import { useWebSocket } from '@/shared/hooks/useWebSocket'
@@ -15,6 +16,7 @@ export function DashboardPage() {
   const queryClient = useQueryClient()
   const { data: kpis, isLoading: kpisLoading } = useDashboardKPIs()
   const { data: liveCalls, isLoading: callsLoading } = useLiveCalls()
+  const { data: renewalAlerts } = useRenewalAlerts()
 
   // WebSocket integration for real-time updates
   useWebSocket({
@@ -24,6 +26,11 @@ export function DashboardPage() {
         queryClient.invalidateQueries({ queryKey: ['calls'] })
         queryClient.invalidateQueries({ queryKey: ['calls', 'live'] })
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      }
+      // Invalidate renewal alerts when phone number events occur
+      if (message.type === 'phone_number.renewed' || message.type === 'phone_number.deleted' || message.type === 'phone_number.renewal_alert') {
+        queryClient.invalidateQueries({ queryKey: ['numbers', 'renewal-alerts'] })
+        queryClient.invalidateQueries({ queryKey: ['numbers'] })
       }
     },
   })
@@ -119,6 +126,11 @@ export function DashboardPage() {
           </Button>
         )}
       </div>
+
+      {/* Renewal Alerts - Show at top if any */}
+      {renewalAlerts && renewalAlerts.length > 0 && (
+        <RenewalAlerts alerts={renewalAlerts} />
+      )}
 
       {!isSetupComplete && (
         <SetupChecklist

@@ -16,7 +16,8 @@ router = APIRouter()
 class AuthRegister(BaseModel):
     email: str
     password: str
-    name: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
     admin_secret: str | None = None
 
 
@@ -38,7 +39,15 @@ async def auth_register(body: AuthRegister):
             # Check if admin_secret is provided
             is_admin = 1 if (body.admin_secret and body.admin_secret == os.getenv("ADMIN_SIGNUP_SECRET")) else 0
             
-            user = User(tenant_id=0, email=body.email.lower(), name=body.name, password_salt=salt, password_hash=h, is_admin=is_admin)
+            user = User(
+                tenant_id=0,
+                email=body.email.lower(),
+                first_name=body.first_name,
+                last_name=body.last_name,
+                password_salt=salt,
+                password_hash=h,
+                is_admin=is_admin
+            )
             session.add(user)
             session.commit()
             user.tenant_id = user.id
@@ -172,14 +181,48 @@ async def auth_google_callback(body: dict):
     
     info = _decode_jwt_no_verify(id_token)
     email = (info.get("email") or "").lower()
-    name = info.get("name") or info.get("given_name") or email.split("@")[0]
+    # Extract first_name and last_name from Google info
+    full_name = info.get("name") or ""
+    given_name = info.get("given_name") or ""
+    family_name = info.get("family_name") or ""
+    
+    # Try to split full_name if first_name/last_name not available
+    first_name = given_name
+    last_name = family_name
+    if not first_name and not last_name and full_name:
+        # Try to split full_name (e.g., "Mario Rossi" -> first_name="Mario", last_name="Rossi")
+        parts = full_name.strip().split(" ", 1)
+        first_name = parts[0] if len(parts) > 0 else None
+        last_name = parts[1] if len(parts) > 1 else None
+    
     if not email:
         raise HTTPException(status_code=400, detail="no email in id_token")
     with Session(engine) as session:
         user = session.query(User).filter(User.email == email).one_or_none()
         if not user:
+            # New user registration - check if first_name or last_name are missing
+            if not first_name or not last_name:
+                # Store temporary user info in session or return needs_name_completion flag
+                # For simplicity, we'll return a needs_name_completion flag
+                # and require frontend to call complete_google_registration endpoint
+                return {
+                    "needs_name_completion": True,
+                    "email": email,
+                    "first_name": first_name or "",
+                    "last_name": last_name or ""
+                }
+            
+            # Create user with complete info
             salt, h = _hash_password(os.urandom(16).hex())
-            user = User(tenant_id=0, email=email, name=name, password_salt=salt, password_hash=h, is_admin=0)
+            user = User(
+                tenant_id=0,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                password_salt=salt,
+                password_hash=h,
+                is_admin=0
+            )
             session.add(user)
             session.commit()
             user.tenant_id = user.id
@@ -191,11 +234,74 @@ async def auth_google_callback(body: dict):
                 user.is_admin = 1
                 session.commit()
         else:
+            # Existing user login - check if first_name or last_name are missing
+            needs_update = False
+            if not user.first_name and first_name:
+                user.first_name = first_name
+                needs_update = True
+            if not user.last_name and last_name:
+                user.last_name = last_name
+                needs_update = True
+            if needs_update:
+                session.commit()
+            
             # On login, also check if user should be admin (if they're the only one in workspace)
             user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
             if user_count == 1 and user.is_admin == 0:
                 user.is_admin = 1
                 session.commit()
+        
+        token = _encode_token({
+            "sub": user.id,
+            "tenant_id": user.tenant_id,
+            "is_admin": bool(user.is_admin),
+            "exp": (datetime.now(timezone.utc) + timedelta(days=7)).timestamp()
+        })
+        return {"token": token, "tenant_id": user.tenant_id, "is_admin": bool(user.is_admin)}
+
+
+@router.post("/google/complete")
+async def auth_google_complete(body: dict):
+    """Complete Google OAuth registration with first_name and last_name"""
+    import os
+    from models.users import User
+    
+    email = (body.get("email") or "").lower()
+    first_name = body.get("first_name") or ""
+    last_name = body.get("last_name") or ""
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="email is required")
+    if not first_name or not last_name:
+        raise HTTPException(status_code=400, detail="first_name and last_name are required")
+    
+    with Session(engine) as session:
+        # Check if user already exists
+        existing_user = session.query(User).filter(User.email == email).one_or_none()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="user already exists")
+        
+        # Create new user with provided first_name and last_name
+        salt, h = _hash_password(os.urandom(16).hex())
+        user = User(
+            tenant_id=0,
+            email=email,
+            first_name=first_name.strip(),
+            last_name=last_name.strip(),
+            password_salt=salt,
+            password_hash=h,
+            is_admin=0
+        )
+        session.add(user)
+        session.commit()
+        user.tenant_id = user.id
+        session.commit()
+        
+        # If this is the only user in the workspace, make them admin automatically
+        user_count = session.query(User).filter(User.tenant_id == user.tenant_id).count()
+        if user_count == 1:
+            user.is_admin = 1
+            session.commit()
         
         token = _encode_token({
             "sub": user.id,
@@ -229,12 +335,20 @@ async def auth_me(request: Request):
                     session.commit()
                     is_admin = True
             
+            # Build full name from first_name and last_name
+            full_name = None
+            if user:
+                parts = [p for p in [user.first_name, user.last_name] if p]
+                full_name = ' '.join(parts) if parts else None
+            
             return {
                 "user_id": user_id,
                 "tenant_id": tenant_id,
                 "is_admin": bool(user.is_admin) if user else is_admin,
                 "email": user.email if user else None,
-                "name": user.name if user else None,
+                "first_name": user.first_name if user else None,
+                "last_name": user.last_name if user else None,
+                "name": full_name,  # Full name for backward compatibility
             }
     except HTTPException:
         raise

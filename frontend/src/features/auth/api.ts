@@ -8,7 +8,8 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string
   password: string
-  name?: string
+  first_name?: string
+  last_name?: string
   admin_secret?: string
 }
 
@@ -23,7 +24,9 @@ export interface User {
   tenant_id: number
   is_admin: boolean
   email: string | null
-  name: string | null
+  first_name: string | null
+  last_name: string | null
+  name: string | null  // Full name for backward compatibility
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {

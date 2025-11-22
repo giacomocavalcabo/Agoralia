@@ -12,9 +12,16 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     tenant_id: Mapped[int] = mapped_column(Integer)
     email: Mapped[str] = mapped_column(String(256))
-    name: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    first_name: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # First name (Nome)
+    last_name: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # Last name (Cognome)
     password_salt: Mapped[str] = mapped_column(String(64))
     password_hash: Mapped[str] = mapped_column(String(128))
     is_admin: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    @property
+    def full_name(self) -> Optional[str]:
+        """Get full name from first_name and last_name"""
+        parts = [p for p in [self.first_name, self.last_name] if p]
+        return ' '.join(parts) if parts else None
 

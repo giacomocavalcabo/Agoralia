@@ -16,6 +16,17 @@ export interface DashboardKPIs {
   calls_successful: number
 }
 
+export interface RenewalAlert {
+  phone_number: string
+  phone_number_id: number
+  days_until_renewal: number
+  renewal_date: string
+  monthly_cost_cents: number
+  monthly_cost_usd: number
+  purchased_at: string | null
+  next_renewal_at: string | null
+}
+
 export async function fetchLiveCalls(): Promise<LiveCall[]> {
   const { data } = await api.get('/calls/live', { params: { hours: 6 } })
   return Array.isArray(data) ? data : []
@@ -29,5 +40,10 @@ export async function fetchDashboardKPIs(): Promise<DashboardKPIs> {
     total_calls: 0,
     calls_successful: 0,
   }
+}
+
+export async function fetchRenewalAlerts(): Promise<RenewalAlert[]> {
+  const { data } = await api.get('/numbers/renewal-alerts')
+  return Array.isArray(data) ? data : []
 }
 
