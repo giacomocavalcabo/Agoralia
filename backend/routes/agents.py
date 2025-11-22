@@ -653,7 +653,6 @@ class KbCreate(BaseModel):
 @router.post("/kbs")
 async def create_kb(
     request: Request,
-    body: Optional[KbCreate] = None,
     # Form fields for multipart/form-data (when files are present)
     name: Optional[str] = Form(None),
     lang: Optional[str] = Form(None),
@@ -670,16 +669,24 @@ async def create_kb(
     2. Saves KB metadata in Agoralia database
     3. Links them via retell_kb_id
     
-    Supports both JSON (body) and multipart/form-data (when files are present).
+    Supports both JSON (application/json) and multipart/form-data (when files are present).
+    For JSON requests, data should be sent as form fields (name, lang, etc.) with empty file list.
     """
     tenant_id = extract_tenant_id(request)
     
     # Determine if this is multipart/form-data (has files) or JSON
     has_files = knowledge_base_files is not None and len(knowledge_base_files) > 0
     
-    # Extract data from either body (JSON) or form fields (multipart)
-    if has_files:
-        # Multipart/form-data request
+    # Check content type to determine request format
+    content_type = request.headers.get("content-type", "").lower()
+    is_multipart = "multipart/form-data" in content_type
+    is_json_content = "application/json" in content_type
+    
+    # Extract data from either JSON body or form fields
+    # If form fields are present (name is not None), use form fields (multipart)
+    # Otherwise, if content-type is JSON, parse JSON body
+    if is_multipart or (name is not None) or has_files:
+        # Multipart/form-data request (or form fields)
         kb_name = name
         kb_lang = lang
         kb_scope = scope or "general"
@@ -701,19 +708,59 @@ async def create_kb(
         
         if enable_auto_refresh:
             kb_auto_refresh = enable_auto_refresh.lower() == "true"
-        
-        if not kb_name:
-            raise HTTPException(status_code=400, detail="name is required")
+    elif is_json_content:
+        # JSON request - parse body manually
+        try:
+            body_data = await request.json()
+            kb_name = body_data.get("name")
+            kb_lang = body_data.get("lang")
+            kb_scope = body_data.get("scope", "general")
+            kb_texts = body_data.get("knowledge_base_texts")
+            kb_urls = body_data.get("knowledge_base_urls")
+            kb_auto_refresh = body_data.get("enable_auto_refresh")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid JSON body: {str(e)}")
     else:
-        # JSON request
-        if not body:
-            raise HTTPException(status_code=400, detail="Request body is required")
-        kb_name = body.name
-        kb_lang = body.lang
-        kb_scope = body.scope or "general"
-        kb_texts = body.knowledge_base_texts
-        kb_urls = body.knowledge_base_urls
-        kb_auto_refresh = body.enable_auto_refresh
+        # Unknown content type - try form fields first, then JSON as fallback
+        if name is not None:
+            # Use form fields
+            kb_name = name
+            kb_lang = lang
+            kb_scope = scope or "general"
+            kb_texts = None
+            kb_urls = None
+            kb_auto_refresh = None
+            
+            if knowledge_base_texts:
+                try:
+                    kb_texts = json.loads(knowledge_base_texts)
+                except json.JSONDecodeError:
+                    raise HTTPException(status_code=400, detail="Invalid JSON in knowledge_base_texts")
+            
+            if knowledge_base_urls:
+                try:
+                    kb_urls = json.loads(knowledge_base_urls)
+                except json.JSONDecodeError:
+                    raise HTTPException(status_code=400, detail="Invalid JSON in knowledge_base_urls")
+            
+            if enable_auto_refresh:
+                kb_auto_refresh = enable_auto_refresh.lower() == "true"
+        else:
+            # Try JSON as fallback
+            try:
+                body_data = await request.json()
+                kb_name = body_data.get("name")
+                kb_lang = body_data.get("lang")
+                kb_scope = body_data.get("scope", "general")
+                kb_texts = body_data.get("knowledge_base_texts")
+                kb_urls = body_data.get("knowledge_base_urls")
+                kb_auto_refresh = body_data.get("enable_auto_refresh")
+            except Exception:
+                raise HTTPException(status_code=400, detail="Unable to parse request. Please provide either form fields or JSON body.")
+    
+    # Validate required fields
+    if not kb_name:
+        raise HTTPException(status_code=400, detail="name is required")
     
     # Prepare form data for RetellAI API (multipart/form-data)
     from utils.retell import retell_post_multipart
@@ -793,9 +840,9 @@ async def create_kb(
         with Session(engine) as session:
             kb = KnowledgeBase(
                 tenant_id=tenant_id,
-                name=body.name,
-                lang=body.lang,
-                scope=body.scope or "general",
+                name=kb_name,
+                lang=kb_lang,
+                scope=kb_scope,
                 retell_kb_id=retell_kb_id,
                 status=retell_status,
                 knowledge_base_sources=retell_sources,
@@ -816,7 +863,7 @@ async def create_kb(
             "id": kb_id,
             "retell_kb_id": retell_kb_id,
             "status": retell_status,
-            "name": body.name,
+            "name": kb_name,
         }
     except HTTPException as e:
         logger.error(f"[create_kb] HTTPException: {e.status_code} - {e.detail}")
