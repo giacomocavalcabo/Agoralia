@@ -31,6 +31,7 @@ const purchaseSchema = z.object({
 const importSchema = z.object({
   phone_number: z.string().min(1, 'Phone number is required'),
   termination_uri: z.string().min(1, 'Termination URI is required'),
+  outbound_transport: z.enum(['TCP', 'UDP', 'TLS']).optional().default('TCP'),
   sip_trunk_auth_username: z.string().optional(),
   sip_trunk_auth_password: z.string().optional(),
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
@@ -40,7 +41,6 @@ const importSchema = z.object({
   // Legacy fields (for backward compatibility)
   sip_trunk_user_name: z.string().optional(),
   sip_trunk_password: z.string().optional(),
-  outbound_transport: z.string().optional(),
 })
 
 type PurchaseFormInputs = z.infer<typeof purchaseSchema>
@@ -167,6 +167,11 @@ export function NumbersPage() {
       // Backward compatibility with old field names
       if (data.sip_trunk_user_name && !data.sip_trunk_auth_username) payload.sip_trunk_auth_username = data.sip_trunk_user_name
       if (data.sip_trunk_password && !data.sip_trunk_auth_password) payload.sip_trunk_auth_password = data.sip_trunk_password
+      // Note: outbound_transport is not in OpenAPI docs but may be needed by RetellAI UI
+      // Include it as optional field in case RetellAI accepts it
+      if (data.outbound_transport && data.outbound_transport !== 'TCP') {
+        payload.outbound_transport = data.outbound_transport
+      }
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
       if (data.nickname) payload.nickname = data.nickname
@@ -504,6 +509,22 @@ export function NumbersPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">e.g., pbx.zadarma.com</p>
+                </div>
+                <div>
+                  <Label htmlFor="import_outbound_transport">Outbound Transport</Label>
+                  <select
+                    id="import_outbound_transport"
+                    {...importForm.register('outbound_transport', { required: false })}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    defaultValue="TCP"
+                  >
+                    <option value="TCP">TCP</option>
+                    <option value="UDP">UDP</option>
+                    <option value="TLS">TLS</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Transport protocol for outbound calls. Default is TCP. (Note: Not in OpenAPI but may be needed)
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
