@@ -329,6 +329,21 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
                         country=country_iso_from_e164(data["phone_number"]),
                     )
                     session.add(new_number)
+                    
+                    # Record phone number monthly cost as CostEvent (monthly recurring)
+                    # Note: Phone numbers have monthly costs, not one-time purchase costs
+                    if phone_cost_cents and phone_cost_cents > 0:
+                        from models.compliance import CostEvent
+                        from datetime import datetime, timezone
+                        cost_event = CostEvent(
+                            call_id=None,  # Not associated with a call
+                            component="telephony",  # Phone number monthly cost
+                            amount=phone_cost_cents,  # Monthly cost in cents
+                            currency="USD",
+                            ts=datetime.now(timezone.utc),
+                        )
+                        session.add(cost_event)
+                    
                     session.commit()
                 elif existing.tenant_id != tenant_id:
                     # Update tenant_id if different (number already exists but for different tenant)
@@ -345,6 +360,8 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
             "success": True,
             "phone_number": data.get("phone_number"),
             "phone_number_type": data.get("phone_number_type", "retell-twilio"),
+            "monthly_cost_cents": phone_cost_cents,
+            "monthly_cost_usd": phone_cost_cents / 100.0 if phone_cost_cents else None,
             "response": data,
         }
     except HTTPException as e:
