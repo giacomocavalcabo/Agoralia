@@ -84,10 +84,8 @@ export function NumbersPage() {
     if (editModalOpen && editingPhoneNumber && phoneDetails) {
       editForm.reset({
         // For select HTML elements, use empty string instead of null when no agent is associated
-        inbound_agent_id: phoneDetails.inbound_agent_id || '',
-        outbound_agent_id: phoneDetails.outbound_agent_id || '',
-        inbound_agent_version: phoneDetails.inbound_agent_version || null,
-        outbound_agent_version: phoneDetails.outbound_agent_version || null,
+        inbound_agent_id: inboundAgentId,
+        outbound_agent_id: outboundAgentId,
         nickname: phoneDetails.nickname || '',
         inbound_webhook_url: phoneDetails.inbound_webhook_url || '',
       })
@@ -137,8 +135,6 @@ export function NumbersPage() {
       if (data.number_provider) payload.number_provider = data.number_provider
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
-      if (data.inbound_agent_version) payload.inbound_agent_version = data.inbound_agent_version
-      if (data.outbound_agent_version) payload.outbound_agent_version = data.outbound_agent_version
       if (data.nickname) payload.nickname = data.nickname
       if (data.inbound_webhook_url) payload.inbound_webhook_url = data.inbound_webhook_url
       if (data.toll_free !== undefined) payload.toll_free = data.toll_free
@@ -165,8 +161,6 @@ export function NumbersPage() {
       if (data.sip_trunk_password) payload.sip_trunk_password = data.sip_trunk_password
       if (data.inbound_agent_id) payload.inbound_agent_id = data.inbound_agent_id
       if (data.outbound_agent_id) payload.outbound_agent_id = data.outbound_agent_id
-      if (data.inbound_agent_version) payload.inbound_agent_version = data.inbound_agent_version
-      if (data.outbound_agent_version) payload.outbound_agent_version = data.outbound_agent_version
       if (data.nickname) payload.nickname = data.nickname
       if (data.inbound_webhook_url) payload.inbound_webhook_url = data.inbound_webhook_url
 
@@ -731,35 +725,6 @@ export function NumbersPage() {
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
                     Agent to use for outbound calls. Required for outbound functionality.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit_inbound_agent_version">Inbound Agent Version (optional)</Label>
-                  <Input
-                    id="edit_inbound_agent_version"
-                    type="number"
-                    {...editForm.register('inbound_agent_version', { valueAsNumber: true })}
-                    placeholder="Leave empty for latest version"
-                    className="mt-1.5"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Specific version number. Leave empty to use the latest published version.
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="edit_outbound_agent_version">Outbound Agent Version (optional)</Label>
-                  <Input
-                    id="edit_outbound_agent_version"
-                    type="number"
-                    {...editForm.register('outbound_agent_version', { valueAsNumber: true })}
-                    placeholder="Leave empty for latest version"
-                    className="mt-1.5"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Specific version number. Leave empty to use the latest published version.
                   </p>
                 </div>
               </div>
