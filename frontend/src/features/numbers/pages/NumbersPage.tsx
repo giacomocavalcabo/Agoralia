@@ -17,8 +17,8 @@ const purchaseSchema = z.object({
   area_code: z.number().optional(),
   country_code: z.string().optional(),
   number_provider: z.string().optional(), // No default - user must select
-  inbound_agent_id: z.string().optional(),
-  outbound_agent_id: z.string().optional(),
+  inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
+  outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
   inbound_agent_version: z.number().optional(),
   outbound_agent_version: z.number().optional(),
   nickname: z.string().optional(),
@@ -35,8 +35,8 @@ const importSchema = z.object({
   termination_uri: z.string().min(1, 'Termination URI is required'),
   sip_trunk_user_name: z.string().optional(),
   sip_trunk_password: z.string().optional(),
-  inbound_agent_id: z.string().optional(),
-  outbound_agent_id: z.string().optional(),
+  inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
+  outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
   inbound_agent_version: z.number().optional(),
   outbound_agent_version: z.number().optional(),
   nickname: z.string().optional(),
@@ -48,8 +48,8 @@ type ImportFormInputs = z.infer<typeof importSchema>
 
 // Edit schema
 const editSchema = z.object({
-  inbound_agent_id: z.string().nullable().optional(),
-  outbound_agent_id: z.string().nullable().optional(),
+  inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
+  outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
   inbound_agent_version: z.number().nullable().optional(),
   outbound_agent_version: z.number().nullable().optional(),
   nickname: z.string().nullable().optional(),
@@ -110,14 +110,14 @@ export function NumbersPage() {
 
     try {
       const payload: any = {}
-      // Handle agent IDs: empty string = null (disable), otherwise use the value
-      if (data.inbound_agent_id !== undefined) {
-        payload.inbound_agent_id = data.inbound_agent_id && data.inbound_agent_id.trim() ? data.inbound_agent_id.trim() : null
+      // Agent IDs are now required - always send them
+      if (data.inbound_agent_id) {
+        payload.inbound_agent_id = data.inbound_agent_id.trim()
       }
-      if (data.outbound_agent_id !== undefined) {
-        payload.outbound_agent_id = data.outbound_agent_id && data.outbound_agent_id.trim() ? data.outbound_agent_id.trim() : null
+      if (data.outbound_agent_id) {
+        payload.outbound_agent_id = data.outbound_agent_id.trim()
       }
-      // Only include version if agent_id is set and version is provided
+      // Only include version if provided
       if (data.inbound_agent_version !== undefined && data.inbound_agent_version !== null) {
         payload.inbound_agent_version = data.inbound_agent_version
       }
@@ -389,22 +389,54 @@ export function NumbersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="purchase_inbound_agent_id">Inbound Agent ID</Label>
-                    <Input
+                    <Label htmlFor="purchase_inbound_agent_id">Inbound Call Agent *</Label>
+                    <select
                       id="purchase_inbound_agent_id"
-                      {...purchaseForm.register('inbound_agent_id')}
-                      placeholder="agent_xxx"
-                      className="mt-1.5"
-                    />
+                      {...purchaseForm.register('inbound_agent_id', { required: 'Inbound agent is required' })}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select an agent...</option>
+                      {agents && agents
+                        .filter((agent) => agent.retell_agent_id)
+                        .map((agent) => (
+                          <option key={agent.id} value={agent.retell_agent_id || ''}>
+                            {agent.name} ({agent.retell_agent_id})
+                          </option>
+                        ))}
+                    </select>
+                    {purchaseForm.formState.errors.inbound_agent_id && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {purchaseForm.formState.errors.inbound_agent_id.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Agent to use for inbound calls. Required for inbound functionality.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="purchase_outbound_agent_id">Outbound Agent ID</Label>
-                    <Input
+                    <Label htmlFor="purchase_outbound_agent_id">Outbound Call Agent *</Label>
+                    <select
                       id="purchase_outbound_agent_id"
-                      {...purchaseForm.register('outbound_agent_id')}
-                      placeholder="agent_xxx"
-                      className="mt-1.5"
-                    />
+                      {...purchaseForm.register('outbound_agent_id', { required: 'Outbound agent is required' })}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select an agent...</option>
+                      {agents && agents
+                        .filter((agent) => agent.retell_agent_id)
+                        .map((agent) => (
+                          <option key={agent.id} value={agent.retell_agent_id || ''}>
+                            {agent.name} ({agent.retell_agent_id})
+                          </option>
+                        ))}
+                    </select>
+                    {purchaseForm.formState.errors.outbound_agent_id && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {purchaseForm.formState.errors.outbound_agent_id.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Agent to use for outbound calls. Required for outbound functionality.
+                    </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -521,22 +553,54 @@ export function NumbersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="import_inbound_agent_id">Inbound Agent ID</Label>
-                    <Input
+                    <Label htmlFor="import_inbound_agent_id">Inbound Call Agent *</Label>
+                    <select
                       id="import_inbound_agent_id"
-                      {...importForm.register('inbound_agent_id')}
-                      placeholder="agent_xxx"
-                      className="mt-1.5"
-                    />
+                      {...importForm.register('inbound_agent_id', { required: 'Inbound agent is required' })}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select an agent...</option>
+                      {agents && agents
+                        .filter((agent) => agent.retell_agent_id)
+                        .map((agent) => (
+                          <option key={agent.id} value={agent.retell_agent_id || ''}>
+                            {agent.name} ({agent.retell_agent_id})
+                          </option>
+                        ))}
+                    </select>
+                    {importForm.formState.errors.inbound_agent_id && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {importForm.formState.errors.inbound_agent_id.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Agent to use for inbound calls. Required for inbound functionality.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="import_outbound_agent_id">Outbound Agent ID</Label>
-                    <Input
+                    <Label htmlFor="import_outbound_agent_id">Outbound Call Agent *</Label>
+                    <select
                       id="import_outbound_agent_id"
-                      {...importForm.register('outbound_agent_id')}
-                      placeholder="agent_xxx"
-                      className="mt-1.5"
-                    />
+                      {...importForm.register('outbound_agent_id', { required: 'Outbound agent is required' })}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select an agent...</option>
+                      {agents && agents
+                        .filter((agent) => agent.retell_agent_id)
+                        .map((agent) => (
+                          <option key={agent.id} value={agent.retell_agent_id || ''}>
+                            {agent.name} ({agent.retell_agent_id})
+                          </option>
+                        ))}
+                    </select>
+                    {importForm.formState.errors.outbound_agent_id && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {importForm.formState.errors.outbound_agent_id.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Agent to use for outbound calls. Required for outbound functionality.
+                    </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -636,13 +700,13 @@ export function NumbersPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit_inbound_agent_id">Inbound Call Agent</Label>
+                  <Label htmlFor="edit_inbound_agent_id">Inbound Call Agent *</Label>
                   <select
                     id="edit_inbound_agent_id"
-                    {...editForm.register('inbound_agent_id')}
+                    {...editForm.register('inbound_agent_id', { required: 'Inbound agent is required' })}
                     className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
-                    <option value="">None (disable inbound)</option>
+                    <option value="">Select an agent...</option>
                     {agents && agents
                       .filter((agent) => agent.retell_agent_id)
                       .map((agent) => (
@@ -651,18 +715,23 @@ export function NumbersPage() {
                         </option>
                       ))}
                   </select>
+                  {editForm.formState.errors.inbound_agent_id && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {editForm.formState.errors.inbound_agent_id.message}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    Agent to use for inbound calls. Select "None" to disable inbound calls.
+                    Agent to use for inbound calls. Required for inbound functionality.
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="edit_outbound_agent_id">Outbound Call Agent</Label>
+                  <Label htmlFor="edit_outbound_agent_id">Outbound Call Agent *</Label>
                   <select
                     id="edit_outbound_agent_id"
-                    {...editForm.register('outbound_agent_id')}
+                    {...editForm.register('outbound_agent_id', { required: 'Outbound agent is required' })}
                     className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
-                    <option value="">None (disable outbound)</option>
+                    <option value="">Select an agent...</option>
                     {agents && agents
                       .filter((agent) => agent.retell_agent_id)
                       .map((agent) => (
@@ -671,8 +740,13 @@ export function NumbersPage() {
                         </option>
                       ))}
                   </select>
+                  {editForm.formState.errors.outbound_agent_id && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {editForm.formState.errors.outbound_agent_id.message}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    Agent to use for outbound calls. Select "None" to disable outbound calls.
+                    Agent to use for outbound calls. Required for outbound functionality.
                   </p>
                 </div>
               </div>
