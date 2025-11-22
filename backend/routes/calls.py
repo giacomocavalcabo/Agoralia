@@ -373,6 +373,68 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
         raise HTTPException(status_code=500, detail=f"Error purchasing phone number: {str(e)}")
 
 
+@router.get("/retell/phone-numbers/estimate-cost")
+async def estimate_phone_number_cost(
+    request: Request,
+    country_code: str = "US",
+    toll_free: bool = False,
+    number_provider: Optional[str] = None,
+):
+    """Estimate phone number cost before purchase
+    
+    Returns estimated monthly cost based on RetellAI pricing:
+    - US/CA numbers: $2/month
+    - US toll-free numbers: $5/month
+    
+    This allows frontend to check cost and budget before purchase.
+    """
+    # RetellAI pricing (fixed monthly cost):
+    # - US numbers: $2/month (200 cents)
+    # - US toll-free numbers: $5/month (500 cents)
+    # - CA numbers: $2/month (200 cents)
+    if toll_free:
+        cost_cents = 500  # $5/month for toll-free
+    else:
+        if country_code in ["US", "CA"]:
+            cost_cents = 200  # $2/month for US/CA regular numbers
+        else:
+            # For other countries, estimate $2/month (may vary by provider)
+            cost_cents = 200
+    
+    tenant_id = extract_tenant_id(request)
+    
+    # Get budget info if available
+    budget_info = None
+    if tenant_id is not None:
+        with Session(engine) as session:
+            from services.enforcement import _tenant_monthly_spend_cents
+            from services.workspace_settings import get_workspace_settings
+            
+            workspace_settings = get_workspace_settings(tenant_id, session)
+            budget_cents = workspace_settings.budget_monthly_cents
+            
+            if budget_cents and budget_cents > 0:
+                spent_cents = _tenant_monthly_spend_cents(session, tenant_id)
+                remaining_budget = budget_cents - spent_cents
+                
+                budget_info = {
+                    "monthly_budget_cents": budget_cents,
+                    "spent_this_month_cents": spent_cents,
+                    "remaining_budget_cents": remaining_budget,
+                    "can_afford": remaining_budget >= cost_cents,
+                }
+    
+    return {
+        "estimated_monthly_cost_cents": cost_cents,
+        "estimated_monthly_cost_usd": cost_cents / 100.0,
+        "currency": "USD",
+        "country_code": country_code,
+        "toll_free": toll_free,
+        "number_provider": number_provider or "twilio",
+        "budget_info": budget_info,
+    }
+
+
 @router.post("/retell/test")
 async def test_retell_api(request: Request, agent_id: Optional[str] = None):
     """Test Retell API connection with minimal request
