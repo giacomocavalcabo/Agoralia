@@ -40,24 +40,57 @@ export interface CallsFilters {
   offset?: number
 }
 
-// RetellAI Call interface based on their API response
+// RetellAI Call interface based on their OpenAPI documentation
 export interface RetellCall {
   call_id: string
-  session_id?: string
+  call_type?: 'phone_call' | 'web_call'
+  agent_id?: string
+  agent_name?: string
+  agent_version?: number
+  call_status?: 'registered' | 'not_connected' | 'ongoing' | 'ended' | 'error'
   start_timestamp?: number
   end_timestamp?: number
-  duration?: number
-  channel_type?: string
-  cost?: number
-  call_status?: string
-  end_reason?: string
-  user_sentiment?: string
+  duration_ms?: number  // Duration in milliseconds
+  // Phone call specific fields
   from_number?: string
   to_number?: string
   direction?: 'inbound' | 'outbound'
-  call_successful?: boolean
-  end_to_end_latency_ms?: number
-  agent_id?: string
+  // Analysis fields (nested in call_analysis object)
+  call_analysis?: {
+    user_sentiment?: 'Negative' | 'Positive' | 'Neutral' | 'Unknown'
+    call_successful?: boolean
+    call_summary?: string
+    in_voicemail?: boolean
+    custom_analysis_data?: Record<string, any>
+  }
+  // Cost fields (nested in call_cost object)
+  call_cost?: {
+    combined_cost?: number  // Cost in cents
+    total_duration_seconds?: number
+    product_costs?: Array<{
+      product: string
+      unit_price: number
+      cost: number
+    }>
+  }
+  // Latency fields (nested in latency object)
+  latency?: {
+    e2e?: {
+      p50?: number
+      p90?: number
+      p95?: number
+      p99?: number
+      max?: number
+      min?: number
+      num?: number
+      values?: number[]
+    }
+  }
+  // Disconnection reason
+  disconnection_reason?: string
+  // Additional fields
+  metadata?: Record<string, any>
+  session_id?: string  // For web calls
 }
 
 export interface RetellCallsResponse {

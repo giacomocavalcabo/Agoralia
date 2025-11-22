@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { useRetellCalls, type RetellCallsFilters } from '../hooks'
+import { type RetellCall } from '../api'
 import { Calendar, Filter, Layout, Settings, Download, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -15,16 +16,20 @@ export function CallsPage() {
   const { data: callsData, isLoading, error, refetch } = useRetellCalls(filters)
   const calls = callsData?.calls || []
   
-  const formatDuration = (seconds?: number): string => {
-    if (!seconds && seconds !== 0) return '-'
+  const formatDuration = (durationMs?: number): string => {
+    if (!durationMs && durationMs !== 0) return '-'
+    const seconds = Math.floor(durationMs / 1000)
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
   
-  const formatCost = (cost?: number): string => {
-    if (!cost && cost !== 0) return '$0.000'
-    return `$${cost.toFixed(3)}`
+  const formatCost = (call?: RetellCall): string => {
+    // Cost is in cents in call_cost.combined_cost
+    const costCents = call?.call_cost?.combined_cost
+    if (!costCents && costCents !== 0) return '$0.000'
+    const costDollars = costCents / 100
+    return `$${costDollars.toFixed(3)}`
   }
   
   const formatTimestamp = (timestamp?: number): string => {
@@ -33,11 +38,13 @@ export function CallsPage() {
     return format(date, 'yyyy-MM-dd HH:mm:ss') + ' CET'
   }
   
-  const getStatusBadge = (status?: string, endReason?: string) => {
-    if (status === 'ended' && endReason === 'user hangup') {
+  const getStatusBadge = (call?: RetellCall) => {
+    const status = call?.call_status
+    const disconnectionReason = call?.disconnection_reason
+    if (status === 'ended' && disconnectionReason === 'user_hangup') {
       return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span>ended</span>
     }
-    if (status === 'not_connected' || endReason === 'dial_failed') {
+    if (status === 'not_connected' || disconnectionReason === 'dial_failed') {
       return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>not_connected</span>
     }
     if (status === 'ended') {
@@ -46,14 +53,37 @@ export function CallsPage() {
     return <span className="text-sm">{status || '-'}</span>
   }
   
-  const getEndReasonBadge = (endReason?: string) => {
-    if (endReason === 'user hangup') {
-      return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span>{endReason}</span>
+  const getEndReasonBadge = (disconnectionReason?: string) => {
+    if (disconnectionReason === 'user_hangup') {
+      return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span>user hangup</span>
     }
-    if (endReason === 'dial_failed') {
-      return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>{endReason}</span>
+    if (disconnectionReason === 'dial_failed') {
+      return <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>dial failed</span>
     }
-    return <span className="text-sm">{endReason || '-'}</span>
+    return <span className="text-sm">{disconnectionReason || '-'}</span>
+  }
+  
+  const getChannelType = (call?: RetellCall): string => {
+    return call?.call_type || 'phone_call'
+  }
+  
+  const getUserSentiment = (call?: RetellCall): string => {
+    return call?.call_analysis?.user_sentiment || 'Unknown'
+  }
+  
+  const getSessionOutcome = (call?: RetellCall): string => {
+    const successful = call?.call_analysis?.call_successful
+    if (successful === true) return 'Successful'
+    if (successful === false) return 'Unsuccessful'
+    return '-'
+  }
+  
+  const getEndToEndLatency = (call?: RetellCall): string => {
+    const e2e = call?.latency?.e2e
+    if (!e2e) return '-'
+    // Use p50 as the representative value, or max if p50 not available
+    const latencyMs = e2e.p50 || e2e.max || e2e.p90
+    return latencyMs ? `${latencyMs}ms` : '-'
   }
   
   const handleDateRangeChange = (start?: string, end?: string) => {
@@ -158,25 +188,25 @@ export function CallsPage() {
                       {formatTimestamp(call.start_timestamp)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {formatDuration(call.duration)}
+                      {formatDuration(call.duration_ms)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {call.channel_type || 'phone_call'}
+                      {getChannelType(call)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {formatCost(call.cost)}
+                      {formatCost(call)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap font-mono text-xs">
                       {call.session_id || call.call_id || '-'}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {getEndReasonBadge(call.end_reason)}
+                      {getEndReasonBadge(call.disconnection_reason)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {getStatusBadge(call.call_status, call.end_reason)}
+                      {getStatusBadge(call)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {call.user_sentiment || 'Unknown'}
+                      {getUserSentiment(call)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                       {call.from_number || '-'}
@@ -188,10 +218,10 @@ export function CallsPage() {
                       {call.direction || '-'}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {call.call_successful ? 'Successful' : 'Unsuccessful'}
+                      {getSessionOutcome(call)}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
-                      {call.end_to_end_latency_ms ? `${call.end_to_end_latency_ms}ms` : '-'}
+                      {getEndToEndLatency(call)}
                     </td>
                   </tr>
                 ))}
