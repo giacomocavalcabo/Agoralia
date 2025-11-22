@@ -197,13 +197,13 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     retell_body: Dict[str, Any] = {}
     
     # Required: phone_number OR area_code
-    if body.phone_number:
-        retell_body["phone_number"] = body.phone_number
-        # When phone_number is provided, country is inferred from E.164 format
-        # Only include country_code if explicitly provided (for validation)
-        if body.country_code and body.country_code in ["US", "CA"]:
-            retell_body["country_code"] = body.country_code
-    elif body.area_code is not None:
+    # Validate area_code if provided (must be 3 digits, 200-999 for US/CA)
+    if body.area_code is not None:
+        if not (200 <= body.area_code <= 999):
+            raise HTTPException(
+                status_code=400,
+                detail="Area code must be a 3-digit number between 200 and 999 (e.g., 415, 212, 310)"
+            )
         retell_body["area_code"] = body.area_code
         # For area_code, country_code should be US or CA
         country_code = body.country_code or "US"
@@ -213,10 +213,16 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
                 detail="For area_code, country_code must be US or CA (Retell only supports these)"
             )
         retell_body["country_code"] = country_code
+    elif body.phone_number:
+        retell_body["phone_number"] = body.phone_number
+        # When phone_number is provided, country is inferred from E.164 format
+        # Only include country_code if explicitly provided (for validation)
+        if body.country_code and body.country_code in ["US", "CA"]:
+            retell_body["country_code"] = body.country_code
     else:
         raise HTTPException(
             status_code=400,
-            detail="Either phone_number (E.164 format) or area_code must be provided"
+            detail="Either phone_number (E.164 format) or area_code (200-999) must be provided"
         )
     
     # Optional fields per OpenAPI spec (only include if explicitly provided)
