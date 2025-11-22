@@ -2671,10 +2671,14 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
         # Backward compatibility
         retell_body["sip_trunk_auth_password"] = body.sip_trunk_password
     
-    # Note: outbound_transport is not in OpenAPI docs but RetellAI UI shows it
-    # Include it only if explicitly set (not default TCP) in case RetellAI accepts it
-    if body.outbound_transport and body.outbound_transport != "TCP":
-        retell_body["outbound_transport"] = body.outbound_transport
+    # Note: outbound_transport is not in OpenAPI docs but RetellAI response shows "transport" in sip_outbound_trunk_config
+    # RetellAI may accept this field, so we include it always (defaults to TCP if not set)
+    # The field name in the API might be different - checking both possibilities
+    transport_value = body.outbound_transport or "TCP"
+    # Try both field names since RetellAI may accept it even if not documented
+    retell_body["outbound_transport"] = transport_value
+    # Also try "transport" field in case that's what RetellAI expects
+    retell_body["transport"] = transport_value
     
     # Optional agent binding
     if body.inbound_agent_id:

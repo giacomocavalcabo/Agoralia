@@ -88,8 +88,8 @@ export function NumbersPage() {
     if (editModalOpen && editingPhoneNumber && phoneDetails) {
       editForm.reset({
         // For select HTML elements, use empty string instead of null when no agent is associated
-        inbound_agent_id: inboundAgentId,
-        outbound_agent_id: outboundAgentId,
+        inbound_agent_id: phoneDetails.inbound_agent_id || '',
+        outbound_agent_id: phoneDetails.outbound_agent_id || '',
         nickname: phoneDetails.nickname || '',
         inbound_webhook_url: phoneDetails.inbound_webhook_url || '',
       })
