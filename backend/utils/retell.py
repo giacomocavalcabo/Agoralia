@@ -248,13 +248,34 @@ async def retell_post_multipart(
             form_files.update(files)
     
     async with httpx.AsyncClient(timeout=120) as client:  # Longer timeout for file uploads (2 minutes)
-        # Log what we're sending for debugging
+        # Log what we're sending for debugging (without file content)
         import logging
         logger = logging.getLogger(__name__)
-        logger.info(f"[retell_post_multipart] Sending to {path}, data: {form_data_dict}, files: {form_files}")
+        
+        # Extract file info without content for logging
+        file_info = {}
+        if form_files:
+            for field_name, file_data in form_files.items():
+                if isinstance(file_data, list):
+                    file_info[field_name] = [
+                        {
+                            "filename": item[0] if isinstance(item, tuple) and len(item) > 0 else "unknown",
+                            "size": len(item[1]) if isinstance(item, tuple) and len(item) > 1 else 0,
+                            "content_type": item[2] if isinstance(item, tuple) and len(item) > 2 else "unknown"
+                        }
+                        for item in file_data
+                    ]
+                elif isinstance(file_data, tuple) and len(file_data) > 0:
+                    file_info[field_name] = {
+                        "filename": file_data[0],
+                        "size": len(file_data[1]) if len(file_data) > 1 else 0,
+                        "content_type": file_data[2] if len(file_data) > 2 else "unknown"
+                    }
+        
+        logger.info(f"[retell_post_multipart] Sending to {path}, data: {form_data_dict}, files: {file_info}")
         print(f"[DEBUG] [retell_post_multipart] Sending to {path}", flush=True)
         print(f"[DEBUG] [retell_post_multipart] Data: {form_data_dict}", flush=True)
-        print(f"[DEBUG] [retell_post_multipart] Files: {form_files}", flush=True)
+        print(f"[DEBUG] [retell_post_multipart] Files: {file_info}", flush=True)
         
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
