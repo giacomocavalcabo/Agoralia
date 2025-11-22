@@ -387,6 +387,17 @@ export function NumbersPage() {
                     </select>
                   </div>
                 </div>
+                {(!agents || agents.filter((agent) => agent.retell_agent_id).length === 0) ? (
+                  <div className="col-span-2 p-4 border border-amber-200 bg-amber-50 rounded-md">
+                    <p className="text-sm text-amber-800 font-medium mb-1">
+                      No agents available
+                    </p>
+                    <p className="text-sm text-amber-700">
+                      You need to create at least one agent before adding a phone number. 
+                      Go to the <strong>Agents</strong> section and create an agent first, then come back to add a phone number.
+                    </p>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="purchase_inbound_agent_id">Inbound Call Agent *</Label>
@@ -551,6 +562,17 @@ export function NumbersPage() {
                     />
                   </div>
                 </div>
+                {(!agents || agents.filter((agent) => agent.retell_agent_id).length === 0) ? (
+                  <div className="p-4 border border-amber-200 bg-amber-50 rounded-md">
+                    <p className="text-sm text-amber-800 font-medium mb-1">
+                      No agents available
+                    </p>
+                    <p className="text-sm text-amber-700">
+                      You need to create at least one agent before adding a phone number. 
+                      Go to the <strong>Agents</strong> section and create an agent first, then come back to add a phone number.
+                    </p>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="import_inbound_agent_id">Inbound Call Agent *</Label>
@@ -603,6 +625,7 @@ export function NumbersPage() {
                     </p>
                   </div>
                 </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="import_inbound_agent_version">Inbound Agent Version (optional)</Label>

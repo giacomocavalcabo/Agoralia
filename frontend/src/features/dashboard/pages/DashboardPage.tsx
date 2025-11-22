@@ -68,10 +68,18 @@ export function DashboardPage() {
 
   const setupItems = [
     {
+      id: 'agent',
+      type: 'agent' as const,
+      label: 'AI agent',
+      description: 'Configure your voice AI agent for calls (required before adding phone numbers)',
+      completed: hasAgent,
+      onAction: () => navigate('/agents'),
+    },
+    {
       id: 'number',
       type: 'number' as const,
       label: 'Phone number',
-      description: 'Add a verified phone number to make outbound calls',
+      description: 'Add a verified phone number to make outbound calls (requires an agent)',
       completed: hasNumbers,
       onAction: () => navigate('/numbers'),
     },
@@ -82,14 +90,6 @@ export function DashboardPage() {
       description: 'Provide context and information for your AI agent',
       completed: hasKnowledge,
       onAction: () => navigate('/knowledge'),
-    },
-    {
-      id: 'agent',
-      type: 'agent' as const,
-      label: 'AI agent',
-      description: 'Configure your voice AI agent for calls',
-      completed: hasAgent,
-      onAction: () => navigate('/agents'),
     },
     {
       id: 'leads',

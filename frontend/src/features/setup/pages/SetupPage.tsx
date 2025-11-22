@@ -8,9 +8,9 @@ import { useKnowledgeBases } from '@/features/knowledge/hooks'
 import { useLeads } from '@/features/leads/hooks'
 
 const steps = [
+  { id: 'agent', label: 'Agent', route: '/agents', icon: Bot },
   { id: 'numbers', label: 'Phone Numbers', route: '/numbers', icon: Phone },
   { id: 'knowledge', label: 'Knowledge Base', route: '/knowledge', icon: BookOpen },
-  { id: 'agent', label: 'Agent', route: '/agents', icon: Bot },
   { id: 'leads', label: 'Leads', route: '/leads', icon: Users },
 ]
 
