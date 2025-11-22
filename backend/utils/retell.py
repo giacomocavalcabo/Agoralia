@@ -234,10 +234,20 @@ async def retell_post_multipart(
                 form_data_dict[key] = value
     
     # Process file fields (if any)
+    # RetellAI expects files as an array in knowledge_base_files field
+    # httpx expects: files={"knowledge_base_files": [(filename, content, content_type), ...]}
     if files:
-        form_files.update(files)
+        # If files is a dict with "knowledge_base_files" as a list of tuples, use it directly
+        if isinstance(files, dict) and "knowledge_base_files" in files:
+            # Check if it's already in the right format (list of tuples)
+            if isinstance(files["knowledge_base_files"], list):
+                form_files["knowledge_base_files"] = files["knowledge_base_files"]
+            else:
+                form_files.update(files)
+        else:
+            form_files.update(files)
     
-    async with httpx.AsyncClient(timeout=60) as client:  # Longer timeout for file uploads
+    async with httpx.AsyncClient(timeout=120) as client:  # Longer timeout for file uploads (2 minutes)
         # Log what we're sending for debugging
         import logging
         logger = logging.getLogger(__name__)

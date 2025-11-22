@@ -33,6 +33,7 @@ export function KnowledgePage() {
   // Form data for creating KB
   const [kbTexts, setKbTexts] = useState<KbTextEntry[]>([])
   const [kbUrls, setKbUrls] = useState<string[]>([])
+  const [kbFiles, setKbFiles] = useState<File[]>([])
   const [enableAutoRefresh, setEnableAutoRefresh] = useState(false)
   
   // Form data for adding sources to existing KB
@@ -72,6 +73,7 @@ export function KnowledgePage() {
       })
       setKbTexts([])
       setKbUrls([])
+      setKbFiles([])
       setEnableAutoRefresh(false)
       setActiveTab('text')
     }
@@ -107,10 +109,38 @@ export function KnowledgePage() {
         payload.enable_auto_refresh = enableAutoRefresh
       }
       
-      await createMutation.mutateAsync(payload)
+      // Create FormData if files are present, otherwise use JSON
+      if (kbFiles.length > 0) {
+        const formData = new FormData()
+        formData.append('name', data.name)
+        if (data.lang) formData.append('lang', data.lang)
+        if (data.scope) formData.append('scope', data.scope)
+        
+        // Add texts as JSON string
+        if (kbTexts.length > 0) {
+          formData.append('knowledge_base_texts', JSON.stringify(kbTexts.filter(t => t.title.trim() && t.text.trim())))
+        }
+        
+        // Add URLs as JSON string
+        if (kbUrls.length > 0) {
+          formData.append('knowledge_base_urls', JSON.stringify(kbUrls.filter(url => url.trim())))
+          formData.append('enable_auto_refresh', enableAutoRefresh ? 'true' : 'false')
+        }
+        
+        // Add files (RetellAI expects array of files)
+        kbFiles.forEach((file) => {
+          formData.append('knowledge_base_files', file)
+        })
+        
+        await createMutation.mutateAsync(formData as any)
+      } else {
+        await createMutation.mutateAsync(payload)
+      }
+      
       reset()
       setKbTexts([])
       setKbUrls([])
+      setKbFiles([])
       setEnableAutoRefresh(false)
       setCreateModalOpen(false)
       setActiveTab('text')
@@ -159,6 +189,53 @@ export function KnowledgePage() {
 
   const removeUrlEntry = (index: number) => {
     setKbUrls(kbUrls.filter((_, i) => i !== index))
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    // Validate file sizes (50MB max per RetellAI) and limit (25 files)
+    if (kbFiles.length + files.length > 25) {
+      alert(`Maximum 25 files allowed. You already have ${kbFiles.length} file(s).`)
+      return
+    }
+    const validFiles = files.filter(file => {
+      if (file.size > 50 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Maximum size is 50MB.`)
+        return false
+      }
+      return true
+    })
+    setKbFiles([...kbFiles, ...validFiles])
+    // Reset input to allow selecting same file again
+    e.target.value = ''
+  }
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const files = Array.from(e.dataTransfer.files || [])
+    // Validate file sizes (50MB max per RetellAI) and limit (25 files)
+    if (kbFiles.length + files.length > 25) {
+      alert(`Maximum 25 files allowed. You already have ${kbFiles.length} file(s).`)
+      return
+    }
+    const validFiles = files.filter(file => {
+      if (file.size > 50 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Maximum size is 50MB.`)
+        return false
+      }
+      return true
+    })
+    setKbFiles([...kbFiles, ...validFiles])
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const removeFile = (index: number) => {
+    setKbFiles(kbFiles.filter((_, i) => i !== index))
   }
 
   const copyToClipboard = (text: string) => {
@@ -507,22 +584,71 @@ export function KnowledgePage() {
               <TabsContent value="files" className="space-y-4 mt-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Upload files to add to the knowledge base. File size should be less than 100MB.
+                    Upload files to add to the knowledge base. Maximum 25 files, 50MB per file.
                   </p>
-                  <div className="border-2 border-dashed border-input rounded-lg p-8 text-center">
+                  
+                  {kbFiles.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      {kbFiles.map((file, index) => (
+                        <Card key={index}>
+                          <CardContent className="p-3 flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{file.name}</p>
+                                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFile(index)}
+                              className="h-8 w-8 flex-shrink-0"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div
+                    className="border-2 border-dashed border-input rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                    onDrop={handleFileDrop}
+                    onDragOver={handleDragOver}
+                  >
                     <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-sm text-muted-foreground mb-2">
                       Drag and drop files here, or click to browse
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      Supported formats: PDF, DOC, DOCX, TXT, MD
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Supported formats: PDF, DOC, DOCX, TXT, MD (max 25 files, 50MB each)
                     </p>
-                    <Button type="button" variant="outline" className="mt-4" disabled>
-                      Select Files
+                    <input
+                      type="file"
+                      id="file-upload"
+                      multiple
+                      accept=".pdf,.doc,.docx,.txt,.md"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                      disabled={kbFiles.length >= 25}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {kbFiles.length >= 25 ? 'Maximum 25 files' : 'Select Files'}
                     </Button>
-                    <p className="mt-2 text-xs text-muted-foreground italic">
-                      File upload will be available in the next update
-                    </p>
+                    {kbFiles.length > 0 && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {kbFiles.length} file{kbFiles.length !== 1 ? 's' : ''} selected
+                      </p>
+                    )}
                   </div>
                 </div>
               </TabsContent>

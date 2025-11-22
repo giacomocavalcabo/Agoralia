@@ -40,6 +40,7 @@ export interface KbCreate {
   scope?: string
   knowledge_base_texts?: KbTextEntry[]
   knowledge_base_urls?: string[]
+  knowledge_base_files?: File[]
   enable_auto_refresh?: boolean
 }
 
@@ -53,7 +54,17 @@ export async function fetchKnowledgeBase(kbId: number): Promise<KnowledgeBase> {
   return data
 }
 
-export async function createKnowledgeBase(payload: KbCreate): Promise<{ ok: boolean; id: number; retell_kb_id?: string; status?: string; name?: string }> {
+export async function createKnowledgeBase(payload: KbCreate | FormData): Promise<{ ok: boolean; id: number; retell_kb_id?: string; status?: string; name?: string }> {
+  // If payload is FormData (has files), send as multipart/form-data
+  if (payload instanceof FormData) {
+    const { data } = await api.post('/kbs', payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return data
+  }
+  // Otherwise send as JSON
   const { data } = await api.post('/kbs', payload)
   return data
 }

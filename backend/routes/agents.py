@@ -1,6 +1,6 @@
 """Agent, Knowledge Base, and Phone Number endpoints"""
 from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
@@ -651,18 +651,69 @@ class KbCreate(BaseModel):
 
 
 @router.post("/kbs")
-async def create_kb(request: Request, body: KbCreate):
+async def create_kb(
+    request: Request,
+    body: Optional[KbCreate] = None,
+    # Form fields for multipart/form-data (when files are present)
+    name: Optional[str] = Form(None),
+    lang: Optional[str] = Form(None),
+    scope: Optional[str] = Form(None),
+    knowledge_base_texts: Optional[str] = Form(None),  # JSON string
+    knowledge_base_urls: Optional[str] = Form(None),  # JSON string
+    enable_auto_refresh: Optional[str] = Form(None),  # "true" or "false"
+    knowledge_base_files: Optional[List[UploadFile]] = File(None),
+):
     """Create knowledge base in Agoralia and RetellAI
     
     Creates a knowledge base in both systems:
-    1. Creates KB in RetellAI with provided texts/URLs
+    1. Creates KB in RetellAI with provided texts/URLs/files
     2. Saves KB metadata in Agoralia database
     3. Links them via retell_kb_id
     
-    Note: File uploads are not yet supported via this endpoint.
-    Use POST /kbs/{kb_id}/sources/files for file uploads.
+    Supports both JSON (body) and multipart/form-data (when files are present).
     """
     tenant_id = extract_tenant_id(request)
+    
+    # Determine if this is multipart/form-data (has files) or JSON
+    has_files = knowledge_base_files is not None and len(knowledge_base_files) > 0
+    
+    # Extract data from either body (JSON) or form fields (multipart)
+    if has_files:
+        # Multipart/form-data request
+        kb_name = name
+        kb_lang = lang
+        kb_scope = scope or "general"
+        kb_texts = None
+        kb_urls = None
+        kb_auto_refresh = None
+        
+        if knowledge_base_texts:
+            try:
+                kb_texts = json.loads(knowledge_base_texts)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON in knowledge_base_texts")
+        
+        if knowledge_base_urls:
+            try:
+                kb_urls = json.loads(knowledge_base_urls)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON in knowledge_base_urls")
+        
+        if enable_auto_refresh:
+            kb_auto_refresh = enable_auto_refresh.lower() == "true"
+        
+        if not kb_name:
+            raise HTTPException(status_code=400, detail="name is required")
+    else:
+        # JSON request
+        if not body:
+            raise HTTPException(status_code=400, detail="Request body is required")
+        kb_name = body.name
+        kb_lang = body.lang
+        kb_scope = body.scope or "general"
+        kb_texts = body.knowledge_base_texts
+        kb_urls = body.knowledge_base_urls
+        kb_auto_refresh = body.enable_auto_refresh
     
     # Prepare form data for RetellAI API (multipart/form-data)
     from utils.retell import retell_post_multipart
@@ -671,29 +722,49 @@ async def create_kb(request: Request, body: KbCreate):
     logger = logging.getLogger(__name__)
     
     form_data: Dict[str, Any] = {
-        "knowledge_base_name": body.name,
+        "knowledge_base_name": kb_name,
     }
     
     # Add texts if provided
-    if body.knowledge_base_texts:
-        form_data["knowledge_base_texts"] = json.dumps(body.knowledge_base_texts)
+    if kb_texts:
+        form_data["knowledge_base_texts"] = json.dumps(kb_texts)
     
     # Add URLs if provided
-    if body.knowledge_base_urls:
-        form_data["knowledge_base_urls"] = json.dumps(body.knowledge_base_urls)
+    if kb_urls:
+        form_data["knowledge_base_urls"] = json.dumps(kb_urls)
     
     # Add auto-refresh if provided
-    if body.enable_auto_refresh is not None:
-        form_data["enable_auto_refresh"] = "true" if body.enable_auto_refresh else "false"
+    if kb_auto_refresh is not None:
+        form_data["enable_auto_refresh"] = "true" if kb_auto_refresh else "false"
+    
+    # Prepare files for RetellAI (if any)
+    retell_files: Optional[Dict[str, Any]] = None
+    if has_files and knowledge_base_files:
+        # Convert UploadFile to format expected by httpx
+        # httpx expects: {"field_name": [(filename, content, content_type), ...]} for arrays
+        # RetellAI expects knowledge_base_files as an array of files
+        file_list = []
+        for file in knowledge_base_files:
+            if file.size and file.size > 50 * 1024 * 1024:  # 50MB limit
+                raise HTTPException(status_code=400, detail=f"File {file.filename} exceeds 50MB limit")
+            file_content = await file.read()
+            content_type = file.content_type or "application/octet-stream"
+            filename = file.filename or "file"
+            # httpx expects list of tuples for array fields
+            file_list.append((filename, file_content, content_type))
+        
+        if file_list:
+            retell_files = {"knowledge_base_files": file_list}
     
     try:
         # Create KB in RetellAI first
-        logger.info(f"[create_kb] Creating KB in RetellAI: {body.name}")
-        print(f"[DEBUG] [create_kb] Creating KB in RetellAI: {body.name}", flush=True)
+        logger.info(f"[create_kb] Creating KB in RetellAI: {kb_name}")
+        print(f"[DEBUG] [create_kb] Creating KB in RetellAI: {kb_name}", flush=True)
         
         retell_data = await retell_post_multipart(
             "/create-knowledge-base",
             data=form_data,
+            files=retell_files,
             tenant_id=tenant_id
         )
         
