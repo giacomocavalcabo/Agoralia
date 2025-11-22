@@ -450,9 +450,11 @@ export function NumbersPage() {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="purchase_inbound_agent_version">Inbound Agent Version (optional)</Label>
+                )}
+                {(!agents || agents.filter((agent) => agent.retell_agent_id).length === 0) ? null : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="purchase_inbound_agent_version">Inbound Agent Version (optional)</Label>
                     <Input
                       id="purchase_inbound_agent_version"
                       type="number"
@@ -478,6 +480,7 @@ export function NumbersPage() {
                     </p>
                   </div>
                 </div>
+                )}
                 <div>
                   <Label htmlFor="purchase_nickname">Nickname</Label>
                   <Input
