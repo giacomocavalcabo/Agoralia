@@ -261,8 +261,10 @@ async def retell_post_multipart(
                         else:
                             # Unknown type, try to wrap it
                             file_obj = content
-                        # httpx format: ("field_name", (filename, file_obj, content_type))
-                        converted_files.append(("knowledge_base_files", (filename, file_obj, content_type)))
+                        # httpx format for arrays: ("field_name", (filename, file_obj))
+                        # content_type is optional and can be passed separately if needed
+                        # Try format without content_type first
+                        converted_files.append(("knowledge_base_files", (filename, file_obj)))
                     else:
                         # Invalid format, skip
                         continue
