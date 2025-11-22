@@ -31,6 +31,7 @@ const purchaseSchema = z.object({
 const importSchema = z.object({
   phone_number: z.string().min(1, 'Phone number is required'),
   termination_uri: z.string().min(1, 'Termination URI is required'),
+  outbound_transport: z.enum(['TCP', 'UDP', 'TLS']).optional().default('TCP'),
   sip_trunk_user_name: z.string().optional(),
   sip_trunk_password: z.string().optional(),
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
@@ -496,6 +497,22 @@ export function NumbersPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">e.g., pbx.zadarma.com</p>
+                </div>
+                <div>
+                  <Label htmlFor="import_outbound_transport">Outbound Transport *</Label>
+                  <select
+                    id="import_outbound_transport"
+                    {...importForm.register('outbound_transport', { required: false })}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    defaultValue="TCP"
+                  >
+                    <option value="TCP">TCP</option>
+                    <option value="UDP">UDP</option>
+                    <option value="TLS">TLS</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Transport protocol for outbound calls. Default is TCP.
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

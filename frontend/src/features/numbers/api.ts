@@ -27,6 +27,7 @@ export interface PurchasePhoneNumberRequest {
 export interface ImportPhoneNumberRequest {
   phone_number: string  // E.164 format (required)
   termination_uri: string  // e.g., "pbx.zadarma.com"
+  outbound_transport?: string  // TCP, UDP, or TLS (defaults to TCP)
   sip_trunk_user_name?: string
   sip_trunk_password?: string
   inbound_agent_id?: string
