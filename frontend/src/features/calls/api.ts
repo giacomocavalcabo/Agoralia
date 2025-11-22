@@ -40,9 +40,58 @@ export interface CallsFilters {
   offset?: number
 }
 
+// RetellAI Call interface based on their API response
+export interface RetellCall {
+  call_id: string
+  session_id?: string
+  start_timestamp?: number
+  end_timestamp?: number
+  duration?: number
+  channel_type?: string
+  cost?: number
+  call_status?: string
+  end_reason?: string
+  user_sentiment?: string
+  from_number?: string
+  to_number?: string
+  direction?: 'inbound' | 'outbound'
+  call_successful?: boolean
+  end_to_end_latency_ms?: number
+  agent_id?: string
+}
+
+export interface RetellCallsResponse {
+  calls?: RetellCall[]
+  pagination_key?: string
+  total_calls?: number
+}
+
+export interface RetellCallsFilters {
+  filter_criteria?: {
+    agent_id?: string[]
+    call_status?: string[]
+    call_type?: string[]
+    direction?: string[]
+    user_sentiment?: string[]
+    call_successful?: boolean[]
+    start_timestamp?: {
+      upper_threshold?: number
+      lower_threshold?: number
+    }
+  }
+  sort_order?: 'ascending' | 'descending'
+  limit?: number
+  pagination_key?: string
+}
+
 export async function fetchCalls(filters?: CallsFilters): Promise<Call[]> {
   const { data } = await api.get<Call[]>('/calls', { params: filters })
   return Array.isArray(data) ? data : []
+}
+
+export async function fetchRetellCalls(filters?: RetellCallsFilters): Promise<RetellCallsResponse> {
+  const { data } = await api.post<RetellCallsResponse>('/retell/calls/list', filters || {})
+  return data
 }
 
 export async function fetchLiveCalls(hours: number = 6): Promise<Call[]> {

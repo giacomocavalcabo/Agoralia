@@ -1,10 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchCalls, fetchLiveCalls, fetchCall, fetchCallSegments, updateCallDisposition, type CallsFilters } from './api'
+import { fetchCalls, fetchRetellCalls, fetchLiveCalls, fetchCall, fetchCallSegments, updateCallDisposition, type CallsFilters, type RetellCallsFilters } from './api'
 
 export function useCalls(filters?: CallsFilters) {
   return useQuery({
     queryKey: ['calls', filters],
     queryFn: () => fetchCalls(filters),
+  })
+}
+
+export function useRetellCalls(filters?: RetellCallsFilters) {
+  return useQuery({
+    queryKey: ['retell-calls', filters],
+    queryFn: () => fetchRetellCalls(filters),
   })
 }
 
