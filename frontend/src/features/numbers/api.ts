@@ -65,3 +65,37 @@ export async function deletePhoneNumber(phoneNumber: string): Promise<{ success:
   const { data } = await api.delete(`/calls/retell/phone-numbers/${encodeURIComponent(phoneNumber)}`)
   return data
 }
+
+// Get phone number details from RetellAI
+export interface PhoneNumberDetails {
+  phone_number: string
+  phone_number_type: string
+  phone_number_pretty?: string
+  inbound_agent_id?: string | null
+  outbound_agent_id?: string | null
+  inbound_agent_version?: number | null
+  outbound_agent_version?: number | null
+  nickname?: string | null
+  inbound_webhook_url?: string | null
+  [key: string]: any
+}
+
+export async function getPhoneNumberDetails(phoneNumber: string): Promise<PhoneNumberDetails> {
+  const { data } = await api.get<PhoneNumberDetails>(`/calls/retell/phone-numbers/${encodeURIComponent(phoneNumber)}`)
+  return data
+}
+
+// Update phone number configuration (associate agents)
+export interface UpdatePhoneNumberRequest {
+  inbound_agent_id?: string | null  // null to disable inbound
+  outbound_agent_id?: string | null  // null to disable outbound
+  inbound_agent_version?: number | null
+  outbound_agent_version?: number | null
+  nickname?: string | null
+  inbound_webhook_url?: string | null
+}
+
+export async function updatePhoneNumber(phoneNumber: string, payload: UpdatePhoneNumberRequest): Promise<{ success: boolean }> {
+  const { data } = await api.patch<{ success: boolean }>(`/calls/retell/phone-numbers/${encodeURIComponent(phoneNumber)}`, payload)
+  return data
+}

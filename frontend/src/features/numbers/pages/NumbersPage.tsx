@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog'
-import { useNumbers, usePurchasePhoneNumber, useImportPhoneNumber, useDeletePhoneNumber } from '../hooks'
-import { Plus, Trash2, Phone, CheckCircle2, XCircle, Globe, ShoppingCart, Upload } from 'lucide-react'
+import { useNumbers, usePurchasePhoneNumber, useImportPhoneNumber, useDeletePhoneNumber, usePhoneNumberDetails, useUpdatePhoneNumber } from '../hooks'
+import { useAgents } from '@/features/agents/hooks'
+import { Plus, Trash2, Phone, CheckCircle2, XCircle, Globe, ShoppingCart, Upload, Edit } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -45,13 +46,30 @@ const importSchema = z.object({
 type PurchaseFormInputs = z.infer<typeof purchaseSchema>
 type ImportFormInputs = z.infer<typeof importSchema>
 
+// Edit schema
+const editSchema = z.object({
+  inbound_agent_id: z.string().nullable().optional(),
+  outbound_agent_id: z.string().nullable().optional(),
+  inbound_agent_version: z.number().nullable().optional(),
+  outbound_agent_version: z.number().nullable().optional(),
+  nickname: z.string().nullable().optional(),
+  inbound_webhook_url: z.string().url().nullable().optional().or(z.literal('')),
+})
+
+type EditFormInputs = z.infer<typeof editSchema>
+
 export function NumbersPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editingPhoneNumber, setEditingPhoneNumber] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'purchase' | 'import'>('purchase')
   const { data: numbers, isLoading, error } = useNumbers()
   const purchaseMutation = usePurchasePhoneNumber()
   const importMutation = useImportPhoneNumber()
   const deleteMutation = useDeletePhoneNumber()
+  const updateMutation = useUpdatePhoneNumber()
+  const { data: agents } = useAgents()
+  const { data: phoneDetails, isLoading: detailsLoading } = usePhoneNumberDetails(editingPhoneNumber)
 
   const purchaseForm = useForm<PurchaseFormInputs>({
     resolver: zodResolver(purchaseSchema),
@@ -62,6 +80,64 @@ export function NumbersPage() {
     resolver: zodResolver(importSchema),
     // No default values - user must provide explicitly
   })
+
+  const editForm = useForm<EditFormInputs>({
+    resolver: zodResolver(editSchema),
+  })
+
+  // Load phone details when modal opens
+  React.useEffect(() => {
+    if (editModalOpen && editingPhoneNumber && phoneDetails) {
+      editForm.reset({
+        inbound_agent_id: phoneDetails.inbound_agent_id || null,
+        outbound_agent_id: phoneDetails.outbound_agent_id || null,
+        inbound_agent_version: phoneDetails.inbound_agent_version || null,
+        outbound_agent_version: phoneDetails.outbound_agent_version || null,
+        nickname: phoneDetails.nickname || null,
+        inbound_webhook_url: phoneDetails.inbound_webhook_url || null,
+      })
+    }
+  }, [editModalOpen, editingPhoneNumber, phoneDetails, editForm])
+
+  const handleEdit = (phoneNumber: string) => {
+    setEditingPhoneNumber(phoneNumber)
+    setEditModalOpen(true)
+  }
+
+  const onEditSubmit = async (data: EditFormInputs) => {
+    if (!editingPhoneNumber) return
+
+    try {
+      const payload: any = {}
+      // Handle agent IDs: empty string = null (disable), otherwise use the value
+      if (data.inbound_agent_id !== undefined) {
+        payload.inbound_agent_id = data.inbound_agent_id && data.inbound_agent_id.trim() ? data.inbound_agent_id.trim() : null
+      }
+      if (data.outbound_agent_id !== undefined) {
+        payload.outbound_agent_id = data.outbound_agent_id && data.outbound_agent_id.trim() ? data.outbound_agent_id.trim() : null
+      }
+      // Only include version if agent_id is set and version is provided
+      if (data.inbound_agent_version !== undefined && data.inbound_agent_version !== null) {
+        payload.inbound_agent_version = data.inbound_agent_version
+      }
+      if (data.outbound_agent_version !== undefined && data.outbound_agent_version !== null) {
+        payload.outbound_agent_version = data.outbound_agent_version
+      }
+      if (data.nickname !== undefined) {
+        payload.nickname = data.nickname && data.nickname.trim() ? data.nickname.trim() : null
+      }
+      if (data.inbound_webhook_url !== undefined) {
+        payload.inbound_webhook_url = data.inbound_webhook_url && data.inbound_webhook_url.trim() ? data.inbound_webhook_url.trim() : null
+      }
+
+      await updateMutation.mutateAsync({ phoneNumber: editingPhoneNumber, payload })
+      setEditModalOpen(false)
+      setEditingPhoneNumber(null)
+      editForm.reset()
+    } catch (error: any) {
+      alert(`Failed to update number: ${error.message}`)
+    }
+  }
 
   const onPurchaseSubmit = async (data: PurchaseFormInputs) => {
     try {
@@ -177,14 +253,24 @@ export function NumbersPage() {
                     </div>
                     <CardTitle className="text-base font-semibold">{number.e164}</CardTitle>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(number.e164)}
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(number.e164)}
+                      className="h-8 w-8"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(number.e164)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
@@ -515,6 +601,141 @@ export function NumbersPage() {
               </form>
           )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Phone Number Modal */}
+      <Dialog open={editModalOpen} onOpenChange={(open) => {
+        setEditModalOpen(open)
+        if (!open) {
+          setEditingPhoneNumber(null)
+          editForm.reset()
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Phone Number</DialogTitle>
+            <DialogDescription>
+              Configure agents and settings for {editingPhoneNumber || 'this number'}
+            </DialogDescription>
+          </DialogHeader>
+          {detailsLoading ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">Loading phone number details...</div>
+          ) : (
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="edit_nickname">Nickname (optional)</Label>
+                <Input
+                  id="edit_nickname"
+                  {...editForm.register('nickname')}
+                  placeholder="e.g., Zadarma Milan"
+                  className="mt-1.5"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_inbound_agent_id">Inbound Call Agent</Label>
+                  <select
+                    id="edit_inbound_agent_id"
+                    {...editForm.register('inbound_agent_id')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">None (disable inbound)</option>
+                    {agents && agents
+                      .filter((agent) => agent.retell_agent_id)
+                      .map((agent) => (
+                        <option key={agent.id} value={agent.retell_agent_id || ''}>
+                          {agent.name} ({agent.retell_agent_id})
+                        </option>
+                      ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Agent to use for inbound calls. Select "None" to disable inbound calls.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="edit_outbound_agent_id">Outbound Call Agent</Label>
+                  <select
+                    id="edit_outbound_agent_id"
+                    {...editForm.register('outbound_agent_id')}
+                    className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">None (disable outbound)</option>
+                    {agents && agents
+                      .filter((agent) => agent.retell_agent_id)
+                      .map((agent) => (
+                        <option key={agent.id} value={agent.retell_agent_id || ''}>
+                          {agent.name} ({agent.retell_agent_id})
+                        </option>
+                      ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Agent to use for outbound calls. Select "None" to disable outbound calls.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_inbound_agent_version">Inbound Agent Version (optional)</Label>
+                  <Input
+                    id="edit_inbound_agent_version"
+                    type="number"
+                    {...editForm.register('inbound_agent_version', { valueAsNumber: true })}
+                    placeholder="Leave empty for latest version"
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Specific version number. Leave empty to use the latest published version.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="edit_outbound_agent_version">Outbound Agent Version (optional)</Label>
+                  <Input
+                    id="edit_outbound_agent_version"
+                    type="number"
+                    {...editForm.register('outbound_agent_version', { valueAsNumber: true })}
+                    placeholder="Leave empty for latest version"
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Specific version number. Leave empty to use the latest published version.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit_inbound_webhook_url">Inbound Webhook URL (optional)</Label>
+                <Input
+                  id="edit_inbound_webhook_url"
+                  {...editForm.register('inbound_webhook_url')}
+                  placeholder="https://example.com/webhook"
+                  className="mt-1.5"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Webhook URL for inbound calls. Leave empty to disable webhook.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setEditModalOpen(false)
+                    setEditingPhoneNumber(null)
+                    editForm.reset()
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update'}
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
