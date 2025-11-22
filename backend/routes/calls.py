@@ -170,101 +170,92 @@ class PhoneNumberPurchase(BaseModel):
 async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     """Purchase a phone number via Retell AI
     
-    Body parameters:
-    - phone_number: E.164 format (e.g., +393491234567) - When provided, country_code is ignored
-    - area_code: US/CA area code (only for US/CA numbers via area code search)
-    - country_code: Country code (US or CA only, required for area_code)
-    - number_provider: telnyx or twilio
-    - inbound_agent_id: Optional agent for inbound calls
-    - outbound_agent_id: Optional agent for outbound calls
-    - nickname: Optional nickname
+    According to RetellAI OpenAPI documentation:
+    - POST /create-phone-number purchases a number from Twilio/Telnyx
+    - Required: phone_number OR area_code
+    - Optional: number_provider (twilio/telnyx, default: twilio), country_code (US/CA, default: US),
+      inbound_agent_id, outbound_agent_id, inbound_agent_version, outbound_agent_version,
+      nickname, inbound_webhook_url, toll_free
     
-    Note: Retell API supports country_code only for US/CA. For other countries,
-    use phone_number directly in E.164 format.
+    Body parameters per OpenAPI spec:
+    - phone_number: E.164 format (e.g., +14157774444) - Optional
+    - area_code: 3-digit integer (e.g., 415) - Optional, only for US area codes
+    - country_code: US or CA - Optional, default US
+    - number_provider: twilio or telnyx - Optional, default twilio
+    - inbound_agent_id: Agent ID for inbound calls - Optional, nullable
+    - outbound_agent_id: Agent ID for outbound calls - Optional, nullable
+    - inbound_agent_version: Version of inbound agent - Optional, nullable
+    - outbound_agent_version: Version of outbound agent - Optional, nullable
+    - nickname: Nickname for reference - Optional
+    - inbound_webhook_url: Webhook URL for inbound calls - Optional, nullable
+    - toll_free: Whether to purchase toll-free number - Optional, boolean
     """
-    api_key = os.getenv("RETELL_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=400, detail="RETELL_API_KEY non configurata")
+    tenant_id = extract_tenant_id(request)
     
-    base_url = get_retell_base_url()
-    endpoint = f"{base_url}/create-phone-number"
-    headers = get_retell_headers()
-    
-    # Build request body for Retell API
+    # Build request body for RetellAI /create-phone-number API
+    # According to OpenAPI spec, only include fields that are explicitly provided (not None)
     retell_body: Dict[str, Any] = {}
     
-    # number_provider is optional according to OpenAPI, but if not provided defaults to twilio
-    if body.number_provider:
-        retell_body["number_provider"] = body.number_provider
-    
-    # Check if phone_number is provided
+    # Required: phone_number OR area_code
     if body.phone_number:
         retell_body["phone_number"] = body.phone_number
-        # Don't include country_code when phone_number is provided - Retell only supports US/CA for country_code
-        # The country is inferred from the phone_number E.164 format
-        # Note: If Retell doesn't support IT via phone_number directly, you may need to purchase via Telnyx API directly
+        # When phone_number is provided, country is inferred from E.164 format
+        # Only include country_code if explicitly provided (for validation)
+        if body.country_code and body.country_code in ["US", "CA"]:
+            retell_body["country_code"] = body.country_code
     elif body.area_code is not None:
         retell_body["area_code"] = body.area_code
-        # For area_code, country_code is required and must be US or CA
+        # For area_code, country_code should be US or CA
         country_code = body.country_code or "US"
         if country_code not in ["US", "CA"]:
             raise HTTPException(
                 status_code=400,
-                detail="Per area_code, country_code deve essere US o CA (Retell supporta solo questi)"
+                detail="For area_code, country_code must be US or CA (Retell only supports these)"
             )
         retell_body["country_code"] = country_code
     else:
         raise HTTPException(
             status_code=400,
-            detail="Devi fornire phone_number (E.164) o area_code"
+            detail="Either phone_number (E.164 format) or area_code must be provided"
         )
     
-    # Optional fields
+    # Optional fields per OpenAPI spec (only include if explicitly provided)
+    if body.number_provider:
+        retell_body["number_provider"] = body.number_provider
+    
     if body.inbound_agent_id is not None:
         retell_body["inbound_agent_id"] = body.inbound_agent_id
+    
     if body.outbound_agent_id is not None:
         retell_body["outbound_agent_id"] = body.outbound_agent_id
+    
     if body.inbound_agent_version is not None:
         retell_body["inbound_agent_version"] = body.inbound_agent_version
+    
     if body.outbound_agent_version is not None:
         retell_body["outbound_agent_version"] = body.outbound_agent_version
+    
     if body.nickname:
         retell_body["nickname"] = body.nickname
+    
     if body.inbound_webhook_url:
         retell_body["inbound_webhook_url"] = body.inbound_webhook_url
-    if body.toll_free:
+    
+    if body.toll_free is not None:
         retell_body["toll_free"] = body.toll_free
     
-    async with httpx.AsyncClient(timeout=30) as client:
-        try:
-            resp = await client.post(endpoint, headers=headers, json=retell_body)
-            response_text = resp.text
-            response_status = resp.status_code
-            
-            if resp.status_code >= 400:
-                try:
-                    error_json = resp.json()
-                except Exception:
-                    error_json = {"raw_response": response_text}
-                
-                return {
-                    "success": False,
-                    "status_code": response_status,
-                    "error": error_json,
-                    "request_sent": {
-                        "endpoint": endpoint,
-                        "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                        "body": retell_body,
-                    }
-                }
-            
-            try:
-                response_json = resp.json()
-            except Exception:
-                response_json = {"raw_response": response_text}
-            
-            # Save phone number to our database
-            tenant_id = extract_tenant_id(request)
+    # Log the request body for debugging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[purchase_phone_number] Sending request to RetellAI: {json.dumps(retell_body)}")
+    print(f"[DEBUG] [purchase_phone_number] Request body: {json.dumps(retell_body)}", flush=True)
+    
+    try:
+        data = await retell_post_json("/create-phone-number", retell_body, tenant_id=tenant_id)
+        logger.info(f"[purchase_phone_number] RetellAI response: {json.dumps(data)}")
+        print(f"[DEBUG] [purchase_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
+        
+        # Save phone number to our database
             if response_json.get("phone_number"):
                 with Session(engine) as session:
                     from models.agents import PhoneNumber
