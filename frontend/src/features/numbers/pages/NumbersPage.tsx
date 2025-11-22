@@ -15,7 +15,7 @@ const purchaseSchema = z.object({
   phone_number: z.string().optional(),
   area_code: z.number().optional(),
   country_code: z.string().optional(),
-  number_provider: z.string().default('twilio'),
+  number_provider: z.string().optional(), // No default - user must select
   inbound_agent_id: z.string().optional(),
   outbound_agent_id: z.string().optional(),
   inbound_agent_version: z.number().optional(),
@@ -55,17 +55,12 @@ export function NumbersPage() {
 
   const purchaseForm = useForm<PurchaseFormInputs>({
     resolver: zodResolver(purchaseSchema),
-    defaultValues: {
-      number_provider: 'twilio',
-      country_code: 'US',
-    },
+    // No default values - user must select explicitly
   })
 
   const importForm = useForm<ImportFormInputs>({
     resolver: zodResolver(importSchema),
-    defaultValues: {
-      termination_uri: 'pbx.zadarma.com',
-    },
+    // No default values - user must provide explicitly
   })
 
   const onPurchaseSubmit = async (data: PurchaseFormInputs) => {
@@ -287,6 +282,7 @@ export function NumbersPage() {
                       {...purchaseForm.register('country_code')}
                       className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
+                      <option value="">Select country...</option>
                       <option value="US">US</option>
                       <option value="CA">CA</option>
                     </select>
@@ -298,6 +294,7 @@ export function NumbersPage() {
                       {...purchaseForm.register('number_provider')}
                       className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
+                      <option value="">Select provider...</option>
                       <option value="twilio">Twilio</option>
                       <option value="telnyx">Telnyx</option>
                     </select>

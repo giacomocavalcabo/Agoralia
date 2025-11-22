@@ -191,9 +191,11 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     headers = get_retell_headers()
     
     # Build request body for Retell API
-    retell_body: Dict[str, Any] = {
-        "number_provider": body.number_provider,
-    }
+    retell_body: Dict[str, Any] = {}
+    
+    # number_provider is optional according to OpenAPI, but if not provided defaults to twilio
+    if body.number_provider:
+        retell_body["number_provider"] = body.number_provider
     
     # Check if phone_number is provided
     if body.phone_number:
@@ -274,9 +276,18 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
                     ).first()
                     
                     if not existing:
+                        # Use phone_number_type from RetellAI response: "retell-twilio", "retell-telnyx", or "custom"
+                        phone_type = response_json.get("phone_number_type", "retell-twilio")
+                        # Map RetellAI phone_number_type to our internal type
+                        # "custom" -> "custom", "retell-twilio" -> "retell", "retell-telnyx" -> "retell"
+                        if phone_type == "custom":
+                            internal_type = "custom"
+                        else:
+                            internal_type = "retell"
+                        
                         new_number = PhoneNumber(
                             e164=response_json["phone_number"],
-                            type="retell",
+                            type=internal_type,
                             verified=1,
                             tenant_id=tenant_id,
                             country=country_iso_from_e164(response_json["phone_number"]),
@@ -2627,9 +2638,18 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
                 ).first()
                 
                 if not existing:
+                    # Use phone_number_type from RetellAI response: "custom" for imported numbers, "retell-twilio" or "retell-telnyx" for purchased
+                    phone_type = data.get("phone_number_type", "custom")
+                    # Map RetellAI phone_number_type to our internal type
+                    # "custom" -> "custom", "retell-twilio" -> "retell", "retell-telnyx" -> "retell"
+                    if phone_type == "custom":
+                        internal_type = "custom"
+                    else:
+                        internal_type = "retell"
+                    
                     new_number = PhoneNumber(
                         e164=imported_number,
-                        type="retell",
+                        type=internal_type,
                         verified=1,
                         tenant_id=tenant_id,
                         country=country_iso_from_e164(imported_number),
@@ -2639,6 +2659,10 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
                 elif existing.tenant_id != tenant_id:
                     # Update tenant_id if different (number already exists but for different tenant)
                     existing.tenant_id = tenant_id
+                    # Also update type if needed
+                    phone_type = data.get("phone_number_type", "custom")
+                    if phone_type == "custom":
+                        existing.type = "custom"
                     session.commit()
         
         # Extract SIP inbound URI if available (for configuring Zadarma forwarding)
