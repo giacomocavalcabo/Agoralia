@@ -1851,7 +1851,7 @@ async def retell_create_agent_test(request: Request):
 
 
 @router.get("/retell/phone-numbers/{phone_number}")
-async def get_retell_phone_number(phone_number: str):
+async def get_retell_phone_number(request: Request, phone_number: str):
     """Get phone number details from Retell AI
     
     According to Retell AI docs:
@@ -1859,9 +1859,11 @@ async def get_retell_phone_number(phone_number: str):
     
     For custom telephony numbers, also provides SIP inbound URI for configuring forwarding.
     """
+    tenant_id = extract_tenant_id(request)
+    
     try:
         # Use path parameter as per official docs
-        data = await retell_get_json(f"/get-phone-number/{urllib.parse.quote(phone_number)}")
+        data = await retell_get_json(f"/get-phone-number/{urllib.parse.quote(phone_number)}", tenant_id=tenant_id)
         
         # For custom telephony numbers, add SIP inbound URI if not present
         if data.get("phone_number_type") == "custom":
@@ -1874,7 +1876,7 @@ async def get_retell_phone_number(phone_number: str):
     except HTTPException as e:
         # Fallback to query param format if path param doesn't work
         try:
-            data = await retell_get_json(f"/get-phone-number?phone_number={urllib.parse.quote(phone_number)}")
+            data = await retell_get_json(f"/get-phone-number?phone_number={urllib.parse.quote(phone_number)}", tenant_id=tenant_id)
             
             # For custom telephony numbers, add SIP inbound URI if not present
             if data.get("phone_number_type") == "custom":
@@ -1907,6 +1909,7 @@ async def list_retell_phone_numbers():
 
 @router.patch("/retell/phone-numbers/{phone_number}")
 async def update_retell_phone_number(
+    request: Request,
     phone_number: str,
     inbound_agent_id: Optional[str] = None,
     outbound_agent_id: Optional[str] = None,
@@ -1929,6 +1932,18 @@ async def update_retell_phone_number(
         nickname: Optional nickname
         inbound_webhook_url: Optional webhook URL for inbound calls
     """
+    tenant_id = extract_tenant_id(request)
+    
+    # Verify that the phone number belongs to this tenant (optional security check)
+    if tenant_id is not None:
+        with Session(engine) as session:
+            from models.agents import PhoneNumber
+            number_record = session.query(PhoneNumber).filter(
+                PhoneNumber.e164 == phone_number
+            ).first()
+            if number_record and number_record.tenant_id != tenant_id:
+                raise HTTPException(status_code=403, detail="Phone number belongs to a different tenant")
+    
     try:
         # Use path parameter as per official docs
         body: Dict[str, Any] = {}
@@ -1946,7 +1961,7 @@ async def update_retell_phone_number(
         if inbound_webhook_url is not None:
             body["inbound_webhook_url"] = inbound_webhook_url
         
-        data = await retell_patch_json(f"/update-phone-number/{urllib.parse.quote(phone_number)}", body)
+        data = await retell_patch_json(f"/update-phone-number/{urllib.parse.quote(phone_number)}", body, tenant_id=tenant_id)
         return {
             "success": True,
             "response": data,
@@ -1968,7 +1983,7 @@ async def update_retell_phone_number(
             if inbound_webhook_url is not None:
                 body["inbound_webhook_url"] = inbound_webhook_url
             
-            data = await retell_patch_json("/update-phone-number", body)
+            data = await retell_patch_json("/update-phone-number", body, tenant_id=tenant_id)
             return {
                 "success": True,
                 "response": data,
