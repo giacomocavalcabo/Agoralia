@@ -192,6 +192,45 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
     """
     tenant_id = extract_tenant_id(request)
     
+    # Calculate phone number cost before purchase (based on RetellAI pricing)
+    # RetellAI pricing (fixed monthly cost):
+    # - US numbers: $2/month (200 cents)
+    # - US toll-free numbers: $5/month (500 cents)
+    # - CA numbers: $2/month (200 cents)
+    # Note: These are monthly recurring costs, not one-time purchase costs
+    phone_cost_cents = None
+    if body.toll_free:
+        phone_cost_cents = 500  # $5/month for toll-free
+    else:
+        country = body.country_code or "US"
+        if country in ["US", "CA"]:
+            phone_cost_cents = 200  # $2/month for US/CA regular numbers
+        else:
+            # For other countries, estimate $2/month (may vary by provider)
+            phone_cost_cents = 200
+    
+    # Check budget before purchase
+    # Note: Phone numbers have monthly recurring costs, so we check if budget is sufficient
+    # TODO: Consider adding "numbers_purchasable" column for fixed-cost purchases via Stripe
+    if phone_cost_cents:
+        with Session(engine) as session:
+            from services.enforcement import _tenant_monthly_spend_cents
+            from services.workspace_settings import get_workspace_settings
+            
+            workspace_settings = get_workspace_settings(tenant_id, session)
+            budget_cents = workspace_settings.budget_monthly_cents
+            
+            if budget_cents and budget_cents > 0:
+                spent_cents = _tenant_monthly_spend_cents(session, tenant_id)
+                remaining_budget = budget_cents - spent_cents
+                
+                # Check if remaining budget can cover monthly cost
+                if remaining_budget < phone_cost_cents:
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Insufficient budget. Phone number costs ${phone_cost_cents/100:.2f}/month, but only ${remaining_budget/100:.2f} remaining in monthly budget."
+                    )
+    
     # Build request body for RetellAI /create-phone-number API
     # According to OpenAPI spec, only include fields that are explicitly provided (not None)
     retell_body: Dict[str, Any] = {}
