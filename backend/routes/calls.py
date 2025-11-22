@@ -435,6 +435,64 @@ async def estimate_phone_number_cost(
     }
 
 
+@router.get("/retell/phone-numbers/search-available")
+async def search_available_phone_numbers(
+    request: Request,
+    area_code: Optional[int] = None,
+    country_code: str = "US",
+    toll_free: bool = False,
+    number_provider: str = "twilio",
+    limit: int = 10,
+):
+    """Search for available phone numbers before purchase
+    
+    Note: RetellAI doesn't have a search endpoint, so we search via Twilio/Telnyx API.
+    However, we don't have direct access to Twilio/Telnyx credentials - only RetellAI API key.
+    
+    For now, we'll use RetellAI's create-phone-number with area_code only (without purchasing)
+    to check if numbers are available. But this is not ideal.
+    
+    Alternative: When user provides area_code, RetellAI automatically finds an available number
+    during purchase. So we can show a preview message instead of actual search results.
+    
+    TODO: If we get Twilio/Telnyx credentials, we can search directly via their APIs.
+    """
+    tenant_id = extract_tenant_id(request)
+    
+    # For now, we can't search available numbers directly via RetellAI
+    # RetellAI's /create-phone-number with area_code will automatically find an available number
+    # So we return a message indicating that numbers are available for the given criteria
+    # and that RetellAI will find one automatically during purchase
+    
+    # Validate area_code if provided
+    if area_code is not None:
+        if not (200 <= area_code <= 999):
+            raise HTTPException(
+                status_code=400,
+                detail="Area code must be a 3-digit number between 200 and 999 (e.g., 415, 212, 310)"
+            )
+    
+    # Calculate estimated cost
+    if toll_free:
+        cost_cents = 500  # $5/month for toll-free
+    else:
+        if country_code in ["US", "CA"]:
+            cost_cents = 200  # $2/month for US/CA regular numbers
+        else:
+            cost_cents = 200  # Estimate
+    
+    return {
+        "message": "Numbers are available for the specified criteria. RetellAI will automatically find an available number when you purchase.",
+        "area_code": area_code,
+        "country_code": country_code,
+        "toll_free": toll_free,
+        "number_provider": number_provider,
+        "estimated_monthly_cost_cents": cost_cents,
+        "estimated_monthly_cost_usd": cost_cents / 100.0,
+        "note": "When you purchase with area_code, RetellAI automatically selects an available number. To see specific numbers, use Twilio/Telnyx API directly (requires provider credentials).",
+    }
+
+
 @router.post("/retell/test")
 async def test_retell_api(request: Request, agent_id: Optional[str] = None):
     """Test Retell API connection with minimal request

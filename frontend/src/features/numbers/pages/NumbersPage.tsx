@@ -13,18 +13,14 @@ import * as z from 'zod'
 
 // Purchase schema
 const purchaseSchema = z.object({
-  phone_number: z.string().optional(),
-  area_code: z.number().optional(),
-  country_code: z.string().optional(),
-  number_provider: z.string().optional(), // No default - user must select
+  area_code: z.number().min(200, 'Area code must be between 200 and 999').max(999, 'Area code must be between 200 and 999'),
+  country_code: z.string().min(1, 'Country code is required'),
+  number_provider: z.string().optional().default('twilio'),
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
   outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
   nickname: z.string().optional(),
   inbound_webhook_url: z.string().url().optional().or(z.literal('')),
   toll_free: z.boolean().optional(),
-}).refine((data) => data.phone_number || data.area_code, {
-  message: "Either phone_number or area_code is required",
-  path: ["phone_number"],
 })
 
 // Import schema
@@ -333,25 +329,50 @@ export function NumbersPage() {
               <form onSubmit={purchaseForm.handleSubmit(onPurchaseSubmit)} className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="purchase_phone_number">Phone Number (E.164, optional)</Label>
-                    <Input
-                      id="purchase_phone_number"
-                      {...purchaseForm.register('phone_number')}
-                      placeholder="+14157774444"
-                      className="mt-1.5"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Or use area_code below</p>
-                  </div>
-                  <div>
-                    <Label htmlFor="purchase_area_code">Area Code (US/CA, optional)</Label>
+                    <Label htmlFor="purchase_area_code">Area Code (US/CA) *</Label>
                     <Input
                       id="purchase_area_code"
                       type="number"
-                      {...purchaseForm.register('area_code', { valueAsNumber: true })}
+                      {...purchaseForm.register('area_code', { 
+                        required: 'Area code is required',
+                        valueAsNumber: true,
+                        min: { value: 200, message: 'Area code must be between 200 and 999' },
+                        max: { value: 999, message: 'Area code must be between 200 and 999' },
+                      })}
                       placeholder="415"
                       className="mt-1.5"
                     />
+                    {purchaseForm.formState.errors.area_code && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {purchaseForm.formState.errors.area_code.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      RetellAI will automatically find an available number in this area code
+                    </p>
                   </div>
+                  <div>
+                    <Label htmlFor="purchase_country_code">Country Code *</Label>
+                    <select
+                      id="purchase_country_code"
+                      {...purchaseForm.register('country_code', { required: 'Country code is required' })}
+                      className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Select country...</option>
+                      <option value="US">US</option>
+                      <option value="CA">CA</option>
+                    </select>
+                    {purchaseForm.formState.errors.country_code && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {purchaseForm.formState.errors.country_code.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="p-3 border border-blue-200 bg-blue-50 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> When you purchase, RetellAI will automatically find and assign an available phone number in the selected area code. You don't need to specify the exact number.
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
