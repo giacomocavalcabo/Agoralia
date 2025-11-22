@@ -345,30 +345,28 @@ async def retell_post_multipart(
         # When using files=list, we should combine with data into a single multipart request
         # httpx will handle combining files and data automatically
         
-        # For array of files, httpx might not support list format correctly
-        # Let's try combining everything into files parameter when we have file arrays
-        # When form_files is a list (array of files), combine with data into files
-        if isinstance(form_files, list) and form_files:
-            # For arrays, try combining files and data into a single list
-            # Add form data as tuples to the files list
-            combined_files = list(form_files)  # Copy the list
-            for key, value in form_data_dict.items():
-                # Add form data as (key, value) tuples
-                combined_files.append((key, value))
-            files_param = combined_files
-            data_param = None
-        else:
-            # For single file or dict format, use separate files and data
-            files_param = form_files if form_files else None
-            data_param = form_data_dict if form_data_dict else None
+        # httpx expects files and data to be passed separately
+        # files can be: Dict or List of tuples
+        # data can be: Dict
+        # httpx will automatically combine them into multipart/form-data
+        
+        # IMPORTANT: Don't mix files and data in a single list!
+        # When files is a list, every element must be a file tuple
+        # Keep files and data separate - httpx will merge them correctly
+        files_param = form_files if form_files else None
+        data_param = form_data_dict if form_data_dict else None
         
         # Debug: log the exact format being passed
-        print(f"[DEBUG] [retell_post_multipart] files_param type: {type(files_param)}, length: {len(files_param) if files_param else 0}", flush=True)
-        if files_param and isinstance(files_param, list):
-            print(f"[DEBUG] [retell_post_multipart] First file tuple: {files_param[0] if len(files_param) > 0 else 'empty'}", flush=True)
-            print(f"[DEBUG] [retell_post_multipart] First file tuple type: {type(files_param[0]) if len(files_param) > 0 else 'empty'}", flush=True)
-            if len(files_param) > 0 and isinstance(files_param[0], tuple) and len(files_param[0]) > 1:
-                print(f"[DEBUG] [retell_post_multipart] First file tuple[1] type: {type(files_param[0][1])}", flush=True)
+        print(f"[DEBUG] [retell_post_multipart] files_param type: {type(files_param)}", flush=True)
+        if files_param:
+            if isinstance(files_param, list):
+                print(f"[DEBUG] [retell_post_multipart] files_param is list, length: {len(files_param)}", flush=True)
+                if len(files_param) > 0:
+                    print(f"[DEBUG] [retell_post_multipart] First element: {files_param[0]}, type: {type(files_param[0])}", flush=True)
+                    if isinstance(files_param[0], tuple) and len(files_param[0]) > 1:
+                        print(f"[DEBUG] [retell_post_multipart] First element[1] type: {type(files_param[0][1])}", flush=True)
+            elif isinstance(files_param, dict):
+                print(f"[DEBUG] [retell_post_multipart] files_param is dict, keys: {list(files_param.keys())}", flush=True)
         
         resp = await client.post(
             f"{get_retell_base_url()}{path}",
