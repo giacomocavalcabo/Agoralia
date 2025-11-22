@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -86,7 +86,7 @@ export function NumbersPage() {
   })
 
   // Load phone details when modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (editModalOpen && editingPhoneNumber && phoneDetails) {
       editForm.reset({
         // For select HTML elements, use empty string instead of null when no agent is associated
