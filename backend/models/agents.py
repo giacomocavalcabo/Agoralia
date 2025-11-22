@@ -125,6 +125,10 @@ class KnowledgeBase(Base):
     enable_auto_refresh: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)  # Auto-refresh URLs every 12h
     last_refreshed_timestamp: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Milliseconds since epoch
     
+    # Uploader information
+    created_by_user_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    created_by_user_name: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)  # Full name of the user who created it
+    
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
