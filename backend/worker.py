@@ -1,3 +1,7 @@
+"""
+Dramatiq worker for processing background jobs.
+This module is imported by dramatiq CLI to run workers.
+"""
 import os
 import asyncio
 import time
