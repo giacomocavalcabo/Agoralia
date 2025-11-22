@@ -256,57 +256,59 @@ async def purchase_phone_number(request: Request, body: PhoneNumberPurchase):
         print(f"[DEBUG] [purchase_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
         
         # Save phone number to our database
-            if response_json.get("phone_number"):
-                with Session(engine) as session:
-                    from models.agents import PhoneNumber
-                    from utils.helpers import country_iso_from_e164
+        if data.get("phone_number"):
+            with Session(engine) as session:
+                from models.agents import PhoneNumber
+                from utils.helpers import country_iso_from_e164
+                
+                # Check if number already exists
+                existing = session.query(PhoneNumber).filter(
+                    PhoneNumber.e164 == data["phone_number"]
+                ).first()
+                
+                if not existing:
+                    # Use phone_number_type from RetellAI response: "retell-twilio", "retell-telnyx", or "custom"
+                    phone_type = data.get("phone_number_type", "retell-twilio")
+                    # Map RetellAI phone_number_type to our internal type
+                    # "custom" -> "custom", "retell-twilio" -> "retell", "retell-telnyx" -> "retell"
+                    if phone_type == "custom":
+                        internal_type = "custom"
+                    else:
+                        internal_type = "retell"
                     
-                    # Check if number already exists
-                    existing = session.query(PhoneNumber).filter(
-                        PhoneNumber.e164 == response_json["phone_number"]
-                    ).first()
-                    
-                    if not existing:
-                        # Use phone_number_type from RetellAI response: "retell-twilio", "retell-telnyx", or "custom"
-                        phone_type = response_json.get("phone_number_type", "retell-twilio")
-                        # Map RetellAI phone_number_type to our internal type
-                        # "custom" -> "custom", "retell-twilio" -> "retell", "retell-telnyx" -> "retell"
-                        if phone_type == "custom":
-                            internal_type = "custom"
-                        else:
-                            internal_type = "retell"
-                        
-                        new_number = PhoneNumber(
-                            e164=response_json["phone_number"],
-                            type=internal_type,
-                            verified=1,
-                            tenant_id=tenant_id,
-                            country=country_iso_from_e164(response_json["phone_number"]),
-                        )
-                        session.add(new_number)
-                        session.commit()
-            
-            return {
-                "success": True,
-                "status_code": response_status,
-                "response": response_json,
-                "request_sent": {
-                    "endpoint": endpoint,
-                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                    "body": retell_body,
-                }
-            }
-        except httpx.HTTPError as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "error_type": type(e).__name__,
-                "request_sent": {
-                    "endpoint": endpoint,
-                    "headers": {k: "***" if k == "Authorization" else v for k, v in headers.items()},
-                    "body": retell_body,
-                }
-            }
+                    new_number = PhoneNumber(
+                        e164=data["phone_number"],
+                        type=internal_type,
+                        verified=1,
+                        tenant_id=tenant_id,
+                        country=country_iso_from_e164(data["phone_number"]),
+                    )
+                    session.add(new_number)
+                    session.commit()
+                elif existing.tenant_id != tenant_id:
+                    # Update tenant_id if different (number already exists but for different tenant)
+                    existing.tenant_id = tenant_id
+                    # Also update type if needed
+                    phone_type = data.get("phone_number_type", "retell-twilio")
+                    if phone_type == "custom":
+                        existing.type = "custom"
+                    else:
+                        existing.type = "retell"
+                    session.commit()
+        
+        return {
+            "success": True,
+            "phone_number": data.get("phone_number"),
+            "phone_number_type": data.get("phone_number_type", "retell-twilio"),
+            "response": data,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error purchasing phone number: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error purchasing phone number: {str(e)}")
 
 
 @router.post("/retell/test")
