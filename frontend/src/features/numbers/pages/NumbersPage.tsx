@@ -322,22 +322,30 @@ export function NumbersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="purchase_inbound_agent_version">Inbound Agent Version</Label>
+                    <Label htmlFor="purchase_inbound_agent_version">Inbound Agent Version (optional)</Label>
                     <Input
                       id="purchase_inbound_agent_version"
                       type="number"
                       {...purchaseForm.register('inbound_agent_version', { valueAsNumber: true })}
+                      placeholder="Leave empty for latest version"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Specific version number. Leave empty to use the latest published version.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="purchase_outbound_agent_version">Outbound Agent Version</Label>
+                    <Label htmlFor="purchase_outbound_agent_version">Outbound Agent Version (optional)</Label>
                     <Input
                       id="purchase_outbound_agent_version"
                       type="number"
                       {...purchaseForm.register('outbound_agent_version', { valueAsNumber: true })}
+                      placeholder="Leave empty for latest version"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Specific version number. Leave empty to use the latest published version.
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -446,22 +454,30 @@ export function NumbersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="import_inbound_agent_version">Inbound Agent Version</Label>
+                    <Label htmlFor="import_inbound_agent_version">Inbound Agent Version (optional)</Label>
                     <Input
                       id="import_inbound_agent_version"
                       type="number"
                       {...importForm.register('inbound_agent_version', { valueAsNumber: true })}
+                      placeholder="Leave empty for latest version"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Specific version number. Leave empty to use the latest published version.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="import_outbound_agent_version">Outbound Agent Version</Label>
+                    <Label htmlFor="import_outbound_agent_version">Outbound Agent Version (optional)</Label>
                     <Input
                       id="import_outbound_agent_version"
                       type="number"
                       {...importForm.register('outbound_agent_version', { valueAsNumber: true })}
+                      placeholder="Leave empty for latest version"
                       className="mt-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Specific version number. Leave empty to use the latest published version.
+                    </p>
                   </div>
                 </div>
                 <div>
