@@ -89,12 +89,13 @@ export function NumbersPage() {
   React.useEffect(() => {
     if (editModalOpen && editingPhoneNumber && phoneDetails) {
       editForm.reset({
-        inbound_agent_id: phoneDetails.inbound_agent_id || null,
-        outbound_agent_id: phoneDetails.outbound_agent_id || null,
+        // For select HTML elements, use empty string instead of null when no agent is associated
+        inbound_agent_id: phoneDetails.inbound_agent_id || '',
+        outbound_agent_id: phoneDetails.outbound_agent_id || '',
         inbound_agent_version: phoneDetails.inbound_agent_version || null,
         outbound_agent_version: phoneDetails.outbound_agent_version || null,
-        nickname: phoneDetails.nickname || null,
-        inbound_webhook_url: phoneDetails.inbound_webhook_url || null,
+        nickname: phoneDetails.nickname || '',
+        inbound_webhook_url: phoneDetails.inbound_webhook_url || '',
       })
     }
   }, [editModalOpen, editingPhoneNumber, phoneDetails, editForm])
