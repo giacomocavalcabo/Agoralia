@@ -2607,6 +2607,7 @@ class ImportPhoneNumberRequest(BaseModel):
     """
     phone_number: str = Field(..., description="E.164 format number to import (e.g., +390289744903)")
     termination_uri: str = Field(..., description="Termination URI (NOT Retell SIP server URI) - where calls should be routed")
+    outbound_transport: Optional[str] = Field("TCP", description="Outbound transport protocol (TCP or UDP), defaults to TCP - required for outbound calls to work")
     sip_trunk_user_name: Optional[str] = Field(None, description="SIP Trunk User Name (optional)")
     sip_trunk_password: Optional[str] = Field(None, description="SIP Trunk Password (optional)")
     nickname: Optional[str] = Field(None, description="Nickname for the number (optional, for reference only)")
@@ -2646,9 +2647,11 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     tenant_id = extract_tenant_id(request)
     
     # Build request body for RetellAI import-phone-number API
+    # According to RetellAI docs, required fields are: phone_number, termination_uri, outbound_transport
     retell_body: Dict[str, Any] = {
         "phone_number": body.phone_number,
         "termination_uri": body.termination_uri,
+        "outbound_transport": body.outbound_transport or "TCP",  # Required for outbound calls
     }
     
     # Optional SIP trunking fields
