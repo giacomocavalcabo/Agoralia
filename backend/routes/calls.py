@@ -442,27 +442,17 @@ async def search_available_phone_numbers(
     country_code: str = "US",
     toll_free: bool = False,
     number_provider: str = "twilio",
-    limit: int = 10,
+    limit: int = 30,
 ):
-    """Search for available phone numbers before purchase
+    """Search for available phone numbers via Twilio/Telnyx API
     
-    Note: RetellAI doesn't have a search endpoint, so we search via Twilio/Telnyx API.
-    However, we don't have direct access to Twilio/Telnyx credentials - only RetellAI API key.
+    This endpoint searches for available phone numbers directly from Twilio/Telnyx,
+    allowing users to see and select numbers before purchase (like RetellAI interface).
     
-    For now, we'll use RetellAI's create-phone-number with area_code only (without purchasing)
-    to check if numbers are available. But this is not ideal.
-    
-    Alternative: When user provides area_code, RetellAI automatically finds an available number
-    during purchase. So we can show a preview message instead of actual search results.
-    
-    TODO: If we get Twilio/Telnyx credentials, we can search directly via their APIs.
+    Note: RetellAI doesn't provide a search endpoint, so we use Twilio/Telnyx directly.
+    This requires Twilio/Telnyx credentials to be configured.
     """
     tenant_id = extract_tenant_id(request)
-    
-    # For now, we can't search available numbers directly via RetellAI
-    # RetellAI's /create-phone-number with area_code will automatically find an available number
-    # So we return a message indicating that numbers are available for the given criteria
-    # and that RetellAI will find one automatically during purchase
     
     # Validate area_code if provided
     if area_code is not None:
@@ -472,24 +462,152 @@ async def search_available_phone_numbers(
                 detail="Area code must be a 3-digit number between 200 and 999 (e.g., 415, 212, 310)"
             )
     
-    # Calculate estimated cost
-    if toll_free:
-        cost_cents = 500  # $5/month for toll-free
-    else:
-        if country_code in ["US", "CA"]:
-            cost_cents = 200  # $2/month for US/CA regular numbers
+    # Get provider credentials (for now, use environment variables; TODO: support BYO provider accounts)
+    twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    telnyx_api_key = os.getenv("TELNYX_API_KEY")
+    
+    available_numbers = []
+    error_message = None
+    
+    try:
+        if number_provider == "twilio":
+            if not twilio_account_sid or not twilio_auth_token:
+                error_message = "Twilio credentials not configured. Please set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables."
+            else:
+                # Search via Twilio API
+                try:
+                    from twilio.rest import Client as TwilioClient
+                    client = TwilioClient(twilio_account_sid, twilio_auth_token)
+                    
+                    # Build search parameters
+                    search_params = {
+                        "limit": limit,
+                    }
+                    
+                    if toll_free:
+                        # Search for toll-free numbers
+                        search_params["type"] = "toll-free"
+                    else:
+                        # Search for local numbers
+                        search_params["type"] = "local"
+                    
+                    if area_code:
+                        search_params["area_code"] = str(area_code)
+                    elif country_code:
+                        search_params["country"] = country_code
+                    
+                    # Search available numbers
+                    phone_numbers = client.available_phone_numbers(country_code).list(**search_params)
+                    
+                    # Format results
+                    for phone_number in phone_numbers[:limit]:
+                        available_numbers.append({
+                            "phone_number": phone_number.phone_number,  # E.164 format
+                            "friendly_name": phone_number.friendly_name,  # Pretty format: +1 (415) 777-4444
+                            "locality": phone_number.locality or "",  # City name
+                            "region": phone_number.region or "",  # State
+                            "iso_country": phone_number.iso_country or country_code,
+                            "capabilities": {
+                                "voice": phone_number.capabilities.get("voice", False),
+                                "sms": phone_number.capabilities.get("sms", False),
+                                "mms": phone_number.capabilities.get("mms", False),
+                            },
+                            "monthly_cost_cents": 500 if toll_free else 200,
+                            "provider": "twilio",
+                        })
+                except Exception as e:
+                    import traceback
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error searching Twilio numbers: {e}\n{traceback.format_exc()}")
+                    error_message = f"Error searching Twilio numbers: {str(e)}"
+        
+        elif number_provider == "telnyx":
+            if not telnyx_api_key:
+                error_message = "Telnyx credentials not configured. Please set TELNYX_API_KEY environment variable."
+            else:
+                # Search via Telnyx API
+                try:
+                    import httpx
+                    telnyx_base_url = "https://api.telnyx.com/v2"
+                    headers = {
+                        "Authorization": f"Bearer {telnyx_api_key}",
+                        "Content-Type": "application/json",
+                    }
+                    
+                    # Build search parameters
+                    search_params = {
+                        "limit": limit,
+                    }
+                    
+                    if toll_free:
+                        search_params["features"] = ["toll_free"]
+                    
+                    if area_code:
+                        search_params["filter[area_code]"] = str(area_code)
+                    
+                    if country_code:
+                        search_params["filter[country_code]"] = country_code
+                    
+                    # Search available numbers
+                    async with httpx.AsyncClient(timeout=30) as client:
+                        resp = await client.get(
+                            f"{telnyx_base_url}/available_phone_numbers",
+                            headers=headers,
+                            params=search_params,
+                        )
+                        
+                        if resp.status_code >= 400:
+                            error_message = f"Telnyx API error: {resp.status_code} - {resp.text}"
+                        else:
+                            data = resp.json()
+                            phone_numbers = data.get("data", [])
+                            
+                            # Format results
+                            for phone_number in phone_numbers[:limit]:
+                                available_numbers.append({
+                                    "phone_number": phone_number.get("phone_number", ""),
+                                    "friendly_name": phone_number.get("phone_number", ""),  # Telnyx doesn't provide pretty format
+                                    "locality": phone_number.get("region_information", {}).get("region_name", ""),
+                                    "region": phone_number.get("region_information", {}).get("region_name", ""),
+                                    "iso_country": phone_number.get("region_information", {}).get("country_code", country_code),
+                                    "capabilities": {
+                                        "voice": phone_number.get("features", {}).get("voice_enabled", False),
+                                        "sms": phone_number.get("features", {}).get("sms_enabled", False),
+                                        "mms": phone_number.get("features", {}).get("mms_enabled", False),
+                                    },
+                                    "monthly_cost_cents": 500 if toll_free else 200,
+                                    "provider": "telnyx",
+                                })
+                except Exception as e:
+                    import traceback
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error searching Telnyx numbers: {e}\n{traceback.format_exc()}")
+                    error_message = f"Error searching Telnyx numbers: {str(e)}"
+        
         else:
-            cost_cents = 200  # Estimate
+            error_message = f"Unsupported provider: {number_provider}. Supported providers: twilio, telnyx"
+    
+    except Exception as e:
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in search_available_phone_numbers: {e}\n{traceback.format_exc()}")
+        error_message = f"Error searching available numbers: {str(e)}"
+    
+    # Calculate estimated cost
+    cost_cents = 500 if toll_free else 200
     
     return {
-        "message": "Numbers are available for the specified criteria. RetellAI will automatically find an available number when you purchase.",
+        "available_numbers": available_numbers,
+        "total": len(available_numbers),
         "area_code": area_code,
         "country_code": country_code,
         "toll_free": toll_free,
         "number_provider": number_provider,
         "estimated_monthly_cost_cents": cost_cents,
         "estimated_monthly_cost_usd": cost_cents / 100.0,
-        "note": "When you purchase with area_code, RetellAI automatically selects an available number. To see specific numbers, use Twilio/Telnyx API directly (requires provider credentials).",
+        "error": error_message,
+        "note": error_message if error_message else None,
     }
 
 
