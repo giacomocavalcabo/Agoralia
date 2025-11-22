@@ -62,6 +62,21 @@ export function KnowledgePage() {
     }
   }, [kbs, selectedKbId])
 
+  // Reset create form when modal opens
+  useEffect(() => {
+    if (createModalOpen) {
+      reset({
+        name: '',
+        lang: undefined,
+        scope: 'general',
+      })
+      setKbTexts([])
+      setKbUrls([])
+      setEnableAutoRefresh(false)
+      setActiveTab('text')
+    }
+  }, [createModalOpen, reset])
+
   // Reset edit form when modal opens
   useEffect(() => {
     if (editModalOpen && selectedKb) {
@@ -352,6 +367,7 @@ export function KnowledgePage() {
                 placeholder="e.g., Company Knowledge Base"
                 className="mt-1.5"
                 maxLength={40}
+                required
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-destructive">{errors.name.message}</p>
@@ -359,7 +375,14 @@ export function KnowledgePage() {
               <p className="mt-1 text-xs text-muted-foreground">Must be less than 40 characters</p>
             </div>
 
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <div className="mt-6">
+              <h3 className="text-sm font-medium mb-4">Add Sources</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add content to your knowledge base by adding text, web pages, or uploading files
+              </p>
+            </div>
+
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="text">Add Text</TabsTrigger>
                 <TabsTrigger value="urls">Add Web Pages</TabsTrigger>
