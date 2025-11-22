@@ -2690,8 +2690,16 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     if body.sip_uri:
         retell_body["sip_uri"] = body.sip_uri
     
+    # Log the request body for debugging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[retell_import_phone_number] Sending request to RetellAI: {json.dumps(retell_body)}")
+    print(f"[DEBUG] [retell_import_phone_number] Request body: {json.dumps(retell_body)}", flush=True)
+    
     try:
         data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
+        logger.info(f"[retell_import_phone_number] RetellAI response: {json.dumps(data)}")
+        print(f"[DEBUG] [retell_import_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
         
         # Save phone number to our database (same logic as purchase)
         imported_number = data.get("phone_number") or body.phone_number
