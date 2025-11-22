@@ -2697,7 +2697,21 @@ async def retell_import_phone_number(request: Request, body: ImportPhoneNumberRe
     print(f"[DEBUG] [retell_import_phone_number] Request body: {json.dumps(retell_body)}", flush=True)
     
     try:
-        data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
+        # Try using /create-phone-number with SIP parameters (as per RetellAI UI)
+        # This endpoint supports existing numbers when phone_number is provided
+        # If this doesn't work, we can fall back to /import-phone-number
+        try:
+            data = await retell_post_json("/create-phone-number", retell_body, tenant_id=tenant_id)
+            logger.info(f"[retell_import_phone_number] Successfully used /create-phone-number endpoint")
+            print(f"[DEBUG] [retell_import_phone_number] Successfully used /create-phone-number endpoint", flush=True)
+        except HTTPException as e:
+            if e.status_code in [400, 404]:
+                # If /create-phone-number doesn't work for imports, try /import-phone-number
+                logger.warning(f"[retell_import_phone_number] /create-phone-number failed ({e.status_code}), trying /import-phone-number")
+                print(f"[DEBUG] [retell_import_phone_number] /create-phone-number failed, trying /import-phone-number", flush=True)
+                data = await retell_post_json("/import-phone-number", retell_body, tenant_id=tenant_id)
+            else:
+                raise e
         logger.info(f"[retell_import_phone_number] RetellAI response: {json.dumps(data)}")
         print(f"[DEBUG] [retell_import_phone_number] RetellAI response: {json.dumps(data)}", flush=True)
         
