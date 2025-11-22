@@ -19,8 +19,6 @@ const purchaseSchema = z.object({
   number_provider: z.string().optional(), // No default - user must select
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
   outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
-  inbound_agent_version: z.number().optional(),
-  outbound_agent_version: z.number().optional(),
   nickname: z.string().optional(),
   inbound_webhook_url: z.string().url().optional().or(z.literal('')),
   toll_free: z.boolean().optional(),
@@ -37,8 +35,6 @@ const importSchema = z.object({
   sip_trunk_password: z.string().optional(),
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
   outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
-  inbound_agent_version: z.number().optional(),
-  outbound_agent_version: z.number().optional(),
   nickname: z.string().optional(),
   inbound_webhook_url: z.string().url().optional().or(z.literal('')),
 })
@@ -50,8 +46,6 @@ type ImportFormInputs = z.infer<typeof importSchema>
 const editSchema = z.object({
   inbound_agent_id: z.string().min(1, 'Inbound agent is required'),
   outbound_agent_id: z.string().min(1, 'Outbound agent is required'),
-  inbound_agent_version: z.number().nullable().optional(),
-  outbound_agent_version: z.number().nullable().optional(),
   nickname: z.string().nullable().optional(),
   inbound_webhook_url: z.string().url().nullable().optional().or(z.literal('')),
 })
@@ -118,12 +112,6 @@ export function NumbersPage() {
         payload.outbound_agent_id = data.outbound_agent_id.trim()
       }
       // Only include version if provided
-      if (data.inbound_agent_version !== undefined && data.inbound_agent_version !== null) {
-        payload.inbound_agent_version = data.inbound_agent_version
-      }
-      if (data.outbound_agent_version !== undefined && data.outbound_agent_version !== null) {
-        payload.outbound_agent_version = data.outbound_agent_version
-      }
       if (data.nickname !== undefined) {
         payload.nickname = data.nickname && data.nickname.trim() ? data.nickname.trim() : null
       }
@@ -447,36 +435,6 @@ export function NumbersPage() {
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
                       Agent to use for outbound calls. Required for outbound functionality.
-                    </p>
-                  </div>
-                </div>
-                )}
-                {(!agents || agents.filter((agent) => agent.retell_agent_id).length === 0) ? null : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="purchase_inbound_agent_version">Inbound Agent Version (optional)</Label>
-                    <Input
-                      id="purchase_inbound_agent_version"
-                      type="number"
-                      {...purchaseForm.register('inbound_agent_version', { valueAsNumber: true })}
-                      placeholder="Leave empty for latest version"
-                      className="mt-1.5"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Specific version number. Leave empty to use the latest published version.
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="purchase_outbound_agent_version">Outbound Agent Version (optional)</Label>
-                    <Input
-                      id="purchase_outbound_agent_version"
-                      type="number"
-                      {...purchaseForm.register('outbound_agent_version', { valueAsNumber: true })}
-                      placeholder="Leave empty for latest version"
-                      className="mt-1.5"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Specific version number. Leave empty to use the latest published version.
                     </p>
                   </div>
                 </div>
